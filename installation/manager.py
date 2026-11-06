@@ -28,6 +28,7 @@ BUNDLE = Path(__file__).resolve().parent.parent
 BUNDLE_FILES = [
     'installation/install.sh', 'installation/manager.py', 'installation/README.md',
     'deploy/vps/dev-env.example', 'deploy/vps/env.example', 'deploy/vps/production-env.example',
+    'deploy/vps/analytics.dev.env.example', 'config/ANALYTICS.md', 'config/ANALYTICS-ACCEPTANCE.md',
     'deploy/vps/OBJECT-STORAGE.md', 'deploy/vps/sadad-callback.caddy.example', 'deploy/sadad-live-runbook.md',
     'deploy/ejabberd/compose.yaml', 'deploy/ejabberd/compose.database.yaml',
     'deploy/ejabberd/env.example', 'deploy/ejabberd/chat.caddy.example', 'deploy/ejabberd/README.md',
@@ -44,6 +45,8 @@ SECRET_NAMES = (
     'payment_credential_encryption_key', 'payment_credential_decryption_keys',
 )
 RUNTIME_DEFAULTS = {
+    'PUBLIC_GA4_MEASUREMENT_ID': '', 'PUBLIC_ANALYTICS_CONSENT': 'denied',
+    'PUBLIC_ANALYTICS_DEBUG': 'false', 'ANALYTICS_SERVER_ENABLED': 'false',
     'LOG_LEVEL': 'info', 'JWT_ACCESS_ISSUER': 'sabz-zendegi-api',
     'JWT_ACCESS_AUDIENCE': 'sabz-zendegi-frontends',
     'COMMERCE_RESERVATION_TTL_MINUTES': '20', 'BILLING_BOOKING_HOLD_MINUTES': '10',
@@ -267,6 +270,63 @@ def configure_storage(config, environment):
     print(f"Dev object storage configured: {values['PRODUCT_MEDIA_STORAGE_MODE']}. Credentials remain in secrets/. "
           'Deploy the matching provider-capable application and rerun the shared dev workflow to apply these settings. '
           'No connectivity or upload success is claimed by configuration alone.')
+
+
+def analytics_secret(value):
+    require(0 < len(value) <= 256 and all(33 <= ord(char) <= 126 for char in value),
+            'Analytics secret must be 1..256 printable ASCII characters without whitespace.')
+    return value
+
+
+def analytics_configuration(values, root):
+    """Controlled dev collection only; credentials never enter public runtime/state."""
+    values = dict(values)
+    root = Path(root)
+    require(not root.is_symlink() and not (root / 'secrets').is_symlink(), 'Analytics directories cannot be symlinks.')
+    previous = 'server' if values.get('ANALYTICS_SERVER_ENABLED') == 'true' else (
+        'browser' if values.get('PUBLIC_ANALYTICS_CONSENT') == 'granted' else 'disabled')
+    mode = ask('Controlled Dev analytics: disabled / browser / server', previous,
+               lambda value: choice(value, ['disabled', 'browser', 'server']))
+    values.update(PUBLIC_ANALYTICS_CONSENT='denied', PUBLIC_ANALYTICS_DEBUG='false', ANALYTICS_SERVER_ENABLED='false')
+    if mode == 'disabled':
+        return values, {}
+    values['PUBLIC_GA4_MEASUREMENT_ID'] = ask('Dev GA4 Measurement ID (G-...)', values.get('PUBLIC_GA4_MEASUREMENT_ID', ''),
+        lambda value: value if re.fullmatch(r'G-[A-Z0-9]{1,62}', value) else choice(value, []))
+    values['PUBLIC_ANALYTICS_DEBUG'] = ask('Enable Dev DebugView: true / false', 'true',
+        lambda value: choice(value, ['true', 'false']))
+    credentials = {}
+    if mode == 'server':
+        path = root / 'secrets/ga4_api_secret'
+        require(not path.is_symlink() and (not path.exists() or path.is_file()), 'Analytics secret must be a regular file.')
+        replace = not path.exists() or path.stat().st_size == 0 or ask('Replace existing GA4 API secret', 'no',
+            lambda value: choice(value, ['yes', 'no'])) == 'yes'
+        if replace:
+            credentials['ga4_api_secret'] = ask('GA4 API secret (hidden)', secret=True, validator=analytics_secret)
+        else:
+            analytics_secret(path.read_text().strip())
+        values['GA4_API_SECRET_FILE'] = '/run/optional-secrets/ga4_api_secret'
+        values['ANALYTICS_SERVER_ENABLED'] = 'true'
+    values['PUBLIC_ANALYTICS_CONSENT'] = 'granted'
+    return values, credentials
+
+
+def configure_analytics(config, environment):
+    require(environment == 'dev' and environment in config['environments'], 'Use setup-analytics --environment dev; other environments remain unchanged.')
+    root = Path(config['environments'][environment]['home']) / 'mushroom' / environment
+    require(not (root / 'runtime.env').is_symlink() and (root / 'runtime.env').is_file()
+            and (root / 'secrets').is_dir(), 'Finish initial Dev environment preparation first.')
+    values, credentials = analytics_configuration(load_env(root / 'runtime.env'), root)
+    owner = (root.stat().st_uid, root.stat().st_gid)
+    # Preserve the existing atomic private-file writer and activate only after the secret exists.
+    if values.get('ANALYTICS_SERVER_ENABLED') == 'true' and not credentials:
+        path = root / 'secrets/ga4_api_secret'
+        os.chmod(path, 0o600)
+        os.chown(path, *owner)
+    write_media_configuration(root, values, credentials, owner)
+    save(config)  # No analytics credential is copied into installation.json.
+    print('Dev analytics configuration saved. Secret stays in secrets/ga4_api_secret. '
+          'Deploy this analytics-capable branch and rerun the Dev workflow to apply settings. '
+          'Configuration alone does not verify GA4 receipt.')
 
 
 def new_configuration():
@@ -921,6 +981,12 @@ def setup_storage(config):
     configure_storage(config, 'dev')
 
 
+def setup_analytics(config):
+    require('dev' in config['environments'], 'Analytics setup needs an installed dev environment.')
+    persist_bundle()
+    configure_analytics(config, 'dev')
+
+
 def panel_audit(action, environment=None):
     """Record only the requested action; values, paths and secrets are never written."""
     path = STATE / 'panel.log'
@@ -1022,6 +1088,10 @@ def panel_storage(config, environment=None):
     setup_storage(config)
 
 
+def panel_analytics(config, environment=None):
+    setup_analytics(config)
+
+
 def panel_backup(config, environment=None):
     backup(config, environment)
 
@@ -1052,9 +1122,10 @@ def panel_menu(config):
         PanelAction('9', 'Print GitHub handoff summary', panel_github),
         PanelAction('10', 'Re-apply proxy/TLS configuration', panel_proxy, False, True),
         PanelAction('11', 'Resume full installation', panel_install, False, True),
+        PanelAction('12', 'Configure dev analytics (hidden API secret)', panel_analytics),
     ]
     if 'dev' not in config['environments']:
-        actions = [action for action in actions if action.handler is not panel_storage]
+        actions = [action for action in actions if action.handler not in (panel_storage, panel_analytics)]
     return actions
 
 
@@ -1368,7 +1439,7 @@ def lock():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', nargs='?', choices=['install', 'panel', 'setup-chat', 'setup-storage', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
+    parser.add_argument('command', nargs='?', choices=['install', 'panel', 'setup-chat', 'setup-storage', 'setup-analytics', 'configure', 'doctor', 'verify', 'github', 'status', 'logs', 'restart', 'backup', 'restore', 'audit-env'])
     parser.add_argument('--environment', choices=ENVIRONMENTS)
     parser.add_argument('--repository', default=str(BUNDLE))
     parser.add_argument('--current', action='store_true', help='Audit existing .env key names without displaying values')
@@ -1402,6 +1473,9 @@ def main():
         elif args.command == 'setup-storage':
             require(args.environment == 'dev', 'Use setup-storage --environment dev; production storage remains disabled.')
             setup_storage(config)
+        elif args.command == 'setup-analytics':
+            require(args.environment == 'dev', 'Use setup-analytics --environment dev; Production stays unchanged.')
+            setup_analytics(config)
         elif args.command == 'configure':
             configure(config, args.environment)
         elif args.command in ('doctor', 'verify'):

@@ -148,6 +148,7 @@ export const environmentValidationSchema = Joi.object({
   }),
   ANALYTICS_SERVER_ENABLED: Joi.string().valid('true', 'false').default('false'),
   PUBLIC_ANALYTICS_CONSENT: Joi.string().valid('granted', 'denied').default('denied'),
+  PUBLIC_ANALYTICS_DEBUG: Joi.string().valid('true', 'false').default('false'),
   PUBLIC_GA4_MEASUREMENT_ID: Joi.string().max(64).pattern(/^G-[A-Z0-9]+$/).allow('').when('ANALYTICS_SERVER_ENABLED', { is: 'true', then: Joi.invalid('').required(), otherwise: Joi.string().default('') }),
   GA4_API_SECRET: Joi.string().max(256).allow('').when('ANALYTICS_SERVER_ENABLED', { is: 'true', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),

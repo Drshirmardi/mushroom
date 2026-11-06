@@ -59,6 +59,7 @@ services:
       DEV_WRITE_RUNTIME_CONFIG: "${DEV_WRITE_RUNTIME_CONFIG:-false}"
       PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
       PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
@@ -109,6 +110,7 @@ services:
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
       PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
       SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
@@ -143,6 +145,7 @@ services:
       <<: *node-environment
       PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
       PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
@@ -156,6 +159,7 @@ services:
       <<: *node-environment
       PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
       PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
@@ -168,6 +172,7 @@ services:
       <<: *node-environment
       PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
       PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"

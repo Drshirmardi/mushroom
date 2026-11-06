@@ -40,3 +40,9 @@ At-least-once HTTP submission is not proof of ingestion or exactly-once reportin
 Signup/completion capture after successful handlers is best-effort with a crash gap.
 See config/ANALYTICS.md for the precise event, rial, retention, consent and operator limits.
 AN04 remains a separate acceptance gate; no real property/production activation.
+
+Owner-approved publication boundary (2026-11-06): AN04 now completes the software/browser
+acceptance and secure Dev installer/runtime setup, followed by a reviewed task commit,
+branch push and PR to dev. AN05 separately owns post-merge deployed-domain/native identity,
+private server secret configuration, real Measurement Protocol receipt and policy sign-off.
+No merge/actual VPS deployment/Production activation is included in the publication request.

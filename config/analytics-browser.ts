@@ -160,6 +160,11 @@ export function trackBrowserPage(path: string, surface: 'web' | 'app') {
     host.dataLayer ??= [];
     let loaded = false;
     host.gtag = function () { if (loaded || host.dataLayer!.length < 100) host.dataLayer!.push(arguments); };
+    // Apply safe defaults before any destination initializes, including Google's
+    // remotely configured tag behavior. The route observer owns page views.
+    host.gtag('set', { send_page_view: false, page_title: 'Mushroom',
+      page_location: `${location.origin}${surface === 'app' && path === '/' ? '/home' : logicalPage(path)}`,
+      page_referrer: context.referrer_origin || '', allow_google_signals: false, allow_ad_personalization_signals: false });
     host.gtag('js', new Date());
     host.gtag('config', id, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false,
       ...(context.client_id ? { client_id: context.client_id } : {}), ...(context.session_id ? { session_id: context.session_id } : {}),
@@ -180,6 +185,7 @@ export function trackBrowserPage(path: string, surface: 'web' | 'app') {
     initializedId = id;
     analytics = createAnalytics((event, params) => {
       host.gtag?.('event', event, { source: context?.source, medium: context?.medium, campaign: context?.campaign, entry_cta: context?.entry_cta, ...params, send_to: id,
+        ...((window as AnalyticsWindow).__MUSHROOM_RUNTIME_CONFIG__?.analyticsDebug === 'true' ? { debug_mode: true } : {}),
         page_location: `${location.origin}${params.page_path || logicalPage(location.pathname)}`,
         page_title: 'Mushroom', page_referrer: context?.referrer_origin || '' });
     });

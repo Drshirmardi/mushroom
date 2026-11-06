@@ -1,4 +1,6 @@
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createServer } from 'node:http';
 import { createHash, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -25,6 +27,7 @@ import { AnalyticsService } from '../src/modules/analytics/analytics.service';
 import { Ga4Transport } from '../src/modules/analytics/ga4.transport';
 import { OutboxService } from '../src/modules/outbox/outbox.service';
 import { AnalyticsInterceptor } from '../src/modules/analytics/analytics.interceptor';
+import { measurementPayload } from '../src/modules/analytics/analytics.protocol';
 import { lastValueFrom, of } from 'rxjs';
 import { createTestAccessToken } from './auth-test-support';
 import { createCompleteTestPatient } from './patient-entry-test-support';
@@ -615,5 +618,56 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
       expect(await db.outboxEvent.count({ where: { aggregateId: blocked } })).toBe(0);
     } finally { property.mockRestore(); mode.mockRestore(); }
   }, 30000);
+
+  it.skipIf(process.env.ANALYTICS_BROWSER_TEST !== '1')('AN04: production payment UI reaches real API/PostgreSQL and bounded HTTP delivery; denied/blocked analytics never blocks payment', async () => {
+    const { analyticsBrowserFrontend, browserWalletPayment } = await import('./analytics-browser-test-support.js');
+    const worker = app.get(AnalyticsWorker); worker.onModuleDestroy();
+    app.get(OutboxWorker).onModuleDestroy();
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    const config = app.get(ConfigService); const oldSecret = config.get('GA4_API_SECRET');
+    config.set('GA4_API_SECRET', 'an04-synthetic-secret');
+    const submitted: Array<NonNullable<ReturnType<typeof measurementPayload>>> = [];
+    const collector = createServer(async (request, response) => {
+      let body = ''; for await (const chunk of request) body += String(chunk);
+      submitted.push(JSON.parse(body)); response.statusCode = 204; response.end();
+    });
+    await new Promise<void>(resolve => collector.listen(0, '127.0.0.1', resolve));
+    const realFetch = globalThis.fetch;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation((target, options) => {
+      const url = new URL(String(target));
+      if (url.origin === 'https://www.google-analytics.com') {
+        expect(url.pathname).toBe('/mp/collect'); expect(url.searchParams.get('api_secret')).toBe('an04-synthetic-secret');
+        return realFetch(`http://127.0.0.1:${(collector.address() as { port: number }).port}`, options);
+      }
+      return realFetch(target, options);
+    });
+    let frontend: Awaited<ReturnType<typeof analyticsBrowserFrontend>> | undefined;
+    try {
+      await app.listen({ port: 0, host: '127.0.0.1' });
+      const apiUrl = await app.getUrl();
+      frontend = await analyticsBrowserFrontend(apiUrl);
+      for (const browserMode of ['granted', 'denied', 'blocked'] as const) {
+        const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+        await browserWalletPayment({ origin: frontend.origin, apiUrl, orderId: checkout.id, token: p.token, userId: p.userId, mode: browserMode });
+        expect(await db.commerceOrder.findUnique({ where: { id: checkout.id } })).toMatchObject({ status: 'PAID' });
+        const key = `analytics:ga4:purchase:${checkout.id}`;
+        expect(await db.outboxEvent.count({ where: { idempotencyKey: key } })).toBe(browserMode === 'granted' ? 1 : 0);
+        if (browserMode === 'granted') {
+          // Existing unrelated fixtures can be queued; drain bounded batches, never alter them.
+          for (let i = 0; i < 10 && !submitted.some(body => body.events?.[0]?.params?.transaction_id === checkout.id); i++) await worker.tick();
+          const payload = submitted.find(body => body.events?.[0]?.params?.transaction_id === checkout.id)!;
+          expect(payload).toBeDefined(); expect(payload.client_id).toBe('123.456');
+          expect(payload.events[0].params).toMatchObject({ amount_rial: 10000, source: 'browser_test' });
+          expect(JSON.stringify(payload)).not.toContain(p.userId); expect(JSON.stringify(payload)).not.toContain('private-query');
+          expect(await db.outboxEvent.findUnique({ where: { idempotencyKey: key } })).toMatchObject({ status: 'DELIVERED', payload: {} });
+        }
+      }
+    } finally {
+      await frontend?.close(); fetchSpy.mockRestore(); mode.mockRestore(); property.mockRestore(); config.set('GA4_API_SECRET', oldSecret);
+      await new Promise<void>(resolve => collector.close(() => resolve()));
+    }
+  }, 120000);
 
 });

@@ -11,6 +11,9 @@ analytics until those gates and the collection/consent policy are accepted.
 populate the existing `/runtime-config.js` in Docker and VPS dev startup. Both
 default to disabled/denied. No API secret belongs in this public configuration.
 Runtime changes take effect on reload/restart without rebuilding the frontend.
+`PUBLIC_ANALYTICS_DEBUG=true` explicitly marks events for DebugView through that same
+runtime and loader; it defaults to false, and false/absent omits the debug parameter.
+The server uses the same flag only at transport time without changing stored events.
 This technical gate does not obtain a visitor's consent; the consent integration
 must supply the applicable policy before enabling collection.
 
@@ -31,6 +34,9 @@ form fields, raw query strings, account IDs or medical results are collected.
 Browser events make no application API request and perform no database write.
 Google's loader is asynchronous, once per document, and its pre-load buffer is
 bounded to 100 commands if the script is blocked. This does not guarantee delivery.
+Before initializing a destination, the same loader sets global `send_page_view=false`
+and safe title/location/referrer defaults. Actual Google testing found that the per-config
+flag alone allowed an extra automatic raw-URL view; the global defaults removed it.
 
 AN02 preserves only validated source/medium/campaign slugs, first explicit landing
 CTA and HTTPS referrer origin; raw referrer paths/queries remain excluded. Context
@@ -156,6 +162,9 @@ No real credentials/property activation or deployment has been performed.
 
 AN04 must validate real GA4 receipt, domain/session continuity, custom definitions,
 collection/consent policy and the complete authenticated product journey before production use.
+Follow [the AN04 acceptance checklist](ANALYTICS-ACCEPTANCE.md) for the concrete operator
+steps, local test coverage and outstanding live evidence. Local software checks do not
+enable collection or certify the target property.
 
 Server protocol sources:
 - https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference

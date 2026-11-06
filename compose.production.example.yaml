@@ -6,6 +6,11 @@ services:
     image: "${API_IMAGE:?set an immutable API digest}"
     environment:
       NODE_ENV: production
+      ANALYTICS_SERVER_ENABLED: "${ANALYTICS_SERVER_ENABLED:-false}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
+      GA4_API_SECRET_FILE: "${GA4_API_SECRET_FILE:-}"
       PORT: "3003"
       HOSTNAME: "0.0.0.0"
       DATABASE_URL_FILE: /run/secrets/database_url

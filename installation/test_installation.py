@@ -56,6 +56,68 @@ class InstallationTests(unittest.TestCase):
                 self.assertNotIn('synthetic-secret', json.dumps(values))
                 self.assertEqual((root / 'runtime.env').read_bytes(), original)
 
+    def test_analytics_collects_hidden_secret_separate_from_public_settings(self):
+        root = self.write('dev')
+        with patch('manager.ask', side_effect=['server', 'G-TEST123', 'true', 'synthetic-ga-secret']) as prompts:
+            values, credentials = manager.analytics_configuration(manager.load_env(root / 'runtime.env'), root)
+        self.assertTrue(prompts.call_args_list[-1].kwargs['secret'])
+        self.assertEqual(credentials, {'ga4_api_secret': 'synthetic-ga-secret'})
+        self.assertEqual(values['ANALYTICS_SERVER_ENABLED'], 'true')
+        self.assertEqual(values['PUBLIC_ANALYTICS_CONSENT'], 'granted')
+        self.assertNotIn('synthetic-ga-secret', json.dumps(values))
+        self.assertNotIn('synthetic-ga-secret', json.dumps(self.config))
+
+    def test_analytics_disabled_preserves_secret_and_other_settings(self):
+        root = self.write('dev')
+        path = root / 'secrets/ga4_api_secret'
+        path.write_text('preserved')
+        with patch('manager.ask', return_value='disabled'):
+            values, credentials = manager.analytics_configuration({'R2_BUCKET': 'preserved'}, root)
+        self.assertEqual(values['R2_BUCKET'], 'preserved')
+        self.assertEqual(values['PUBLIC_ANALYTICS_CONSENT'], 'denied')
+        self.assertEqual(values['ANALYTICS_SERVER_ENABLED'], 'false')
+        self.assertEqual(credentials, {})
+        self.assertEqual(path.read_text(), 'preserved')
+
+    def test_analytics_existing_secret_needs_explicit_replacement(self):
+        root = self.write('dev')
+        path = root / 'secrets/ga4_api_secret'
+        path.write_text('preserved')
+        for replace in ['no', 'yes']:
+            with self.subTest(replace=replace), patch('manager.ask', side_effect=['server', 'G-TEST123', 'false', replace, 'replacement']):
+                values, credentials = manager.analytics_configuration({}, root)
+            self.assertEqual(credentials, {} if replace == 'no' else {'ga4_api_secret': 'replacement'})
+            self.assertEqual(path.read_text(), 'preserved')
+
+    def test_analytics_rejects_invalid_values_and_nondev_before_writing(self):
+        for env in ['production', 'staging']:
+            with self.assertRaises(manager.InstallationError):
+                manager.configure_analytics(self.config, env)
+        root = self.write('dev')
+        with patch('manager.terminal_input', side_effect=['bad\nsecret', 'valid-secret']), redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(manager.ask('hidden', secret=True, validator=manager.analytics_secret), 'valid-secret')
+        self.assertNotIn('bad', output.getvalue())
+        if os.name == 'posix':
+            target = self.root / 'outside'
+            target.write_text('preserve')
+            (root / 'secrets/ga4_api_secret').symlink_to(target)
+            with patch('manager.ask', side_effect=['server', 'G-TEST123', 'true']), self.assertRaises(manager.InstallationError):
+                manager.analytics_configuration({}, root)
+            self.assertEqual(target.read_text(), 'preserve')
+
+    def test_analytics_configuration_writes_private_file_then_public_runtime_without_state_secrets(self):
+        root = Path(self.config['environments']['dev']['home']) / 'mushroom/dev'
+        manager.write_environment(self.config, 'dev', base=root)
+        with patch('manager.ask', side_effect=['server', 'G-TEST123', 'true', 'synthetic-ga-secret']), \
+                patch('manager.os.chown', create=True), patch('manager.save') as save, redirect_stdout(io.StringIO()) as output:
+            manager.configure_analytics(self.config, 'dev')
+        self.assertEqual((root / 'secrets/ga4_api_secret').read_text(), 'synthetic-ga-secret')
+        self.assertNotIn('synthetic-ga-secret', (root / 'runtime.env').read_text())
+        self.assertNotIn('synthetic-ga-secret', output.getvalue())
+        self.assertNotIn('synthetic-ga-secret', json.dumps(save.call_args.args))
+        if os.name == 'posix':
+            self.assertEqual((root / 'secrets/ga4_api_secret').stat().st_mode & 0o777, 0o600)
+
     def test_storage_switch_requires_transfer_confirmation_before_any_write(self):
         root = self.write('dev')
         values = manager.load_env(root / 'runtime.env')

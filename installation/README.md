@@ -214,6 +214,7 @@ sudo mushroom logs --environment production
 sudo mushroom restart --environment production
 sudo mushroom configure --environment dev
 sudo mushroom setup-storage --environment dev
+sudo mushroom setup-analytics --environment dev
 sudo mushroom backup --environment production
 sudo mushroom restore --environment production --archive /var/backups/mushroom/production/BACKUP.dump.age --target-url-file /root/restore-test-url
 ```
@@ -222,6 +223,25 @@ sudo mushroom restore --environment production --archive /var/backups/mushroom/p
 آن را بدون `--environment` اجرا کنید. تنظیمات دامنه پیش از ذخیره با DNS بررسی می‌شود. در dev، انتخاب فضای
 ذخیره‌سازی و دریافت مخفی کلیدهای آن هم در همین فرمان است. پس از تغییر runtime، workflow همان محیط را
 اجرا کنید تا کانتینرها تنظیم تازه را بگیرند.
+
+## تنظیم امن GA4 در Dev
+
+پس از نصب نسخهٔ به‌روز نصاب، `sudo mushroom setup-analytics --environment dev` را اجرا کنید
+یا گزینهٔ «Configure dev analytics» پنل را انتخاب کنید. حالت `disabled`، فقط `browser` یا
+`server` را انتخاب کنید؛ شناسهٔ استریم Dev فعلی `G-KXRZ89EFTY` است. حالت‌های فعال فقط برای
+جمع‌آوری مجاز در Dev هستند. DebugView به‌صورت یک انتخاب مستقل پرسیده می‌شود.
+
+در حالت `server`، API Secret همان استریم از ورودی مخفی دریافت می‌شود و در فایل
+`<DEV_ROOT>/secrets/ga4_api_secret` با دسترسی `0600` و مالک محیط Dev ذخیره می‌شود.
+Secret در `runtime.env`، وضعیت نصاب، آرگومان فرمان، Git یا خروجی نوشته نمی‌شود.
+Secret موجود بدون انتخاب صریح جایگزین نمی‌شود؛ غیرفعال‌کردن آنالیتیکس فایل را حذف نمی‌کند.
+این فرمان برای Production یا سایر محیط‌ها پذیرفته نمی‌شود.
+
+پس از Merge این تغییر و نصب نصاب جدید، تنظیمات را ذخیره و workflow همگام‌سازی Dev را
+دوباره اجرا کنید؛ تغییر تنظیمات یا Secret باعث بازسازی runtime مربوط می‌شود. صرفاً
+`restart` تنظیمات Compose جدید را وارد کانتینر موجود نمی‌کند. سپس دریافت واقعی رویدادهای
+مرورگر و بک‌اند را طبق `config/ANALYTICS-ACCEPTANCE.md` بررسی کنید. موفقیت نصاب به معنی
+تأیید دریافت در GA4 نیست؛ Production به‌صورت پیش‌فرض خاموش می‌ماند.
 
 ## انتخاب Cloudflare یا آروان برای تصاویر
 

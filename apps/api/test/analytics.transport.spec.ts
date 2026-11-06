@@ -41,4 +41,15 @@ describe('GA4 bounded transport (actual loopback HTTP)', () => {
     vi.mocked(globalThis.fetch).mockRejectedValueOnce(new Error('synthetic URL contains api_secret=private'));
     expect(await transport.send({ events: [] })).toBe('retry');
   });
+  it('adds DebugView marking only with explicit runtime opt-in and leaves the queued payload unchanged', async () => {
+    status = 204;
+    const debugTransport = new Ga4Transport(new ConfigService({ PUBLIC_GA4_MEASUREMENT_ID: 'G-TEST123', GA4_API_SECRET: 'synthetic-secret', PUBLIC_ANALYTICS_DEBUG: 'true' }));
+    const payload = { client_id: '123.456', events: [{ name: 'purchase', params: { amount_rial: 10000 } }] };
+    expect(await debugTransport.send(payload)).toBe('submitted');
+    expect(requests.at(-1)).toMatchObject({ body: { events: [{ params: { amount_rial: 10000, debug_mode: true } }] } });
+    expect(payload.events[0].params).not.toHaveProperty('debug_mode');
+    expect(await transport.send(payload)).toBe('submitted');
+    expect(requests.at(-1)).toMatchObject({ body: payload });
+    expect(JSON.stringify(requests.at(-1))).not.toContain('debug_mode');
+  });
 });

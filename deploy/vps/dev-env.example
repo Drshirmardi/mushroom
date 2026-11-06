@@ -20,6 +20,12 @@ APP_ORIGINS=https://dev.example.com,https://dev-app.example.com,https://dev-dash
 # allowedDevOrigins for dev assets and the /_next/hmr WebSocket.
 TRUSTED_PROXIES=127.0.0.1/32
 LOG_LEVEL=debug
+# Analytics defaults stay off. Controlled Mushroom Dev stream settings are in
+# analytics.dev.env.example; merge only into this environment when ready to test.
+PUBLIC_GA4_MEASUREMENT_ID=
+PUBLIC_ANALYTICS_CONSENT=denied
+PUBLIC_ANALYTICS_DEBUG=false
+ANALYTICS_SERVER_ENABLED=false
 JWT_ACCESS_ISSUER=sabz-zendegi-api
 JWT_ACCESS_AUDIENCE=sabz-zendegi-frontends
 COMMERCE_RESERVATION_TTL_MINUTES=20

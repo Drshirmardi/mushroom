@@ -6832,3 +6832,157 @@ Verification:
 Acceptance: real event times and property-scoped GA IDs, no account user_id/private content; local idempotency and bounded 24-hour/session-window delivery on the existing API/PostgreSQL infrastructure. Financial enqueue is in the actual settlement/refund transaction, no external HTTP inside it. Existing operations retain authorization and financial evidence. Owner explicitly chose no long-term attribution: expired-context refunds stay only in financial records. Source/operator details in config/ANALYTICS.md.
 
 Limits: software acceptance only, not live GA4 ingestion. HTTP2xx is submission; ambiguous failures can duplicate external custom/refund events despite local dedup. Signup/assessment/immediate appointment capture is post-handler best-effort with a crash gap. Missing/stale browser IDs skip conversions; snapshot consent does not revoke already queued context. Custom rial metric, item cap100, generic paid-service count and eventual bounded physical cleanup are documented. AN04 must verify real property/domain/session behavior, full authenticated journey and applicable consent/revocation policy before activation. No new schema/service/activity archive, push/deploy or production secret. Next AN04 eligible, not started under per-task boundary.
+
+## Analytics AN04 local acceptance and live handoff
+
+Task: F12-FE01-AN04 / ANALYTICS-04, 2026-11-06 Asia/Tehran.
+Agent/Reviewer: sole Codex /root. Depends AN03 DONE, baseline d92e156.
+Status: IN_PROGRESS; local software review PASS, complete live gate pending. Not DONE,
+no final task commit. Same task/claim continues when the missing target setup is supplied.
+
+Changed files: apps/api/test/analytics-browser-test-support.ts and wallet-billing.integration.spec.ts;
+config/ANALYTICS-ACCEPTANCE.md, config/ANALYTICS.md and plan status/checklist/log. No production
+application logic, schema, migration, new dependency/service or user-owned file changed.
+
+Verification:
+- Fresh dedicated PostgreSQL17 container mushroom-analytics-an04-test, bound only to
+  127.0.0.1:55424/wallet_test; all112 existing migrations and synthetic seed PASS.
+- Explicit ANALYTICS_BROWSER_TEST=1 in existing isolated wallet suite:28 tests PASS,
+  including one new three-scenario integration. Actual production Next app at private
+  port3311, real listening API and real PostgreSQL ownership/settlement. Real UI wallet
+  confirmation → paid order/receipt → reload, no browser purchase fabrication. Granted
+  context produces one local purchase and real worker/transport JSON over loopback HTTP,
+  then payload purge. Denied consent/blocked Google getter still complete payment with
+  no conversion queue. Mobile390/desktop1440 exercised; no page exceptions or failed
+  business API responses. Bearer preserved, private query/user/order identity excluded
+  from browser analytics; user identity excluded from server payload.
+- Harness initially caught misuse of Nest listen return type; corrected to await getUrl,
+  then API test TypeScript check and the focused/full browser integration passed.
+- node --experimental-strip-types --test config/analytics.test.mjs config/analytics-context.test.mjs:
+  10 PASS. node --test config/analytics-browser.test.mjs config/analytics-journey.test.mjs:
+  4 PASS (intercepted Google; no real property writes).
+- Full wallet suite emitted pg's concurrent-client-query deprecation warning (future
+  pg9 behavior); no failed assertion. Dependency upgrade/refactor is outside this task.
+- Source review confirms no frontend public secret, operational activation or changed
+  original architecture. Production build from AN03 reused unchanged; no unnecessary
+  frontend rebuild. Test helper owns/stops its frontend and restores ignored runtime output.
+- graphify update . PASS (AST only; existing extractor warnings retained); git diff
+  --check PASS. Dedicated test container stopped/removed after verifying its owned ID;
+  existing services/databases untouched. No final task commit while live gate is pending.
+
+Operator checklist includes the actual flow, stream/domain checks, custom rial reporting,
+key-event choice, strict Google validation versus real ingestion evidence, retention and
+stop-collection limits. Primary Google validation/cross-domain/currency docs checked
+2026-11-06; sources linked in the checklist. Validator success does not certify credentials
+or receipt; the validator does not create report events.
+
+Remaining: owner answered that GA4 exists and will send the public G-... Measurement ID,
+but no value has arrived. Need the intended controlled environment, private API secret
+available by file path (not a chat value), real SDK identity/property receipt evidence and
+collection/revocation policy sign-off. Browser test substitutes synthetic auth bootstrap
+and Google getter/outbound destination only: it does not certify actual OTP/login, bank
+processing, native Google identity or property reports. No actual account configuration,
+production collection, financial transaction, push/deploy or next batch. Continue this
+claim for live acceptance; keep AN04 unchecked until the gate is complete.
+
+### AN04 Dev stream and actual Google browser receipt follow-up
+
+2026-11-06, same single /root claim. Owner supplied and Google UI confirmed Mushroom - Dev Web,
+https://dev.drshirmardi.com, stream16282576410, G-KXRZ89EFTY; Enhanced Measurement switch OFF,
+0 connected site tags observed. Owner completed Google sign-in in the connected browser and
+explicitly reported the private API secret file is not prepared. No secret was requested,
+created, read from the UI, logged or stored in source/public runtime.
+
+Scope extension inside AN04: existing config/analytics-browser.ts, GA4 server transport and
+environment validation; runtime generators/compose public flag wiring; dev/production env
+examples; explicit analytics.dev.env.example; browser/transport regressions and new
+scripts/test-analytics-runtime.mjs. No second Google loader/tag/GTM container or new service.
+PUBLIC_ANALYTICS_DEBUG defaults false, true adds debug_mode at dispatch/transport only;
+false omits that field entirely. It does not enable denied collection or disabled server
+delivery. The specific Dev ID lives in the public environment example, not application code.
+Production example remains empty-ID/denied/debug-false/server-false.
+
+Actual live test: production-built current web app served locally on3310, using the real
+Google script and Dev property. Existing local-only anonymous auth stub on3319 prevents
+any login/OTP/financial/clinical request to a real API. Harmless campaign an04_acceptance /
+local_test and explicit hero CTA exercised. Actual Google UI showed page_view,
+cta_impression and cta_click in DebugView; Realtime showed one active user and those event
+names. Received data is from local acceptance code, not a deployed dev.drshirmardi.com
+certification. Dev public runtime was fetched read-only and had existing web/app/API origins
+but no analytics settings yet. No remote deployment/configuration or Production activation.
+
+Important live-only finding and correction: per-config send_page_view=false alone still
+allowed one extra automatic initial view with the document title/raw query URL. Real CDP
+network inspection reproduced it while dataLayer had just one manual page view. Added safe
+global gtag set defaults (send_page_view false, logical location, static title, origin-only
+referrer, advertising flags false) BEFORE destination initialization. After rebuilding and
+reloading with the actual Google script, observed ONE gtag loader, ONE manual and transmitted
+page_view, static Mushroom title, /landing path and no query. The other batched request held
+two cta_impression events only; later observation had no extra collection request. This
+fix stays in the existing shared loader. No copied raw query/client/session identifiers or
+Google secret in saved evidence. DebugView/Realtime observed through authenticated UI;
+no external reporting API credential or DOM-injected sender used.
+
+Verification: failing-first browser DebugView test and server loopback debug test failed
+before implementation, then passed; additional safe-global-default assertion failed before
+the correction and passed after. Final five Chromium SDK/handoff/transport cases PASS;
+analytics protocol/actual-loopback transport/environment validation12 PASS. Actual runtime
+generator test PASS for disabled defaults, explicit debug and exclusion of synthetic private
+secret. Runtime/Sadad scripts, three compose YAML parses, API source/test TypeScript and
+both frontend production builds PASS. Frontends rebuilt again only after the live extra-view
+finding/fix. Graphify AST refresh PASS with existing extractor warnings. No dependency,
+schema/migration, operational data or financial logic changed. Earlier28 isolated wallet
+tests remain evidence for that unchanged financial integration; no unnecessary DB rerun.
+
+Remaining: owner privately creates the stream API secret file and supplies its path, then
+controlled server validation/actual receipt can proceed. Dev deployment and actual-domain
+cross-domain/full-authenticated/policy sign-off remain distinct gates. No final task commit
+or DONE while those remain open. Follow config/ANALYTICS-ACCEPTANCE.md; same claim continues.
+
+## Analytics AN04 software publication gate
+
+Task F12-FE01-AN04 / ANALYTICS-04, 2026-11-06 Asia/Tehran. Sole /root implementation and
+main-agent review PASS. Owner explicitly authorized separating software readiness from
+post-merge operational validation, adding secure Dev installer support, committing/pushing
+this branch and opening a PR to dev. This supersedes prior no-commit notes for AN04.
+AN04 DONE/software; AN05 records outstanding operational work and remains unchecked.
+
+Changed paths: existing AN04 analytics tests/browser safe-global defaults/runtime-debug/
+transport/configuration/deployment/operator documents, plus installation/{manager.py,
+test_installation.py,README.md}, apps/api/.env.example, compose.production.example.yaml,
+deploy/vps/deploy-dev.sh, scripts/test-vps-dev.sh and synchronized plan contract/evidence.
+BUNDLE_FILES includes only public Dev profile/operator docs, never actual secrets.
+
+New setup-analytics --environment dev and panel option accept disabled/browser/server,
+validate public Measurement ID and DebugView selection, and collect the stream API secret
+through existing hidden-input validation. Atomic private file0600/runtime-owner writing
+precedes public activation. Existing secret replacement is explicit; disabled retains it;
+symlinks/nonregular paths and other environments are rejected. Configuration changes do
+not touch unrelated settings, real external credentials, GA4 settings or Production.
+
+Dev sync now fingerprints public analytics config and the private secret hash inside the
+existing composite runtime hash: enable/disable/debug/rotation triggers the normal runtime
+recreation. Secret plaintext is absent from arguments/logs. Corrected missing API env example
+and generic production example settings exposed by the installer environment audit; all
+38 API schema keys now covered. No new schema/migration/service/dependency.
+
+Verification:
+- Failing-first installer tests failed on missing functions; implementation then PASS.
+- python -m unittest discover -s installation -p test_*.py:61 cases,53 PASS/8 pre-existing
+  platform/tool skips on Windows. Five added analytics cases cover private persistence,
+  reuse/replacement, disabled preservation, secret validation/symlink/nondev rejection.
+- Official python3.13-slim Linux container, read-only source mount:69 cases,63 PASS/6
+  unavailable-tool skips; POSIX secret/symlink/hidden-input cases run. Container --rm.
+- bash scripts/test-vps-dev.sh PASS, including new analytics setting and secret-rotation
+  recreation and plaintext-absence cases, existing no-op/provider/readiness/locking cases.
+- installer audit-env (all38 API keys), --help, allowlisted bundle build PASS.
+- Five actual Chromium SDK/transport/journey cases and12 API protocol/loopback transport/
+  environment tests rerun PASS; actual runtime generator secret-exclusion/default gates PASS.
+- Existing AN04 evidence retained:28 actual PostgreSQL wallet cases including production
+  app-to-API/DB/worker/loopback chain;10 pure tests; API types and both production builds;
+  actual Google script/client and authenticated DebugView/Realtime browser receipt.
+- graphify update . and git diff --check PASS. Scope/security/publication review PASS.
+
+No actual secret/VPS setup/merge/deployment performed. Next AN05 after reviewed merge and
+Dev deployment: owner hidden secret entry, deployed-domain/native cross-domain/full auth,
+actual server Google receipt and applicable policy sign-off. Production remains disabled.

@@ -23,6 +23,7 @@ const values = {
   sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
   analyticsMeasurementId: process.env.PUBLIC_GA4_MEASUREMENT_ID || '',
   analyticsConsent: process.env.PUBLIC_ANALYTICS_CONSENT || 'denied',
+  analyticsDebug: process.env.PUBLIC_ANALYTICS_DEBUG || 'false',
 };
 for (const [name, value] of Object.entries(values)) {
   if (name.startsWith('analytics')) continue;
