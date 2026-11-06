@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 repo_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-ca_bundle=${1:-/etc/ssl/certs/ca-certificates.crt}
-[[ -s $ca_bundle ]] || { echo 'A trusted CA bundle is required for this build test.' >&2; exit 1; }
 scratch=$(mktemp -d)
 image="mushroom-dev-runtime-check:$$"
 trap 'docker image rm "$image" >/dev/null 2>&1 || true; rm -rf -- "$scratch"' EXIT
@@ -27,25 +25,19 @@ model=json.load(open(sys.argv[1]))
 build=model['services']['bootstrap']['build']
 assert build['args']['DEBIAN_MIRROR']=='https://mirror.famaserver.com/debian'
 assert build['args']['DEBIAN_SECURITY_MIRROR']=='https://security.debian.org/debian-security'
-assert any(item['source']=='dev_apt_ca' for item in build['secrets'])
-assert build.get('entitlements')==['fs.read=/etc/ssl/certs/ca-certificates.crt']
-assert model['secrets']['dev_apt_ca']['file']=='/etc/ssl/certs/ca-certificates.crt'
-assert all(item['source']!='dev_apt_ca' for service in model['services'].values() for item in service.get('secrets',[]))
+assert not build.get('secrets'), 'Dev runtime build must not use host build secrets'
+assert not build.get('entitlements'), 'Dev runtime build must not request host filesystem entitlements'
+assert 'dev_apt_ca' not in model.get('secrets', {})
 PY
 # Fixture-only context: this build must not need application files or private credentials.
-docker build --file "$repo_root/deploy/vps/Dockerfile.dev" \
-  --secret "id=dev_apt_ca,src=$ca_bundle" --tag "$image" "$scratch"
+docker build --file "$repo_root/deploy/vps/Dockerfile.dev" --tag "$image" "$scratch"
 docker run --rm "$image" sh -ec '
   test -s /etc/ssl/certs/ca-certificates.crt
+  test ! -e /tmp/dev-apt-ca.crt
   test ! -e /run/secrets/dev-apt-ca
   openssl version
   corepack --version
   node --version
   test -z "$(ls -A /var/lib/apt/lists)"
 '
-if docker build --no-cache --file "$repo_root/deploy/vps/Dockerfile.dev" "$scratch" >"$scratch/missing-ca.log" 2>&1; then
-  echo 'Build unexpectedly succeeded without its trusted CA input.' >&2
-  exit 1
-fi
-grep -Eq 'secret.*dev_apt_ca|dev_apt_ca.*secret' "$scratch/missing-ca.log"
 echo 'Dev runtime HTTPS package install and build-only CA checks passed.'

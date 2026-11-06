@@ -7203,3 +7203,13 @@ Implementation: added the exact requested entitlement to the `bootstrap` build i
 The path matches the declared build-only `dev_apt_ca` secret. No broader `fs.read` grant, BuildKit bypass, runtime secret mount or Production change was introduced. scripts/test-dev-runtime-image.sh now asserts the exact entitlement in the Compose model.
 
 Verification: `bash scripts/test-dev-runtime-image.sh` PASS: Compose model entitlement/secret isolation, actual signed HTTPS APT package installation, final image CA/OpenSSL/Node/corepack checks and missing-CA negative build. YAML parse and `git diff --check` PASS. A live Dev sync was not run from this environment; owner must merge this commit and rerun `Sync shared dev VPS`. The prior stale process/lock diagnosis is operational and not part of the code fix.
+
+## F12-T02-D01-R2 — CA stage without host secret
+
+Task: F12-T02-D01-R2; branch codex/dev-build-ca-stage from dev@84a992b; 2026-11-06; sole Codex /root review PASS.
+
+Problem: R1 was merged and present in the deployed Dev workspace, but the real server (Docker29.9.1 / Compose v5.6.0 / Buildx v0.38.0) still printed `additional privileges requested` and failed. On that host, `docker compose config` and `docker compose build --print` both showed the entitlement, but the actual build did not grant it to Buildx. No hosted run could deploy the analytics-capable branch.
+
+Implementation: removed the host-file build secret/entitlement dependency entirely. Dev `Dockerfile.dev` now copies the public Mozilla CA bundle from a tiny `alpine:3.20` build stage into the temporary build filesystem, uses it for the bounded HTTPS APT install, then deletes it before export. Compose no longer declares `dev_apt_ca` and requests no `fs.read` entitlement. No host path is read by the build; no app, database, runtime secret or Production setting changed.
+
+Verification: `bash scripts/test-dev-runtime-image.sh` PASS: Compose model has no build secret/entitlement; real signed HTTPS APT install; final image has Debian CA bundle/OpenSSL/Node/corepack; temporary CA and secret path absent; `/var/lib/apt/lists` empty. `git diff --check` PASS. Owner must merge this PR and rerun the Dev sync; written analytics runtime verification is still AN05.
