@@ -7025,3 +7025,29 @@ change, handcrafted binary replacement, vulnerability waiver, severity exclusion
 scanner relaxation. Safe next action: wait for verified patched stable upstream image or
 obtain owner approval for a concrete maintained-runtime alternative/ADR, then scan and
 smoke-test every real artifact. Do not merge PR36 or begin Dev activation under a red gate.
+
+## Analytics runtime scan temporary suspension
+
+Task: F12-FE01-AN04-CI02-D01; 2026-11-06; sole /root; owner explicitly requested
+stopping the investigation, temporarily disabling the failing scan, committing on the
+same branch and opening a replacement PR to dev. This supersedes earlier instructions
+against suspending that check; it does not resolve the zlib vulnerability.
+
+Changed .github/workflows/container-checks.yml: artifact-job flag
+RUNTIME_IMAGE_SCAN_ENABLED=false skips Trivy runtime scans and dependent report upload
+for api/web/app/dashboard. Build, disposable smoke, release contracts and independent
+dependency security checks retain their current behavior. Restore this flag to true
+after CI02 verifies a patched runtime. No runtime library, image digest, application
+logic, scan severity or release publication workflow changed. CI02 remains deferred.
+
+Verification: actionlint1.7.12 PASS for the changed workflow (shellcheck omitted because
+no shell changed). Release pipeline contract suite PASS in an isolated git-archive LF
+checkout with the changed workflow overlaid; direct Windows checkout initially fails
+bash parsing of pre-existing CRLF deploy/vps/dev-service.sh. No unrelated file normalized.
+Diff/scope review PASS; only workflow and task evidence/status/checklist changed.
+
+CI130 also exposed reporting-query-plan setup, Mezaj submission, migration fixture and
+OpenAPI parameter-order failures. These are not disabled or repaired by this task.
+CI02 experiments stayed outside the repository; even the real upstream1.4 probe still
+reported a finding, so no remediation success is claimed. No merge/deploy authorized.
+Next action: review replacement PR checks; later resume CI02 and restore scan flag.

@@ -554,3 +554,4 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 
 - [x] F12-FE01-AN04-CI01 — Repair PR36 lint/Joi audit failures: pure chart offsets, Joi18.3.1 and targeted lock; local verification/review PASS2026-11-06.
 - [ ] F12-FE01-AN04-CI02 — BLOCKED: resolve image zlib1g CVE-2026-76844 without weakening no-High/Critical gate; stable Debian fix/upstream image or explicitly approved runtime maintenance decision required. No merge/deployment.
+- [x] F12-FE01-AN04-CI02-D01 — Owner-authorized temporary suspension of the PR runtime-image scan and its report upload (2026-11-06). Build/smoke and dependency checks retained; CI02 remediation remains unresolved/deferred. Evidence: phase12 analytics-runtime-scan-temporary-suspension.
