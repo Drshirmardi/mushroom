@@ -890,13 +890,27 @@ describe('Prisma migrations (empty PostgreSQL smoke test)', () => {
         )
       `, [encounterClinicId, patientId, userId, clinicalNoteId, signedRevisionId]);
 
+      await smokeClient.query(`
+        INSERT INTO patient_entries (
+          patient_id, clinic_id, birth_date, assessment_version_id, updated_at
+        )
+        SELECT id, clinic_id, DATE '1990-01-01', $2, CURRENT_TIMESTAMP
+        FROM patient_profiles WHERE id = $1
+      `, [patientId, assessmentVersionId]);
+
       const submission = await smokeClient.query<{ id: string }>(`
         INSERT INTO patient_assessment_submissions (
-          id, patient_id, assessment_version_id, answers, updated_at
-        ) VALUES (gen_random_uuid(), $1, $2, '{"q1":"a"}'::jsonb, CURRENT_TIMESTAMP)
+          id, patient_id, assessment_version_id, entry_patient_id, answers, updated_at
+        ) VALUES (gen_random_uuid(), $1, $2, $1, '{"q1":"a"}'::jsonb, CURRENT_TIMESTAMP)
         RETURNING id
       `, [patientId, assessmentVersionId]);
       const submissionId = submission.rows[0]?.id;
+
+      await smokeClient.query(`
+        UPDATE patient_entries
+        SET submission_id = $2, updated_at = CURRENT_TIMESTAMP
+        WHERE patient_id = $1
+      `, [patientId, submissionId]);
 
       await expect(smokeClient.query(`
         UPDATE patient_assessment_submissions

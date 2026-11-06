@@ -7051,3 +7051,51 @@ OpenAPI parameter-order failures. These are not disabled or repaired by this tas
 CI02 experiments stayed outside the repository; even the real upstream1.4 probe still
 reported a finding, so no remediation success is claimed. No merge/deploy authorized.
 Next action: review replacement PR checks; later resume CI02 and restore scan flag.
+
+## Analytics PR37 verify fixture and contract repair
+
+Task: F12-FE01-AN04-CI03; batch F12-B17; 2026-11-06 Asia/Tehran; sole Codex /root on
+codex/analytics-ga4; baseline c54105d. PR37 run42141309219 / verify job127642447433 failed
+after lint, TypeScript, installer, image build and dependency security had passed. The
+scope was restricted to the four failing API test files and their evidence.
+
+Confirmed causes, reproduced first on a disposable PostgreSQL database:
+- reporting-query-plan.integration.spec.ts created COMPLETE/IN_PROGRESS submissions with
+  neither access_grant_id nor entry_patient_id. Migration 20261031105000 intentionally
+  raises `New attempts require owned initial entry or paid access`; the fixture, not the
+  query-plan assertion or trigger, was stale.
+- mezaj-results.integration.spec.ts used the retired public generic start endpoint with a
+  completed profile-only entry. The service correctly returned 409
+  ASSESSMENT_PAYMENT_REQUIRED because a new attempt needs the owned initial-entry path or
+  paid access. The fixture now creates its own published fa-IR MEZAJ family and enabled
+  free entry policy, then uses profile -> entry/start -> save -> submit -> entry/complete
+  and reads the immutable result. A second patient with no result gets 404 from
+  patients/me/mezaj.
+- migrations.integration.spec.ts inserted a submission without an entry origin after all
+  migrations. The smoke fixture now creates the matching patient_entries row and binds
+  its submission_id, preserving the migration replay and all later constraints.
+- openapi-contract.spec.ts assumed parameters[0] was the path parameter. The global
+  optional X-Analytics-Context header now precedes it. The assertion now locates
+  name=appointmentId/in=path and still requires required=true plus UUID format; no
+  contract source changed.
+
+Changed paths:
+- apps/api/test/reporting-query-plan.integration.spec.ts
+- apps/api/test/mezaj-results.integration.spec.ts
+- apps/api/test/migrations.integration.spec.ts
+- apps/api/test/openapi-contract.spec.ts
+- plan/STATUS.md, plan/phases/12-PRODUCTION-HARDENING.md, this log
+
+Verification:
+- Pre-fix disposable PostgreSQL run of the four files: 3 tests failed and the
+  reporting suite stopped during setup; the exact CI messages were reproduced.
+- Post-fix targeted run: 4 files passed, 14 tests passed.
+- `tsc -p tsconfig.test.json --noEmit`: PASS.
+- `pnpm --filter @sabz-zendegi/api test`: 118 files passed / 34 skipped; 582 tests
+  passed / 611 skipped.
+- `pnpm lint`: PASS with the same 9 pre-existing warnings.
+- `graphify update .`: PASS with existing extractor warnings; `git diff --check`: PASS.
+
+No trigger, access predicate, test skip, dependency, migration, schema, runtime scan,
+analytics architecture or Production setting changed. CI02 remains deferred and the
+runtime image scan remains disabled. Hosted PR37 rerun is the remaining gate.
