@@ -193,3 +193,14 @@
 .catalog :global(.store-personal) { border: 0; padding: 0; border-radius: 0; }
 @media(min-width:600px) { .catalog :global(.store-grid) { grid-template-columns: repeat(3,minmax(0,1fr)); } }
 @media(min-width:1024px) { .catalog :global(.store-grid) { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+
+/* Compact banner above discovery. Preserve the entire uploaded artwork. */
+.catalog :global(.store-hero) { min-width: 0; margin: 16px 0 20px; }
+.catalog :global(.store-banner-track) { display: flex; width: 100%; min-width: 0; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-inline: contain; scrollbar-width: none; border-radius: 12px; }
+.catalog :global(.store-hero__slide) { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; border-radius: 12px; background: #f7f8fa; }
+.catalog :global(.store-hero__image) { width: 100%; height: clamp(120px,40vw,160px); aspect-ratio: auto; object-fit: contain; }
+.catalog :global(.store-hero__controls) { margin-top: 0; font-size: 12px; }
+.catalog :global(.store-hero__controls button:disabled) { opacity: .35; cursor: default; }
+.catalog :global(.store-banner-track::-webkit-scrollbar) { display: none; }
+@media(min-width:768px) { .catalog :global(.store-hero__image) { height: clamp(220px,20vw,280px); } }
+@media(max-height:500px) { .catalog :global(.store-hero__image) { height: 100px; } }

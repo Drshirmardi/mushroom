@@ -153,7 +153,7 @@ test("server payment state wins over success URL, and unavailable methods remain
   expect(mock.unexpected).toEqual([]);
 });
 
-test("published banners have keyboard navigation, pause and reduced-motion behavior", async ({ page }) => {
+test("published banners are compact, precede products and stay manual on resize", async ({ page }) => {
   await fixture(page, { banners: true });
   await page.goto(`${origin}/store`);
   const hero = page.getByRole("region", { name: "بنرهای فروشگاه" });
@@ -169,11 +169,16 @@ test("published banners have keyboard navigation, pause and reduced-motion behav
   const second = await selected();
   await page.waitForTimeout(4500);
   expect(await selected()).toBe(second);
-  await hero.getByRole("button", { name: "توقف نمایش خودکار بنرها", exact: true }).click();
-  await expect(hero.getByRole("button", { name: "ادامهٔ نمایش خودکار بنرها", exact: true })).toHaveAttribute("aria-pressed", "true");
+  for (const size of [{width:1440,height:900,max:280},{width:375,height:812,max:160},{width:320,height:568,max:160},{width:667,height:375,max:120}]) {
+    await page.setViewportSize(size);
+    await expect.poll(async () => (await hero.locator('img').first().boundingBox())!.height).toBeLessThanOrEqual(size.max);
+    await expect.poll(async () => Math.abs((await hero.locator('.store-hero__slide').first().boundingBox())!.width - (await hero.locator('.store-banner-track').boundingBox())!.width)).toBeLessThan(2);
+    expect(await hero.evaluate(e=>e.getBoundingClientRect().top < document.querySelector('#store-products')!.getBoundingClientRect().top)).toBeTruthy();
+    await noOverflow(page);
+  }
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.reload();
-  await expect(next).toBeVisible();
+  await hero.getByRole('button',{name:'بنر قبلی',exact:true}).click();
+  await expect.poll(selected).toBe(first);
   await expect(hero.getByRole("button", { name: /نمایش خودکار بنرها/ })).toHaveCount(0);
   await noOverflow(page);
 });

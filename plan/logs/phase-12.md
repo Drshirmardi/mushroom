@@ -7257,3 +7257,10 @@ plan/STATUS.md
 plan/logs/phase-12.md
 plan/phases/12-PRODUCTION-HARDENING.md
 
+
+## F12-FE01-ST06 — Compact top banner
+2026-11-06; CLIENT-INTEGRATION continuation, sole /root main review PASS; software DONE, claim released.
+Changed files: apps/app/src/app/(public)/store/page.tsx; apps/app/src/components/store/{store-hero-slider.tsx,store-home.module.css}; apps/app/e2e/store-complete.spec.ts; coordinator status/phase/log.
+Result: active banner placed before personal/general discovery; image contained without cropping,120–160px mobile/220–280px desktop/100px short landscape; bounded native RTL scroll-snap replaces Swiper looping/autoplay with visible previous/next buttons and count. ResizeObserver retains selected slide and container width on resize; reduced-motion respected. No API/dependency/source-artwork changes; dirty PDP excluded.
+Verification: pnpm --filter @sabz/app typecheck PASS; test218/218 PASS; build52 routes PASS; Playwright store-fixes config grep published banners desktop/mobile2/2 PASS (manual stable selection, keyboard controls, banner-before-products,1440→375→320→667x375 bounds, slide/container width, reduced motion and no page overflow); git diff --check PASS; graphify update PASS with existing extractor warnings.
+Limitations: original2:1 artwork is displayed fully inside a shorter frame; a future dedicated wide asset can fill that frame. Physical Safari/Android acceptance not performed. No push/deploy; next owner visual review, no next batch. Broader F12-FE01 remains REWORK.

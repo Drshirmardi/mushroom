@@ -214,6 +214,7 @@ function StoreCatalog() {
     {isFiltering && !products && !error && <StoreGridLoading />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
     {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>{search.trim() ? "محصولی یافت نشد" : "هنوز محصولی در این صفحه نیست"}</h2><p>{search.trim() ? "با کلمات دیگری جست‌وجو کنید یا جست‌وجو را پاک کنید." : "بعداً دوباره سر بزنید یا محصولات صفحهٔ قبل را ببینید."}</p>{search && <Button variant="secondary" onClick={() => { clearSearch(); }}>پاک کردن جست‌وجو</Button>}</div>}
+    {!isFiltering && !bannerLoading && !bannerError && <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />}
     <div id={isFiltering ? "store-products" : "store-content"} tabIndex={-1} aria-label="محصولات">
       {!isFiltering && <PersonalizedProducts key={browseKey} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} browseKey={browseKey} onSettled={settlePersonal} fallback={products ? <>
         <section id="store-products" className="store-collection"><header className="store-collection__header"><h2>محصولات فروشگاه</h2><Button variant="ghost" onClick={() => updateCatalog({ view: "all", page: null })}>مشاهده همه</Button></header><div className="store-grid">
@@ -232,7 +233,6 @@ function StoreCatalog() {
       </div>}
     </div>
     {!isFiltering && <StoreShortcuts />}
-    {!isFiltering && !bannerLoading && !bannerError && <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />}
     <AnimatePresence>
       {deliveryOpen && <AddressSheet
         authenticated={!!session}
