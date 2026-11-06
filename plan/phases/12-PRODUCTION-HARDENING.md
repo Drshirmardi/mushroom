@@ -570,3 +570,16 @@ Contract: ADR-0049. Each task reviewed, evidenced and committed separately; no l
 ## Dev runtime APT connectivity correction (owner requested 2026-11-06)
 
 - [x] F12-T02-D01 — Preserve verified HTTPS Debian mirror + official security archive and temporary host CA trust during Dev runtime image builds; bound APT retry/timeouts, retain signed release verification, prove actual build and existing deployment behavior. Depends accepted F12-T02; no production or live deployment.
+
+## Storefront redesign (owner approved 2026-11-06)
+
+- [x] F12-FE01-ST02 — White responsive cards/grid; depends ST01.
+- [ ] F12-FE01-ST03 — Personalized-first composition and shaped loading; depends ST02.
+- [ ] F12-FE01-ST04 — Refresh and browse-position retention; depends ST03.
+- [ ] F12-FE01-ST05 — Responsive product panel and unified loading; depends ST04.
+
+## Storefront redesign (owner approved 2026-11-06)
+- [x] F12-FE01-ST02 — White responsive cards/grid; depends ST01.
+- [ ] F12-FE01-ST03 — Personalized-first composition and loading; depends ST02.
+- [ ] F12-FE01-ST04 — Refresh and browse-position retention; depends ST03.
+- [ ] F12-FE01-ST05 — Product panel and unified loading; depends ST04.

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpLeft, Check, Heart } from "lucide-react";
+import { Check, Heart } from "lucide-react";
 import { Button } from "../ui/button";
 import type { CommerceProduct } from "../../lib/commerce-catalog-api";
 import { productImageUrl } from "../../lib/product-image";
@@ -22,7 +22,7 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavor
   const sku = skuOverride ?? product.skus[0];
   if (!sku) return null;
   const href = `/store/products/${encodeURIComponent(product.id)}?sku=${encodeURIComponent(sku.id)}`;
-  return <article className="store-product" aria-busy={busy || undefined}>
+  return <article data-product-id={product.id} className="store-product" aria-busy={busy || undefined}>
     <div className="store-product__media">
       <Link href={href} className="store-product__media-link" aria-label={`مشاهدهٔ ${product.title}`}>
         <ProductImage src={productImageUrl(product)} alt="" width={300} height={300} className="store-product__image" />
@@ -38,7 +38,7 @@ export function ProductCard({ product, skuOverride, saved, inCart, busy, onFavor
       <Link href={href} className="store-product__title"><h2>{product.title}</h2></Link>
       {product.category?.name && <Link href={`/store?view=all&category=${encodeURIComponent(product.category.id)}`} className="store-category-link">{product.category.name}</Link>}
       {sku.title && <p className="store-product__variant">{sku.title}</p>}
-      <div className="store-product__footer"><ProductPrice amount={BigInt(sku.currentPriceToman)} /><Link href={href} className="store-product__details" aria-label={`جزئیات و انتخاب ${product.title}`}><ArrowUpLeft size={18} strokeWidth={1.5} aria-hidden="true" /></Link></div>
+      <div className="store-product__footer"><ProductPrice amount={BigInt(sku.currentPriceToman)} /></div>
     </div>
   </article>;
 }
