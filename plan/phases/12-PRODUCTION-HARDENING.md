@@ -562,6 +562,6 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 
 - [x] F12-T02-I09 — Move installer source to fresh public repository; preserve explicit private integration and shared-asset compatibility. Depends I08/AN04 software.
 - [x] F12-T02-I10 — Versioned bootstrap/self-update, explicit panel confirmation and legacy preservation. Depends I09.
-- [ ] F12-T02-I11 — Automatic tested releases, public repository publication and anonymous download verification. Depends I10.
+- [x] F12-T02-I11 — Automatic tested releases, public repository publication and anonymous download verification. Depends I10.
 
 Contract: ADR-0049. Each task reviewed, evidenced and committed separately; no live VPS operation.
