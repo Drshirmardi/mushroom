@@ -7149,3 +7149,12 @@ success: verify127691312043, security, installer, release-contract and the four 
 jobs. The formerly skipped isolated assessment step and browser/access smoke step are
 included in that successful verify job. Task accepted; claim released. No merge,
 deployment, Production activation or runtime-scan re-enable was performed.
+
+
+## F12-T02-I09 — Public installer extraction
+
+Completed: 2026-11-06. Batch F12-B18. Coordinator/implementer/reviewer: Codex /root; DeepSeek capability audit passed but source attempt aborted, no implementation accepted. ADR-0049 accepted under explicit owner plan approval.
+
+Public source: Drshirmardi/mushroom-installer, initial accepted commit 9bb617e61c86289200458445ae29d42cfe5401e6. Fresh history; only explicit bundle files, installer tests/build and standalone restore harness. Shared runtime assets retained in Mushroom and compared using 18 normalized-LF hashes and upstream provenance. Mushroom owns private environment/production-Compose assertions and existing API/bootstrap checks, and now consumes the pinned public source in CI.
+
+Verification: Windows60 cases (52 PASS/8 platform or opt-in skips), disposable Ubuntu24.04 suite68 (66 PASS/2 opt-in drills) including real RSA/Caddy/Compose, real isolated PostgreSQL encrypted backup/restore PASS; private application contracts2 PASS, all38 API environment keys/3 frontend examples PASS; build/relocation/hash checks/actionlint/diff review PASS. Hosted chat engine remains a required I11 publication gate. No application/API/schema change or live VPS operation. Pre-existing product-page changes preserved and excluded. New installer source commit and monorepo extraction commit are separate repository commits for the same task. Next I10.

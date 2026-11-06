@@ -556,3 +556,12 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [ ] F12-FE01-AN04-CI02 — BLOCKED: resolve image zlib1g CVE-2026-76844 without weakening no-High/Critical gate; stable Debian fix/upstream image or explicitly approved runtime maintenance decision required. No merge/deployment.
 - [x] F12-FE01-AN04-CI02-D01 — Owner-authorized temporary suspension of the PR runtime-image scan and its report upload (2026-11-06). Build/smoke and dependency checks retained; CI02 remediation remains unresolved/deferred. Evidence: phase12 analytics-runtime-scan-temporary-suspension.
 - [x] F12-FE01-AN04-CI03 — Repair PR37 verify failures: four original fixtures plus the previously skipped isolated assessment suite adapted to owned initial-entry/paid access; no trigger disabled, no test skipped/weakened. Commits3f7a3ad/84b2115; local435 isolated+118 files/582 API tests, typecheck/lint PASS; hosted run42156349184 all8 checks PASS. Evidence: phase12 analytics-pr37-verify-fixture-and-contract-repair.
+
+
+## Public installer extraction (owner approved 2026-11-06)
+
+- [x] F12-T02-I09 — Move installer source to fresh public repository; preserve explicit private integration and shared-asset compatibility. Depends I08/AN04 software.
+- [ ] F12-T02-I10 — Versioned bootstrap/self-update, explicit panel confirmation and legacy preservation. Depends I09.
+- [ ] F12-T02-I11 — Automatic tested releases, public repository publication and anonymous download verification. Depends I10.
+
+Contract: ADR-0049. Each task reviewed, evidenced and committed separately; no live VPS operation.
