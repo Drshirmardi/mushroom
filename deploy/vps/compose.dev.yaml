@@ -46,6 +46,8 @@ services:
         DEBIAN_MIRROR: https://mirror.famaserver.com/debian
         DEBIAN_SECURITY_MIRROR: https://security.debian.org/debian-security
       secrets: [dev_apt_ca]
+      entitlements:
+        - fs.read=/etc/ssl/certs/ca-certificates.crt
     user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
     working_dir: /workspace
     security_opt: [no-new-privileges:true]

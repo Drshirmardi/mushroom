@@ -28,6 +28,7 @@ build=model['services']['bootstrap']['build']
 assert build['args']['DEBIAN_MIRROR']=='https://mirror.famaserver.com/debian'
 assert build['args']['DEBIAN_SECURITY_MIRROR']=='https://security.debian.org/debian-security'
 assert any(item['source']=='dev_apt_ca' for item in build['secrets'])
+assert build.get('entitlements')==['fs.read=/etc/ssl/certs/ca-certificates.crt']
 assert model['secrets']['dev_apt_ca']['file']=='/etc/ssl/certs/ca-certificates.crt'
 assert all(item['source']!='dev_apt_ca' for service in model['services'].values() for item in service.get('secrets',[]))
 PY
