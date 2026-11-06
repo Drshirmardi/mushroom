@@ -10,11 +10,7 @@ export function buildSadadStartUrl(returnUrl: string, token: string): string {
   return url.toString();
 }
 
-
-export function sadadStartDocument(
-  profile: SadadRedirectProfile,
-  nonce: string,
-): string {
+export function sadadStartDocument(profile: SadadRedirectProfile, nonce: string): string {
   const target = buildSadadRedirect(profile, 'SADAD_BROWSER_TOKEN');
   const safeTarget = JSON.stringify(target).replace(/</g, '\\u003c');
 
@@ -297,15 +293,15 @@ export function sadadStartDocument(
           اتصال به صفحه پرداخت بانکی
         </div>
 
-        <div class="actions">
-          <a id="continue" class="action" hidden
-             rel="noreferrer">
-            ورود دستی به درگاه پرداخت
-          </a>
-          <button id="back" class="action" type="button" hidden>
-            بازگشت به صفحه قبل
-          </button>
-        </div>
+        // <div class="actions">
+        //   <a id="continue" class="action" hidden
+        //      rel="noreferrer">
+        //     ورود دستی به درگاه پرداخت
+        //   </a>
+        //   <button id="back" class="action" type="button" hidden>
+        //     بازگشت به صفحه قبل
+        //   </button>
+        // </div>
 
         <noscript>
           <p class="description">
