@@ -13,9 +13,9 @@ import { AddressSheet } from "@/components/store/address-sheet";
 import { StoreHeroSlider } from "@/components/store/store-hero-slider";
 import { StoreShortcuts } from "@/components/store/store-shortcuts";
 import styles from "@/components/store/store-home.module.css";
-import { LoadingState, SkeletonBox } from "@/components/shared/skeletons";
+import { StoreGridLoading, StorePageLoading } from "@/components/store/store-loading";
 import { AnimatedGroup } from "@/components/motion/animated-group";
-import { StoreCollection } from "@/components/store/store-collection";
+
 import { PatientPagination } from "@/components/shared/patient-pagination";
 import { readStoredDelivery, resolveDeliveryAddress, storeDelivery } from "@/lib/store-delivery";
 import {
@@ -43,7 +43,7 @@ const cacheCart = (cart: CommerceCart) => useCartStore.getState().replace(cart.i
 const cacheWishlist = (wishlist: CommerceWishlist) => useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
 
 export default function StorePage() {
-  return <Suspense fallback={<LoadingState label="در حال دریافت محصولات…" variant="grid" />}><StoreCatalog /></Suspense>;
+  return <Suspense fallback={<StorePageLoading />}><StoreCatalog /></Suspense>;
 }
 
 function StoreCatalog() {
@@ -204,15 +204,15 @@ function StoreCatalog() {
     {(accountError || deliveryError) && <div className="wallet-notice wallet-notice--info" role="status"><div><p>{deliveryError ? "آدرس‌های شما دریافت نشدند." : "سبد و علاقه‌مندی‌ها دریافت نشدند."} {deliveryError ?? accountError}</p><Button variant="ghost" onClick={() => setAccountRetry(value => value + 1)}>دریافت دوبارهٔ اطلاعات حساب</Button></div></div>}
     {favoriteError && <div role="alert" className="store-state store-state--error"><p>ذخیرهٔ علاقه‌مندی انجام نشد. {favoriteError}</p></div>}
     {categoryId && <div className="store-catalog-tools"><span>نمایش یک دستهٔ محصول</span><Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>همهٔ دسته‌ها<X size={15} aria-hidden="true" /></Button></div>}
-    {!products && !error && <LoadingState label="در حال دریافت محصولات…" variant="grid" />}
+    {isFiltering && !products && !error && <StoreGridLoading />}
     {error && <div className="store-state store-state--error" role="alert"><h2>درخواست انجام نشد</h2><p>{error}</p><Button variant="secondary" onClick={() => void loadCatalog()}>تلاش دوباره</Button></div>}
     {products && shown.length === 0 && <div className="store-state"><Search aria-hidden="true" size={28} /><h2>{search.trim() ? "محصولی یافت نشد" : "هنوز محصولی در این صفحه نیست"}</h2><p>{search.trim() ? "با کلمات دیگری جست‌وجو کنید یا جست‌وجو را پاک کنید." : "بعداً دوباره سر بزنید یا محصولات صفحهٔ قبل را ببینید."}</p>{search && <Button variant="secondary" onClick={() => { clearSearch(); }}>پاک کردن جست‌وجو</Button>}</div>}
-    <div id="store-products" tabIndex={-1} aria-label="محصولات">
-      {products && shown.length > 0 && !isFiltering && <>
-        <StoreCollection title="محصولات فروشگاه" id="store-discover-heading" onViewAll={() => updateCatalog({ view: "all", page: null })}>
+    <div id={isFiltering ? "store-products" : "store-content"} tabIndex={-1} aria-label="محصولات">
+      {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} fallback={products ? <>
+        <section id="store-products" className="store-collection"><header className="store-collection__header"><h2>محصولات فروشگاه</h2><Button variant="ghost" onClick={() => updateCatalog({ view: "all", page: null })}>مشاهده همه</Button></header><div className="store-grid">
           {shown.slice(0, 8).map(renderProduct)}
-        </StoreCollection>
-      </>}
+        </div></section>
+      </> : !error ? <StoreGridLoading /> : null} />}
       {products && shown.length > 0 && isFiltering && <>
         <header className="store-collection__header store-results-heading"><h2>{search.trim() ? "نتایج جست‌وجو" : "همهٔ محصولات"}</h2>
           <Button variant="ghost" onClick={() => { updateCatalog({ q: null, page: null, view: null, category: null }); }}>بازگشت به فروشگاه</Button>
@@ -224,9 +224,8 @@ function StoreCatalog() {
         <PatientPagination page={page} pageSize={CATALOG_PAGE_SIZE} total={products.total} onChange={next => { focusResults.current = true; updateCatalog({ page: next > 1 ? String(next) : null }); }} />
       </div>}
     </div>
-    {!isFiltering && <PersonalizedProducts key={session?.authentication.user.id ?? "guest"} accessToken={session?.authentication.accessToken} renderProduct={renderProduct} />}
-    {!isFiltering && (bannerLoading ? <LoadingState variant="card" label="در حال دریافت بنرهای فروشگاه…"><SkeletonBox className="my-4 h-[180px] w-full rounded-2xl" /></LoadingState> : bannerError ? <div role="alert" className="store-personal-hint"><p>بنرهای فروشگاه دریافت نشد.</p><Button variant="ghost" onClick={() => { setBannerLoading(true); setBannerError(false); setBannerRetry(value => value + 1); }}>تلاش دوباره</Button></div> : <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />)}
     {!isFiltering && <StoreShortcuts />}
+    {!isFiltering && !bannerLoading && !bannerError && <StoreHeroSlider onShopNow={() => updateCatalog({ view: "all", page: null })} />}
     <AnimatePresence>
       {deliveryOpen && <AddressSheet
         authenticated={!!session}

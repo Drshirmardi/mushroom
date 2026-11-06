@@ -29,6 +29,7 @@ async function api(page: Page, dashboard = false) {
       }
       unexpected.push(`${r.method()} ${path}`); await send({}, 403); return;
     }
+    if (path === "/v1/patients/me/entry") { await send({ required: false, phase: "COMPLETE" }); return; }
     if (path.endsWith("/commerce/recommendations")) { await send(fail ? {} : recommendation, fail ? 503 : 200); return; }
     if (path === "/v1/commerce/products") { await send({ items: [{ ...product, id: "generic-product", title: "محصول عمومی فروشگاه" }], total: 1, page: 1, pageSize: 20 }); return; }
     if (path === "/v1/admin/commerce/mezaj/collections") { await send(rows); return; }

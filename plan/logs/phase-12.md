@@ -7194,3 +7194,6 @@ Review: scoped combined diff accepted; pre-existing product page edits excluded.
 
 ## F12-FE01-ST02 — White responsive storefront cards
 2026-11-06; sole /root review PASS. Scoped white grid/cards, two-line titles and full-width price, removed redundant arrow. Typecheck and 218 units PASS; intercepted browser 320/375/414/768/1024/1440 confirms 2/2/2/3/4/4 columns and no page overflow. Existing PDP excluded. No physical-device acceptance.
+
+## F12-FE01-ST03 — Personalized-first storefront
+2026-11-06; /root review PASS. Shared shaped loading, grid composition, four initial recommendations with expansion, general fallback and optional trailing banners. Types/218 units PASS; four desktop/mobile personalization/browser scenarios PASS after updating stale entry-status fixture (no production gate bypass). Guest white-grid browser smoke PASS. Physical devices pending.
