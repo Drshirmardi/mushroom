@@ -20,6 +20,8 @@ services:
     image: "${API_IMAGE:?set an immutable API digest}"
     environment:
       NODE_ENV: production
+      ANALYTICS_SERVER_ENABLED: "${ANALYTICS_SERVER_ENABLED:-false}"
+      GA4_API_SECRET_FILE: "${GA4_API_SECRET_FILE:-}"
       PORT: "3003"
       HOSTNAME: "0.0.0.0"
       DATABASE_URL_FILE: /run/secrets/database_url
@@ -47,6 +49,9 @@ services:
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION:?set the key version}"
       PAYMENT_CREDENTIAL_DECRYPTION_KEYS_FILE: /run/secrets/payment_credential_decryption_keys
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
       APP_ORIGINS: "${APP_ORIGINS:?set public origins}"
       TRUSTED_PROXIES: "${TRUSTED_PROXIES:?set the reverse proxy IP/CIDR}"
@@ -72,6 +77,9 @@ services:
     environment:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dashboard URL}"
@@ -88,6 +96,9 @@ services:
     environment:
       PORT: "3001"
       HOSTNAME: "0.0.0.0"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
     ports: ["${APP_PORT:?set an isolated app binding}:3001"]
@@ -104,6 +115,9 @@ services:
       PORT: "3002"
       HOSTNAME: "0.0.0.0"
       SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public app URL}"

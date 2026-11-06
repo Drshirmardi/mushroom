@@ -1,3 +1,4 @@
+import { AnalyticsService } from '../analytics/analytics.service';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -8,7 +9,7 @@ import { FinancialContext, Tx, financialAudit, financialConflict, financialKey, 
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService, private readonly wallet: WalletService, private readonly targets: BillingTargetRegistry) {}
+  constructor(private readonly prisma: PrismaService, private readonly wallet: WalletService, private readonly targets: BillingTargetRegistry, private readonly analytics: AnalyticsService) {}
 
   async create(userId: string, purpose: 'TOPUP' | 'ORDER' | 'APPOINTMENT' | 'ASSESSMENT' | 'PROGRAM' | 'ENTRY_ASSESSMENT', input: Record<string, string>, rawKey: string | undefined, context: FinancialContext) {
     const patient = await this.wallet.patient(userId); const key = financialKey(rawKey); const hash = fingerprint({ patientId: patient.id, purpose, input });
@@ -84,6 +85,7 @@ export class BillingService {
       const journal = await this.wallet.post(tx, patient, -intent.amountRial, 'PAYMENT', `intent:${id}:debit`, context);
       const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'WALLET' }, context, journal.id);
       const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'PAID', method: 'WALLET', paidAt: new Date(), ...billingSettlementFields(intent.purpose, settlement) } });
+      await this.analytics.paid(tx, updated);
       await financialAudit(tx, context, 'BILLING_WALLET_PAID', id, { amountRial: intent.amountRial.toString(), journalId: journal.id });
       const response = this.view(updated);
       await tx.walletCommand.create({ data: { actorUserId: userId, idempotencyKey: key, fingerprint: hash, response } });
@@ -146,6 +148,7 @@ export class BillingService {
     }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { status: 'VERIFIED', resultCode: proof.resultCode, compensated: !canSettle } });
     const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...settlementFields } });
+    await this.analytics.paid(tx, updated);
     await financialAudit(tx, context, 'BILLING_GATEWAY_SETTLED', intent.id, { amountRial: intent.amountRial.toString(), compensated: !canSettle });
     return this.view(updated);
   }
@@ -170,7 +173,7 @@ export class BillingService {
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     const journal = intent.method === 'WALLET' ? await this.wallet.post(tx, patient, amountRial, 'REFUND', `refund:${refundId}`, context) : null;
     const refund = await tx.billingRefund.create({ data: { id: refundId, intentId: id, amountRial, reason, idempotencyKey: key, fingerprint: hash, status: journal ? 'COMPLETED' : 'MANUAL_REQUIRED', journalId: journal?.id, completedAt: journal ? new Date() : null } });
-    if (journal) await this.targets.get(intent.purpose).refund(tx, intent, amountRial, refund.id);
+    if (journal) { await this.targets.get(intent.purpose).refund(tx, intent, amountRial, refund.id); await this.analytics.refund(tx, intent, refund.id, amountRial); }
     await financialAudit(tx, context, 'BILLING_REFUND_CREATED', refund.id, { amountRial: amountRial.toString(), status: refund.status });
     return this.refundView(refund);
   }
@@ -186,6 +189,7 @@ export class BillingService {
       if (current.status !== 'MANUAL_REQUIRED' || intent.method !== 'GATEWAY') throw financialConflict();
       const updated = await tx.billingRefund.update({ where: { id: refundId }, data: { status: 'COMPLETED', evidenceReference: reference, completedAt: new Date() } });
       await this.targets.get(intent.purpose).refund(tx, intent, current.amountRial, refundId);
+      await this.analytics.refund(tx, intent, refundId, current.amountRial);
       await financialAudit(tx, context, 'BILLING_REFUND_COMPLETED', refundId, { hasEvidence: true });
       return this.refundView(updated);
     });

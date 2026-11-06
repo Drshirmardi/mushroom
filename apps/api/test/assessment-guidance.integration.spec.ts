@@ -55,13 +55,14 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment e
   const approve = (row: { id: string; contentHash: string }, who = doctor) => req('POST', `clinical/assessment-guidance/${row.id}/approve`, who, attestation(row));
   async function completed(version: string, who?: Awaited<ReturnType<typeof actor>>) {
     const p = who ?? await actor('PATIENT'); const patientId = (await db.patientProfile.findUniqueOrThrow({ where: { userId: p.userId } })).id;
-    const submission = await db.patientAssessmentSubmission.create({ data: { patientId, assessmentVersionId: version, answers: { q: true } } });
+    await db.patientEntry.update({ where: { patientId }, data: { assessmentVersionId: version } });
+    const submission = await db.patientAssessmentSubmission.create({ data: { patientId, assessmentVersionId: version, entryPatientId: patientId, answers: { q: true } } });
     const done = await req('POST', `assessment-submissions/${submission.id}/submit`, p, { expectedRevision: 0 }); expect(done.statusCode).toBe(201); return { ...submission, who: p };
   }
   const read = (row: { id: string; who: Awaited<ReturnType<typeof actor>> }) => req('GET', `assessment-submissions/${row.id}/guidance`, row.who);
   async function historical(attempt: { id: string; who: Awaited<ReturnType<typeof actor>> }, snapshot: Prisma.InputJsonObject) {
     const original = await db.patientAssessmentSubmission.findUniqueOrThrow({ where: { id: attempt.id } });
-    const row = await db.patientAssessmentSubmission.create({ data: { ...original, answers: original.answers ?? Prisma.JsonNull, id: randomUUID(), attemptNumber: original.attemptNumber + 1, resultSnapshot: snapshot, completionIdempotencyKey: randomUUID() } });
+    const row = await db.patientAssessmentSubmission.create({ data: { ...original, entryPatientId: null, accessGrantId: null, answers: original.answers ?? Prisma.JsonNull, id: randomUUID(), attemptNumber: original.attemptNumber + 1, resultSnapshot: snapshot, completionIdempotencyKey: randomUUID() } });
     return { ...row, who: attempt.who };
   }
 
@@ -95,9 +96,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment e
   it('conceals other patients, noncomplete/invalidated and foreign clinic submissions', async () => {
     const v = await source(); const attempt = await completed(v.id); const outsider = await actor('PATIENT'); expect((await req('GET', `assessment-submissions/${attempt.id}/guidance`, outsider)).statusCode).toBe(404);
     await db.patientAssessmentSubmission.update({ where: { id: attempt.id }, data: { state: 'INVALIDATED', invalidatedAt: new Date() } }); expect((await read(attempt)).statusCode).toBe(404);
-    const p = await actor('PATIENT'); const profile = await db.patientProfile.findUniqueOrThrow({ where: { userId: p.userId } }); const pending = await db.patientAssessmentSubmission.create({ data: { patientId: profile.id, assessmentVersionId: v.id } }); expect((await read({ id: pending.id, who: p })).statusCode).toBe(404);
+    const p = await actor('PATIENT'); const profile = await db.patientProfile.findUniqueOrThrow({ where: { userId: p.userId } }); await db.patientEntry.update({ where: { patientId: profile.id }, data: { assessmentVersionId: v.id } }); const pending = await db.patientAssessmentSubmission.create({ data: { patientId: profile.id, assessmentVersionId: v.id, entryPatientId: profile.id } }); expect((await read({ id: pending.id, who: p })).statusCode).toBe(404);
     const foreignClinic = await db.clinic.create({ data: { name: 'Synthetic foreign', status: 'INACTIVE' } }); const foreign = await source(false, foreignClinic.id);
-    const cross = await db.patientAssessmentSubmission.create({ data: { patientId: profile.id, assessmentVersionId: foreign.id } }); expect((await read({ id: cross.id, who: p })).statusCode).toBe(404);
+    const cross = await db.patientAssessmentSubmission.create({ data: { patientId: profile.id, assessmentVersionId: foreign.id, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: randomUUID(), completionPayloadHash: 'd'.repeat(64) } }); expect((await read({ id: cross.id, who: p })).statusCode).toBe(404);
     expect((await req('GET', `assessment-submissions/${attempt.id}/guidance`, admin)).statusCode).toBe(403);
   });
   it('preserves exact historical guidance for a retired questionnaire without switching version', async () => {

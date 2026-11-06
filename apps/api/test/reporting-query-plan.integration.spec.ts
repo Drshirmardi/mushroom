@@ -93,9 +93,15 @@ describe('F11-T05 reporting query plans (disposable PostgreSQL)', () => {
     ] });
 
     const assessment = await prisma.assessmentVersion.create({ data: { clinicId, assessmentKey: `query-plan-${randomUUID()}`, versionNumber: 1, title: 'Query plan fixture', structure: {}, contentHash: 'b'.repeat(64), status: 'DRAFT' } });
+    // PostgreSQL now requires every new attempt to carry an owned initial-entry origin.
+    // Two distinct entries are used because each entry can own only one submission.
+    const secondAssessmentUser = await prisma.user.create({ data: { phone: `+989${Math.floor(100_000_000 + Math.random() * 900_000_000)}`, userProfile: { create: { firstName: 'Plan', lastName: 'Assessment' } }, patientProfile: { create: { clinicId } } }, include: { patientProfile: true } });
+    const secondAssessmentPatientId = secondAssessmentUser.patientProfile!.id;
+    await prisma.patientEntry.create({ data: { patientId, clinicId, birthDate: new Date('1990-01-01T00:00:00Z'), assessmentVersionId: assessment.id } });
+    await prisma.patientEntry.create({ data: { patientId: secondAssessmentPatientId, clinicId, birthDate: new Date('1990-01-01T00:00:00Z'), assessmentVersionId: assessment.id } });
     await prisma.patientAssessmentSubmission.createMany({ data: [
-      { patientId, assessmentVersionId: assessment.id, attemptNumber: 1, state: 'COMPLETE', startedAt: appointmentAt, completedAt: new Date(appointmentAt.getTime() + 10 * 60_000), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: `query-plan-completion-${randomUUID()}`, completionPayloadHash: 'c'.repeat(64) },
-      { patientId, assessmentVersionId: assessment.id, attemptNumber: 2, state: 'IN_PROGRESS', startedAt: appointmentAt },
+      { entryPatientId: patientId, patientId, assessmentVersionId: assessment.id, attemptNumber: 1, state: 'COMPLETE', startedAt: appointmentAt, completedAt: new Date(appointmentAt.getTime() + 10 * 60_000), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: `query-plan-completion-${randomUUID()}`, completionPayloadHash: 'c'.repeat(64) },
+      { entryPatientId: secondAssessmentPatientId, patientId: secondAssessmentPatientId, assessmentVersionId: assessment.id, attemptNumber: 1, state: 'IN_PROGRESS', startedAt: appointmentAt },
     ] });
     const plan = await prisma.treatmentPlan.create({ data: { clinicId, patientId, state: 'ACTIVE' } });
     await prisma.treatmentTask.createMany({ data: [

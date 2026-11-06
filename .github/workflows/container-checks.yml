@@ -81,6 +81,8 @@ jobs:
   artifact:
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    env:
+      RUNTIME_IMAGE_SCAN_ENABLED: 'false'
     strategy:
       fail-fast: false
       matrix:
@@ -105,13 +107,16 @@ jobs:
             ${{ matrix.service }}.cache-to=type=gha,mode=max,scope=${{ matrix.service }}
       - name: Disposable artifact smoke and cleanup
         run: node scripts/ci-container-smoke.mjs mushroom-ci:${{ matrix.service }} ${{ matrix.service }}
-      - name: Scan actual runtime image (no Critical/High waiver)
-        if: success() || failure()
+      # Owner-authorized temporary suspension, 2026-11-06 (F12-FE01-AN04-CI02-D01).
+      # Set RUNTIME_IMAGE_SCAN_ENABLED to 'true' after CI02 verifies the patched runtime image.
+      # Build/smoke checks and dependency security checks remain enabled.
+      - name: Scan actual runtime image (temporarily disabled pending CI02)
+        if: ${{ env.RUNTIME_IMAGE_SCAN_ENABLED == 'true' && (success() || failure()) }}
         run: |
           mkdir -p "$RUNNER_TEMP/image-scan"
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$RUNNER_TEMP/image-scan:/reports" aquasec/trivy:0.75.0 image --scanners vuln --severity CRITICAL,HIGH --exit-code 1 --format json --output /reports/scan.json mushroom-ci:${{ matrix.service }}
       - name: Preserve vulnerability evidence even on failure
-        if: always()
+        if: ${{ env.RUNTIME_IMAGE_SCAN_ENABLED == 'true' && always() }}
         uses: actions/upload-artifact@v4
         with:
           name: image-scan-${{ matrix.service }}

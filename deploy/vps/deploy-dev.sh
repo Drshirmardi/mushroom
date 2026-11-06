@@ -246,6 +246,11 @@ api_runtime_hash=$(
     'SMS_REQUEST_TIMEOUT_MS 5000' \
     'SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION v1' \
     'PUBLIC_API_URL http://localhost:3003' \
+    'PUBLIC_GA4_MEASUREMENT_ID -' \
+    'PUBLIC_ANALYTICS_CONSENT denied' \
+    'PUBLIC_ANALYTICS_DEBUG false' \
+    'ANALYTICS_SERVER_ENABLED false' \
+    'GA4_API_SECRET_FILE /run/optional-secrets/ga4_api_secret' \
     'SADAD_TRANSPORT_MODE disabled' \
     'SADAD_REQUEST_TIMEOUT_MS 5000' \
     'SADAD_RETURN_URL -' \
@@ -254,7 +259,7 @@ api_runtime_hash=$(
     read -r key fallback <<<"$key_and_default"
     printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
   done
-  for name in r2_access_key_id r2_secret_access_key arvan_access_key_id arvan_secret_access_key; do
+  for name in r2_access_key_id r2_secret_access_key arvan_access_key_id arvan_secret_access_key ga4_api_secret; do
     if [[ -f $environment_root/secrets/$name ]]; then
       printf '%s=' "$name"
       sha256sum "$environment_root/secrets/$name" | cut -d' ' -f1

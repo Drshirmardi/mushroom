@@ -2,6 +2,7 @@ import { AppLoading } from "@/components/shared/heartbeat-loader";
 import { VisibleViewport } from '@/components/layout/visible-viewport';
 import { AssessmentHistoryTracking } from '@/lib/assessment-history';
 import { Suspense } from 'react';
+import { AnalyticsTracking } from '@/components/analytics-tracking';
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/auth/session-gate";
 import { PatientEntryGate } from "@/components/auth/patient-entry-gate";
@@ -29,6 +30,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
+        <AnalyticsTracking />
         <VisibleViewport /><AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<AppLoading />}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>
     </html>

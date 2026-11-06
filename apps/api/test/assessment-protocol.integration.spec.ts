@@ -63,7 +63,8 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     const published = await req('POST', `admin/assessments/${v.id}/publish`, admin);
     expect(published.statusCode).toBe(201); expect(published.json().publishedByUserId).toBe(admin.userId);
     expect(await db.assessmentProtocolReview.count({ where: { assessmentVersionId: v.id } })).toBe(0);
-    const patient = await actor('PATIENT'); await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
+    const patient = await actor('PATIENT'); const patientProfile = await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
+    await db.patientEntry.update({ where: { patientId: patientProfile.id }, data: { assessmentVersionId: v.id } });
     const started = await req('POST', `assessments/${v.id}/submissions`, patient); expect(started.statusCode).toBe(201); const attempt = started.json();
     const choices = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3];
     const answers = Object.fromEntries(definition.sections.flatMap(s => s.questions).map((q, index) => [q.id, q.options[choices[index]!]!.id]));
@@ -79,10 +80,12 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     const completed = await req('POST', `assessment-submissions/${attempt.id}/submit`, patient, body, key); expect(completed.statusCode).toBe(201);
     expect(completed.json()).toMatchObject({ state: 'COMPLETE', score: null, resultSnapshot: { algorithmId: 'DIMENSION_TIEBREAK', primary: definition.scoring.dimensions[0]!.id, secondary: definition.scoring.dimensions[1]!.id, followUpUsed: true, reviewState: 'ADMIN_PUBLISHED' } });
     expect((await req('POST', `assessment-submissions/${attempt.id}/submit`, patient, body, key)).json()).toEqual(completed.json());
-    const pending = await req('POST', `assessments/${v.id}/submissions`, patient); expect(pending.statusCode).toBe(201);
+    const pendingActor = await actor('PATIENT'); const pendingProfile = await createCompleteTestPatient(db, { data: { userId: pendingActor.userId, clinicId } });
+    await db.patientEntry.update({ where: { patientId: pendingProfile.id }, data: { assessmentVersionId: v.id } });
+    const pending = await req('POST', `assessments/${v.id}/submissions`, pendingActor); expect(pending.statusCode).toBe(201);
     expect((await req('POST', `admin/assessments/${v.id}/archive`, admin)).statusCode).toBe(201);
-    expect((await req('GET', `assessment-submissions/${pending.json().id}/questionnaire`, patient)).json().resumeAvailable).toBe(true);
-    expect((await req('PUT', `assessment-submissions/${pending.json().id}`, patient, { answers, expectedRevision: pending.json().revision })).statusCode).toBe(200);
+    expect((await req('GET', `assessment-submissions/${pending.json().id}/questionnaire`, pendingActor)).json().resumeAvailable).toBe(true);
+    expect((await req('PUT', `assessment-submissions/${pending.json().id}`, pendingActor, { answers, expectedRevision: pending.json().revision })).statusCode).toBe(200);
     expect(completed.json().resultSnapshot).not.toHaveProperty('protocolReviewId');
     expect(completed.json().resultSnapshot).not.toHaveProperty('publishedByUserId');
     expect((await req('GET', `assessment-submissions/${attempt.id}/result`, patient)).statusCode).toBe(200);
@@ -100,10 +103,11 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('exact assess
     const created = await req('POST', 'admin/assessments', admin, { assessmentKey: `TEST_${randomUUID()}`, locale: 'fa-IR', title: 'Synthetic sequential fixture', structure: definition });
     expect(created.statusCode).toBe(201); const sourceId = created.json().id as string;
     expect((await req('POST', `admin/assessments/${sourceId}/publish`, admin)).statusCode).toBe(201);
-    const patient = await actor('PATIENT'); await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
     const indices = [0,0,0,0,1,1,2,2,3,3,0];
     const main = Object.fromEntries(questions.map((question, index) => [question.id, question.options[indices[index]!]!.id]));
     for (const direct of [true, false]) {
+      const patient = await actor('PATIENT'); const profile = await createCompleteTestPatient(db, { data: { userId: patient.userId, clinicId } });
+      await db.patientEntry.update({ where: { patientId: profile.id }, data: { assessmentVersionId: sourceId } });
       const start = await req('POST', `assessments/${sourceId}/submissions`, patient); expect(start.statusCode).toBe(201); const attempt = start.json();
       const path = `assessment-submissions/${attempt.id}`;
       const save = (answers: object, revision: number) => req('PUT', path, patient, { answers, expectedRevision: revision });

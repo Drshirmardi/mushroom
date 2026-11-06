@@ -238,6 +238,19 @@ grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
 ! grep -q 'synthetic-arvan-rotated-secret' "$docker_log" \
   || fail 'Arvan secret leaked into deployment arguments'
 
+printf '\nPUBLIC_GA4_MEASUREMENT_ID=G-TEST123\nPUBLIC_ANALYTICS_CONSENT=granted\nPUBLIC_ANALYTICS_DEBUG=true\nANALYTICS_SERVER_ENABLED=true\n' >>"$dev_root/runtime.env"
+printf 'synthetic-ga-secret' >"$dev_root/secrets/ga4_api_secret"
+: >"$docker_log"
+run_deploy aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Analytics configuration did not recreate the API runtime'
+printf 'synthetic-ga-rotated-secret' >"$dev_root/secrets/ga4_api_secret"
+: >"$docker_log"
+run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Analytics secret rotation did not recreate the API runtime'
+! grep -q 'synthetic-ga-' "$docker_log" || fail 'Analytics secret leaked into deployment arguments'
+
 printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
 : >"$docker_log"
 run_deploy 8888888888888888888888888888888888888888

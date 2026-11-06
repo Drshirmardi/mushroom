@@ -11618,6 +11618,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11638,6 +11640,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11658,6 +11662,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11680,6 +11686,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11753,6 +11761,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11833,6 +11843,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11910,6 +11922,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -11983,6 +11997,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12049,6 +12065,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12111,6 +12129,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12154,6 +12174,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12198,6 +12220,8 @@ export interface operations {
                 page?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12249,6 +12273,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12301,6 +12327,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12343,6 +12371,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12416,6 +12446,8 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12494,6 +12526,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12516,6 +12550,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12549,6 +12585,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12573,6 +12611,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12602,6 +12642,8 @@ export interface operations {
                 limit?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12630,6 +12672,8 @@ export interface operations {
                 limit?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12654,6 +12698,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12682,6 +12728,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12706,6 +12754,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12734,6 +12784,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12758,6 +12810,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12786,6 +12840,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12810,6 +12866,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12837,6 +12895,8 @@ export interface operations {
                 query?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12861,6 +12921,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12891,6 +12953,8 @@ export interface operations {
                 cursor?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12913,6 +12977,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12935,6 +13001,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12957,6 +13025,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -12981,6 +13051,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13005,6 +13077,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13034,6 +13108,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13063,6 +13139,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13092,6 +13170,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13121,6 +13201,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13149,6 +13231,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13179,6 +13263,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13212,6 +13298,8 @@ export interface operations {
                 limit?: unknown;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13236,6 +13324,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13264,6 +13354,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13291,6 +13383,8 @@ export interface operations {
                 before?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13316,6 +13410,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13345,6 +13441,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13374,6 +13472,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13398,6 +13498,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13426,6 +13528,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13455,6 +13559,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13480,6 +13586,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13509,6 +13617,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13538,6 +13648,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13568,6 +13680,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13597,6 +13711,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13627,6 +13743,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13656,6 +13774,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13686,6 +13806,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13715,6 +13837,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13749,6 +13873,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13771,6 +13897,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13793,6 +13921,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13817,6 +13947,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13842,6 +13974,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13871,6 +14005,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13901,6 +14037,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13927,6 +14065,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13949,6 +14089,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -13974,6 +14116,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14005,6 +14149,8 @@ export interface operations {
                 limit?: unknown;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14033,6 +14179,8 @@ export interface operations {
                 limit?: unknown;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14057,6 +14205,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14077,6 +14227,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14099,6 +14251,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14119,6 +14273,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14139,6 +14295,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14163,6 +14321,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14183,6 +14343,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14205,6 +14367,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14233,6 +14397,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14261,6 +14427,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14283,6 +14451,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14309,6 +14479,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14331,6 +14503,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14359,6 +14533,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14381,6 +14557,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14403,6 +14581,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14429,6 +14609,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14452,6 +14634,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14474,6 +14658,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14496,6 +14682,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14518,6 +14706,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14540,6 +14730,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14562,6 +14754,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14592,6 +14786,8 @@ export interface operations {
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14614,6 +14810,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14647,6 +14845,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14680,6 +14880,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14702,6 +14904,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14735,6 +14939,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14759,6 +14965,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14797,6 +15005,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14842,6 +15052,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14866,6 +15078,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14888,6 +15102,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14910,6 +15126,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -14950,6 +15168,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15003,6 +15223,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15047,6 +15269,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15125,6 +15349,8 @@ export interface operations {
                 consentPolicyVersionId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15206,6 +15432,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15285,6 +15513,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15368,6 +15598,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15453,6 +15685,8 @@ export interface operations {
                 consentPolicyVersionId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15516,6 +15750,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15577,6 +15813,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15662,6 +15900,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15738,6 +15978,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15816,6 +16058,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15899,6 +16143,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -15975,6 +16221,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16053,6 +16301,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16135,6 +16385,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16213,6 +16465,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16273,6 +16527,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16298,6 +16554,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16322,6 +16580,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16350,6 +16610,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16378,6 +16640,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16404,6 +16668,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16430,6 +16696,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16456,6 +16724,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16482,6 +16752,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16508,6 +16780,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16536,6 +16810,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16563,6 +16839,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16589,6 +16867,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16619,6 +16899,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16653,6 +16935,8 @@ export interface operations {
                 status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16675,6 +16959,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16702,6 +16988,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16724,6 +17012,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16748,6 +17038,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16778,6 +17070,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16808,6 +17102,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16834,6 +17130,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16862,6 +17160,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -16921,6 +17221,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17012,6 +17314,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17099,6 +17403,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17187,6 +17493,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17274,6 +17582,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17334,6 +17644,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17431,6 +17743,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17526,6 +17840,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17624,6 +17940,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17721,6 +18039,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17821,6 +18141,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -17919,6 +18241,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18017,6 +18341,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18117,6 +18443,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18203,6 +18531,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18292,6 +18622,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18380,6 +18712,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18472,6 +18806,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18562,6 +18898,8 @@ export interface operations {
                 termsPolicyVersionId: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18643,6 +18981,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18720,6 +19060,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18800,6 +19142,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18878,6 +19222,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -18957,6 +19303,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19042,6 +19390,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19118,6 +19468,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19196,6 +19548,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19279,6 +19633,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19355,6 +19711,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19433,6 +19791,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19515,6 +19875,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19593,6 +19955,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19645,6 +20009,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this acceptance attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19719,6 +20085,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this withdrawal attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19780,6 +20148,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19821,6 +20191,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19886,6 +20258,8 @@ export interface operations {
             header: {
                 /** @description Stable key for this completion attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19949,6 +20323,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -19998,6 +20374,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20060,6 +20438,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20100,6 +20480,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20160,6 +20542,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20234,6 +20618,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20320,6 +20706,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20342,6 +20730,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20366,6 +20756,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20394,6 +20786,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20416,6 +20810,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20494,6 +20890,8 @@ export interface operations {
                 status?: "DRAFT" | "PUBLISHED" | "RETIRED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20534,6 +20932,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20569,6 +20969,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20595,6 +20997,8 @@ export interface operations {
                 expectedContentHash: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20646,6 +21050,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20674,6 +21080,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20698,6 +21106,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20722,6 +21132,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20746,6 +21158,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20786,6 +21200,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20836,6 +21252,8 @@ export interface operations {
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20867,6 +21285,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20895,6 +21315,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -20920,6 +21342,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21000,6 +21424,8 @@ export interface operations {
                 submissionId: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21090,6 +21516,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21178,6 +21606,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21270,6 +21700,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21359,6 +21791,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21404,6 +21838,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21435,6 +21871,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21457,6 +21895,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21481,6 +21921,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21505,6 +21947,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21536,6 +21980,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21578,6 +22024,8 @@ export interface operations {
                 specialtyId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21600,6 +22048,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21626,6 +22076,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21650,6 +22102,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21672,6 +22126,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21706,6 +22162,8 @@ export interface operations {
                 query?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21728,6 +22186,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21754,6 +22214,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21778,6 +22240,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21800,6 +22264,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21834,6 +22300,8 @@ export interface operations {
                 query?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21856,6 +22324,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21882,6 +22352,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21906,6 +22378,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21928,6 +22402,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21965,6 +22441,8 @@ export interface operations {
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -21987,6 +22465,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22013,6 +22493,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22037,6 +22519,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22059,6 +22543,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22094,6 +22580,8 @@ export interface operations {
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22116,6 +22604,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22146,6 +22636,8 @@ export interface operations {
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22175,6 +22667,8 @@ export interface operations {
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22197,6 +22691,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22223,6 +22719,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22247,6 +22745,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22269,6 +22769,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22303,6 +22805,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22325,6 +22829,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22351,6 +22857,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22375,6 +22883,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22397,6 +22907,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22434,6 +22946,8 @@ export interface operations {
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22456,6 +22970,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22482,6 +22998,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22506,6 +23024,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22528,6 +23048,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22561,6 +23083,8 @@ export interface operations {
                 toDate: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22588,6 +23112,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22610,6 +23136,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22650,6 +23178,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22677,6 +23207,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22701,6 +23233,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22729,6 +23263,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22765,6 +23301,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22787,6 +23325,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22818,6 +23358,8 @@ export interface operations {
                 patientId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22840,6 +23382,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22862,6 +23406,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22884,6 +23430,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22911,6 +23459,8 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22935,6 +23485,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22959,6 +23511,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -22987,6 +23541,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23015,6 +23571,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23039,6 +23597,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23063,6 +23623,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23087,6 +23649,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23111,6 +23675,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23135,6 +23701,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23165,6 +23733,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23193,6 +23763,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23278,6 +23850,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23365,6 +23939,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23452,6 +24028,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23540,6 +24118,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23634,6 +24214,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23719,6 +24301,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23806,6 +24390,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23898,6 +24484,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -23983,6 +24571,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24070,6 +24660,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24161,6 +24753,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24248,6 +24842,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24335,6 +24931,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24429,6 +25027,8 @@ export interface operations {
                 status?: "ACTIVE" | "RETIRED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24515,6 +25115,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24604,6 +25206,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24691,6 +25295,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24781,6 +25387,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24857,6 +25465,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -24936,6 +25546,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25017,6 +25629,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25100,6 +25714,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25176,6 +25792,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25254,6 +25872,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25332,6 +25952,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25356,6 +25978,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25386,6 +26010,8 @@ export interface operations {
                 submissionId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25411,6 +26037,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25436,6 +26064,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25512,6 +26142,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25593,6 +26225,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25670,6 +26304,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25750,6 +26386,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25831,6 +26469,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25910,6 +26550,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -25993,6 +26635,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26073,6 +26717,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26176,6 +26822,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26272,6 +26920,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26372,6 +27022,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26466,6 +27118,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26565,6 +27219,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26662,6 +27318,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26762,6 +27420,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26860,6 +27520,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -26962,6 +27624,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27069,6 +27733,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27091,6 +27757,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27123,6 +27791,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27147,6 +27817,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27167,6 +27839,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27189,6 +27863,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27209,6 +27885,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27229,6 +27907,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27253,6 +27933,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27273,6 +27955,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27297,6 +27981,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27323,6 +28009,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27345,6 +28033,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27372,6 +28062,8 @@ export interface operations {
             query?: never;
             header?: {
                 "If-Match"?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27402,6 +28094,8 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27435,6 +28129,8 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27457,6 +28153,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27479,6 +28177,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27501,6 +28201,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27523,6 +28225,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27547,6 +28251,8 @@ export interface operations {
                 page?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27569,6 +28275,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27600,6 +28308,8 @@ export interface operations {
                 submissionId?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27622,6 +28332,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27682,6 +28394,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27773,6 +28487,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27864,6 +28580,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -27936,6 +28654,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28060,6 +28780,8 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28163,6 +28885,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28233,6 +28957,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28292,6 +29018,8 @@ export interface operations {
                 status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28314,6 +29042,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28367,6 +29097,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28389,6 +29121,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28415,6 +29149,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28443,6 +29179,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28507,6 +29245,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28535,6 +29275,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28563,6 +29305,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28596,6 +29340,8 @@ export interface operations {
                 query?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28618,6 +29364,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28651,6 +29399,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28673,6 +29423,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28699,6 +29451,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28721,6 +29475,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28747,6 +29503,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28769,6 +29527,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28795,6 +29555,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28821,6 +29583,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28843,6 +29607,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28869,6 +29635,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28891,6 +29659,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28919,6 +29689,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28941,6 +29713,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28963,6 +29737,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -28989,6 +29765,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29013,6 +29791,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29037,6 +29817,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29059,6 +29841,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29081,6 +29865,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29107,6 +29893,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29142,6 +29930,8 @@ export interface operations {
                 until?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29166,6 +29956,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29192,6 +29984,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29214,6 +30008,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29242,6 +30038,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29270,6 +30068,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29294,6 +30094,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29318,6 +30120,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29348,6 +30152,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29382,6 +30188,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29408,6 +30216,8 @@ export interface operations {
                 status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29430,6 +30240,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29456,6 +30268,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29476,6 +30290,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29502,6 +30318,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29528,6 +30346,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29550,6 +30370,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29576,6 +30398,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29602,6 +30426,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29624,6 +30450,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29646,6 +30474,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29672,6 +30502,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29699,6 +30531,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29733,6 +30567,8 @@ export interface operations {
                 to?: string;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29765,6 +30601,8 @@ export interface operations {
                 sort?: "NET_SPEND" | "SUCCESSFUL_PURCHASE_COUNT" | "LAST_PURCHASE_AT" | "DISPLAY_NAME";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29788,6 +30626,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29873,6 +30713,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -29949,6 +30791,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30027,6 +30871,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30110,6 +30956,8 @@ export interface operations {
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30186,6 +31034,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30264,6 +31114,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30346,6 +31198,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30424,6 +31278,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30484,6 +31340,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30513,6 +31371,8 @@ export interface operations {
                 status?: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30536,6 +31396,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30562,6 +31424,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30586,6 +31450,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30610,6 +31476,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30639,6 +31507,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30667,6 +31537,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30692,6 +31564,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30722,6 +31596,8 @@ export interface operations {
                 servicePurpose?: "MARRIAGE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30798,6 +31674,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30877,6 +31755,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -30963,6 +31843,8 @@ export interface operations {
                 servicePurpose?: "MARRIAGE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31039,6 +31921,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31118,6 +32002,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31199,6 +32085,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31278,6 +32166,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31364,6 +32254,8 @@ export interface operations {
                 servicePurpose?: "MARRIAGE";
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31440,6 +32332,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31518,6 +32412,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31600,6 +32496,8 @@ export interface operations {
                 pageSize?: number;
             };
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31668,6 +32566,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31739,6 +32639,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31809,6 +32711,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31883,6 +32787,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -31953,6 +32859,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -32023,6 +32931,8 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };
@@ -32096,6 +33006,8 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
             };

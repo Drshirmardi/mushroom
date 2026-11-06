@@ -74,7 +74,7 @@ describe('payment provider contract', () => {
   });
 
   it('records -1, 101 and timeout without creating a financial effect', async () => {
-    const updates: unknown[] = []; const service = new PaymentVerificationService({} as never); const tx = { paymentAttempt: { updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
+    const updates: unknown[] = []; const service = new PaymentVerificationService({} as never, {} as never); const tx = { paymentAttempt: { updateMany: async (query: unknown) => { updates.push(query); return { count: 1 }; } } };
     await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: '-1', verifiedAt: new Date(0) }); await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: '101', verifiedAt: new Date(0) }); await service.recordNonSuccess(tx as never, { attemptId: 'synthetic', resultCode: 'TIMEOUT', verifiedAt: new Date(0) });
     expect(updates).toEqual(expect.arrayContaining([expect.objectContaining({ data: expect.objectContaining({ status: 'FAILED' }) }), expect.objectContaining({ data: expect.objectContaining({ status: 'EXPIRED' }) }), expect.objectContaining({ data: expect.objectContaining({ status: 'REQUIRES_RECONCILIATION' }) })]));
   });

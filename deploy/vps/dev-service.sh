@@ -21,8 +21,12 @@ const values = {
   appUrl: process.env.PUBLIC_APP_URL || '',
   dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
   sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
+  analyticsMeasurementId: process.env.PUBLIC_GA4_MEASUREMENT_ID || '',
+  analyticsConsent: process.env.PUBLIC_ANALYTICS_CONSENT || 'denied',
+  analyticsDebug: process.env.PUBLIC_ANALYTICS_DEBUG || 'false',
 };
 for (const [name, value] of Object.entries(values)) {
+  if (name.startsWith('analytics')) continue;
   if (!value && name === 'sadadReturnUrl') continue;
   if (!value) throw new Error(`${name} is required for the shared dev runtime`);
   const url = new URL(value);
@@ -78,6 +82,11 @@ case "$command_name" in
     fi
     ;;
   api)
+    if [[ ${ANALYTICS_SERVER_ENABLED:-false} == true ]]; then
+      [[ -r ${GA4_API_SECRET_FILE:-} ]] || { printf 'Analytics secret file is not readable\n' >&2; exit 1; }
+      GA4_API_SECRET=$(<"$GA4_API_SECRET_FILE")
+      export GA4_API_SECRET
+    fi
     if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == arvancloud ]]; then
       [[ -r $ARVAN_ACCESS_KEY_ID_FILE && -r $ARVAN_SECRET_ACCESS_KEY_FILE ]] || {
         printf 'Development Arvan credentials are not readable\n' >&2

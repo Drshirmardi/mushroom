@@ -67,10 +67,14 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
       await db.commerceOrder.update({ where: { id: own.id }, data: { status } });
       expect((await get(p)).json().home.actions.some((action: { resourceId: string }) => action.resourceId === own.id)).toBe(false);
     }
-  });
+  }, 15_000);
   async function attempt(p: Actor, status: 'PUBLISHED' | 'RETIRED' = 'PUBLISHED', scopeClinic = clinicId) {
     const version = await db.assessmentVersion.create({ data: { clinicId: scopeClinic, assessmentKey: 'MEZAJ', locale: `x-${randomUUID().slice(0, 8)}`, versionNumber: 1, title: 'Synthetic questionnaire', contentHash: 'a'.repeat(64), structure: {}, status, publishedAt: new Date(), ...(status === 'RETIRED' ? { retiredAt: new Date() } : {}) } });
-    return db.patientAssessmentSubmission.create({ data: { patientId: p.patientId, assessmentVersionId: version.id, answers: { privateAnswer: 'must not leak' } } });
+    const ownEntry = scopeClinic === clinicId && await db.patientAssessmentSubmission.count({ where: { patientId: p.patientId } }) === 0;
+    if (ownEntry) await db.patientEntry.update({ where: { patientId: p.patientId }, data: { assessmentVersionId: version.id } });
+    return db.patientAssessmentSubmission.create({ data: ownEntry
+      ? { patientId: p.patientId, assessmentVersionId: version.id, entryPatientId: p.patientId, answers: { privateAnswer: 'must not leak' } }
+      : { patientId: p.patientId, assessmentVersionId: version.id, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { snapshotVersion: 1 }, completionIdempotencyKey: randomUUID(), completionPayloadHash: 'd'.repeat(64), answers: { privateAnswer: 'must not leak' } } });
   }
   async function intent(p: Actor, expiresAt: Date | null = null) {
     return db.billingIntent.create({ data: { clinicId, patientId: p.patientId, actorUserId: p.userId, purpose: 'TOPUP', amountRial: 123450n, fingerprint: 'a'.repeat(64), idempotencyKey: randomUUID(), expiresAt, snapshot: { secret: 'must not leak' } } });

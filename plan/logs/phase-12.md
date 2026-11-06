@@ -6758,3 +6758,394 @@ Targeted verification: API intake-snapshot.spec.ts2 tests PASS using actual gene
 ## F12-FE01-ST01 — Remove store header logo
 
 2026-11-05, sole /root review PASS. Removed BrandLogo render/import only from public store page header at user request. Existing brand text, heading, controls, responsive styles and shared logo on other pages preserved. App tsc and existing scoped ESLint delta PASS (0 new diagnostics;5 baseline errors/1 baseline warning untouched). Source diff reviewed; no behavior/test/API/dependency changes and no unnecessary new tests or broad suite. Graphify AST refreshed (.local/st01-graph.log). No new browser/online/device certification claimed. Unrelated changes excluded; no next batch.
+
+## Analytics AN01 browser foundation
+
+Task ID: F12-FE01-AN01
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root (single agent)
+Batch ID: ANALYTICS-01
+Branch: codex/analytics-ga4 (isolated managed worktree, baseline dev8278608)
+
+Changed files: config/analytics{,-browser}.{ts,test.mjs}, config/ANALYTICS.md; both frontend root layouts and analytics-tracking components; landing/header explicit CTA attributes; Docker next-entrypoint, VPS dev-service, both compose manifests; contract/checklist/status/evidence; generated graphify-out artifacts.
+Migrations/API: none. No primary database or external analytics property changed.
+
+Verification:
+- Failing-first node test: expected ERR_MODULE_NOT_FOUND before implementation.
+- node --experimental-strip-types --test config/analytics.test.mjs: 5 PASS.
+- node --test config/analytics-browser.test.mjs: Chromium actual compiled SDK, intercepted external scripts; 1 PASS. One initialization, sanitized metadata, one repeated route view, CTA, no application API requests and dispatch-time opt-out verified.
+- pnpm api-client build; app/web typecheck; app/web production build: PASS.
+- node scripts/test-runtime-config-loading.mjs: PASS.
+- node scripts/test-sadad-runtime-config.mjs: PASS.
+- graphify update .: PASS, AST-only; existing extractor PDF/SQL/partial TS warnings reported, not suppressed.
+- git diff --check and main-agent combined scope/metadata/SSR review: PASS.
+
+Acceptance: first real two-consumer browser boundary implemented, no empty future adapters, no database calls for page/click events, once-per-document async loader with bounded pre-load queue. Explicit runtime config gates default denied; no staff dashboard instrumentation. Actual product IDs remain only in transient route dedup state, never payload.
+
+Limitations: full app semantic events, CTA/campaign continuity, domain-confirmed outcomes and server Outbox are AN02/AN03. No claim of completed original analytics plan, complete app browser journey, live GA4 ingestion or performance load test. Runtime gate does not obtain visitor consent; collection policy must be integrated before production activation. Opt-out tested at dispatch time; vendor automatic measurement must be disabled per operator guide. Referrer/campaign intentionally absent until AN02. No push/deploy.
+Next: AN02, not started (per-task commit boundary).
+
+## Analytics AN02 behavior and attribution
+
+Task ID: F12-FE01-AN02
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root, single agent
+Batch ID: ANALYTICS-02; depends AN01 accepted. Branch codex/analytics-ga4.
+
+Changed files: config/analytics{,-browser}.ts and browser tests; new config/analytics-context.ts, analytics-operations.ts, analytics-context.test.mjs, analytics-journey.test.mjs; config/ANALYTICS.md; frontend analytics components, app api/commerce API helpers, web api/landing/header; contract/status/checklist/log. Existing user product-page change in original X:/Git/mushroom checkout untouched. No Prisma/OpenAPI/migration/actual financial or clinical data change.
+
+Verification:
+- Failing-first new context test: expected missing-module failure, then implementation.
+- node --experimental-strip-types --test config/analytics-context.test.mjs config/analytics.test.mjs:10 PASS. TTL, sanitization/invalid stored fields, registered endpoints, response identity/body not consumed, original rejection preserved, telemetry exceptions isolated, accepted/rejected/unavailable/no-observation semantics.
+- node --test config/analytics-browser.test.mjs config/analytics-journey.test.mjs:3 PASS. Actual Chromium compiled SDK with intercepted remote script: denied dispatch, sanitized views, first landing CTA and UTM across two origins, preservation of next/product/hash, ma_* cleanup, arbitrary destination refusal; real unchanged one-request bearer/body/response through analyticsFetch. Corrected old browser assertion to count events (the newly queued asynchronous GA getter commands are not events).
+- pnpm --filter @sabz/web exec vitest run src/lib/api.test.ts src/auth/auth-navigation.test.ts src/services/auth.test.ts:10 PASS.
+- pnpm --filter @sabz/app exec vitest run src/lib/commerce-catalog-api.spec.ts src/lib/assessment-api.spec.ts src/lib/appointment-api.spec.ts src/stores/cart.spec.ts:15 PASS.
+- Both frontend typechecks and production builds PASS.
+- graphify update .: PASS (AST only, existing extractor PDF/SQL/partial-chat warnings retained). Generated graph artifacts ignored by repository configuration.
+- Main-agent combined scope/security/transport review and git diff --check PASS.
+
+Outcome: no extra application API call or database write; existing request, auth/marriage headers and response/body ownership preserved. Request outcome is not a medical/financial completion. Context is tab-scoped metadata,30-minute bounded handoff, no raw activity archive; only explicit public product/SKU IDs, no patient IDs/body/text/results. Missing GA getter never delays login/navigation; same-property identifiers optional, native cross-domain continuity not guaranteed until live acceptance. No source claims from fabricated identity.
+
+Limitations: browser tests exercise SDK and transport, not a fully authenticated deployed product/GA4. Runtime collection remains denied by default; real consent policy/operator property custom definitions/domain configuration and receipt still external. AN03 owns actual server conversion and Outbox, AN04 full integration/activation/performance acceptance. No push/deploy/new service/production configuration. Next AN03 eligible, not started under per-task boundary.
+
+## Analytics AN03 authoritative conversions
+
+Task ID: F12-FE01-AN03
+Completed at: 2026-11-06 Asia/Tehran
+Agent/Reviewer: Codex /root, single agent
+Batch ID: ANALYTICS-03; depends AN02 accepted. Branch codex/analytics-ga4.
+
+Changed files: new apps/api/src/modules/analytics/{analytics.protocol,analytics.service,analytics.worker,analytics.interceptor,analytics.module,ga4.transport}.ts; billing and commerce settlement/module wiring; Outbox claim partition/locking; app.factory OpenAPI optional header, environment validation and request redaction; analytics protocol/transport tests, wallet-billing integration, identity redaction and payment constructor regression; both frontend API transports and config/analytics-browser.ts, analytics-journey.test.mjs; deploy API entrypoint/dev launcher, compose dev/production and explicit compose.analytics.yaml overlay; generated OpenAPI/client; analytics operator guide/contract and plan evidence/status/checklist.
+Migrations: none; existing 112 migrations deployed into a fresh disposable PostgreSQL17 database on 127.0.0.1:55423/wallet_test, synthetic seed only. No primary database or real Google/bank/SMS request.
+
+Verification:
+- Protocol + actual loopback HTTP transport + environment validation + payment-provider contract:21 tests PASS. Actual Google target remains fixed in production; only test fetch boundary redirects to loopback. Tests distinguish 204 submission,400 permanent,503/network retry, disabled consent and exact large integer fallback.
+- wallet-billing.integration.spec.ts:27 PASS (24 existing +3 analytics cases), real PostgreSQL/app, fake PSP. Valid owned header and paid wallet/gateway create one purchase despite replay; compensated payment/top-up excluded; capture/payment race serialized; transaction rollback creates no delivery; concurrent claims disjoint and operational partition excludes analytics; retries/payload purge/tombstones/expiry; completed refunds after expiry remain financially successful with no analytics row. Actual registration and restricted COMPLETE projection preserve response/private fields; invalid/disabled context ignored.
+- outbox.integration.spec.ts + identity-security-boundaries.spec.ts:11 PASS; identity nine cases rerun PASS after explicit analytics-header redaction assertion.
+- Browser pure context/core:10 PASS; actual Chromium SDK/transport/handoff:4 PASS including optional header, original bearer/body/response and opt-out. Remote Google resources intercepted.
+- Existing frontend targeted API/auth regressions: app12 and web10 PASS.
+- API source/build and test TypeScript checks, generated SDK build, both frontend production builds:PASS.
+- OpenAPI export/regeneration PASS. Recursive comparison after removing only the additive X-Analytics-Context header found zero unrelated contract differences; generated whole-document diff is expected.
+- Three compose YAML parses and both runtime-config/Sadad regression scripts PASS.
+- Main-agent settlement/ownership/concurrency/security/retention/scope review and git diff --check PASS. graphify update . PASS (AST only, existing extractor/dependency warnings retained); generated graph artifacts remain ignored.
+
+Acceptance: real event times and property-scoped GA IDs, no account user_id/private content; local idempotency and bounded 24-hour/session-window delivery on the existing API/PostgreSQL infrastructure. Financial enqueue is in the actual settlement/refund transaction, no external HTTP inside it. Existing operations retain authorization and financial evidence. Owner explicitly chose no long-term attribution: expired-context refunds stay only in financial records. Source/operator details in config/ANALYTICS.md.
+
+Limits: software acceptance only, not live GA4 ingestion. HTTP2xx is submission; ambiguous failures can duplicate external custom/refund events despite local dedup. Signup/assessment/immediate appointment capture is post-handler best-effort with a crash gap. Missing/stale browser IDs skip conversions; snapshot consent does not revoke already queued context. Custom rial metric, item cap100, generic paid-service count and eventual bounded physical cleanup are documented. AN04 must verify real property/domain/session behavior, full authenticated journey and applicable consent/revocation policy before activation. No new schema/service/activity archive, push/deploy or production secret. Next AN04 eligible, not started under per-task boundary.
+
+## Analytics AN04 local acceptance and live handoff
+
+Task: F12-FE01-AN04 / ANALYTICS-04, 2026-11-06 Asia/Tehran.
+Agent/Reviewer: sole Codex /root. Depends AN03 DONE, baseline d92e156.
+Status: IN_PROGRESS; local software review PASS, complete live gate pending. Not DONE,
+no final task commit. Same task/claim continues when the missing target setup is supplied.
+
+Changed files: apps/api/test/analytics-browser-test-support.ts and wallet-billing.integration.spec.ts;
+config/ANALYTICS-ACCEPTANCE.md, config/ANALYTICS.md and plan status/checklist/log. No production
+application logic, schema, migration, new dependency/service or user-owned file changed.
+
+Verification:
+- Fresh dedicated PostgreSQL17 container mushroom-analytics-an04-test, bound only to
+  127.0.0.1:55424/wallet_test; all112 existing migrations and synthetic seed PASS.
+- Explicit ANALYTICS_BROWSER_TEST=1 in existing isolated wallet suite:28 tests PASS,
+  including one new three-scenario integration. Actual production Next app at private
+  port3311, real listening API and real PostgreSQL ownership/settlement. Real UI wallet
+  confirmation → paid order/receipt → reload, no browser purchase fabrication. Granted
+  context produces one local purchase and real worker/transport JSON over loopback HTTP,
+  then payload purge. Denied consent/blocked Google getter still complete payment with
+  no conversion queue. Mobile390/desktop1440 exercised; no page exceptions or failed
+  business API responses. Bearer preserved, private query/user/order identity excluded
+  from browser analytics; user identity excluded from server payload.
+- Harness initially caught misuse of Nest listen return type; corrected to await getUrl,
+  then API test TypeScript check and the focused/full browser integration passed.
+- node --experimental-strip-types --test config/analytics.test.mjs config/analytics-context.test.mjs:
+  10 PASS. node --test config/analytics-browser.test.mjs config/analytics-journey.test.mjs:
+  4 PASS (intercepted Google; no real property writes).
+- Full wallet suite emitted pg's concurrent-client-query deprecation warning (future
+  pg9 behavior); no failed assertion. Dependency upgrade/refactor is outside this task.
+- Source review confirms no frontend public secret, operational activation or changed
+  original architecture. Production build from AN03 reused unchanged; no unnecessary
+  frontend rebuild. Test helper owns/stops its frontend and restores ignored runtime output.
+- graphify update . PASS (AST only; existing extractor warnings retained); git diff
+  --check PASS. Dedicated test container stopped/removed after verifying its owned ID;
+  existing services/databases untouched. No final task commit while live gate is pending.
+
+Operator checklist includes the actual flow, stream/domain checks, custom rial reporting,
+key-event choice, strict Google validation versus real ingestion evidence, retention and
+stop-collection limits. Primary Google validation/cross-domain/currency docs checked
+2026-11-06; sources linked in the checklist. Validator success does not certify credentials
+or receipt; the validator does not create report events.
+
+Remaining: owner answered that GA4 exists and will send the public G-... Measurement ID,
+but no value has arrived. Need the intended controlled environment, private API secret
+available by file path (not a chat value), real SDK identity/property receipt evidence and
+collection/revocation policy sign-off. Browser test substitutes synthetic auth bootstrap
+and Google getter/outbound destination only: it does not certify actual OTP/login, bank
+processing, native Google identity or property reports. No actual account configuration,
+production collection, financial transaction, push/deploy or next batch. Continue this
+claim for live acceptance; keep AN04 unchecked until the gate is complete.
+
+### AN04 Dev stream and actual Google browser receipt follow-up
+
+2026-11-06, same single /root claim. Owner supplied and Google UI confirmed Mushroom - Dev Web,
+https://dev.drshirmardi.com, stream16282576410, G-KXRZ89EFTY; Enhanced Measurement switch OFF,
+0 connected site tags observed. Owner completed Google sign-in in the connected browser and
+explicitly reported the private API secret file is not prepared. No secret was requested,
+created, read from the UI, logged or stored in source/public runtime.
+
+Scope extension inside AN04: existing config/analytics-browser.ts, GA4 server transport and
+environment validation; runtime generators/compose public flag wiring; dev/production env
+examples; explicit analytics.dev.env.example; browser/transport regressions and new
+scripts/test-analytics-runtime.mjs. No second Google loader/tag/GTM container or new service.
+PUBLIC_ANALYTICS_DEBUG defaults false, true adds debug_mode at dispatch/transport only;
+false omits that field entirely. It does not enable denied collection or disabled server
+delivery. The specific Dev ID lives in the public environment example, not application code.
+Production example remains empty-ID/denied/debug-false/server-false.
+
+Actual live test: production-built current web app served locally on3310, using the real
+Google script and Dev property. Existing local-only anonymous auth stub on3319 prevents
+any login/OTP/financial/clinical request to a real API. Harmless campaign an04_acceptance /
+local_test and explicit hero CTA exercised. Actual Google UI showed page_view,
+cta_impression and cta_click in DebugView; Realtime showed one active user and those event
+names. Received data is from local acceptance code, not a deployed dev.drshirmardi.com
+certification. Dev public runtime was fetched read-only and had existing web/app/API origins
+but no analytics settings yet. No remote deployment/configuration or Production activation.
+
+Important live-only finding and correction: per-config send_page_view=false alone still
+allowed one extra automatic initial view with the document title/raw query URL. Real CDP
+network inspection reproduced it while dataLayer had just one manual page view. Added safe
+global gtag set defaults (send_page_view false, logical location, static title, origin-only
+referrer, advertising flags false) BEFORE destination initialization. After rebuilding and
+reloading with the actual Google script, observed ONE gtag loader, ONE manual and transmitted
+page_view, static Mushroom title, /landing path and no query. The other batched request held
+two cta_impression events only; later observation had no extra collection request. This
+fix stays in the existing shared loader. No copied raw query/client/session identifiers or
+Google secret in saved evidence. DebugView/Realtime observed through authenticated UI;
+no external reporting API credential or DOM-injected sender used.
+
+Verification: failing-first browser DebugView test and server loopback debug test failed
+before implementation, then passed; additional safe-global-default assertion failed before
+the correction and passed after. Final five Chromium SDK/handoff/transport cases PASS;
+analytics protocol/actual-loopback transport/environment validation12 PASS. Actual runtime
+generator test PASS for disabled defaults, explicit debug and exclusion of synthetic private
+secret. Runtime/Sadad scripts, three compose YAML parses, API source/test TypeScript and
+both frontend production builds PASS. Frontends rebuilt again only after the live extra-view
+finding/fix. Graphify AST refresh PASS with existing extractor warnings. No dependency,
+schema/migration, operational data or financial logic changed. Earlier28 isolated wallet
+tests remain evidence for that unchanged financial integration; no unnecessary DB rerun.
+
+Remaining: owner privately creates the stream API secret file and supplies its path, then
+controlled server validation/actual receipt can proceed. Dev deployment and actual-domain
+cross-domain/full-authenticated/policy sign-off remain distinct gates. No final task commit
+or DONE while those remain open. Follow config/ANALYTICS-ACCEPTANCE.md; same claim continues.
+
+## Analytics AN04 software publication gate
+
+Task F12-FE01-AN04 / ANALYTICS-04, 2026-11-06 Asia/Tehran. Sole /root implementation and
+main-agent review PASS. Owner explicitly authorized separating software readiness from
+post-merge operational validation, adding secure Dev installer support, committing/pushing
+this branch and opening a PR to dev. This supersedes prior no-commit notes for AN04.
+AN04 DONE/software; AN05 records outstanding operational work and remains unchecked.
+
+Changed paths: existing AN04 analytics tests/browser safe-global defaults/runtime-debug/
+transport/configuration/deployment/operator documents, plus installation/{manager.py,
+test_installation.py,README.md}, apps/api/.env.example, compose.production.example.yaml,
+deploy/vps/deploy-dev.sh, scripts/test-vps-dev.sh and synchronized plan contract/evidence.
+BUNDLE_FILES includes only public Dev profile/operator docs, never actual secrets.
+
+New setup-analytics --environment dev and panel option accept disabled/browser/server,
+validate public Measurement ID and DebugView selection, and collect the stream API secret
+through existing hidden-input validation. Atomic private file0600/runtime-owner writing
+precedes public activation. Existing secret replacement is explicit; disabled retains it;
+symlinks/nonregular paths and other environments are rejected. Configuration changes do
+not touch unrelated settings, real external credentials, GA4 settings or Production.
+
+Dev sync now fingerprints public analytics config and the private secret hash inside the
+existing composite runtime hash: enable/disable/debug/rotation triggers the normal runtime
+recreation. Secret plaintext is absent from arguments/logs. Corrected missing API env example
+and generic production example settings exposed by the installer environment audit; all
+38 API schema keys now covered. No new schema/migration/service/dependency.
+
+Verification:
+- Failing-first installer tests failed on missing functions; implementation then PASS.
+- python -m unittest discover -s installation -p test_*.py:61 cases,53 PASS/8 pre-existing
+  platform/tool skips on Windows. Five added analytics cases cover private persistence,
+  reuse/replacement, disabled preservation, secret validation/symlink/nondev rejection.
+- Official python3.13-slim Linux container, read-only source mount:69 cases,63 PASS/6
+  unavailable-tool skips; POSIX secret/symlink/hidden-input cases run. Container --rm.
+- bash scripts/test-vps-dev.sh PASS, including new analytics setting and secret-rotation
+  recreation and plaintext-absence cases, existing no-op/provider/readiness/locking cases.
+- installer audit-env (all38 API keys), --help, allowlisted bundle build PASS.
+- Five actual Chromium SDK/transport/journey cases and12 API protocol/loopback transport/
+  environment tests rerun PASS; actual runtime generator secret-exclusion/default gates PASS.
+- Existing AN04 evidence retained:28 actual PostgreSQL wallet cases including production
+  app-to-API/DB/worker/loopback chain;10 pure tests; API types and both production builds;
+  actual Google script/client and authenticated DebugView/Realtime browser receipt.
+- graphify update . and git diff --check PASS. Scope/security/publication review PASS.
+
+No actual secret/VPS setup/merge/deployment performed. Next AN05 after reviewed merge and
+Dev deployment: owner hidden secret entry, deployed-domain/native cross-domain/full auth,
+actual server Google receipt and applicable policy sign-off. Production remains disabled.
+
+## Analytics AN04 CI repair and runtime-image blocker
+
+2026-11-06, sole /root, PR36, baseline492672d. User requested repair after failed CI.
+Same corrective batch has independent CI01 code/dependency repair and CI02 image gate.
+CI01 DONE/local main review PASS; CI02 BLOCKED, overall PR is not declared green.
+
+Evidence: CI129/run42135630681 security job127622909237 fails on Joi GHSA-4528-x5fx-h6hg /
+CVE-2026-118772, installed18.2.9; verify job127622909317 fails only on existing dashboard
+mizaj-chart.tsx render callback reassignment of offset. Installer run42135630829 PASSED,
+release-contract PASSED. All four runtime scans in run42135630816 fail separately.
+Downloaded actual dashboard/API scan JSON artifacts (13466146283/13466471233): dashboard
+reports zlib1g CVE-2026-76844 HIGH, no FixedVersion; API reports that plus vulnerable Joi.
+
+CI01 changed apps/api/package.json and pnpm-lock.yaml only for Joi18.3.1 and its existing
+peer-resolution references/integrity; preserved unrelated resolutions despite pnpm update
+initially refreshing other entries. Frozen install PASS. Dashboard mizaj-chart.tsx computes
+prefix offsets before JSX rather than mutating a captured variable in render. Same units,
+order, labels, colors and arc positions retained; no rule disabled or unrelated refactor.
+
+Verification: reproduced original single lint error before edit; final workspace lint
+PASS with9 unchanged warnings. Production audit --prod --audit-level high PASS (0 High/
+Critical;16 lower severity advisories remain).12 environment/protocol/transport tests,
+API test TypeScript, dashboard typecheck/build and5 assessment authoring tests PASS.
+Graphify AST refresh/diff review PASS. No full database rerun for unchanged financial
+logic and no live/provider/config mutation. Dedicated CI01 task commit is complete;
+CI02 remains separate and uncommitted because no approved fix is implemented.
+
+CI02: actual pinned Distroless nodejs24-debian13/nonroot image locally contains zlib1g
+1:1.3.dfsg+really1.3.1-1+b1, matching scan. Debian stable package page still lists this
+version and scan has no fixed version. Official source checked:
+https://packages.debian.org/trixie/zlib1g
+https://github.com/advisories/GHSA-4528-x5fx-h6hg (Joi patched18.3.1).
+Remote latest manifest HEAD check returned403, so no latest-image remediation is claimed;
+background pull was stopped through its own exec session after inspection. No digest
+change, handcrafted binary replacement, vulnerability waiver, severity exclusion or
+scanner relaxation. Safe next action: wait for verified patched stable upstream image or
+obtain owner approval for a concrete maintained-runtime alternative/ADR, then scan and
+smoke-test every real artifact. Do not merge PR36 or begin Dev activation under a red gate.
+
+## Analytics runtime scan temporary suspension
+
+Task: F12-FE01-AN04-CI02-D01; 2026-11-06; sole /root; owner explicitly requested
+stopping the investigation, temporarily disabling the failing scan, committing on the
+same branch and opening a replacement PR to dev. This supersedes earlier instructions
+against suspending that check; it does not resolve the zlib vulnerability.
+
+Changed .github/workflows/container-checks.yml: artifact-job flag
+RUNTIME_IMAGE_SCAN_ENABLED=false skips Trivy runtime scans and dependent report upload
+for api/web/app/dashboard. Build, disposable smoke, release contracts and independent
+dependency security checks retain their current behavior. Restore this flag to true
+after CI02 verifies a patched runtime. No runtime library, image digest, application
+logic, scan severity or release publication workflow changed. CI02 remains deferred.
+
+Verification: actionlint1.7.12 PASS for the changed workflow (shellcheck omitted because
+no shell changed). Release pipeline contract suite PASS in an isolated git-archive LF
+checkout with the changed workflow overlaid; direct Windows checkout initially fails
+bash parsing of pre-existing CRLF deploy/vps/dev-service.sh. No unrelated file normalized.
+Diff/scope review PASS; only workflow and task evidence/status/checklist changed.
+
+CI130 also exposed reporting-query-plan setup, Mezaj submission, migration fixture and
+OpenAPI parameter-order failures. These are not disabled or repaired by this task.
+CI02 experiments stayed outside the repository; even the real upstream1.4 probe still
+reported a finding, so no remediation success is claimed. No merge/deploy authorized.
+Next action: review replacement PR checks; later resume CI02 and restore scan flag.
+
+## Analytics PR37 verify fixture and contract repair
+
+Task: F12-FE01-AN04-CI03; batch F12-B17; 2026-11-06 Asia/Tehran; sole Codex /root on
+codex/analytics-ga4; baseline c54105d. PR37 run42141309219 / verify job127642447433 failed
+after lint, TypeScript, installer, image build and dependency security had passed. The
+scope was restricted to the four failing API test files and their evidence.
+
+Confirmed causes, reproduced first on a disposable PostgreSQL database:
+- reporting-query-plan.integration.spec.ts created COMPLETE/IN_PROGRESS submissions with
+  neither access_grant_id nor entry_patient_id. Migration 20261031105000 intentionally
+  raises `New attempts require owned initial entry or paid access`; the fixture, not the
+  query-plan assertion or trigger, was stale.
+- mezaj-results.integration.spec.ts used the retired public generic start endpoint with a
+  completed profile-only entry. The service correctly returned 409
+  ASSESSMENT_PAYMENT_REQUIRED because a new attempt needs the owned initial-entry path or
+  paid access. The fixture now creates its own published fa-IR MEZAJ family and enabled
+  free entry policy, then uses profile -> entry/start -> save -> submit -> entry/complete
+  and reads the immutable result. A second patient with no result gets 404 from
+  patients/me/mezaj.
+- migrations.integration.spec.ts inserted a submission without an entry origin after all
+  migrations. The smoke fixture now creates the matching patient_entries row and binds
+  its submission_id, preserving the migration replay and all later constraints.
+- openapi-contract.spec.ts assumed parameters[0] was the path parameter. The global
+  optional X-Analytics-Context header now precedes it. The assertion now locates
+  name=appointmentId/in=path and still requires required=true plus UUID format; no
+  contract source changed.
+
+Changed paths:
+- apps/api/test/reporting-query-plan.integration.spec.ts
+- apps/api/test/mezaj-results.integration.spec.ts
+- apps/api/test/migrations.integration.spec.ts
+- apps/api/test/openapi-contract.spec.ts
+- plan/STATUS.md, plan/phases/12-PRODUCTION-HARDENING.md, this log
+
+Verification:
+- Pre-fix disposable PostgreSQL run of the four files: 3 tests failed and the
+  reporting suite stopped during setup; the exact CI messages were reproduced.
+- Post-fix targeted run: 4 files passed, 14 tests passed.
+- `tsc -p tsconfig.test.json --noEmit`: PASS.
+- `pnpm --filter @sabz-zendegi/api test`: 118 files passed / 34 skipped; 582 tests
+  passed / 611 skipped.
+- `pnpm lint`: PASS with the same 9 pre-existing warnings.
+- `graphify update .`: PASS with existing extractor warnings; `git diff --check`: PASS.
+
+No trigger, access predicate, test skip, dependency, migration, schema, runtime scan,
+analytics architecture or Production setting changed. CI02 remains deferred and the
+runtime image scan remains disabled. Hosted PR37 rerun is the remaining gate.
+
+## PR37 isolated assessment suite repair
+
+Task: F12-FE01-AN04-CI03 (same batch F12-B17); 2026-11-06 Asia/Tehran; sole Codex
+/root. The first hosted rerun, run42146937593 / verify job127660577535, passed lint,
+TypeScript, the full `pnpm test` step and all later build/smoke steps up to the isolated
+assessment database step. That previously skipped step then failed because eleven
+pre-existing files still created new attempts without the owned initial-entry or paid
+access required by the current database contract; the isolated step also lacked a
+synthetic `SMS_CREDENTIAL_ENCRYPTION_KEY` needed by the marriage-phone fixture.
+
+No access rule, trigger or test was disabled. The fixtures were adapted to the current
+contract:
+- `patient-entry-test-support` now leaves the shared synthetic entry uncompleted so the
+  same row can serve as the exact owned initial-entry origin. No trigger bypass is used.
+- `PatientAssessmentsService.start` can reuse only an entry already bound to the exact
+  source, uncompleted/unsubmitted and not consumed by any submission. A consumed entry
+  does not reopen a second free attempt, so the public free-start boundary is retained.
+- Reporting, Mezaj migration, discovery, guidance, protocol, purchase, care,
+  assigned-consultation, reliability and patient-journey fixtures now use owned entry
+  provenance, completed legacy rows for historical/capped data, and the real paid grant
+  paths where those already existed.
+- Second free attempts in the reliability suite are now asserted as rejected
+  (`ASSESSMENT_PAYMENT_REQUIRED`), and completion-key scoping is verified across
+  independent patients instead of an impossible second free same-patient attempt.
+- The two stale adult-fallback assertions now exercise an under-18 birth date from both
+  intake and initial-entry fallback.
+- The isolated CI step exports a generated non-secret test-only SMS encryption key
+  alongside the existing payment key.
+
+Changed paths:
+- `apps/api/src/modules/assessments/patient/patient-assessments.service.ts`
+- `.github/workflows/ci.yml`
+- `apps/api/test/patient-entry-test-support.ts`
+- `apps/api/test/{assessment-care,assessment-discovery,assessment-guidance,assessment-protocol,assessment-purchase,assessment-reliability,assigned-consultation,couple-assessment,couple-link,patient-journey}.integration.spec.ts`
+
+Verification:
+- Full isolated 22-file command equivalent to the hosted step: 22 files passed;
+  435 tests passed.
+- `pnpm --filter @sabz-zendegi/api test`: 118 files passed / 34 skipped; 582 tests
+  passed / 611 skipped.
+- `tsc -p tsconfig.test.json --noEmit`, `pnpm lint` (same 9 existing warnings) and
+  `git diff --check`: PASS.
+- The runtime image scan remains disabled and CI02 remains deferred.
+
+Hosted result: PR37 run42156349184 at head84b2115 completed all eight checks with
+success: verify127691312043, security, installer, release-contract and the four artifact
+jobs. The formerly skipped isolated assessment step and browser/access smoke step are
+included in that successful verify job. Task accepted; claim released. No merge,
+deployment, Production activation or runtime-scan re-enable was performed.

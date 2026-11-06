@@ -1,3 +1,4 @@
+import { browserAnalyticsEvent } from '../../../../config/analytics-browser';
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient, apiBaseUrl, sessionFetch } from "./api";
@@ -47,7 +48,7 @@ export const getCommerceCart = (accessToken: string) =>
   expectData<CommerceCart>(apiClient.GET("/v1/patients/me/cart", { headers: authorization(accessToken) }));
 
 export const updateCommerceCart = (accessToken: string, skuId: string, quantity: number) =>
-  expectData<CommerceCart>(apiClient.PUT("/v1/patients/me/cart", { headers: authorization(accessToken), body: { skuId, quantity } }));
+  expectData<CommerceCart>(apiClient.PUT("/v1/patients/me/cart", { headers: authorization(accessToken), body: { skuId, quantity } })).then(cart => { browserAnalyticsEvent("cart_quantity_set", { item_id: skuId, quantity, surface: "app" }); return cart; });
 
 export const getCommerceWishlist = (accessToken: string) =>
   expectData<CommerceWishlist>(apiClient.GET("/v1/patients/me/wishlist", { headers: authorization(accessToken) }));

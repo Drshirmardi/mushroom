@@ -1,3 +1,4 @@
+import { analyticsFetch } from '../../../../config/analytics-browser';
 import { currentInvitationContext, invitationServiceRoute } from './marriage-context';
 import { createApiClient, createSessionAwareFetch } from "@sabz-zendegi/api-client";
 import { runtimePublicUrl } from "./runtime-config";
@@ -6,17 +7,19 @@ export const apiBaseUrl = runtimePublicUrl("apiUrl", "http://localhost:3003");
 const webBaseUrl = runtimePublicUrl("webUrl", "http://localhost:3000");
 
 const sessionTransport = createSessionAwareFetch();
-export const sessionFetch = sessionTransport.fetch;
+export const sessionFetch: typeof fetch = (input, init) => analyticsFetch(input, init,
+  (nextInput, nextInit) => sessionTransport.fetch(nextInput, nextInit), apiBaseUrl, 'app');
 
-export const authApiClient = createApiClient({ baseUrl: apiBaseUrl });
+export const authApiClient = createApiClient({ baseUrl: apiBaseUrl,
+  fetch: (input, init) => analyticsFetch(input, init, (nextInput, nextInit) => fetch(nextInput, nextInit), apiBaseUrl, 'app') });
 export const apiClient = createApiClient({
   baseUrl: apiBaseUrl,
   fetch: (input, init) => {
     const id = currentInvitationContext();
-    if (!id) return sessionTransport.fetch(input,init);
+    if (!id) return sessionFetch(input,init);
     const request = new Request(input,init);
     if (new URL(request.url).origin === new URL(apiBaseUrl).origin && !new URL(request.url).pathname.startsWith('/v1/auth/')) request.headers.set('X-Marriage-Request-Id',id);
-    return sessionTransport.fetch(request);
+    return sessionFetch(request);
   },
 });
 export const setAccessTokenProvider = sessionTransport.setAccessTokenProvider;

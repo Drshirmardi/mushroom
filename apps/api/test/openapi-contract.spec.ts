@@ -237,7 +237,15 @@ describe('identity OpenAPI contract', () => {
     expect(paths['/v1/chat/conversations/{conversationId}/messages'].post).toBeUndefined();
     expect(paths['/v1/chat/ejabberd/policy']).toBeUndefined();
     expect(document.components.schemas.EjabberdSessionDto.properties.transport.enum).toEqual(['ejabberd']);
-    expect(paths['/v1/chat/appointments/{appointmentId}/session'].post.parameters[0].schema.format).toBe('uuid');
+    const appointmentIdParameter = paths['/v1/chat/appointments/{appointmentId}/session'].post.parameters.find(
+      (parameter: { name: string; in: string }) => parameter.name === 'appointmentId' && parameter.in === 'path',
+    );
+    expect(appointmentIdParameter).toMatchObject({
+      name: 'appointmentId',
+      in: 'path',
+      required: true,
+      schema: { type: 'string', format: 'uuid' },
+    });
     const errors = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
     expect(errors).toEqual(expect.arrayContaining([
       'CHAT_FORBIDDEN', 'CHAT_BLOCKED', 'CHAT_IDEMPOTENCY_CONFLICT',

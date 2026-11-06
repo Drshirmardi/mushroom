@@ -545,3 +545,14 @@ Sole /root review PASS; C01–C05 DONE (software), scoped claim RELEASED. Owner 
 - [x] F12-FE01-PR02 — Repair saved Decimal weight serialization and intake step validation;2 API serializer +4 form tests, app/API types/scoped lint delta PASS2026-11-05.
 
 - [x] F12-FE01-ST01 — Store header logo removed; app types/scoped lint delta PASS2026-11-05.
+
+- [x] F12-FE01-AN01 — Browser foundation/landing CTA tracking DONE/software, sole /root review PASS2026-11-06; five units, Chromium transport test, app/web types/builds and runtime regressions PASS. No live GA4 activation; evidence phase12 analytics-an01-browser-foundation.
+- [x] F12-FE01-AN02 — Browser behavior/attribution DONE/software2026-11-06, sole /root review PASS;38 targeted tests, frontend types/production builds PASS. Live GA4 acceptance pending AN04; evidence phase12 analytics-an02-behavior-and-attribution.
+- [x] F12-FE01-AN03 — Authoritative conversions and bounded Outbox DONE/software2026-11-06; sole /root review PASS. Real PostgreSQL settlement/queue, loopback transport, browser forwarding, contracts/types/builds PASS. Late refunds remain financial-only after expiry; live GA4 acceptance remains AN04. Evidence: phase12 analytics-an03-authoritative-conversions.
+- [x] F12-FE01-AN04 — DONE/software2026-11-06, sole /root review PASS: real browser Dev receipt/duplicate correction, secure Dev installer setup, runtime/rotation and focused gates PASS. Owner authorizes commit/push/PR; operational acceptance is AN05. Evidence: phase12 analytics-an04-software-publication-gate.
+- [ ] F12-FE01-AN05 — Post-merge Dev operational acceptance; depends AN04 and reviewed Dev deployment. Privately configure stream secret, verify actual-domain/cross-domain/authenticated journey and real backend receipt/policy sign-off. No Production activation.
+
+- [x] F12-FE01-AN04-CI01 — Repair PR36 lint/Joi audit failures: pure chart offsets, Joi18.3.1 and targeted lock; local verification/review PASS2026-11-06.
+- [ ] F12-FE01-AN04-CI02 — BLOCKED: resolve image zlib1g CVE-2026-76844 without weakening no-High/Critical gate; stable Debian fix/upstream image or explicitly approved runtime maintenance decision required. No merge/deployment.
+- [x] F12-FE01-AN04-CI02-D01 — Owner-authorized temporary suspension of the PR runtime-image scan and its report upload (2026-11-06). Build/smoke and dependency checks retained; CI02 remediation remains unresolved/deferred. Evidence: phase12 analytics-runtime-scan-temporary-suspension.
+- [x] F12-FE01-AN04-CI03 — Repair PR37 verify failures: four original fixtures plus the previously skipped isolated assessment suite adapted to owned initial-entry/paid access; no trigger disabled, no test skipped/weakened. Commits3f7a3ad/84b2115; local435 isolated+118 files/582 API tests, typecheck/lint PASS; hosted run42156349184 all8 checks PASS. Evidence: phase12 analytics-pr37-verify-fixture-and-contract-repair.
