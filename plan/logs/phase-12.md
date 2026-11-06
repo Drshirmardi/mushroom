@@ -6986,3 +6986,42 @@ Verification:
 No actual secret/VPS setup/merge/deployment performed. Next AN05 after reviewed merge and
 Dev deployment: owner hidden secret entry, deployed-domain/native cross-domain/full auth,
 actual server Google receipt and applicable policy sign-off. Production remains disabled.
+
+## Analytics AN04 CI repair and runtime-image blocker
+
+2026-11-06, sole /root, PR36, baseline492672d. User requested repair after failed CI.
+Same corrective batch has independent CI01 code/dependency repair and CI02 image gate.
+CI01 DONE/local main review PASS; CI02 BLOCKED, overall PR is not declared green.
+
+Evidence: CI129/run42135630681 security job127622909237 fails on Joi GHSA-4528-x5fx-h6hg /
+CVE-2026-118772, installed18.2.9; verify job127622909317 fails only on existing dashboard
+mizaj-chart.tsx render callback reassignment of offset. Installer run42135630829 PASSED,
+release-contract PASSED. All four runtime scans in run42135630816 fail separately.
+Downloaded actual dashboard/API scan JSON artifacts (13466146283/13466471233): dashboard
+reports zlib1g CVE-2026-76844 HIGH, no FixedVersion; API reports that plus vulnerable Joi.
+
+CI01 changed apps/api/package.json and pnpm-lock.yaml only for Joi18.3.1 and its existing
+peer-resolution references/integrity; preserved unrelated resolutions despite pnpm update
+initially refreshing other entries. Frozen install PASS. Dashboard mizaj-chart.tsx computes
+prefix offsets before JSX rather than mutating a captured variable in render. Same units,
+order, labels, colors and arc positions retained; no rule disabled or unrelated refactor.
+
+Verification: reproduced original single lint error before edit; final workspace lint
+PASS with9 unchanged warnings. Production audit --prod --audit-level high PASS (0 High/
+Critical;16 lower severity advisories remain).12 environment/protocol/transport tests,
+API test TypeScript, dashboard typecheck/build and5 assessment authoring tests PASS.
+Graphify AST refresh/diff review PASS. No full database rerun for unchanged financial
+logic and no live/provider/config mutation. Dedicated CI01 task commit is complete;
+CI02 remains separate and uncommitted because no approved fix is implemented.
+
+CI02: actual pinned Distroless nodejs24-debian13/nonroot image locally contains zlib1g
+1:1.3.dfsg+really1.3.1-1+b1, matching scan. Debian stable package page still lists this
+version and scan has no fixed version. Official source checked:
+https://packages.debian.org/trixie/zlib1g
+https://github.com/advisories/GHSA-4528-x5fx-h6hg (Joi patched18.3.1).
+Remote latest manifest HEAD check returned403, so no latest-image remediation is claimed;
+background pull was stopped through its own exec session after inspection. No digest
+change, handcrafted binary replacement, vulnerability waiver, severity exclusion or
+scanner relaxation. Safe next action: wait for verified patched stable upstream image or
+obtain owner approval for a concrete maintained-runtime alternative/ADR, then scan and
+smoke-test every real artifact. Do not merge PR36 or begin Dev activation under a red gate.
