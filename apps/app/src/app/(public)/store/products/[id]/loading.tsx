@@ -1,3 +1,1 @@
-import { LoadingState } from "@/components/shared/skeletons";
-
-export default function Loading() { return <LoadingState variant="product" className="p-4" />; }
+export { ProductPageLoading as default } from "@/components/store/product-loading";

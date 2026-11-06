@@ -29,8 +29,10 @@ async function fixture(page: Page, options: { failedAccount?: boolean; paid?: bo
     const send = (body: unknown, status = 200) => route.fulfill({ status, headers, contentType: "application/json", body: JSON.stringify(body) });
     if (method === "OPTIONS") { await route.fulfill({ status: 204, headers }); return; }
     if (path === "/v1/auth/refresh") { await send({ accessToken: "fixture-token", tokenType: "Bearer", expiresIn: 600, user: { id: "fixture-patient", roles: ["PATIENT"] } }); return; }
+    if (path === "/v1/patients/me/entry") { await send({ required: false, phase: "COMPLETE" }); return; }
     if (method !== "GET") {
       const body = request.postDataJSON();
+      if (path.endsWith("/commerce/discount-preview")) { await send(body.discountCode === "INVALID" ? {code:"COMMERCE_DISCOUNT_NOT_FOUND"} : {code:body.discountCode,subtotalAmountToman:"500000",taxAmountToman:"20000",discountAmountToman:"25000"},body.discountCode === "INVALID" ? 422 : 200); return; }
       commands.push({ path, body, key: request.headers()["idempotency-key"] });
       if (path.endsWith("/cart") && method === "PUT") { quantity = body.quantity; skuId = body.skuId; await send(cart()); return; }
       if (path.endsWith("/wishlist") && method === "PUT") { saved = body.saved; await send({ items: saved ? [{ id: "wish-1", product, sku: product.skus[1] }] : [] }); return; }
@@ -51,7 +53,7 @@ async function fixture(page: Page, options: { failedAccount?: boolean; paid?: bo
     else if (path.endsWith("/wishlist")) await send({ items: saved ? [{ id: "wish-1", product, sku: product.skus[1] }] : [] });
     else if (path === "/v1/patients/me/orders") await send([order()]);
     else if (path === "/v1/patients/me/orders/order-1") await send(order());
-    else if (path.endsWith("/order-1/receipt")) await send(paid ? { order: order(), verifiedAt: "2026-10-20T10:00:00Z", method: "WALLET" } : {}, paid ? 200 : 409);
+    else if (path.endsWith("/order-1/receipt")) await send(paid ? { orderId:"order-1", orderNumber:"1024", totalAmountToman:"520000", status:"VERIFIED", order: order(), verifiedAt: "2026-10-20T10:00:00Z", method: "WALLET" } : {}, paid ? 200 : 409);
     else if (path.endsWith("/billing/intents/intent-1")) await send(intent());
     else if (path === "/v1/patients/me") await send({ firstName: "کاربر", lastName: "آزمایشی", phone: "09120000000", accountStatus: "ACTIVE" });
     else if (path === "/v1/content/banners") await send({ items: options.banners ? [1, 2].map(id => ({ id: String(id), title: `بنر ${id}`, contentPath: `/v1/content/banners/${id}/image`, destinationUrl: "/store?view=all" })) : [] });
@@ -91,7 +93,7 @@ test("selected SKU, favorites, cart, Persian address, totals and wallet receipt 
   await expect(page.locator(".store-product a").first()).toHaveAttribute("href", /sku=large/);
   await page.goto(`${origin}/store/cart`);
   await expect(page.locator(".store-cart-item")).toContainText("۲۵۰ میلی‌لیتر");
-  await expect(page.locator(".store-cart-bar")).toContainText("۵۲۰٬۰۰۰");
+  await expect(page.locator('[aria-label="خلاصهٔ سبد"]')).toContainText("۵۲۰٬۰۰۰");
   await noOverflow(page);
   await page.goto(`${origin}/store/checkout`);
   await page.getByRole("radio", { name: /ارسال با پیک/ }).check();
@@ -104,9 +106,11 @@ test("selected SKU, favorites, cart, Persian address, totals and wallet receipt 
   await expect(page.locator('input[name="address"]:checked').locator("..")).toContainText("دفتر");
   expect(mock.commands.find(command => command.path.endsWith("/commerce/addresses"))?.body).toMatchObject({ phone: "09123456789", postalCode: "1234567890" });
   await page.locator("#checkout-discount").fill("INVALID");
-  await page.getByRole("button", { name: "ثبت سفارش و ادامهٔ پرداخت", exact: true }).click();
-  await expect(page.locator(".store-state--error")).toContainText("کد تخفیف معتبر نیست");
+  await page.getByRole("button", { name: "اعمال کد", exact: true }).click();
+  await expect(page.locator("#checkout-discount-feedback")).toContainText("کد تخفیف معتبر نیست");
   await page.locator("#checkout-discount").fill("SAVE25");
+  await page.getByRole("button", { name: "اعمال کد", exact: true }).click();
+  await expect(page.locator("#checkout-discount-feedback")).toContainText("۲۵٬۰۰۰ تومان");
   await noOverflow(page);
   await page.screenshot({ path: join(tmpdir(), `store-checkout-${testInfo.project.name}.png`), fullPage: true });
   await page.getByRole("button", { name: "ثبت سفارش و ادامهٔ پرداخت", exact: true }).click();
@@ -114,12 +118,13 @@ test("selected SKU, favorites, cart, Persian address, totals and wallet receipt 
   const pay = page.getByRole("button", { name: /پرداخت از کیف پول/ });
   await expect(pay).toBeEnabled();
   await expect(page.getByRole("button", { name: /پرداخت بانکی/ })).toBeDisabled();
-  await expect(page.getByRole("region", { name: "جزئیات مبلغ سفارش" })).toContainText("۵۲۰٬۰۰۰");
+  await expect(page.getByRole("region", { name: "مبلغ قابل پرداخت" })).toContainText("۵۲۰٬۰۰۰");
   await page.screenshot({ path: join(tmpdir(), `store-payment-${testInfo.project.name}.png`), fullPage: true });
   await pay.click();
+  await page.getByRole("dialog", { name:"تأیید پرداخت از کیف پول" }).getByRole("button",{name:"تأیید پرداخت",exact:true}).click();
   await expect(page).toHaveURL(/store\/order-success\?orderId=order-1/);
-  await expect(page.getByText("رسید پرداخت", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "پیگیری سفارش", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("۵۲۰٬۰۰۰");
+  await page.getByRole("dialog").getByRole("button", { name: "پیگیری سفارش", exact: true }).click();
   await expect(page.getByText("HAIR-250", { exact: false })).toBeVisible();
   await noOverflow(page);
   await page.goto(`${origin}/store/orders`);
@@ -193,4 +198,26 @@ test("catalog keeps URL filters through product navigation, exposes account fail
   }
   await page.screenshot({ path: join(tmpdir(), `store-catalog-${testInfo.project.name}.png`), fullPage: true });
   expect(mock.unexpected).toEqual([]);
+});
+
+
+test("product loading reserves gallery and purchase footer on a small phone", async ({ page }) => {
+  await fixture(page);
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release=resolve; });
+  await page.route(`**/v1/commerce/products/${productId}`, async route => { await pending; await route.fallback(); });
+  await page.setViewportSize({width:320,height:568});
+  try {
+    await page.goto(`${origin}/store/products/${productId}`);
+    await expect(page.locator('[data-product-loading]')).toBeVisible();
+    const gallery=await page.locator('.store-gallery').boundingBox();
+    const footer=await page.locator('.patient-shell-footer').boundingBox();
+    release();
+    await expect(page.locator('.store-detail__title')).toBeVisible();
+    expect((await page.locator('.store-gallery').boundingBox())!.y).toBeCloseTo(gallery!.y,0);
+    expect((await page.locator('.patient-shell-footer').boundingBox())!.height).toBeCloseTo(footer!.height,0);
+    await page.setViewportSize({width:667,height:375});
+    await expect.poll(async ()=>(await page.locator('.store-gallery').boundingBox())!.height).toBeLessThanOrEqual(106);
+    await noOverflow(page);
+  } finally { release(); }
 });

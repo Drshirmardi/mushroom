@@ -576,10 +576,10 @@ Contract: ADR-0049. Each task reviewed, evidenced and committed separately; no l
 - [x] F12-FE01-ST02 — White responsive cards/grid; depends ST01.
 - [x] F12-FE01-ST03 — Personalized-first composition and shaped loading; depends ST02.
 - [x] F12-FE01-ST04 — Refresh and browse-position retention; depends ST03.
-- [ ] F12-FE01-ST05 — Responsive product panel and unified loading; depends ST04.
+- [x] F12-FE01-ST05 — Responsive product panel and unified loading; depends ST04.
 
 ## Storefront redesign (owner approved 2026-11-06)
 - [x] F12-FE01-ST02 — White responsive cards/grid; depends ST01.
 - [x] F12-FE01-ST03 — Personalized-first composition and loading; depends ST02.
 - [x] F12-FE01-ST04 — Refresh and browse-position retention; depends ST03.
-- [ ] F12-FE01-ST05 — Product panel and unified loading; depends ST04.
+- [x] F12-FE01-ST05 — Product panel and unified loading; depends ST04.

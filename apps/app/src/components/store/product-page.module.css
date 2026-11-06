@@ -44,3 +44,18 @@
   .page:global(.store-product-page) :global(.store-detail__handle-button) { display: none; }
   .page :global(.store-content-nav) { top: 0; }
 }
+
+.page:global(.store-product-page), .page:has([data-product-loading]) { background: #fff; }
+.page:has([data-product-loading]) { display: flex; flex-direction: column; height: 100%; padding-bottom: 0; }
+.page :global(.store-detail__title) { flex-direction: column; align-items: stretch; }
+.page :global(.store-detail__title > div:first-child) { flex: none; }
+.page :global(.store-detail__actions) { justify-content: flex-end; }
+@media(max-height:500px) {
+  .page :global(.store-detail--panel) > :global(.store-gallery),
+  .page :global(.store-detail--panel) > :global(.store-gallery:has(.store-gallery__strip--single)) { height: min(28svh,140px); min-height: 0; }
+}
+
+.page:has([data-product-loading]) { padding-top: 0; }
+.page > :global(.store-page-header .store-icon-button) { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; min-height: 44px; border-radius: 50%; border: 1px solid var(--patient-divider); background: #fff; }
+
+.actions:has([data-product-price-loading]) { min-height: 88px; }

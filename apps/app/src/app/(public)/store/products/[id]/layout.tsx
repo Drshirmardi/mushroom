@@ -1,4 +1,4 @@
-import { LoadingState } from "@/components/shared/skeletons";
+import { ProductPageLoading } from "@/components/store/product-loading";
 import { Suspense, type ReactNode } from "react";
 import type { Metadata } from "next";
 
@@ -21,5 +21,5 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default function ProductLayout({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<LoadingState variant="product" className="p-4" />}>{children}</Suspense>;
+  return <Suspense fallback={<ProductPageLoading />}>{children}</Suspense>;
 }

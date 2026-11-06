@@ -7200,3 +7200,38 @@ Review: scoped combined diff accepted; pre-existing product page edits excluded.
 
 ## F12-FE01-ST04 — Retained browsing and refresh
 2026-11-06; /root review PASS. Memory-only bounded per-user/query anchor/offset/expanded snapshots; stale-response guard retained; previous products stay visible during refresh. Types/218 units PASS. Intercepted browser roundtrip scroll420→420 and8 retained cards during delayed search PASS. No persistent patient cache.
+
+## F12-FE01-ST05 — Unified product loading and responsive panel
+2026-11-06; sole /root main review PASS; software DONE. Existing dirty PDP preserved byte-for-byte and excluded from all task commits. Shared ProductLoadingContent serves client pending state, route loading and layout Suspense; fixed header/gallery/footer geometry, disabled purchase placeholder without price, separate title/actions, compact landscape gallery.
+Verification: final app typecheck,218 units, production build and git diff --check PASS. Four targeted browser cases PASS (desktop/mobile full SKU/favorite/cart/address/discount/wallet-confirmation/verified-receipt journey plus delayed loading geometry/landscape). Loading/ready at320x568: gallery y68/height238.55 and footer y480/height88 identical; landscape667x375 gallery105.05px/no overflow. Old purchase fixtures updated for actual entry, apply-discount, confirmation and receipt DTO; no production checks weakened. Prior four personalization scenarios PASS; six-width grid and browse420→420 evidence recorded above. Graphify AST update PASS (existing Erlang/HCL/parser limitations reported by tool).
+Limitations: no physical iOS Safari/Android keyboard/safe-area acceptance, no real payment or deployment. Broad F12-FE01 remains REWORK; no next implementation batch. Next: owner visual review and real-phone acceptance.
+Changed files: product-loading.tsx; product-page.module.css; store-ui.tsx; product route loading.tsx/layout.tsx; e2e/store-complete.spec.ts; coordinator phase/status/log.
+
+Task commit 8c05cb9 files:
+apps/app/src/components/store/product-card.tsx
+apps/app/src/components/store/store-home.module.css
+apps/app/src/lib/patient-ui.test.ts
+plan/STATUS.md
+plan/logs/phase-12.md
+plan/phases/12-PRODUCTION-HARDENING.md
+
+
+Task commit 9ce3642 files:
+apps/app/e2e/store-mezaj.spec.ts
+apps/app/src/app/(public)/store/loading.tsx
+apps/app/src/app/(public)/store/page.tsx
+apps/app/src/components/store/personalized-products.tsx
+apps/app/src/components/store/store-loading.tsx
+plan/STATUS.md
+plan/logs/phase-12.md
+plan/phases/12-PRODUCTION-HARDENING.md
+
+
+Task commit 6a786b9 files:
+apps/app/src/app/(public)/store/page.tsx
+apps/app/src/components/store/personalized-products.tsx
+apps/app/src/lib/store-browse.ts
+plan/STATUS.md
+plan/logs/phase-12.md
+plan/phases/12-PRODUCTION-HARDENING.md
+

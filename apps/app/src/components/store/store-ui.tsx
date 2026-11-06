@@ -8,6 +8,7 @@ import { Button } from "../ui/button";
 import { formatPrice, toP } from "../../lib/format";
 import { HeartbeatLoader } from "../shared/heartbeat-loader";
 import { LoadingState, type SkeletonVariant } from "../shared/skeletons";
+import { ProductLoadingContent } from "./product-loading";
 import { ProductImage } from "./product-image";
 
 export function StoreHeader({ title, onBack, actions }: { title: string; onBack: () => void; actions?: ReactNode }) {
@@ -28,6 +29,7 @@ export function QuantityControl({ value, min = 1, max = 100, busy = false, label
 }
 
 export function StoreState({ title, description, error = false, pending = false, variant = "list", action, onAction }: { title: string; description?: string; error?: boolean; pending?: boolean; variant?: SkeletonVariant; action?: string; onAction?: () => void }) {
+  if (pending && variant === "product") return <ProductLoadingContent />;
   if (pending) return <LoadingState label={title} variant={variant} />;
   return <div className={`store-state ${error ? "store-state--error" : ""}`} role={error ? "alert" : "status"}>
     {!error && <ShoppingBag aria-hidden="true" size={28} />}<h2>{title}</h2>{description && <p>{description}</p>}
