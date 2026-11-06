@@ -7191,3 +7191,15 @@ Implementation: Dev Compose selects these two archives and supplies the host pub
 Verification: actual Docker image builds/package installation using official HTTPS defaults and the selected Fama archive PASS (signed indexes, installed ca-certificates/OpenSSL, Node/corepack usable). Final image contains Debian CA bundle and no temporary trust mount; missing required CA input fails uncached build. Compose model proves CA is build-only and absent from runtime service secrets. scripts/test-dev-runtime-image.sh PASS; scripts/test-vps-dev.sh PASS including analytics/fingerprint regressions; private installation contracts2 PASS; public shared-asset hashes18 PASS; bash syntax, actionlint and git diff --check PASS. Final selected-mirror cached rebuild/runtime OpenSSL probe also PASS.
 
 Review: scoped combined diff accepted; pre-existing product page edits excluded. One task commit/PR to dev; no automatic merge/live VPS operation. Owner must merge this new commit and verify the resulting Dev deployment; rerunning the old workflow revision would retain its old Dockerfile. GA4 runtime receipt/AN05 remains operational and unverified. No next batch started.
+
+## F12-T02-D01-R1 — Dev build CA read entitlement
+
+Task: F12-T02-D01-R1; branch codex/dev-build-entitlement from dev@eea4dee; 2026-11-06; sole Codex /root review PASS.
+
+Problem: after the stale Dev deploy process was stopped, the next real build reached the new D01 Dockerfile but Docker/Buildx refused the build-only host CA secret with `additional privileges requested: pass "--allow=fs.read=/etc/ssl/certs/ca-certificates.crt"`. This is a BuildKit host-file entitlement, not an application, database, analytics or secret error.
+
+Implementation: added the exact requested entitlement to the `bootstrap` build in deploy/vps/compose.dev.yaml:
+`entitlements: [fs.read=/etc/ssl/certs/ca-certificates.crt]`.
+The path matches the declared build-only `dev_apt_ca` secret. No broader `fs.read` grant, BuildKit bypass, runtime secret mount or Production change was introduced. scripts/test-dev-runtime-image.sh now asserts the exact entitlement in the Compose model.
+
+Verification: `bash scripts/test-dev-runtime-image.sh` PASS: Compose model entitlement/secret isolation, actual signed HTTPS APT package installation, final image CA/OpenSSL/Node/corepack checks and missing-CA negative build. YAML parse and `git diff --check` PASS. A live Dev sync was not run from this environment; owner must merge this commit and rerun `Sync shared dev VPS`. The prior stale process/lock diagnosis is operational and not part of the code fix.
