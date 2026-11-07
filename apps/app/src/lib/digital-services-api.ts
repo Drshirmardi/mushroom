@@ -19,9 +19,9 @@ export const listProgramOfferings = (token: string, page = 1) => data(apiClient.
 export const getProgramOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const acceptProgramConsent = (token: string, body: Schema["ProgramConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/program-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
 export const createProgramPurchase = (token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/program-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
-export const listProgramPurchases = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-purchases", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
-export const getProgramPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-purchases/{id}", { headers: auth(token), params: { path: { id } } }));
-export const getProgramContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-access-grants/{id}/content", { headers: auth(token), params: { path: { id } } }));
+export const listProgramPurchases = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-purchases", { cache: 'no-store', headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
+export const getProgramPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-purchases/{id}", { cache: 'no-store', headers: auth(token), params: { path: { id } } }));
+export const getProgramContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-access-grants/{id}/content", { cache: 'no-store', headers: auth(token), params: { path: { id } } }));
 export const getGuidanceContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/guidance-content/{id}", { headers: auth(token), params: { path: { id } } }));
 export const listCustomOfferings = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-offerings", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
 export const getCustomOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/custom-program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));

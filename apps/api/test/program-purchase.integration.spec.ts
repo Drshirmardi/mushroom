@@ -65,6 +65,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     await db.consentPolicyVersion.updateMany({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', status: 'ACTIVE' }, data: { status: 'RETIRED', retiredAt: new Date() } });
     const previous = await db.consentPolicyVersion.findFirst({ where: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR' }, orderBy: { versionNumber: 'desc' } }), body = 'Synthetic legal fixture only, no approved legal text.', terms = await db.consentPolicyVersion.create({ data: { clinicId, policyKey: 'PROGRAM_PURCHASE_TERMS', locale: 'fa-IR', versionNumber: (previous?.versionNumber ?? 0) + 1, title: 'Synthetic terms', body, contentHash: createHash('sha256').update(body).digest('hex'), status: 'ACTIVE', activatedAt: new Date() } });
     const config = { programDefinitionId: definition.id, termsPolicyVersionId: sourceFree ? undefined : terms.id, amountRial: amount, currency: 'IRR', accessMode: mode, accessDurationDays: mode === 'DAYS' ? 30 : null, quoteTtlSeconds: 600, retentionPolicyRef: sourceFree ? undefined : 'SYNTHETIC_TEST_ONLY' }, pub = await publish(config);
+    await db.programService.update({ where: { clinicId_programKey_locale: { clinicId, programKey: definition.programKey, locale: definition.locale } }, data: { audience: 'SHARED' } });
     return { definition, input, content, terms: sourceFree ? await db.consentPolicyVersion.findUniqueOrThrow({ where: { id: pub.termsPolicyVersionId } }) : terms, config, pub };
   }
   async function publish(config: object) { const preview = await req('POST', 'admin/program-offerings/preview', admin, config); expect(preview.statusCode, preview.body).toBe(200); const response = await req('POST', 'admin/program-offerings', admin, { ...config, publicationHash: preview.json().publicationHash, expectedPublicationNumber: preview.json().expectedPublicationNumber, reviewedTermsAndRetention: true }); expect(response.statusCode, response.body).toBe(201); return response.json(); }
@@ -218,9 +219,14 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     const created = await req('POST', 'admin/program-definitions/versions', admin, { ...f.input, programKey: `PROGRAM_${randomUUID().replaceAll('-', '').toUpperCase()}`, kind: 'CUSTOM_PROFESSIONAL_PLAN', doctorServiceId: ds.id }); expect(created.statusCode, created.body).toBe(201); const d = created.json(); expect((await req('POST', `clinical/program-definitions/${d.id}/approve`, doctor, { contentHash: d.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true })).statusCode).toBe(201);
     const pub = await publish({ ...f.config, programDefinitionId: d.id, amountRial: '70000', accessMode: 'ONE_DELIVERY', accessDurationDays: null }), p = await patient(), c = await accept(f, p); expect((await req('GET', `patients/me/program-offerings/${pub.id}`, p)).statusCode).toBe(404); expect((await req('POST', 'patients/me/billing/program-intents', p, { publicationId: pub.id, publicationHash: pub.publicationHash, termsConsentRecordId: c.id })).statusCode).toBe(404); expect(await db.programPurchase.count({ where: { patientId: p.profile.id } })).toBe(0);
   }, 20_000);
-  it('a distinct reviewed version is purchased explicitly and never silently replaces the owned curriculum', async () => {
-    const f = await setup('0'), p = await patient(), first = await purchase(f, p), old = await grant(p, first.intent.programPurchaseId), response = await req('POST', 'admin/program-definitions/versions', admin, { ...f.input, body: 'Second synthetic reviewed curriculum.' }); expect(response.statusCode, response.body).toBe(201); const d = response.json(); expect(d.versionNumber).toBe(2); expect((await req('POST', `clinical/program-definitions/${d.id}/approve`, doctor, { contentHash: d.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true })).statusCode).toBe(201); const pub = await publish({ ...f.config, programDefinitionId: d.id }); const next = await purchase({ ...f, pub }, p), g = await grant(p, next.intent.programPurchaseId);
-    expect((await req('GET', `patients/me/program-access-grants/${old.id}/content`, p)).json().body).toBe(f.input.body); expect((await req('GET', `patients/me/program-access-grants/${g.id}/content`, p)).json().body).toBe('Second synthetic reviewed curriculum.'); expect(await db.programAccessGrant.count({ where: { patientId: p.profile.id } })).toBe(2);
+  it('a reviewed replacement updates a free owner without creating another purchase or grant', async () => {
+    const f = await setup('0'), p = await patient(), first = await purchase(f, p), old = await grant(p, first.intent.programPurchaseId);
+    const next = await nextVersion(f), consent = await accept(next, p);
+    const duplicate = await req('POST', 'patients/me/billing/program-intents', p, { publicationId: next.pub.id, publicationHash: next.pub.publicationHash, termsConsentRecordId: consent.id });
+    expect(duplicate.statusCode).toBe(409);
+    expect((await req('GET', `patients/me/program-access-grants/${old.id}/content`, p)).json()).toMatchObject({ body: 'Updated private curriculum for every current owner.', purchasedDefinitionId: f.definition.id, programDefinitionId: next.definition.id });
+    expect(await db.programAccessGrant.count({ where: { patientId: p.profile.id } })).toBe(1);
+    expect(await db.programPurchase.count({ where: { patientId: p.profile.id } })).toBe(1);
   }, 20_000);
   it('Home recommends the owned program before medical assessment eligibility while keeping onboarding first', async () => {
     const f = await setup('0'), p = await patient(); await db.userProfile.upsert({ where: { userId: p.userId }, create: { userId: p.userId, firstName: 'Synthetic', lastName: 'Patient' }, update: { userId: p.userId, firstName: 'Synthetic', lastName: 'Patient' } });
@@ -260,4 +266,145 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
   it('persistent patient write limiter rejects the thirty-first command without duplicating acceptance', async () => {
     const f = await setup(), p = await patient(); for (let n = 0; n < 30; n++) await accept(f, p); const r = await req('POST', 'patients/me/program-consents', p, { policyVersionId: f.terms.id, contentHash: f.terms.contentHash, accepted: true }); expect(r.statusCode, r.body).toBe(429); expect(r.json().code).toBe('PROGRAM_RATE_LIMITED'); expect(await db.patientConsentRecord.count({ where: { patientId: p.profile.id } })).toBe(1);
   }, 20000);
+
+  async function nextVersion(f: Awaited<ReturnType<typeof setup>>) {
+    const created = await req('POST', 'admin/program-definitions/versions', admin, { ...f.input, title: 'Updated synthetic service title', body: 'Updated private curriculum for every current owner.' });
+    expect(created.statusCode, created.body).toBe(201); const definition = created.json();
+    const approved = await req('POST', `clinical/program-definitions/${definition.id}/approve`, doctor, { contentHash: definition.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true });
+    expect(approved.statusCode, approved.body).toBe(201);
+    const pub = await publish({ ...f.config, programDefinitionId: definition.id });
+    return { ...f, definition, pub };
+  }
+  it('serves new published content to existing owners without rewriting any purchase evidence', async () => {
+    const f = await setup(), p = await patient(), owned = await paid(f, p);
+    const before = await db.programPurchase.findUniqueOrThrow({ where: { id: owned.intent.programPurchaseId } });
+    const next = await nextVersion(f);
+    const content = await req('GET', `patients/me/program-access-grants/${owned.access.id}/content`, p);
+    expect(content.statusCode, content.body).toBe(200);
+    expect(content.json()).toMatchObject({ purchasedDefinitionId: f.definition.id, programDefinitionId: next.definition.id, body: 'Updated private curriculum for every current owner.' });
+    expect(content.headers['cache-control']).toContain('no-store');
+    expect(await db.programPurchase.findUniqueOrThrow({ where: { id: before.id } })).toEqual(before);
+    expect((await grant(p, before.id)).endsAt).toBe(owned.access.endsAt);
+    const consent = await accept(next, p);
+    const duplicate = await req('POST', 'patients/me/billing/program-intents', p, { publicationId: next.pub.id, publicationHash: next.pub.publicationHash, termsConsentRecordId: consent.id });
+    expect(duplicate.statusCode, duplicate.body).toBe(409);
+  });
+  it('keeps an issued quote payable across publication and archive, while restored sales stay paused', async () => {
+    const f = await setup(), p = await patient(), pending = await purchase(f, p);
+    const next = await nextVersion(f);
+    const root = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: f.definition.programKey, locale: f.definition.locale } } });
+    const archive = await req('POST', `admin/program-services/${root.id}/archive`, admin, { expectedRevision: root.revision }); expect(archive.statusCode, archive.body).toBe(201);
+    await fund(p);
+    const payment = await req('POST', `patients/me/billing/intents/${pending.intent.id}/wallet-payment`, p); expect(payment.statusCode, payment.body).toBe(201); expect(payment.json().status).toBe('PAID');
+    const access = await grant(p, pending.intent.programPurchaseId);
+    expect((await req('GET', `patients/me/program-access-grants/${access.id}/content`, p)).statusCode).toBe(200);
+    const restore = await req('POST', `admin/program-services/${root.id}/restore`, admin, { expectedRevision: archive.json().revision }); expect(restore.statusCode, restore.body).toBe(201);
+    expect(restore.json().sellingEnabled).toBe(false);
+    const [state] = await db.$queryRaw<{ available: boolean }[]>(Prisma.sql`SELECT program_publication_current(${next.pub.id}::uuid) AS available`);
+    expect(state.available).toBe(false);
+  });
+  it('does not activate an old pending quote after the current content loses medical approval', async () => {
+    const f = await setup(), p = await patient(), pending = await purchase(f, p), next = await nextVersion(f);
+    expect((await req('POST', `clinical/program-definitions/${next.definition.id}/revoke`, doctor)).statusCode).toBe(201);
+    await fund(p); const before = await wallet.summary(p.profile);
+    expect((await req('POST', `patients/me/billing/intents/${pending.intent.id}/wallet-payment`, p)).statusCode).toBe(409);
+    expect(await wallet.summary(p.profile)).toMatchObject({ balanceRial: before.balanceRial, version: before.version, frozen: before.frozen });
+    expect(await db.programAccessGrant.count({ where: { purchaseId: pending.intent.programPurchaseId } })).toBe(0);
+  });
+
+  it('retains recommendation settings and recognizes an owner across content versions', async () => {
+    const f = await setup('0', 'PERPETUAL', true), p = await patient();
+    await app.get(ProgramMezajService).settings(f.definition.id, ctx(), { expectedRevision: 0, enabled: true, icon: 'heart', pairs: ['damavi/safravi'] });
+    const original = await purchase(f, p); await dimensionalResult(p);
+    const next = await nextVersion(f);
+    const recommendations = await req('GET', 'patients/me/program-recommendations', p);
+    expect(recommendations.statusCode, recommendations.body).toBe(200);
+    expect(recommendations.json().items).toContainEqual(expect.objectContaining({ programDefinitionId: next.definition.id, state: 'OWNED', purchaseId: original.intent.programPurchaseId, icon: 'heart' }));
+    expect((await req('GET', 'patients/me/program-library', p)).json().items).toContainEqual(expect.objectContaining({ title: 'Updated synthetic service title', icon: 'heart', purchaseId: original.intent.programPurchaseId }));
+  }, 20000);
+  it('uses profile audience only for recommendations and does not block a direct purchase', async () => {
+    const f = await setup('0', 'PERPETUAL', true), p = await patient();
+    await dimensionalResult(p);
+    await app.get(ProgramMezajService).settings(f.definition.id, ctx(), { expectedRevision: 0, enabled: true, icon: 'book', pairs: ['damavi/safravi'] });
+    const root = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: f.definition.programKey, locale: f.definition.locale } } });
+    await db.programService.update({ where: { id: root.id }, data: { audience: 'FEMALE' } });
+    await db.userProfile.upsert({ where: { userId: p.userId }, create: { userId: p.userId, gender: 'MALE' }, update: { gender: 'MALE' } });
+    expect((await req('GET', 'patients/me/program-recommendations', p)).json().items.some((i: { serviceId: string }) => i.serviceId === root.id)).toBe(false);
+    await db.userProfile.update({ where: { userId: p.userId }, data: { gender: 'FEMALE' } });
+    expect((await req('GET', 'patients/me/program-recommendations', p)).json().items.some((i: { serviceId: string }) => i.serviceId === root.id)).toBe(true);
+    await db.userProfile.update({ where: { userId: p.userId }, data: { gender: null } });
+    // Missing profile fields still require the existing onboarding flow at the HTTP boundary.
+    expect((await req('GET', 'patients/me/program-recommendations', p)).statusCode).toBe(403);
+    expect((await app.get(ProgramMezajService).recommendations(ctx(p))).items.some(i => i.serviceId === root.id)).toBe(false);
+    await db.userProfile.update({ where: { userId: p.userId }, data: { gender: 'MALE' } });
+    expect((await purchase(f, p)).intent.status).toBe('PAID');
+  }, 20000);
+
+  it('serializes archive behind an actual quote reservation rather than issuing a quote after archive', async () => {
+    const f = await setup(), p = await patient(), consent = await accept(f, p);
+    const root = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: f.definition.programKey, locale: f.definition.locale } } });
+    const { Client } = await import('pg'), gate = new Client({ connectionString: process.env.DATABASE_URL });
+    const gateId = parseInt(randomUUID().replaceAll('-', '').slice(0, 7), 16);
+    await gate.connect(); await gate.query('SELECT pg_advisory_lock($1)', [gateId]);
+    await db.$executeRawUnsafe(`CREATE FUNCTION program_quote_test_gate() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.program_definition_id='${f.definition.id}'::uuid THEN PERFORM pg_advisory_xact_lock(${gateId}); END IF; RETURN NEW; END $$`);
+    await db.$executeRawUnsafe('CREATE TRIGGER program_quote_test_gate AFTER INSERT ON program_purchases FOR EACH ROW EXECUTE FUNCTION program_quote_test_gate()');
+    const pending = req('POST', 'patients/me/billing/program-intents', p, { publicationId: f.pub.id, publicationHash: f.pub.publicationHash, termsConsentRecordId: consent.id });
+    try {
+      let blocked = false;
+      for (let attempt = 0; attempt < 150; attempt++) {
+        const r = await gate.query('SELECT EXISTS(SELECT 1 FROM pg_locks WHERE locktype=$1 AND objid=$2::oid AND NOT granted) AS blocked', ['advisory', gateId]);
+        if (r.rows[0].blocked) { blocked = true; break; }
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      expect(blocked).toBe(true);
+      await expect(db.$transaction(async tx => { await tx.$executeRawUnsafe("SET LOCAL lock_timeout='100ms'"); await tx.programService.update({ where: { id: root.id }, data: { archivedAt: new Date(), sellingEnabled: false } }); })).rejects.toThrow();
+      await gate.query('SELECT pg_advisory_unlock($1)', [gateId]);
+      expect((await pending).statusCode).toBe(201);
+      const archived = await req('POST', `admin/program-services/${root.id}/archive`, admin, { expectedRevision: root.revision }); expect(archived.statusCode, archived.body).toBe(201);
+    } finally {
+      await gate.query('SELECT pg_advisory_unlock_all()'); await pending.catch(() => undefined);
+      await db.$executeRawUnsafe('DROP TRIGGER IF EXISTS program_quote_test_gate ON program_purchases');
+      await db.$executeRawUnsafe('DROP FUNCTION IF EXISTS program_quote_test_gate()'); await gate.end();
+    }
+  }, 20000);
+  it('publishes revised temperament settings for the same approved content without changing ownership', async () => {
+    const f = await setup('0', 'PERPETUAL', true), p = await patient();
+    const root = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: f.definition.programKey, locale: f.definition.locale } } });
+    await dimensionalResult(p);
+    await db.programService.update({ where: { id: root.id }, data: { draft: JSON.parse(JSON.stringify({ ...root.draft as object, pairs: ['damavi/safravi'] })) } });
+    await publish(f.config);
+    expect((await req('GET', 'patients/me/program-recommendations', p)).json().items.some((i: { serviceId: string }) => i.serviceId === root.id)).toBe(true);
+    await db.programService.update({ where: { id: root.id }, data: { draft: JSON.parse(JSON.stringify({ ...root.draft as object, pairs: ['safravi/damavi'] })) } });
+    await publish(f.config);
+    expect((await req('GET', 'patients/me/program-recommendations', p)).json().items.some((i: { serviceId: string }) => i.serviceId === root.id)).toBe(false);
+  }, 20000);
+
+  it('quotes a scheduled discount once and honours it when the promotion changes', async () => {
+    const f = await setup('2000000'), p = await patient();
+    const [clock] = await db.$queryRaw<{now: Date}[]>(Prisma.sql`SELECT CURRENT_TIMESTAMP AS now`);
+    const pub = await publish({ ...f.config, discountPercent: 25, discountStartsAt: new Date(clock.now.getTime()-60000).toISOString(), discountEndsAt: new Date(clock.now.getTime()+60000).toISOString() });
+    const offer = await req('GET', `patients/me/program-offerings/${pub.id}`, p); expect(offer.json()).toMatchObject({ baseAmountRial: '2000000', discountPercent: 25, amountRial: '1500000' });
+    const i = await purchase({ ...f, pub }, p); expect(i.intent.amountRial).toBe('1500000');
+    const stored = await db.programPurchase.findUniqueOrThrow({ where: { id: i.intent.programPurchaseId } });
+    expect(stored.snapshot).toMatchObject({ schemaVersion: 3, baseAmountRial: '2000000', amountRial: '1500000', discountPercent: 25 });
+    const [later] = await db.$queryRaw<{ok:boolean}[]>(Prisma.sql`SELECT program_quote_price_valid(${JSON.stringify(stored.snapshot)}::jsonb,${pub.id}::uuid,${new Date(clock.now.getTime()+120000)}) AS ok`); expect(later.ok).toBe(true);
+    const [bad] = await db.$queryRaw<{ok: boolean}[]>(Prisma.sql`SELECT program_quote_price_valid(${JSON.stringify({ ...stored.snapshot as object, baseAmountRial: undefined })}::jsonb,${pub.id}::uuid,${stored.createdAt}) AS ok`); expect(bad.ok).toBe(false);
+    // The quote is tied to immutable published pricing, not today's promotion configuration.
+    await publish({ ...f.config, discountPercent: 0 });
+    await fund(p); await fund(p); const paid = await req('POST', `patients/me/billing/intents/${i.intent.id}/wallet-payment`, p);
+    expect(paid.statusCode, paid.body).toBe(201); expect(paid.json()).toMatchObject({ amountRial: '1500000', status: 'PAID' });
+    expect(await db.programPurchase.findUniqueOrThrow({ where: { id: stored.id } })).toEqual(stored);
+  },20000);
+  it('activates a 100 percent discount through FREE and records exactly one purchase and grant', async () => {
+    const f = await setup('2050000', 'PERPETUAL', true), p = await patient();
+    const pub = await publish({ ...f.config, discountPercent: 100 }), consent = await accept(f,p), idempotencyKey = randomUUID();
+    const input = { publicationId: pub.id, publicationHash: pub.publicationHash, termsConsentRecordId: consent.id };
+    const result = await req('POST','patients/me/billing/program-intents',p,input,idempotencyKey); expect(result.statusCode,result.body).toBe(201);
+    expect(result.json()).toMatchObject({ status:'PAID',method:'FREE',amountRial:'0' });
+    expect((await req('POST','patients/me/billing/program-intents',p,input,idempotencyKey)).json().id).toBe(result.json().id);
+    expect(await db.programAccessGrant.count({where:{purchaseId:result.json().programPurchaseId}})).toBe(1);
+    const access=await grant(p,result.json().programPurchaseId); expect((await req('GET',`patients/me/program-access-grants/${access.id}/content`,p)).statusCode).toBe(200);
+    expect(await db.auditEvent.count({where:{subjectId:access.id,action:'PROGRAM_ACCESS_GRANTED'}})).toBe(1);
+  },20000);
+
 });

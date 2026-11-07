@@ -994,6 +994,9 @@ model AuditEvent {
 }
 
 model Clinic {
+  programServices ProgramService[]
+  programCategories ProgramServiceCategory[]
+  programImportPreviews ProgramImportPreview[]
   marriageRequests MarriageServiceRequest[]
   educationalCoupleSessions EducationalCoupleSession[]
   educationalCoupleParticipants EducationalCoupleParticipant[]
@@ -3659,6 +3662,7 @@ model AssessmentCareShare {
 
 
 model ProgramDefinitionVersion {
+  currentForServices ProgramService[] @relation("ProgramCurrentContent")
   mezajPresentation ProgramMezajPresentation?
   customProgramRequests CustomProgramRequest[]
   id String @id @default(uuid()) @db.Uuid
@@ -3708,6 +3712,70 @@ model ProgramDefinitionVersion {
   purchases ProgramPurchase[]
 }
 
+model ProgramServiceCategory {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  key String @db.VarChar(100)
+  name String @db.VarChar(100)
+  active Boolean @default(true)
+  revision Int @default(1)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  services ProgramService[]
+  @@unique([id, clinicId])
+  @@unique([clinicId, key])
+  @@map("program_service_categories")
+}
+
+model ProgramService {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  programKey String @map("program_key") @db.VarChar(100)
+  locale String @db.VarChar(40)
+  categoryId String? @map("category_id") @db.Uuid
+  audience String @default("REVIEW_REQUIRED") @db.VarChar(24)
+  draft Json @default("{}")
+  importBaseline Json? @map("import_baseline")
+  sourceReferences Json @default("[]") @map("source_references")
+  publishedDefinitionId String? @map("published_definition_id") @db.Uuid
+  sellingEnabled Boolean @default(false) @map("selling_enabled")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  baseAmountRial BigInt? @map("base_amount_rial")
+  discountPercent Int @default(0) @map("discount_percent")
+  discountStartsAt DateTime? @map("discount_starts_at") @db.Timestamptz(3)
+  discountEndsAt DateTime? @map("discount_ends_at") @db.Timestamptz(3)
+  revision Int @default(1)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  category ProgramServiceCategory? @relation(fields: [categoryId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  publishedDefinition ProgramDefinitionVersion? @relation("ProgramCurrentContent", fields: [publishedDefinitionId, clinicId], references: [id, clinicId], onDelete: Restrict)
+  @@unique([clinicId, programKey, locale])
+  @@index([clinicId, archivedAt])
+  @@map("program_services")
+}
+
+model ProgramImportPreview {
+  id String @id @default(uuid()) @db.Uuid
+  clinicId String @map("clinic_id") @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  bundleHash String @map("bundle_hash") @db.Char(64)
+  snapshot Json
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
+  receipts ProgramImportReceipt[]
+  @@index([clinicId, actorUserId, expiresAt])
+  @@map("program_import_previews")
+}
+
+model ProgramImportReceipt {
+  id String @id @default(uuid()) @db.Uuid
+  previewId String @map("preview_id") @db.Uuid
+  programKey String @map("program_key") @db.VarChar(141)
+  payloadHash String @map("payload_hash") @db.Char(64)
+  result Json
+  preview ProgramImportPreview @relation(fields: [previewId], references: [id], onDelete: Restrict)
+  @@unique([previewId, programKey])
+  @@map("program_import_receipts")
+}
+
 model ProgramMezajPresentation {
   programDefinitionId String @id @map("program_definition_id") @db.Uuid
   clinicId String @map("clinic_id") @db.Uuid
@@ -3732,6 +3800,9 @@ model ProgramOfferingPublication {
   locale String @db.VarChar(40)
   publicationNumber Int @map("publication_number")
   amountRial BigInt @map("amount_rial")
+  discountPercent Int @default(0) @map("discount_percent")
+  discountStartsAt DateTime? @map("discount_starts_at") @db.Timestamptz(3)
+  discountEndsAt DateTime? @map("discount_ends_at") @db.Timestamptz(3)
   currency String @default("IRR") @db.Char(3)
   accessMode String @map("access_mode") @db.VarChar(24)
   accessDurationDays Int? @map("access_duration_days")

@@ -25140,6 +25140,262 @@
         ]
       }
     },
+    "/v1/admin/program-offerings/bulk-preview": {
+      "post": {
+        "operationId": "adminProgramOfferingBulkPreview",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramBulkPreviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramBulkPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Program commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, command or publication revision conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Incomplete program commercial configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program commercial publication"
+        ]
+      }
+    },
+    "/v1/admin/program-offerings/bulk-publish": {
+      "post": {
+        "operationId": "adminProgramOfferingBulkPublish",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramBulkPublishDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramBulkPublishResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict supported configuration required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Current scoped administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Program commercial source unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Source, command or publication revision conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Incomplete program commercial configuration.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authenticated request limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program commercial publication"
+        ]
+      }
+    },
     "/v1/admin/program-offerings/setup/{id}": {
       "get": {
         "operationId": "adminProgramOfferingSetup",
@@ -39642,6 +39898,1403 @@
           "Educational Couple Assessments"
         ]
       }
+    },
+    "/v1/admin/program-catalog": {
+      "get": {
+        "operationId": "adminProgramCatalogList",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned preview unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Private catalog bundle unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program catalog import"
+        ]
+      }
+    },
+    "/v1/admin/program-catalog/preview": {
+      "post": {
+        "operationId": "adminProgramCatalogPreview",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogPreviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogPreviewResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned preview unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Private catalog bundle unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program catalog import"
+        ]
+      }
+    },
+    "/v1/admin/program-catalog/{id}/apply": {
+      "post": {
+        "operationId": "adminProgramCatalogApply",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogApplyRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogApplyResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owned preview unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Private catalog bundle unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program catalog import"
+        ]
+      }
+    },
+    "/v1/admin/program-categories": {
+      "get": {
+        "operationId": "adminProgramCategoryList",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramCategoryListDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category changed or needs reassignment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program categories"
+        ]
+      },
+      "post": {
+        "operationId": "adminProgramCategoryCreate",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramCategoryCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramCategoryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category changed or needs reassignment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program categories"
+        ]
+      }
+    },
+    "/v1/admin/program-categories/{id}": {
+      "post": {
+        "operationId": "adminProgramCategorySave",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramCategorySaveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramCategoryResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Category changed or needs reassignment.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program categories"
+        ]
+      }
+    },
+    "/v1/admin/program-services": {
+      "get": {
+        "operationId": "adminProgramServiceList",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "audience",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "SHARED",
+                "FEMALE",
+                "MALE",
+                "REVIEW_REQUIRED"
+              ]
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "ARCHIVED",
+                "ALL"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServicePageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      },
+      "post": {
+        "operationId": "adminProgramServiceCreate",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramServiceCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServiceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      }
+    },
+    "/v1/admin/program-services/{id}": {
+      "get": {
+        "operationId": "adminProgramServiceGet",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServiceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      }
+    },
+    "/v1/admin/program-services/{id}/draft": {
+      "post": {
+        "operationId": "adminProgramServiceSaveDraft",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramDraftSaveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServiceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      }
+    },
+    "/v1/admin/program-services/{id}/submit": {
+      "post": {
+        "operationId": "adminProgramServiceSubmit",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramDefinitionResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Working draft lacks required content or safety.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Capture the complete working draft for physician review; never auto-approve or publish",
+        "tags": [
+          "Program services"
+        ]
+      }
+    },
+    "/v1/admin/program-services/{id}/archive": {
+      "post": {
+        "operationId": "adminProgramServiceArchive",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServiceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      }
+    },
+    "/v1/admin/program-services/{id}/restore": {
+      "post": {
+        "operationId": "adminProgramServiceRestore",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgramRevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgramServiceResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Active session required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Same-clinic content administrator required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Service revision changed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program services"
+        ]
+      }
     }
   },
   "info": {
@@ -52638,26 +54291,171 @@
           "noAutomaticTherapyActivation"
         ]
       },
-      "ProgramStaticTermsDto": {
+      "ProgramCommercialConfigDto": {
         "type": "object",
         "properties": {
+          "expectedServiceRevision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "discountPercent": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "discountStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "discountEndsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "programDefinitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountRial": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PERPETUAL",
+              "DAYS",
+              "ONE_DELIVERY"
+            ]
+          },
+          "accessDurationDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "quoteTtlSeconds": {
+            "type": "number",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "retentionPolicyRef": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "amountRial",
+          "currency",
+          "accessMode",
+          "quoteTtlSeconds"
+        ]
+      },
+      "ProgramBulkPreviewDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramCommercialConfigDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ProgramCommercialDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "programKey": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "contentHash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "usable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "programKey",
+          "locale",
+          "kind",
+          "title",
+          "contentHash",
+          "status",
+          "usable"
+        ]
+      },
+      "ProgramPurchaseTermsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policyKey": {
+            "type": "string",
+            "enum": [
+              "PROGRAM_PURCHASE_TERMS",
+              "READY_PROGRAM_PURCHASE_TERMS"
+            ]
+          },
+          "versionNumber": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          },
           "title": {
             "type": "string"
           },
           "body": {
             "type": "string"
           },
-          "versionNumber": {
-            "type": "number",
-            "enum": [
-              1
-            ]
+          "contentHash": {
+            "type": "string"
           }
         },
         "required": [
+          "id",
+          "policyKey",
+          "versionNumber",
+          "locale",
           "title",
           "body",
-          "versionNumber"
+          "contentHash"
         ]
       },
       "ProgramCommercialPolicyDto": {
@@ -52688,9 +54486,229 @@
           "paymentPoint"
         ]
       },
+      "ProgramCommercialPreviewDto": {
+        "type": "object",
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/ProgramCommercialConfigDto"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/ProgramCommercialDefinitionDto"
+          },
+          "termsPolicy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramPurchaseTermsDto"
+              }
+            ]
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ProgramCommercialPolicyDto"
+          },
+          "publicationHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedPublicationNumber": {
+            "type": "number"
+          },
+          "configurationReady": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "checkoutAvailable": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "configuration",
+          "definition",
+          "termsPolicy",
+          "policy",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "configurationReady",
+          "blockers",
+          "checkoutAvailable"
+        ]
+      },
+      "ProgramBulkPreviewItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "programDefinitionId": {
+            "type": "string"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/ProgramCommercialPreviewDto"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "programDefinitionId"
+        ]
+      },
+      "ProgramBulkPreviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramBulkPreviewItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "PublishProgramOfferingDto": {
+        "type": "object",
+        "properties": {
+          "expectedServiceRevision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "discountPercent": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "discountStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "discountEndsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "programDefinitionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountRial": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PERPETUAL",
+              "DAYS",
+              "ONE_DELIVERY"
+            ]
+          },
+          "accessDurationDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "quoteTtlSeconds": {
+            "type": "number",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "retentionPolicyRef": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicationHash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "expectedPublicationNumber": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reviewedTermsAndRetention": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "programDefinitionId",
+          "amountRial",
+          "currency",
+          "accessMode",
+          "quoteTtlSeconds",
+          "publicationHash",
+          "expectedPublicationNumber",
+          "reviewedTermsAndRetention"
+        ]
+      },
+      "ProgramBulkPublishItemDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/PublishProgramOfferingDto"
+          }
+        },
+        "required": [
+          "key",
+          "configuration"
+        ]
+      },
+      "ProgramBulkPublishDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramBulkPublishItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
       "ProgramPublicationResponseDto": {
         "type": "object",
         "properties": {
+          "discountPercent": {
+            "type": "number"
+          },
+          "discountStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "discountEndsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -52794,6 +54812,9 @@
           }
         },
         "required": [
+          "discountPercent",
+          "discountStartsAt",
+          "discountEndsAt",
           "id",
           "programDefinitionId",
           "definitionContentHash",
@@ -52819,44 +54840,57 @@
           "checkoutAvailable"
         ]
       },
-      "ProgramPurchaseTermsDto": {
+      "ProgramBulkPublishItemResponseDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "policyKey": {
-            "type": "string",
-            "enum": [
-              "PROGRAM_PURCHASE_TERMS",
-              "READY_PROGRAM_PURCHASE_TERMS"
-            ]
-          },
-          "versionNumber": {
-            "type": "number"
-          },
-          "locale": {
+          "programDefinitionId": {
             "type": "string"
           },
+          "publication": {
+            "$ref": "#/components/schemas/ProgramPublicationResponseDto"
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "programDefinitionId"
+        ]
+      },
+      "ProgramBulkPublishResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramBulkPublishItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ProgramStaticTermsDto": {
+        "type": "object",
+        "properties": {
           "title": {
             "type": "string"
           },
           "body": {
             "type": "string"
           },
-          "contentHash": {
-            "type": "string"
+          "versionNumber": {
+            "type": "number",
+            "enum": [
+              1
+            ]
           }
         },
         "required": [
-          "id",
-          "policyKey",
-          "versionNumber",
-          "locale",
           "title",
           "body",
-          "contentHash"
+          "versionNumber"
         ]
       },
       "ProgramPublicationSetupDto": {
@@ -52899,226 +54933,6 @@
           "latestPublication",
           "termsPolicy",
           "suggestedRetentionPolicyRef"
-        ]
-      },
-      "ProgramCommercialConfigDto": {
-        "type": "object",
-        "properties": {
-          "programDefinitionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termsPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountRial": {
-            "type": "string",
-            "pattern": "^(0|[1-9][0-9]{0,18})$"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "accessMode": {
-            "type": "string",
-            "enum": [
-              "PERPETUAL",
-              "DAYS",
-              "ONE_DELIVERY"
-            ]
-          },
-          "accessDurationDays": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 1,
-            "maximum": 3650
-          },
-          "quoteTtlSeconds": {
-            "type": "number",
-            "minimum": 60,
-            "maximum": 86400
-          },
-          "retentionPolicyRef": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "required": [
-          "programDefinitionId",
-          "amountRial",
-          "currency",
-          "accessMode",
-          "quoteTtlSeconds"
-        ]
-      },
-      "ProgramCommercialDefinitionDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "programKey": {
-            "type": "string"
-          },
-          "locale": {
-            "type": "string"
-          },
-          "kind": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "contentHash": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-          "usable": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "programKey",
-          "locale",
-          "kind",
-          "title",
-          "contentHash",
-          "status",
-          "usable"
-        ]
-      },
-      "ProgramCommercialPreviewDto": {
-        "type": "object",
-        "properties": {
-          "configuration": {
-            "$ref": "#/components/schemas/ProgramCommercialConfigDto"
-          },
-          "definition": {
-            "$ref": "#/components/schemas/ProgramCommercialDefinitionDto"
-          },
-          "termsPolicy": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/ProgramPurchaseTermsDto"
-              }
-            ]
-          },
-          "policy": {
-            "$ref": "#/components/schemas/ProgramCommercialPolicyDto"
-          },
-          "publicationHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "expectedPublicationNumber": {
-            "type": "number"
-          },
-          "configurationReady": {
-            "type": "boolean"
-          },
-          "blockers": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "checkoutAvailable": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
-          }
-        },
-        "required": [
-          "configuration",
-          "definition",
-          "termsPolicy",
-          "policy",
-          "publicationHash",
-          "expectedPublicationNumber",
-          "configurationReady",
-          "blockers",
-          "checkoutAvailable"
-        ]
-      },
-      "PublishProgramOfferingDto": {
-        "type": "object",
-        "properties": {
-          "programDefinitionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "termsPolicyVersionId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "amountRial": {
-            "type": "string",
-            "pattern": "^(0|[1-9][0-9]{0,18})$"
-          },
-          "currency": {
-            "type": "string",
-            "enum": [
-              "IRR"
-            ]
-          },
-          "accessMode": {
-            "type": "string",
-            "enum": [
-              "PERPETUAL",
-              "DAYS",
-              "ONE_DELIVERY"
-            ]
-          },
-          "accessDurationDays": {
-            "type": "number",
-            "nullable": true,
-            "minimum": 1,
-            "maximum": 3650
-          },
-          "quoteTtlSeconds": {
-            "type": "number",
-            "minimum": 60,
-            "maximum": 86400
-          },
-          "retentionPolicyRef": {
-            "type": "string",
-            "nullable": true
-          },
-          "publicationHash": {
-            "type": "string",
-            "pattern": "^[a-f0-9]{64}$"
-          },
-          "expectedPublicationNumber": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 2147483646
-          },
-          "reviewedTermsAndRetention": {
-            "type": "boolean",
-            "enum": [
-              true
-            ]
-          }
-        },
-        "required": [
-          "programDefinitionId",
-          "amountRial",
-          "currency",
-          "accessMode",
-          "quoteTtlSeconds",
-          "publicationHash",
-          "expectedPublicationNumber",
-          "reviewedTermsAndRetention"
         ]
       },
       "ProgramPublicationPageDto": {
@@ -53197,6 +55011,16 @@
       "PatientProgramOfferingDto": {
         "type": "object",
         "properties": {
+          "baseAmountRial": {
+            "type": "string"
+          },
+          "discountPercent": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "string",
+            "nullable": true
+          },
           "id": {
             "type": "string"
           },
@@ -53279,6 +55103,9 @@
           }
         },
         "required": [
+          "baseAmountRial",
+          "discountPercent",
+          "serviceId",
           "id",
           "programDefinitionId",
           "versionNumber",
@@ -53401,6 +55228,10 @@
       "PatientProgramPurchaseDto": {
         "type": "object",
         "properties": {
+          "serviceId": {
+            "type": "string",
+            "nullable": true
+          },
           "kind": {
             "type": "string",
             "enum": [
@@ -53457,6 +55288,7 @@
           }
         },
         "required": [
+          "serviceId",
           "kind",
           "customRequestId",
           "id",
@@ -53514,6 +55346,12 @@
           "accessAvailable": {
             "type": "boolean"
           },
+          "serviceId": {
+            "type": "string"
+          },
+          "purchasedDefinitionId": {
+            "type": "string"
+          },
           "purchaseId": {
             "type": "string"
           },
@@ -53553,6 +55391,8 @@
           "grantedAt",
           "endsAt",
           "accessAvailable",
+          "serviceId",
+          "purchasedDefinitionId",
           "purchaseId",
           "programDefinitionId",
           "versionNumber",
@@ -53639,6 +55479,15 @@
       "MezajProgramCardDto": {
         "type": "object",
         "properties": {
+          "baseAmountRial": {
+            "type": "string"
+          },
+          "discountPercent": {
+            "type": "number"
+          },
+          "serviceId": {
+            "type": "string"
+          },
           "programDefinitionId": {
             "type": "string"
           },
@@ -53688,6 +55537,9 @@
           }
         },
         "required": [
+          "baseAmountRial",
+          "discountPercent",
+          "serviceId",
           "programDefinitionId",
           "publicationId",
           "title",
@@ -53755,6 +55607,10 @@
       "OwnedProgramCardDto": {
         "type": "object",
         "properties": {
+          "serviceId": {
+            "type": "string",
+            "nullable": true
+          },
           "accessGrantId": {
             "type": "string"
           },
@@ -53784,6 +55640,7 @@
           }
         },
         "required": [
+          "serviceId",
           "accessGrantId",
           "purchaseId",
           "title",
@@ -58986,6 +60843,596 @@
         "required": [
           "results",
           "jointText"
+        ]
+      },
+      "CatalogEntrySummaryDto": {
+        "type": "object",
+        "properties": {
+          "invalidReason": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "SHARED",
+              "FEMALE",
+              "MALE",
+              "REVIEW_REQUIRED"
+            ]
+          },
+          "baseAmountRial": {
+            "type": "string"
+          },
+          "reviewRequired": {
+            "type": "boolean"
+          },
+          "sourceCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "category",
+          "audience",
+          "baseAmountRial",
+          "reviewRequired",
+          "sourceCount"
+        ]
+      },
+      "CatalogListDto": {
+        "type": "object",
+        "properties": {
+          "bundleHash": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogEntrySummaryDto"
+            }
+          }
+        },
+        "required": [
+          "bundleHash",
+          "items"
+        ]
+      },
+      "CatalogPreviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "title",
+                "summary",
+                "body",
+                "eligibilityDescription",
+                "safety",
+                "category",
+                "audience",
+                "pairs"
+              ]
+            }
+          }
+        },
+        "required": [
+          "entries"
+        ]
+      },
+      "WorkingSafetyDto": {
+        "type": "object",
+        "properties": {
+          "intendedAudience": {
+            "type": "string"
+          },
+          "limitations": {
+            "type": "string"
+          },
+          "contraindications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "seekProfessionalCare": {
+            "type": "string"
+          }
+        }
+      },
+      "ProgramWorkingDraftDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "eligibilityDescription": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "SHARED",
+              "FEMALE",
+              "MALE",
+              "REVIEW_REQUIRED"
+            ]
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "safety": {
+            "$ref": "#/components/schemas/WorkingSafetyDto"
+          }
+        }
+      },
+      "CatalogPreviewItemDto": {
+        "type": "object",
+        "properties": {
+          "invalidReason": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "expectedRevision": {
+            "type": "number",
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "UNCHANGED",
+              "CHANGED",
+              "CONFLICT",
+              "ARCHIVED",
+              "INVALID"
+            ]
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "title",
+                "summary",
+                "body",
+                "eligibilityDescription",
+                "safety",
+                "category",
+                "audience",
+                "pairs"
+              ]
+            }
+          },
+          "current": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramWorkingDraftDto"
+              }
+            ]
+          },
+          "incoming": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProgramWorkingDraftDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "serviceId",
+          "expectedRevision",
+          "state",
+          "conflicts",
+          "current",
+          "incoming"
+        ]
+      },
+      "CatalogPreviewResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "bundleHash": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogPreviewItemDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "bundleHash",
+          "expiresAt",
+          "items"
+        ]
+      },
+      "CatalogResolutionDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "summary",
+              "body",
+              "eligibilityDescription",
+              "safety",
+              "category",
+              "audience",
+              "pairs"
+            ]
+          },
+          "choice": {
+            "type": "string",
+            "enum": [
+              "SOURCE",
+              "DASHBOARD"
+            ]
+          }
+        },
+        "required": [
+          "field",
+          "choice"
+        ]
+      },
+      "CatalogApplyItemDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "resolutions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogResolutionDto"
+            }
+          }
+        },
+        "required": [
+          "key"
+        ]
+      },
+      "CatalogApplyRequestDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogApplyItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CatalogApplyResultDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "APPLIED",
+              "UNCHANGED",
+              "SKIPPED",
+              "CONFLICT",
+              "INVALID"
+            ]
+          },
+          "serviceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "state",
+          "serviceId"
+        ]
+      },
+      "CatalogApplyResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CatalogApplyResultDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ProgramCategoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "name",
+          "revision",
+          "active"
+        ]
+      },
+      "ProgramCategoryListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramCategoryResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ProgramCategoryCreateDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "name"
+        ]
+      },
+      "ProgramCategorySaveDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "reassignToId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "name",
+          "active"
+        ]
+      },
+      "ProgramServiceResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "programKey": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "number"
+          },
+          "draft": {
+            "$ref": "#/components/schemas/ProgramWorkingDraftDto"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "SHARED",
+              "FEMALE",
+              "MALE",
+              "REVIEW_REQUIRED"
+            ]
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "publishedDefinitionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "baseAmountRial": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountPercent": {
+            "type": "number"
+          },
+          "discountStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "discountEndsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "sellingEnabled": {
+            "type": "boolean"
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "programKey",
+          "locale",
+          "revision",
+          "draft",
+          "audience",
+          "categoryId",
+          "publishedDefinitionId",
+          "baseAmountRial",
+          "discountPercent",
+          "discountStartsAt",
+          "discountEndsAt",
+          "sellingEnabled",
+          "archivedAt"
+        ]
+      },
+      "ProgramServicePageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProgramServiceResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "pageSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "ProgramServiceCreateDto": {
+        "type": "object",
+        "properties": {
+          "programKey": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "draft": {
+            "$ref": "#/components/schemas/ProgramWorkingDraftDto"
+          }
+        },
+        "required": [
+          "programKey",
+          "locale",
+          "draft"
+        ]
+      },
+      "ProgramDraftSaveDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true
+          },
+          "draft": {
+            "$ref": "#/components/schemas/ProgramWorkingDraftDto"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "draft"
+        ]
+      },
+      "ProgramRevisionDto": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expectedRevision"
         ]
       }
     }

@@ -5,6 +5,7 @@ import { useDashboardSession } from '@/components/auth/dashboard-session-gate';
 import { approveDefinition, createDefinition, getPresentation, listDefinitions, ProgramApiError, savePresentation, type Definition, type DefinitionInput, type Presentation } from '@/lib/program-services-api';
 import './program-services.css';
 import { Publication } from './program-publication';
+import { ManagedProgramsWorkspace } from './managed-programs-workspace';
 
 const codes = [['damavi', 'دموی'], ['safravi', 'صفراوی'], ['balgami', 'بلغمی'], ['sodavi', 'سوداوی']] as const;
 const iconOptions = [['book', 'کتاب'], ['compass', 'شناخت خود'], ['leaf', 'برگ'], ['sparkles', 'درخشش'], ['heart', 'قلب']];
@@ -23,6 +24,7 @@ function useCommand() {
 }
 export function ProgramServicesPage() {
   const { authentication } = useDashboardSession();
+  if (authentication.user.roles.includes('ADMIN')) return <ManagedProgramsWorkspace key={authentication.user.id} token={authentication.accessToken} doctor={authentication.user.roles.includes('DOCTOR')} />;
   return <Workspace key={authentication.user.id} token={authentication.accessToken} doctor={authentication.user.roles.includes('DOCTOR')} manage={authentication.user.roles.includes('ADMIN')} />;
 }
 function Workspace({ token, doctor, manage }: { token: string; doctor: boolean; manage: boolean }) {

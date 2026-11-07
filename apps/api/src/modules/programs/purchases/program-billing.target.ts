@@ -12,7 +12,7 @@ export class ProgramBillingTarget implements BillingTarget, OnModuleInit {
   reserve(tx: Tx, patient: PatientProfile, prepared: PreparedTarget) { return this.purchases.reserve(tx, patient, prepared); }
   async lock(tx: Tx, intent: BillingIntent) {
     const p = intent.programPurchaseId ? await tx.programPurchase.findFirst({ where: { id: intent.programPurchaseId, clinicId: intent.clinicId, patientId: intent.patientId } }) : null;
-    if (!p) throw programConflict(); await lockFinancial(tx, `program-purchase:${p.patientId}:${p.programDefinitionId}`);
+    if (!p) throw programConflict(); await tx.$executeRaw(Prisma.sql`SELECT program_lock_service_purchase(${p.patientId}::uuid,${p.programDefinitionId}::uuid)`);
   }
   canSettle(tx: Tx, intent: BillingIntent) { return this.purchases.canSettle(tx, intent); }
   async settle(tx: Tx, intent: BillingIntent, context: FinancialContext, journalId?: string, gatewayAttemptId?: string) {

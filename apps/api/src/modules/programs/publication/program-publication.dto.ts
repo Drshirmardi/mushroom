@@ -1,7 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { Equals, IsIn, IsInt, IsOptional, IsUUID, Matches, Max, Min } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, Equals, IsArray, IsDateString, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Matches, Max, Min, ValidateNested } from 'class-validator';
 export class ProgramCommercialConfigDto {
+  @ApiPropertyOptional({ minimum: 1 }) @IsOptional() @IsInt() @Min(1) expectedServiceRevision?: number;
+  @ApiPropertyOptional({ default: 0, minimum: 0, maximum: 100 }) @IsOptional() @IsInt() @Min(0) @Max(100) discountPercent?: number;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' }) @IsOptional() @IsDateString() @Matches(/(?:Z|[+-]\d{2}:\d{2})$/) discountStartsAt?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' }) @IsOptional() @IsDateString() @Matches(/(?:Z|[+-]\d{2}:\d{2})$/) discountEndsAt?: string | null;
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') programDefinitionId!: string;
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') termsPolicyVersionId?: string;
   @ApiProperty({ pattern: '^(0|[1-9][0-9]{0,18})$' }) @Matches(/^(0|[1-9][0-9]{0,18})$/u) amountRial!: string;
@@ -58,6 +62,9 @@ export class ProgramCommercialPreviewDto {
   @ApiProperty({ enum: [false] }) checkoutAvailable!: false;
 }
 export class ProgramPublicationResponseDto {
+  @ApiProperty() discountPercent!: number;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' }) discountStartsAt!: Date | null;
+  @ApiProperty({ type: String, nullable: true, format: 'date-time' }) discountEndsAt!: Date | null;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) programDefinitionId!: string;
   @ApiProperty() definitionContentHash!: string;
@@ -98,4 +105,31 @@ export class ProgramPublicationSetupDto {
   @ApiProperty({ type: ProgramPublicationResponseDto, nullable: true }) latestPublication!: ProgramPublicationResponseDto | null;
   @ApiProperty({ type: ProgramPurchaseTermsDto, nullable: true }) termsPolicy!: ProgramPurchaseTermsDto | null;
   @ApiProperty({ type: String, nullable: true }) suggestedRetentionPolicyRef!: string | null;
+}
+
+export class ProgramBulkPreviewDto {
+  @ApiProperty({ type: [ProgramCommercialConfigDto] }) @IsArray() @ArrayMinSize(1) @ArrayMaxSize(10) @ValidateNested({ each: true }) @Type(() => ProgramCommercialConfigDto) items!: ProgramCommercialConfigDto[];
+}
+export class ProgramBulkPublishItemDto {
+  @ApiProperty() @IsString() @Matches(/^[\x21-\x7e]{8,200}$/) key!: string;
+  @ApiProperty({ type: PublishProgramOfferingDto }) @IsObject() @ValidateNested() @Type(() => PublishProgramOfferingDto) configuration!: PublishProgramOfferingDto;
+}
+export class ProgramBulkPublishDto {
+  @ApiProperty({ type: [ProgramBulkPublishItemDto] }) @IsArray() @ArrayMinSize(1) @ArrayMaxSize(10) @ValidateNested({ each: true }) @Type(() => ProgramBulkPublishItemDto) items!: ProgramBulkPublishItemDto[];
+}
+export class ProgramBulkPreviewItemResponseDto {
+  @ApiProperty() programDefinitionId!: string;
+  @ApiPropertyOptional({ type: ProgramCommercialPreviewDto }) preview?: ProgramCommercialPreviewDto;
+  @ApiPropertyOptional() code?: string;
+}
+export class ProgramBulkPreviewResponseDto {
+  @ApiProperty({ type: [ProgramBulkPreviewItemResponseDto] }) items!: ProgramBulkPreviewItemResponseDto[];
+}
+export class ProgramBulkPublishItemResponseDto {
+  @ApiProperty() programDefinitionId!: string;
+  @ApiPropertyOptional({ type: ProgramPublicationResponseDto }) publication?: ProgramPublicationResponseDto;
+  @ApiPropertyOptional() code?: string;
+}
+export class ProgramBulkPublishResponseDto {
+  @ApiProperty({ type: [ProgramBulkPublishItemResponseDto] }) items!: ProgramBulkPublishItemResponseDto[];
 }

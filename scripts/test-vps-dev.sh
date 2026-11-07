@@ -29,6 +29,10 @@ cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
 cp "$repo_root/deploy/ejabberd/compose.yaml" "$dev_root/chat.compose.yaml"
 cp "$repo_root/deploy/ejabberd/compose.database.yaml" "$dev_root/chat.database.yaml"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
+mkdir -p "$workspace/apps/api/scripts" "$workspace/raw-data/markdown"
+cp "$repo_root/apps/api/scripts/build-program-catalog.mjs" "$workspace/apps/api/scripts/"
+printf '{}\n' >"$workspace/raw-data/services.catalog.json"
+printf 'Synthetic source\n' >"$workspace/raw-data/markdown/service.md"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
   "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$workspace/apps/api/"
@@ -131,6 +135,8 @@ if [[ " $* " == *' run --rm --no-deps bootstrap '* ]]; then
   if [[ ${DEV_COMPILE_API:-false} == true ]]; then
     mkdir -p "$FAKE_WORKSPACE/apps/api/dist"
     : >"$FAKE_WORKSPACE/apps/api/dist/main.js"
+    mkdir -p "$FAKE_WORKSPACE/apps/api/dist/resources"
+    printf '{}\n' >"$FAKE_WORKSPACE/apps/api/dist/resources/program-catalog.json"
     printf '%s\n' "$DEV_API_SOURCE_HASH" >"$FAKE_WORKSPACE/apps/api/dist/.source.sha256"
   fi
   if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
@@ -280,6 +286,18 @@ printf '\n' >>"$workspace/apps/api/src/main.ts"
 run_deploy dddddddddddddddddddddddddddddddddddddddd
 grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
   || fail 'API-only change did not run only the API compiler stage'
+
+for catalog_input in raw-data/markdown/service.md raw-data/services.catalog.json apps/api/scripts/build-program-catalog.mjs; do
+  printf '\n' >>"$workspace/$catalog_input"
+  : >"$docker_log"
+  run_deploy dddddddddddddddddddddddddddddddddddddddd
+  grep -q 'bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
+    || fail "catalog input change did not rebuild private bundle: $catalog_input"
+done
+rm -- "$workspace/apps/api/dist/resources/program-catalog.json"
+: >"$docker_log"
+run_deploy dddddddddddddddddddddddddddddddddddddddd
+grep -q 'bootstrap.*compile=true' "$docker_log" || fail 'missing catalog bundle did not force rebuild'
 grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
   || fail 'API-only change did not recreate the API runtime'
 

@@ -32,6 +32,9 @@ export class ProgramTermsDto {
   @ApiProperty() contentHash!: string;
 }
 export class PatientProgramOfferingDto {
+  @ApiProperty() baseAmountRial!: string;
+  @ApiProperty() discountPercent!: number;
+  @ApiProperty({ type: String, nullable: true }) serviceId!: string | null;
   @ApiProperty() id!: string;
   @ApiProperty() programDefinitionId!: string;
   @ApiProperty() versionNumber!: number;
@@ -65,6 +68,7 @@ export class ProgramGrantDto {
   @ApiProperty() accessAvailable!: boolean;
 }
 export class PatientProgramPurchaseDto {
+  @ApiProperty({ type: String, nullable: true }) serviceId!: string | null;
   @ApiProperty({ enum: ['READY_EDUCATION','CUSTOM_PROFESSIONAL_PLAN'] }) kind!: string;
   @ApiProperty({ type: String, nullable: true }) customRequestId!: string | null;
   @ApiProperty() id!: string;
@@ -84,6 +88,8 @@ export class PatientProgramPurchasePageDto {
   @ApiProperty() pageSize!: number;
 }
 export class PatientProgramContentDto extends ProgramGrantDto {
+  @ApiProperty() serviceId!: string;
+  @ApiProperty() purchasedDefinitionId!: string;
   @ApiProperty() purchaseId!: string;
   @ApiProperty() programDefinitionId!: string;
   @ApiProperty() versionNumber!: number;

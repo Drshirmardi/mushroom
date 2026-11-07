@@ -16,6 +16,9 @@ export class ProgramMezajDto {
   @ApiProperty({ type: [String] }) pairs!: string[];
 }
 export class MezajProgramCardDto {
+  @ApiProperty() baseAmountRial!: string;
+  @ApiProperty() discountPercent!: number;
+  @ApiProperty() serviceId!: string;
   @ApiProperty() programDefinitionId!: string;
   @ApiProperty() publicationId!: string;
   @ApiProperty() title!: string;
@@ -35,6 +38,7 @@ export class MezajProgramRecommendationsDto {
   @ApiProperty({ type: [MezajProgramCardDto] }) items!: MezajProgramCardDto[];
 }
 export class OwnedProgramCardDto {
+  @ApiProperty({ type: String, nullable: true }) serviceId!: string | null;
   @ApiProperty() accessGrantId!: string;
   @ApiProperty() purchaseId!: string;
   @ApiProperty() title!: string;

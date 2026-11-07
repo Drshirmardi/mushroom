@@ -1,5 +1,8 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
+import { buildCatalog } from './build-program-catalog.mjs';
+
+await buildCatalog();
 
 const require = createRequire(import.meta.url);
 const typescriptCompiler = require.resolve('typescript/bin/tsc');

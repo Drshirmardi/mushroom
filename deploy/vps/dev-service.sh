@@ -70,6 +70,7 @@ case "$command_name" in
       NODE_OPTIONS=--max-old-space-size=1536 \
         pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
           --noCheck --declaration false --declarationMap false
+      pnpm --filter @sabz-zendegi/api catalog:build
       printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
     fi
     if [[ -f /run/mushroom-installation/first-run.json ]]; then

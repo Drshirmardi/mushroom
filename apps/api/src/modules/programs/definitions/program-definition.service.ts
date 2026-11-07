@@ -15,13 +15,13 @@ const hash = (value: unknown) => createHash('sha256').update(JSON.stringify(valu
 @Injectable()
 export class ProgramDefinitionService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly content: GuidanceContentService) {}
-  async create(input: ProgramDefinitionCreateDto, rawKey: string | undefined, ctx: Context) {
+  async create(input: ProgramDefinitionCreateDto, rawKey: string | undefined, ctx: Context, transaction?: Tx) {
     const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key)) throw invalid();
     const safety = { intendedAudience: input.safety.intendedAudience.trim(), limitations: input.safety.limitations.trim(), contraindications: input.safety.contraindications.map(s => s.trim()), seekProfessionalCare: input.safety.seekProfessionalCare.trim() };
     const definition = { programKey: input.programKey, locale: input.locale, kind: input.kind, title: input.title.trim(), summary: input.summary.trim(), category: input.category.trim(), body: input.body.trim(), eligibilityDescription: input.eligibilityDescription.trim(), safety, contentReferences: (input.contentReferences ?? []).map(r => ({ id: r.id.toLowerCase(), contentHash: r.contentHash })), doctorServiceId: input.doctorServiceId?.toLowerCase() ?? null };
     if (new Set(definition.contentReferences.map(r => r.id)).size !== definition.contentReferences.length || definition.kind === 'READY_EDUCATION' && definition.doctorServiceId || definition.kind === 'CUSTOM_PROFESSIONAL_PLAN' && !definition.doctorServiceId) throw invalid();
     const payloadHash = hash(definition);
-    return this.prisma.$transaction(async tx => {
+    const operation = async (tx: Tx) => {
       const clinicId = await this.authority.scope(tx, 'admin', ctx);
       await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${'program-command:' + ctx.actorUserId + ':' + key},0))`);
       const previous = await tx.programDefinitionVersion.findUnique({ where: { clinicId_createdByUserId_idempotencyKey: { clinicId, createdByUserId: ctx.actorUserId, idempotencyKey: key } } });
@@ -32,7 +32,8 @@ export class ProgramDefinitionService {
       await this.sources(tx, clinicId, definition.locale, definition.contentReferences);
       const row = await tx.programDefinitionVersion.create({ data: { ...definition, clinicId, serviceSnapshot: serviceSnapshot ? { ...serviceSnapshot } : Prisma.DbNull, contentHash: hash({ ...definition, serviceSnapshot }), versionNumber: (latest?.versionNumber ?? 0) + 1, createdByUserId: ctx.actorUserId, createdSessionId: ctx.actorSessionId, createdAt: await this.now(tx), idempotencyKey: key, payloadHash } });
       if (!await this.dependencies(tx, row.id)) throw invalid(); await this.audit(tx, 'CREATED', row.id, ctx); return this.response(tx, row);
-    }, { maxWait: 30_000, timeout: 15_000 });
+    };
+    return transaction ? operation(transaction) : this.prisma.$transaction(operation, { maxWait: 30_000, timeout: 15_000 });
   }
   async list(query: ProgramDefinitionQueryDto, mode: Mode, ctx: Context) {
     return this.prisma.$transaction(async tx => {

@@ -4182,6 +4182,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/program-offerings/bulk-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramOfferingBulkPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/bulk-publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramOfferingBulkPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/program-offerings/setup/{id}": {
         parameters: {
             query?: never;
@@ -6410,6 +6442,183 @@ export interface paths {
         get: operations["patientEducationalCoupleResult"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramCatalogList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCatalogPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCatalogApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramCategoryList"];
+        put?: never;
+        post: operations["adminProgramCategoryCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCategorySave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramServiceList"];
+        put?: never;
+        post: operations["adminProgramServiceCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramServiceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceSaveDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture the complete working draft for physician review; never auto-approve or publish */
+        post: operations["adminProgramServiceSubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceRestore"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9957,11 +10166,51 @@ export interface components {
             /** @enum {boolean} */
             noAutomaticTherapyActivation: true;
         };
-        ProgramStaticTermsDto: {
+        ProgramCommercialConfigDto: {
+            expectedServiceRevision?: number;
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+        };
+        ProgramBulkPreviewDto: {
+            items: components["schemas"]["ProgramCommercialConfigDto"][];
+        };
+        ProgramCommercialDefinitionDto: {
+            /** Format: uuid */
+            id: string;
+            programKey: string;
+            locale: string;
+            kind: string;
+            title: string;
+            contentHash: string;
+            status: string;
+            usable: boolean;
+        };
+        ProgramPurchaseTermsDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
+            versionNumber: number;
+            locale: string;
             title: string;
             body: string;
-            /** @enum {number} */
-            versionNumber: 1;
+            contentHash: string;
         };
         ProgramCommercialPolicyDto: {
             /** @enum {number} */
@@ -9971,7 +10220,64 @@ export interface components {
             /** @enum {string} */
             paymentPoint: "PRE_ACCESS_OR_REQUEST";
         };
+        ProgramCommercialPreviewDto: {
+            configuration: components["schemas"]["ProgramCommercialConfigDto"];
+            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            policy: components["schemas"]["ProgramCommercialPolicyDto"];
+            publicationHash: string | null;
+            expectedPublicationNumber: number;
+            configurationReady: boolean;
+            blockers: string[];
+            /** @enum {boolean} */
+            checkoutAvailable: false;
+        };
+        ProgramBulkPreviewItemResponseDto: {
+            programDefinitionId: string;
+            preview?: components["schemas"]["ProgramCommercialPreviewDto"];
+            code?: string;
+        };
+        ProgramBulkPreviewResponseDto: {
+            items: components["schemas"]["ProgramBulkPreviewItemResponseDto"][];
+        };
+        PublishProgramOfferingDto: {
+            expectedServiceRevision?: number;
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+            publicationHash: string;
+            expectedPublicationNumber: number;
+            /** @enum {boolean} */
+            reviewedTermsAndRetention: true;
+        };
+        ProgramBulkPublishItemDto: {
+            key: string;
+            configuration: components["schemas"]["PublishProgramOfferingDto"];
+        };
+        ProgramBulkPublishDto: {
+            items: components["schemas"]["ProgramBulkPublishItemDto"][];
+        };
         ProgramPublicationResponseDto: {
+            discountPercent: number;
+            /** Format: date-time */
+            discountStartsAt: string | null;
+            /** Format: date-time */
+            discountEndsAt: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -10007,77 +10313,25 @@ export interface components {
             /** @enum {boolean} */
             checkoutAvailable: false;
         };
-        ProgramPurchaseTermsDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
-            versionNumber: number;
-            locale: string;
+        ProgramBulkPublishItemResponseDto: {
+            programDefinitionId: string;
+            publication?: components["schemas"]["ProgramPublicationResponseDto"];
+            code?: string;
+        };
+        ProgramBulkPublishResponseDto: {
+            items: components["schemas"]["ProgramBulkPublishItemResponseDto"][];
+        };
+        ProgramStaticTermsDto: {
             title: string;
             body: string;
-            contentHash: string;
+            /** @enum {number} */
+            versionNumber: 1;
         };
         ProgramPublicationSetupDto: {
             defaultTerms: components["schemas"]["ProgramStaticTermsDto"] | null;
             latestPublication: components["schemas"]["ProgramPublicationResponseDto"] | null;
             termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
             suggestedRetentionPolicyRef: string | null;
-        };
-        ProgramCommercialConfigDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId?: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef?: string | null;
-        };
-        ProgramCommercialDefinitionDto: {
-            /** Format: uuid */
-            id: string;
-            programKey: string;
-            locale: string;
-            kind: string;
-            title: string;
-            contentHash: string;
-            status: string;
-            usable: boolean;
-        };
-        ProgramCommercialPreviewDto: {
-            configuration: components["schemas"]["ProgramCommercialConfigDto"];
-            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
-            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
-            policy: components["schemas"]["ProgramCommercialPolicyDto"];
-            publicationHash: string | null;
-            expectedPublicationNumber: number;
-            configurationReady: boolean;
-            blockers: string[];
-            /** @enum {boolean} */
-            checkoutAvailable: false;
-        };
-        PublishProgramOfferingDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId?: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef?: string | null;
-            publicationHash: string;
-            expectedPublicationNumber: number;
-            /** @enum {boolean} */
-            reviewedTermsAndRetention: true;
         };
         ProgramPublicationPageDto: {
             items: components["schemas"]["ProgramPublicationResponseDto"][];
@@ -10099,6 +10353,9 @@ export interface components {
             acceptedAt: string;
         };
         PatientProgramOfferingDto: {
+            baseAmountRial: string;
+            discountPercent: number;
+            serviceId: string | null;
             id: string;
             programDefinitionId: string;
             versionNumber: number;
@@ -10153,6 +10410,7 @@ export interface components {
             accessAvailable: boolean;
         };
         PatientProgramPurchaseDto: {
+            serviceId: string | null;
             /** @enum {string} */
             kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
             customRequestId: string | null;
@@ -10181,6 +10439,8 @@ export interface components {
             /** Format: date-time */
             endsAt: string | null;
             accessAvailable: boolean;
+            serviceId: string;
+            purchasedDefinitionId: string;
             purchaseId: string;
             programDefinitionId: string;
             versionNumber: number;
@@ -10208,6 +10468,9 @@ export interface components {
             pairs: string[];
         };
         MezajProgramCardDto: {
+            baseAmountRial: string;
+            discountPercent: number;
+            serviceId: string;
             programDefinitionId: string;
             publicationId: string;
             title: string;
@@ -10233,6 +10496,7 @@ export interface components {
             items: components["schemas"]["MezajProgramCardDto"][];
         };
         OwnedProgramCardDto: {
+            serviceId: string | null;
             accessGrantId: string;
             purchaseId: string;
             title: string;
@@ -11604,6 +11868,142 @@ export interface components {
         EducationalCoupleResultDto: {
             results: components["schemas"]["EducationalCoupleIndividualResultDto"][];
             jointText: string | null;
+        };
+        CatalogEntrySummaryDto: {
+            invalidReason?: string;
+            key: string;
+            title: string;
+            category: string;
+            /** @enum {string} */
+            audience: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            baseAmountRial: string;
+            reviewRequired: boolean;
+            sourceCount: number;
+        };
+        CatalogListDto: {
+            bundleHash: string;
+            items: components["schemas"]["CatalogEntrySummaryDto"][];
+        };
+        CatalogPreviewRequestDto: {
+            entries: string[];
+            fields?: ("title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs")[];
+        };
+        WorkingSafetyDto: {
+            intendedAudience?: string;
+            limitations?: string;
+            contraindications?: string[];
+            seekProfessionalCare?: string;
+        };
+        ProgramWorkingDraftDto: {
+            title?: string;
+            summary?: string;
+            body?: string;
+            category?: string;
+            eligibilityDescription?: string;
+            /** @enum {string} */
+            audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            pairs?: string[];
+            safety?: components["schemas"]["WorkingSafetyDto"];
+        };
+        CatalogPreviewItemDto: {
+            invalidReason?: string;
+            key: string;
+            serviceId: string | null;
+            expectedRevision: number | null;
+            /** @enum {string} */
+            state: "NEW" | "UNCHANGED" | "CHANGED" | "CONFLICT" | "ARCHIVED" | "INVALID";
+            conflicts: ("title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs")[];
+            current: components["schemas"]["ProgramWorkingDraftDto"] | null;
+            incoming: components["schemas"]["ProgramWorkingDraftDto"] | null;
+        };
+        CatalogPreviewResponseDto: {
+            id: string;
+            bundleHash: string;
+            /** Format: date-time */
+            expiresAt: string;
+            items: components["schemas"]["CatalogPreviewItemDto"][];
+        };
+        CatalogResolutionDto: {
+            /** @enum {string} */
+            field: "title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs";
+            /** @enum {string} */
+            choice: "SOURCE" | "DASHBOARD";
+        };
+        CatalogApplyItemDto: {
+            key: string;
+            resolutions?: components["schemas"]["CatalogResolutionDto"][];
+        };
+        CatalogApplyRequestDto: {
+            items: components["schemas"]["CatalogApplyItemDto"][];
+        };
+        CatalogApplyResultDto: {
+            key: string;
+            /** @enum {string} */
+            state: "APPLIED" | "UNCHANGED" | "SKIPPED" | "CONFLICT" | "INVALID";
+            serviceId: string | null;
+            code?: string;
+        };
+        CatalogApplyResponseDto: {
+            items: components["schemas"]["CatalogApplyResultDto"][];
+        };
+        ProgramCategoryResponseDto: {
+            id: string;
+            key: string;
+            name: string;
+            revision: number;
+            active: boolean;
+        };
+        ProgramCategoryListDto: {
+            items: components["schemas"]["ProgramCategoryResponseDto"][];
+        };
+        ProgramCategoryCreateDto: {
+            key: string;
+            name: string;
+        };
+        ProgramCategorySaveDto: {
+            expectedRevision: number;
+            name: string;
+            active: boolean;
+            reassignToId?: string;
+        };
+        ProgramServiceResponseDto: {
+            id: string;
+            programKey: string;
+            locale: string;
+            revision: number;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+            /** @enum {string} */
+            audience: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            categoryId: string | null;
+            publishedDefinitionId: string | null;
+            baseAmountRial: string | null;
+            discountPercent: number;
+            /** Format: date-time */
+            discountStartsAt: string | null;
+            /** Format: date-time */
+            discountEndsAt: string | null;
+            sellingEnabled: boolean;
+            /** Format: date-time */
+            archivedAt: string | null;
+        };
+        ProgramServicePageDto: {
+            items: components["schemas"]["ProgramServiceResponseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ProgramServiceCreateDto: {
+            programKey: string;
+            locale: string;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+        };
+        ProgramDraftSaveDto: {
+            expectedRevision: number;
+            categoryId?: string | null;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+        };
+        ProgramRevisionDto: {
+            expectedRevision: number;
         };
     };
     responses: never;
@@ -24838,6 +25238,188 @@ export interface operations {
             };
         };
     };
+    adminProgramOfferingBulkPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramBulkPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramBulkPreviewResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingBulkPublish: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramBulkPublishDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramBulkPublishResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     adminProgramOfferingSetup: {
         parameters: {
             query?: never;
@@ -33064,6 +33646,888 @@ export interface operations {
             };
             /** @description Required private access audit unavailable. */
             503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogList: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogListDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogPreviewRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogPreviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogApply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogApplyRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogApplyResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategoryList: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryListDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategoryCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramCategoryCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategorySave: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramCategorySaveDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceList: {
+        parameters: {
+            query?: {
+                audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                state?: "ACTIVE" | "ARCHIVED" | "ALL";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServicePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramServiceCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceSaveDraft: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramDraftSaveDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceSubmit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Working draft lacks required content or safety. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceArchive: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceRestore: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

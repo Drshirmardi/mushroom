@@ -118,4 +118,33 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program comm
   it('audit failure discloses no terms and atomically rolls back replacement/retirement with the old active price intact',async()=>{
     const f=await setup(),original=await publish(f.config),config={...f.config,amountRial:'70000'},preview=(await req('POST','admin/program-offerings/preview',admin,config)).json(),input={...config,publicationHash:preview.publicationHash,expectedPublicationNumber:1,reviewedTermsAndRetention:true};await db.$executeRawUnsafe(`CREATE FUNCTION program_commercial_test_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action LIKE 'PROGRAM_COMMERCIAL_%' THEN RAISE EXCEPTION 'synthetic program commercial audit failure'; END IF; RETURN NEW; END $$`);const fail=()=>db.$executeRawUnsafe('CREATE TRIGGER program_commercial_test_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION program_commercial_test_audit_fail()'),clear=()=>db.$executeRawUnsafe('DROP TRIGGER program_commercial_test_audit_fail ON audit_events');try{await fail();expect((await req('POST','admin/program-offerings',admin,input)).statusCode).toBe(500);expect(await db.programOfferingPublication.count({where:{programDefinitionId:f.row.id}})).toBe(1);expect((await db.programOfferingPublication.findUniqueOrThrow({where:{id:original.row.id}})).status).toBe('ACTIVE');for(const [method,path,payload] of[['GET',`admin/program-offerings/${original.row.id}`,undefined],['POST','admin/program-offerings/preview',config]] as const){const r=await req(method,path,admin,payload);expect(r.statusCode).toBe(500);expect(r.body).not.toContain(f.terms.body);}await clear();const next=await req('POST','admin/program-offerings',admin,input);expect(next.statusCode,next.body).toBe(201);await fail();expect((await req('POST',`admin/program-offerings/${next.json().id}/retire`)).statusCode).toBe(500);expect((await db.programOfferingPublication.findUniqueOrThrow({where:{id:next.json().id}})).status).toBe('ACTIVE');await clear();expect((await req('POST',`admin/program-offerings/${next.json().id}/retire`)).statusCode).toBe(201);}finally{await db.$executeRawUnsafe('DROP TRIGGER IF EXISTS program_commercial_test_audit_fail ON audit_events');await db.$executeRawUnsafe('DROP FUNCTION program_commercial_test_audit_fail()');}
   },20_000);
+
+  it('publishes only eligible bulk items, preserves clinical approval, and retries without extra publications', async () => {
+    const f=await setup(), draft=await definition(body()), configs=[f.config,{...f.config,programDefinitionId:draft.id}];
+    const denied=await req('POST','admin/program-offerings/bulk-preview',patient,{items:configs});expect(denied.statusCode).toBe(403);
+    const preview=await req('POST','admin/program-offerings/bulk-preview',admin,{items:configs});expect(preview.statusCode,preview.body).toBe(200);
+    expect(preview.json().items[0].preview.configurationReady).toBe(true);expect(preview.json().items[1].preview.configurationReady).toBe(false);
+    const items=configs.map((configuration,index)=>({key:randomUUID(),configuration:{...configuration,publicationHash:preview.json().items[index].preview.publicationHash ?? '0'.repeat(64),expectedPublicationNumber:0,reviewedTermsAndRetention:true}}));
+    const published=await req('POST','admin/program-offerings/bulk-publish',admin,{items});expect(published.statusCode,published.body).toBe(201);
+    expect(published.json().items[0].publication.programDefinitionId).toBe(f.row.id);expect(published.json().items[1].code).toBe('PROGRAM_PUBLICATION_CONFLICT');
+    const replay=await req('POST','admin/program-offerings/bulk-publish',admin,{items});expect(replay.json().items[0].publication.id).toBe(published.json().items[0].publication.id);
+    expect(await db.programOfferingPublication.count({where:{programDefinitionId:f.row.id}})).toBe(1);
+    expect(await db.programOfferingPublication.count({where:{programDefinitionId:draft.id}})).toBe(0);
+    expect((await db.programDefinitionVersion.findUniqueOrThrow({where:{id:draft.id}})).status).toBe('DRAFT');
+  },20000);
+  it('rejects publication when a logical service changes after price preview', async () => {
+    const f=await setup(),root=await db.programService.findUniqueOrThrow({where:{clinicId_programKey_locale:{clinicId,programKey:f.row.programKey,locale:f.row.locale}}});
+    const config={...f.config,expectedServiceRevision:root.revision,discountPercent:20};
+    const preview=await req('POST','admin/program-offerings/preview',admin,config);expect(preview.statusCode,preview.body).toBe(200);
+    await db.programService.update({where:{id:root.id},data:{revision:{increment:1}}});
+    const published=await req('POST','admin/program-offerings',admin,{...config,publicationHash:preview.json().publicationHash,expectedPublicationNumber:0,reviewedTermsAndRetention:true});
+    expect(published.statusCode).toBe(409);expect(await db.programOfferingPublication.count({where:{programDefinitionId:f.row.id}})).toBe(0);
+  },15000);
+  it('rejects invalid percentages and reversed windows without creating prices', async () => {
+    const f=await setup();
+    expect((await req('POST','admin/program-offerings/preview',admin,{...f.config,discountPercent:101})).statusCode).toBe(400);
+    expect((await req('POST','admin/program-offerings/preview',admin,{...f.config,discountPercent:10,discountStartsAt:'2026-11-09T00:00:00Z',discountEndsAt:'2026-11-07T00:00:00Z'})).statusCode).toBe(422);
+    expect(await db.programOfferingPublication.count({where:{programDefinitionId:f.row.id}})).toBe(0);
+  });
+
 });

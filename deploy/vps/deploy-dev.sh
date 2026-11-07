@@ -178,11 +178,16 @@ hash_api_inputs() {
     "$workspace/apps/api/package.json"
     "$workspace/apps/api/tsconfig.json"
     "$workspace/apps/api/tsconfig.build.json"
+    "$workspace/apps/api/scripts/build-program-catalog.mjs"
+    "$workspace/raw-data/services.catalog.json"
   )
   while IFS= read -r file; do files+=("$file"); done < <(
     find "$workspace/apps/api/src" \
       -path "$workspace/apps/api/src/generated/prisma" -prune -o \
       -type f -print | sort
+  )
+  while IFS= read -r file; do files+=("$file"); done < <(
+    find "$workspace/raw-data/markdown" -type f -name '*.md' -print | sort
   )
   sha256sum "${files[@]}" | sha256sum | cut -d' ' -f1
 }
@@ -336,7 +341,8 @@ fi
 if [[ $install_dependencies == true || $runtime_changed == true \
   || $api_hash != "$previous_api_hash" || $api_client_hash != "$previous_api_client_hash" \
   || $prisma_hash != "$previous_prisma_hash" || $api_hash != "$api_artifact_hash" \
-  || ! -f $workspace/apps/api/dist/main.js ]]; then
+  || ! -f $workspace/apps/api/dist/main.js \
+  || ! -s $workspace/apps/api/dist/resources/program-catalog.json ]]; then
   compile_api=true
 fi
 if [[ $web_hash != "$previous_web_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then

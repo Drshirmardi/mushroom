@@ -1,0 +1,1985 @@
+{
+  "schemaVersion": 1,
+  "services": [
+    {
+      "programKey": "RAW_79C665E4A42CFFE6C2CC2AA1",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2600000",
+      "metadata": {
+        "title": "بیماری های جسمی و تهدیدکننده سوءمزاج بلغمی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/بیماری_های_جسمی_و_تهدیدکننده_سوءمزاج_بلغمی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_CEF8541E54364F3012A9A466",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2250000",
+      "metadata": {
+        "title": "بیماری های جسمی و تهدیدکننده سوءمزاج دموی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/بیماری_های_جسمی_و_تهدیدکننده_سوءمزاج_دموی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_69ED93EA410671E948F6633B",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "بیماری های جسمی و تهدیدکننده سوءمزاج سوداوی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/بیماری_های_جسمی_و_تهدیدکننده_سوءمزاج_سوداوی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_EC0404938756DC622431C269",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "بیماری های جسمی و تهدیدکننده سوءمزاج صفراوی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/بیماری_های_جسمی_و_تهدیدکننده_سوءمزاج_صفراوی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_AA92212A579FE3B5B18041EA",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2100000",
+      "metadata": {
+        "title": "شخصیت شناسی بلغم- بلغم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی بلغم- بلغم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B5C50EF2C521E6830F16A443",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "شخصیت شناسی بلغم- دم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی بلغم- دم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_70777A758872837801E2074F",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "شخصیت شناسی بلغم- سودا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی بلغم- سودا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_5AE643874F12C6A7077B26F3",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "شخصیت شناسی بلغم- صفرا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی بلغم- صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_531806992C6BD4BB86FA918E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "شخصیت شناسی دموی - بلغمی",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی دموی - بلغمی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_8A8CAB142E549CFE9DC34B71",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "شخصیت شناسی دموی- دموی",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی دموی- دموی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_7445369D57C4038553C2AB4E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "شخصیت شناسی دموی- سوداوی",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی دموی- سوداوی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E7ADEA79433CBB1C8E84A8EC",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "شخصیت شناسی دموی- صفرا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی دموی- صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_40CE4C7779C1B8AD52C97981",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2900000",
+      "metadata": {
+        "title": "شخصیت شناسی سودا- بلغم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی سودا- بلغم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E9CE6DC6145A56B1C5A27B58",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2800000",
+      "metadata": {
+        "title": "شخصیت شناسی سودا- دم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی سودا- دم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_345FF075376535C2D266A3AE",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2100000",
+      "metadata": {
+        "title": "شخصیت شناسی سودا- سودا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی سودا- سودا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_611B2AAF77E7AD3F53A5C053",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "شخصیت شناسی سودا- صفرا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی سودا- صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_80034E0C9F467773ADA75983",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "شخصیت شناسی صفرا- دم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی صفرا- دم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B23A19EB7944C3CBFFEE5805",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "شخصیت شناسی صفرا- سودا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی صفرا- سودا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B5AB68773704323EEFD32D60",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "شخصیت شناسی صفرا- صفرا",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی صفرا- صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_267F9E5D408CEE05BEDF4CAD",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "شخصیت شناسی مزاج صفرا- بلغم",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی مزاج صفرا- بلغم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_FEF992D5ECD016736EFA3473",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2550000",
+      "metadata": {
+        "title": "طبع خوردنی ها و آشامیدنی ها",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/طبع خوردنی ها و آشامیدنی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B1F467B8707A5A8B25B2997F",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاروه اصلاح مزاج بلغمی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشاروه اصلاح مزاج بلغمی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_C6A442E3DE61253E53893C1A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "مشاوره اصلاح مزاج سوداوی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشاوره اصلاح مزاج سوداوی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_652B186B2C607BD651E63F5F",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2450000",
+      "metadata": {
+        "title": "مشاوره اصلاح مزاج صفراوی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشاوره اصلاح مزاج صفراوی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_BFD17A7F3FC8EE00046E7C77",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2250000",
+      "metadata": {
+        "title": "مشاوره برای لاغر شدن در بلغمی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای لاغر شدن در بلغمی مزاج ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E197E908AA0EB908D4D2EE09",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "مشاوره برای لاغر شدن دموی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای لاغر شدن دموی مزاج ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_F20C8E612BD50EDC83F8F576",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2200000",
+      "metadata": {
+        "title": "مشاوره برای لاغر شدن سوداوی ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای لاغر شدن سوداوی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_6A8E3CF6881AA6B57942E956",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "مشاوره برای چاق شدن مزاج بلغمی",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای چاق شدن مزاج بلغمی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_9A4DE6C77ABA71E2CD78BA27",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2100000",
+      "metadata": {
+        "title": "مشاوره تغذیه دموی مزاج ها",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه دموی مزاج ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_2C800C42F0BC20FFFDB7200B",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "مشاوره تغذیه مزاج بلغم",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه مزاج بلغم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B0FA25E6CB43CF27D731E46B",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2900000",
+      "metadata": {
+        "title": "مشاوره تغذیه مزاج سوداوی",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه مزاج سوداوی.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E4B5A79900707BB0A068BCF4",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "مشاوره تغذیه مزاج صفرا",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه مزاج صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_8F001129E4B4B790BC4D43D6",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2550000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی مزاج بلغم",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی مزاج بلغم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_1DD32B203971A8402C19D8AF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2200000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی مزاج دم",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی مزاج دم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_13B25D08FB81C772C8D41C5F",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2750000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی مزاج سودا",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی مزاج سودا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_99EA196CEF3C0D18F99AA3E2",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2600000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی مزاج صفرا",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی مزاج صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_AB7BFEE22D12D036552951CD",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاوره لاغر شدن صفراوی ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره لاغر شدن صفراوی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_1F667560A379A2F00BAF1D29",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "مشاوره چاق شدن سوداوی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره چاق شدن سوداوی مزاج ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_8B922214764DBE63EBB954AF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "مشاوره چاق شدن صفراوی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره چاق شدن صفراوی مزاج ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0F046AEA0397F1ED24C82E22",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2300000",
+      "metadata": {
+        "title": "مشوره اصلاح مزاج دموی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشوره اصلاح مزاج دموی ها.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_3E96B25872F3CF240B26C9EF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2300000",
+      "metadata": {
+        "title": "گناهان و انحرافاتی که در اثر جهل",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناهان و انحرافاتی که در اثر جهل.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0BD68D43B88FDBEAF34D5D2A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "گناه دم",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناه دم.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_4383C1B27B6A681F9989ED8A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2750000",
+      "metadata": {
+        "title": "گناه سودا",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناه سودا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_15F45B7B462E208D845CD2B2",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2250000",
+      "metadata": {
+        "title": "گناه صفرا",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناه صفرا.md",
+          "quality": "docx_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_8B2AD4A2493F18350BCFE12B",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2550000",
+      "metadata": {
+        "title": "تست مزاج شناسی",
+        "category": "آزمون و ارزیابی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/assessment/تست مزاج شناسی.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_F4B8FA79F701AA2150F4A8C7",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "درباره ما",
+        "category": "منابع مرجع",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reference/درباره ما.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_06000FBAD3751BCAEC2C5BDD",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2500000",
+      "metadata": {
+        "title": "راهنما",
+        "category": "منابع مرجع",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reference/راهنما.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E2AE9B3FCFFB081F58689101",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "مشاوره برای چاق شدن مزاج دموی",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای چاق شدن مزاج دموی.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_38FDE233E3C0F2223E7EBD69",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "برنامه استاندارد غذايي",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/برنامه استاندارد غذايي.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_A993F58C960B35B9E2BA6E9C",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "درجه گرمی و سردی خوراکیها",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/درجه گرمی و سردی خوراکیها.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B3D26ACFE2C9980FB18DC3AC",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "درمان 3 گانه رحم",
+        "category": "سلامت باروری",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reproductive-health/درمان 3 گانه رحم.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E5E32EB11543115F41F96020",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "درمان سه گانه(دستورات میوم)",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/درمان سه گانه(دستورات میوم).md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_99FEB6B66E27350E91713586",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "درمان گودی کمر چیست",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/درمان گودی کمر چیست.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_74F6B538DD69EAE19E59B784",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "روشهای تعیین جنسیت قبل از لقاح",
+        "category": "سلامت باروری",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reproductive-health/روشهای تعیین جنسیت قبل از لقاح.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_6E5A2DF2720E230FFD80296D",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "رژیم غذایی پسردار شدن",
+        "category": "سلامت باروری",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reproductive-health/رژیم غذایی پسردار شدن.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_DC50461E8F6F98885F09AC04",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2500000",
+      "metadata": {
+        "title": "طب سوزنی اعصاب و روان جهت مطالعه",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/طب سوزنی اعصاب و روان جهت مطالعه.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_FB82949BC0200FE94FE1543C",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "طب سوزنی اعصاب و روان",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/طب سوزنی اعصاب و روان.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_FA9952C2D555BA14D651A49C",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "معجون ریزش مو",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/معجون ریزش مو.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_213B3B18C9C6361AE9FF25DC",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "ناباروری یا نازایی  مخصوص خانم ها",
+        "category": "سلامت باروری",
+        "audience": "FEMALE",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reproductive-health/ناباروری یا نازایی  مخصوص خانم ها.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_70BC924216B880B6B956A991",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "ناباروری یا نازایی مخصوص مردها",
+        "category": "سلامت باروری",
+        "audience": "MALE",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/reproductive-health/ناباروری یا نازایی مخصوص مردها.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_756286ACB0FD8DED9B54A24A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "نکات مهم در خصوص تربیت",
+        "category": "تربیت و خانواده",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/family-education/نکات مهم در خصوص تربیت.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_ADECF19616E0F4C5A1234A37",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2250000",
+      "metadata": {
+        "title": "نکات مهم پیرامون روابط پدر و مادر",
+        "category": "تربیت و خانواده",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/family-education/نکات مهم پیرامون روابط پدر و مادر.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_EC89BB79C5F905FDB3FD1AD9",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2600000",
+      "metadata": {
+        "title": "A",
+        "category": "گروه‌های خونی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/blood-type/A.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_09754F2BD1840BF397B298A3",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2900000",
+      "metadata": {
+        "title": "AB",
+        "category": "گروه‌های خونی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/blood-type/AB.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E2EFA32191EEE9BEC46B32BF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "B",
+        "category": "گروه‌های خونی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/blood-type/B.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B2376EE3302423B8224D6138",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "O",
+        "category": "گروه‌های خونی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/blood-type/O.md",
+          "quality": "word_extraction; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_3848DEA748FDAEAC9DA86261",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2200000",
+      "metadata": {
+        "title": "مشاوره ازدواج بلغمی و دموی",
+        "category": "ازدواج و روابط",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/relationships/مشاوره ازدواج بلغمی و دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_4903CF465F6CED51265AC206",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2250000",
+      "metadata": {
+        "title": "مشاوره ازدواج دموی و بلغمی",
+        "category": "ازدواج و روابط",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/relationships/مشاوره ازدواج دموی و بلغمی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0964FEA7C585C473ACC58B7F",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "مشاوره ازدواج دموی و سوداوی",
+        "category": "ازدواج و روابط",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/relationships/مشاوره ازدواج دموی و سوداوی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_43943DB1EA631B16E5956B56",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2450000",
+      "metadata": {
+        "title": "مشاوره ازدواج سوداوی - دموی",
+        "category": "ازدواج و روابط",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/relationships/مشاوره ازدواج سوداوی - دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E9D408DFD6BA144FAEEFC627",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاوره ازدواج صفراوی با دموی",
+        "category": "ازدواج و روابط",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/relationships/مشاوره ازدواج صفراوی با دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_5C764F08C838ED671FD7C676",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "مشاوره اضطراب و افسردگی بلغمی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره اضطراب و افسردگی بلغمی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_3BD3052405F82279A50BBDCF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2500000",
+      "metadata": {
+        "title": "مشاوره اضطراب و افسردگی دموی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره اضطراب و افسردگی دموی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_CD8FD74A2D0513D2EC555B71",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "مشاوره اضطراب و افسردگی سوداوی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره اضطراب و افسردگی سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_1BE5F0BE9FC15A72BECA5FC9",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2200000",
+      "metadata": {
+        "title": "مشاوره اضطراب و افسردگی صفراوی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره اضطراب و افسردگی صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_851FE91DD36CC7C6AE9B93A3",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "مشاوره برای لاغری در بلغمی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای لاغری در بلغمی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_3DE062CEE5D86597CB840D71",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2600000",
+      "metadata": {
+        "title": "مشاوره برای لاغری دموی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای لاغری دموی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_CDF6B230C245DBB923292C4E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "مشاوره برای چاقی مزاج بلغمی",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای چاقی مزاج بلغمی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_EA2E7220C6D32191235A4D5E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "مشاوره برای چاقی مزاج دموی",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره برای چاقی مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_91246D40F39652753E32833B",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2550000",
+      "metadata": {
+        "title": "مشاوره ترس و وسواس سوداوی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره ترس و وسواس سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_219F87CFDBAF8227A6ACD50A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2150000",
+      "metadata": {
+        "title": "مشاوره ترس و وسواس صفراوی ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره ترس و وسواس صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_EA1BFC4AFB785C0222CBF106",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2800000",
+      "metadata": {
+        "title": "مشاوره تغذیه صفراوی مزاج ها",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه صفراوی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_45FCF5F6829CE3C2008CF69D",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2500000",
+      "metadata": {
+        "title": "مشاوره تغذیه مزاج دموی",
+        "category": "تغذیه",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/nutrition/مشاوره تغذیه مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_D9CC662277539BE5A75CA7A1",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2450000",
+      "metadata": {
+        "title": "مشاوره وسواس و ترس دموی مزاج ها",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره وسواس و ترس دموی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0ECAA151C2E863305D4B6397",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاوره وسواس و ترس مزاج بلغم",
+        "category": "راهنمای سلامت",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/clinical-guidance/مشاوره وسواس و ترس مزاج بلغم.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_7DBAAA71B15DAE58B3326B3E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "مشاوره چاقی سوداوی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره چاقی سوداوی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_46C291AC93BA3C6DB24665FE",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "استعداد بیماری صفراوی ها",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/استعداد بیماری صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0E400E5FE49A18D38534F601",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "استعداد بیماری مزاج بلغمی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/استعداد بیماری مزاج بلغمی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_4E654E91B629185A34FC8639",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2900000",
+      "metadata": {
+        "title": "استعداد بیماری مزاج دموی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/استعداد بیماری مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_C08F7410A45C3CE6626C19BC",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "استعداد بیماری مزاج سوداوی",
+        "category": "شناخت سوءمزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/health-risks/استعداد بیماری مزاج سوداوی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_D45C3728FD2547B5B03EA891",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2900000",
+      "metadata": {
+        "title": "اصلاح مزاج صفراوی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/اصلاح مزاج صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_EB143495CA6F7C3FB8A7A214",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "شخصیت شناسی افراد صفراوی",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی افراد صفراوی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_489645D377D14C5F28F156FF",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "شخصیت شناسی بلغمی مزاج ها",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی بلغمی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_24F9416F7D7F200B84FF6E10",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "شخصیت شناسی سوداوی ها",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_FE41A673E6DE5ED15DC1B381",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2050000",
+      "metadata": {
+        "title": "شخصیت شناسی مزاج دموی",
+        "category": "شخصیت‌شناسی",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/personality/شخصیت شناسی مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_92E938DA21A2B0B67C904104",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاوره اصلاح مزاج بلغمی",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشاوره اصلاح مزاج بلغمی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_D2FACA1D5DF20E424D3C1B21",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2950000",
+      "metadata": {
+        "title": "مشاوره اصلاح مزاج دموی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/مشاوره اصلاح مزاج دموی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_5359D33CC73189CB49E66ADA",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2350000",
+      "metadata": {
+        "title": "مشاوره شغلی دموی مزاج ها",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی دموی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_0A8584BA801B23C8921FB3E9",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2850000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی بلغمی ها",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی بلغمی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_74EAF16148361F91C3DE4DD7",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2750000",
+      "metadata": {
+        "title": "مشاوره شغلی و تحصیلی سوداوی ها",
+        "category": "شغل و تحصیل",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/career-education/مشاوره شغلی و تحصیلی سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_E2CCC4FD3011CB1BD76924ED",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "مشاوره لاغری سوداوی ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره لاغری سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_2632BD8FCD1890B0B79D281E",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2650000",
+      "metadata": {
+        "title": "مشاوره لاغری صفراوی ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره لاغری صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B72A607ADA3232848DC07D7A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2400000",
+      "metadata": {
+        "title": "مشاوره چاقی صفراوی مزاج ها",
+        "category": "مدیریت وزن",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/weight-management/مشاوره چاقی صفراوی مزاج ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_8ABDA5094CA9FB5E942F254A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2300000",
+      "metadata": {
+        "title": "گرمی بخش های سوداوی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/گرمی بخش های سوداوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_6B21B520B094E903733EAFBD",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2000000",
+      "metadata": {
+        "title": "گرمی بخش های مزاج بلغم",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/گرمی بخش های مزاج بلغم.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_A4DDED2FE6F8A90A8380703A",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "3000000",
+      "metadata": {
+        "title": "گرمی بخش های مزاج دموی",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/گرمی بخش های مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_BA6630A3B340CD048D4B3F48",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "گرمی بخش های مزاج صفراوی ها",
+        "category": "اصلاح مزاج",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/temperament-care/گرمی بخش های مزاج صفراوی ها.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_19FAD0131C89D8BCCB116222",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2200000",
+      "metadata": {
+        "title": "گناهان غالب مزاج بلغمی",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناهان غالب مزاج بلغمی .md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_62FE426E5BFEBB9A9D2CE49C",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2550000",
+      "metadata": {
+        "title": "گناهان غالب مزاج دموی",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناهان غالب مزاج دموی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    },
+    {
+      "programKey": "RAW_B18B68400989828B60F83383",
+      "locale": "fa-IR",
+      "kind": "READY_EDUCATION",
+      "baseAmountRial": "2700000",
+      "metadata": {
+        "title": "گناهان غالب مزاج سوداوی",
+        "category": "رفتار و عادت‌ها",
+        "audience": "REVIEW_REQUIRED",
+        "pairs": []
+      },
+      "sources": [
+        {
+          "path": "markdown/behavior/گناهان غالب مزاج سوداوی.md",
+          "quality": "ocr_unreviewed; not_medically_reviewed"
+        }
+      ]
+    }
+  ]
+}

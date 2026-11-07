@@ -9,8 +9,8 @@ export type Preview = components['schemas']['ProgramCommercialPreviewDto'];
 export type PublicationSetup = components['schemas']['ProgramPublicationSetupDto'];
 export type PublicationRecord = components['schemas']['ProgramPublicationResponseDto'];
 export class ProgramApiError extends Error { constructor(public status: number, public code: string) { super(code); } }
-async function data<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>) {
-  const r = await withRequestTimeout(request);
+async function data<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>, timeoutMs?: number) {
+  const r = await withRequestTimeout(request, timeoutMs);
   if (!r.response.ok || r.data === undefined) throw new ProgramApiError(r.response.status, r.error && typeof r.error === 'object' && 'code' in r.error ? String(r.error.code) : 'REQUEST_FAILED');
   return r.data;
 }
@@ -23,3 +23,29 @@ export const savePresentation = (token: string, id: string, body: components['sc
 export const previewProgram = (token: string, body: Commercial) => data(apiClient.POST('/v1/admin/program-offerings/preview', { headers: headers(token), body }));
 export const getPublicationSetup = (token: string, id: string) => data(apiClient.GET('/v1/admin/program-offerings/setup/{id}', { headers: headers(token), params: { path: { id } }, cache: 'no-store' }));
 export const publishProgram = (token: string, body: components['schemas']['PublishProgramOfferingDto'], key: string) => data(apiClient.POST('/v1/admin/program-offerings', { headers: headers(token), params: { header: { 'Idempotency-Key': key } }, body }));
+
+export type ManagedService = components['schemas']['ProgramServiceResponseDto'];
+export type WorkingDraft = components['schemas']['ProgramWorkingDraftDto'];
+export type ProgramCategory = components['schemas']['ProgramCategoryResponseDto'];
+export type CatalogSummary = components['schemas']['CatalogEntrySummaryDto'];
+export type ImportPreview = components['schemas']['CatalogPreviewResponseDto'];
+export type ImportItem = components['schemas']['CatalogPreviewItemDto'];
+export type ImportApplyItem = components['schemas']['CatalogApplyItemDto'];
+export type ImportResult = components['schemas']['CatalogApplyResultDto'];
+export const listManagedServices = (token: string, query: { page?: number; search?: string; state?: 'ACTIVE' | 'ARCHIVED' | 'ALL'; audience?: 'SHARED' | 'FEMALE' | 'MALE' | 'REVIEW_REQUIRED'; categoryId?: string }) => data(apiClient.GET('/v1/admin/program-services', { headers: headers(token), params: { query: { ...query, pageSize: 20 } }, cache: 'no-store' }));
+export const getManagedService = (token: string, id: string) => data(apiClient.GET('/v1/admin/program-services/{id}', { headers: headers(token), params: { path: { id } }, cache: 'no-store' }));
+export const createManagedService = (token: string, body: components['schemas']['ProgramServiceCreateDto']) => data(apiClient.POST('/v1/admin/program-services', { headers: headers(token), body }));
+export const saveManagedDraft = (token: string, id: string, body: components['schemas']['ProgramDraftSaveDto']) => data(apiClient.POST('/v1/admin/program-services/{id}/draft', { headers: headers(token), params: { path: { id } }, body }));
+export const submitManagedDraft = (token: string, id: string, expectedRevision: number) => data(apiClient.POST('/v1/admin/program-services/{id}/submit', { headers: headers(token), params: { path: { id } }, body: { expectedRevision } }));
+export const archiveManagedService = (token: string, id: string, expectedRevision: number) => data(apiClient.POST('/v1/admin/program-services/{id}/archive', { headers: headers(token), params: { path: { id } }, body: { expectedRevision } }));
+export const restoreManagedService = (token: string, id: string, expectedRevision: number) => data(apiClient.POST('/v1/admin/program-services/{id}/restore', { headers: headers(token), params: { path: { id } }, body: { expectedRevision } }));
+export const listServiceVersions = (token: string, programKey: string, page = 1) => data(apiClient.GET('/v1/admin/program-definitions', { headers: headers(token), params: { query: { programKey, page, pageSize: 50 } }, cache: 'no-store' }));
+export const getServiceVersion = (token: string, id: string) => data(apiClient.GET('/v1/admin/program-definitions/{id}', { headers: headers(token), params: { path: { id } }, cache: 'no-store' }));
+export const listProgramCategories = (token: string) => data(apiClient.GET('/v1/admin/program-categories', { headers: headers(token), cache: 'no-store' }));
+export const createProgramCategory = (token: string, name: string, key: string) => data(apiClient.POST('/v1/admin/program-categories', { headers: headers(token), body: { name, key } }));
+export const saveProgramCategory = (token: string, id: string, body: components['schemas']['ProgramCategorySaveDto']) => data(apiClient.POST('/v1/admin/program-categories/{id}', { headers: headers(token), params: { path: { id } }, body }));
+export const listProgramCatalog = (token: string) => data(apiClient.GET('/v1/admin/program-catalog', { headers: headers(token), cache: 'no-store' }));
+export const previewProgramImport = (token: string, entries: string[]) => data(apiClient.POST('/v1/admin/program-catalog/preview', { headers: headers(token), body: { entries } }), 60000);
+export const applyProgramImport = (token: string, id: string, items: ImportApplyItem[]) => data(apiClient.POST('/v1/admin/program-catalog/{id}/apply', { headers: headers(token), params: { path: { id } }, body: { items } }), 60000);
+export const previewProgramBatch = (token: string, items: Commercial[]) => data(apiClient.POST('/v1/admin/program-offerings/bulk-preview', { headers: headers(token), body: { items } }), 60000);
+export const publishProgramBatch = (token: string, items: components['schemas']['ProgramBulkPublishItemDto'][]) => data(apiClient.POST('/v1/admin/program-offerings/bulk-publish', { headers: headers(token), body: { items } }), 60000);
