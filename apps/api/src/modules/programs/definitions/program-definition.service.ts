@@ -53,6 +53,16 @@ export class ProgramDefinitionService {
       const next = await tx.programDefinitionVersion.update({ where: { id }, data: { status: 'APPROVED', approvedByUserId: ctx.actorUserId, approvedDoctorId: doctorId, approvedSessionId: ctx.actorSessionId, approvedAt: await this.now(tx) } }); await this.audit(tx, 'APPROVED', id, ctx); return next;
     });
   }
+  async approveReadyByAdmin(tx: Tx, id: string, ctx: Context) {
+    const clinicId = await this.authority.scope(tx, 'admin', ctx);
+    const row = await this.owned(tx, id, clinicId);
+    if (row.kind !== 'READY_EDUCATION' || row.status === 'REVOKED') throw conflict();
+    if (row.status === 'APPROVED') return this.response(tx, row);
+    if (!await this.dependencies(tx, id)) throw conflict();
+    const next = await tx.programDefinitionVersion.update({ where: { id }, data: { status: 'APPROVED', approvedByUserId: ctx.actorUserId, approvedDoctorId: null, approvedSessionId: ctx.actorSessionId, approvedAt: await this.now(tx) } });
+    await this.audit(tx, 'ADMIN_APPROVED', id, ctx);
+    return this.response(tx, next);
+  }
   async revoke(id: string, mode: Mode, ctx: Context) {
     return this.change(id, mode, ctx, async (tx, row) => {
       if (mode === 'admin' && row.approvedAt) throw conflict(); if (row.status === 'REVOKED') return row;

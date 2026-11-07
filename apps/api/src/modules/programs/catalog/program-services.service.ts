@@ -106,7 +106,7 @@ export class ProgramServicesService {
       }
       const definition = await this.definitions.create(input, `service-submit:${row.id}:${revision}`, ctx, tx);
       await this.audit(tx, ctx, 'SUBMITTED', id);
-      return definition;
+      return this.definitions.approveReadyByAdmin(tx, definition.id, ctx);
     });
   }
   categories(ctx: Context) { return this.scoped(ctx, async (tx, clinicId) => { const items = await tx.programServiceCategory.findMany({ where: { clinicId }, orderBy: { name: 'asc' } }); await this.audit(tx, ctx, 'CATEGORIES_READ', clinicId); return { items: items.map(({ clinicId: _, ...row }) => row) }; }, false); }

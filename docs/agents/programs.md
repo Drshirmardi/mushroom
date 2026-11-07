@@ -41,7 +41,7 @@ Load only for this feature. This is implementation guidance, not a claim that th
 - Published content updates apply to all valid owners of the same logical service; historical purchase amounts, accepted terms, version references, and access expiry remain immutable.
 
 ## Implemented backend entry points
-- `apps/api/src/modules/programs/catalog/` owns logical-service drafts, categories, and preview/apply imports. Complete drafts are submitted into the existing physician-review flow, never auto-approved.
+- `apps/api/src/modules/programs/catalog/` owns logical-service drafts, categories, and preview/apply imports. Complete READY_EDUCATION drafts submitted by a scoped administrator become administrator-approved versions, without second-person review. Custom professional programs retain physician approval.
 - `raw-data/services.catalog.json` holds explicit permanent keys and initial rial prices. All initial entries require review; source presence is not a sellability decision.
 - `corepack pnpm --filter @sabz-zendegi/api catalog:build` builds the private import bundle under API `dist/resources/`; normal build and dev startup also run it. Patient content never reads this bundle.
 - Import receipts are per preview item. Preserve actor ownership, bundle digest, expected revision, replay fingerprint, and per-item transaction/audit when extending Apply.
@@ -53,3 +53,5 @@ Load only for this feature. This is implementation guidance, not a claim that th
 - Immutable publication discount windows use UTC; dashboard inputs/display use Tehran time. Quote schema 3 freezes base price, applied percentage, payable integer rial, and quote time. Start is inclusive and end exclusive. Never reprice issued valid quotes at settlement.
 - The existing FREE billing path is integration-tested for 100% discounts, including grant/audit creation and callback retry behavior. Custom physician-service pricing does not accept these discounts.
 - Browser regressions: `apps/app/e2e/program-workspace.browser.mjs` and `program-pricing.browser.mjs` use a synthetic API fixture, cover mobile/desktop, and never write clinic data. Set `DASHBOARD_URL` if the dashboard is not on local port 3002.
+
+- Current approval policy: READY_EDUCATION submission records administrator approval in the same transaction; retain completeness, actor/session audit, explicit publication, revocation, and all custom-program physician requirements.

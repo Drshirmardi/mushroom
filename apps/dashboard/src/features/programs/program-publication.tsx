@@ -8,7 +8,7 @@ import { formatRial } from '@/lib/wallet-money';
 import { priceFromInput, priceToInput } from './program-price';
 
 const blockerText: Record<string, string> = {
-  PROGRAM_CLINICAL_DEFINITION_UNAVAILABLE: 'متن این نسخه یا منابع آن هنوز تأیید معتبر پزشک ندارند. ابتدا بازبینی محتوای همین نسخه را کامل کنید.',
+  PROGRAM_CLINICAL_DEFINITION_UNAVAILABLE: 'متن این نسخه یا منابع آن هنوز وضعیت معتبر انتشار ندارند. ابتدا بازبینی محتوای همین نسخه را کامل کنید.',
   PROGRAM_PURCHASE_TERMS_UNAVAILABLE: 'شرایط خرید فعال و معتبر برای زبان این خدمت تنظیم نشده است.',
   CUSTOM_SERVICE_PRICE_CHANGED: 'تعرفهٔ خدمت پزشک تغییر کرده است؛ اطلاعات تازه را دریافت کنید.',
 };

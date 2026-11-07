@@ -56,18 +56,25 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program cata
     expect((await request('POST', `program-services/${row.id}/draft`, { expectedRevision: save.json().revision, draft: { status: 'APPROVED' } })).statusCode).toBe(400);
     expect((await request('POST', 'program-services', { programKey: entry.programKey, locale: entry.locale, draft: {}, clinicId })).statusCode).toBe(400);
   });
-  it('submits complete drafts idempotently into the existing physician approval flow', async () => {
+  it('lets a same-clinic administrator prepare a ready service without a physician, idempotently', async () => {
     const row = await imported();
     const saved = await request('POST', `program-services/${row.id}/draft`, { expectedRevision: row.revision, draft: {
       ...entry.draft, summary: 'Synthetic summary', eligibilityDescription: 'Synthetic eligibility',
       safety: { intendedAudience: 'Synthetic audience', limitations: 'Synthetic limits', contraindications: [], seekProfessionalCare: 'Synthetic professional care instruction' },
     } }); expect(saved.statusCode, saved.body).toBe(201);
     const r = await request('POST', `program-services/${row.id}/submit`, { expectedRevision: saved.json().revision }); expect(r.statusCode, r.body).toBe(201);
-    expect(r.json()).toMatchObject({ programKey: row.programKey, status: 'DRAFT', approvedAt: null });
+    expect(r.json()).toMatchObject({ programKey: row.programKey, status: 'APPROVED', usable: true });
+    expect(await db.programDefinitionVersion.findUniqueOrThrow({ where: { id: r.json().id } })).toMatchObject({ approvedByUserId: admin.userId, approvedDoctorId: null });
     expect((await request('POST', `program-services/${row.id}/submit`, { expectedRevision: saved.json().revision })).json().id).toBe(r.json().id);
     expect(await db.programDefinitionVersion.count({ where: { clinicId, programKey: row.programKey } })).toBe(1);
     expect(await db.programService.count({ where: { clinicId, programKey: row.programKey } })).toBe(1);
     expect(await db.programService.findUniqueOrThrow({ where: { id: row.id } })).toMatchObject({ publishedDefinitionId: null, sellingEnabled: false });
+    const preview = await request('POST', 'program-offerings/preview', { programDefinitionId: r.json().id, amountRial: '2500000', currency: 'IRR', accessMode: 'PERPETUAL', quoteTtlSeconds: 1800 });
+    expect(preview.statusCode, preview.body).toBe(200);
+    expect(preview.json()).toMatchObject({ configurationReady: true, blockers: [] });
+    const published = await app.inject({ method: 'POST', url: '/v1/admin/program-offerings', headers: { authorization: 'Bearer ' + admin.token, origin: 'http://localhost:3000', 'idempotency-key': randomUUID() }, payload: { ...preview.json().configuration, publicationHash: preview.json().publicationHash, expectedPublicationNumber: 0, reviewedTermsAndRetention: true } });
+    expect(published.statusCode, published.body).toBe(201);
+    expect(published.json()).toMatchObject({ configurationReady: true });
   });
   it('detects edits after Preview, and replays an applied item without overwriting subsequent edits', async () => {
     const row = await imported(), stale = await preview();
