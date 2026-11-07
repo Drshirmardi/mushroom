@@ -48,6 +48,19 @@ test('actual catalog produces a repeatable private bundle with stored rial price
     const price = BigInt(entry.baseAmountRial);
     assert.ok(price >= 2000000n && price <= 3000000n && price % 50000n === 0n);
     assert.equal(entry.reviewRequired, true);
-    assert.ok(!('safety' in entry.draft));
+    assert.ok(entry.draft.summary?.length > 0);
+    assert.notEqual(entry.draft.audience, 'REVIEW_REQUIRED');
+    assert.ok(['SERVICE','REFERENCE'].includes(entry.catalogRole));
   }
+});
+
+test('catalog classifications retain reference documents and ordered temperament rules', async () => {
+  const raw = new URL('../../../raw-data/', import.meta.url);
+  const manifest = JSON.parse(await readFile(new URL('services.catalog.json', raw), 'utf8'));
+  const entries = manifest.services;
+  assert.equal(entries.filter(e=>e.catalogRole==='REFERENCE').length,3);
+  assert.equal(entries.find(e=>e.metadata.title==='شخصیت شناسی بلغم- دم').metadata.pairs[0],'balgami/damavi');
+  assert.equal(entries.find(e=>e.metadata.title==='مشاوره تغذیه مزاج بلغم').metadata.pairs.length,7);
+  for (const e of entries.filter(e=>e.metadata.category==='ازدواج و روابط'))assert.deepEqual(e.metadata.pairs,[]);
+  assert.equal(entries.find(e=>e.metadata.title==='رژیم غذایی پسردار شدن').metadata.audience,'FEMALE');
 });

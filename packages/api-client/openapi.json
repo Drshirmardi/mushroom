@@ -41295,6 +41295,130 @@
           "Program services"
         ]
       }
+    },
+    "/v1/admin/program-service-publications/preview": {
+      "post": {
+        "operationId": "adminProgramDraftPublicationPreview",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftPublicationPreviewRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftPublicationPreviewDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program draft publication"
+        ]
+      }
+    },
+    "/v1/admin/program-service-publications/{id}/apply": {
+      "post": {
+        "operationId": "adminProgramDraftPublicationApply",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftPublicationApplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftPublicationResultsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Program draft publication"
+        ]
+      }
     }
   },
   "info": {
@@ -53997,6 +54121,26 @@
           "videoSupported"
         ]
       },
+      "WorkingSafetyDto": {
+        "type": "object",
+        "properties": {
+          "intendedAudience": {
+            "type": "string"
+          },
+          "limitations": {
+            "type": "string"
+          },
+          "contraindications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "seekProfessionalCare": {
+            "type": "string"
+          }
+        }
+      },
       "ProgramContentReferenceDto": {
         "type": "object",
         "properties": {
@@ -54047,7 +54191,7 @@
             "type": "string"
           },
           "safety": {
-            "$ref": "#/components/schemas/GuidanceSafetyDto"
+            "$ref": "#/components/schemas/WorkingSafetyDto"
           },
           "contentReferences": {
             "default": [],
@@ -54066,11 +54210,8 @@
           "locale",
           "kind",
           "title",
-          "summary",
           "category",
-          "body",
-          "eligibilityDescription",
-          "safety"
+          "body"
         ]
       },
       "ProgramServiceSnapshotDto": {
@@ -60848,6 +60989,13 @@
       "CatalogEntrySummaryDto": {
         "type": "object",
         "properties": {
+          "catalogRole": {
+            "type": "string",
+            "enum": [
+              "SERVICE",
+              "REFERENCE"
+            ]
+          },
           "invalidReason": {
             "type": "string"
           },
@@ -60880,6 +61028,7 @@
           }
         },
         "required": [
+          "catalogRole",
           "key",
           "title",
           "category",
@@ -60937,26 +61086,6 @@
         "required": [
           "entries"
         ]
-      },
-      "WorkingSafetyDto": {
-        "type": "object",
-        "properties": {
-          "intendedAudience": {
-            "type": "string"
-          },
-          "limitations": {
-            "type": "string"
-          },
-          "contraindications": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "seekProfessionalCare": {
-            "type": "string"
-          }
-        }
       },
       "ProgramWorkingDraftDto": {
         "type": "object",
@@ -61433,6 +61562,208 @@
         },
         "required": [
           "expectedRevision"
+        ]
+      },
+      "DraftCommercialDto": {
+        "type": "object",
+        "properties": {
+          "discountPercent": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "maximum": 100
+          },
+          "discountStartsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "discountEndsAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "termsPolicyVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountRial": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "IRR"
+            ]
+          },
+          "accessMode": {
+            "type": "string",
+            "enum": [
+              "PERPETUAL",
+              "DAYS",
+              "ONE_DELIVERY"
+            ]
+          },
+          "accessDurationDays": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 1,
+            "maximum": 3650
+          },
+          "quoteTtlSeconds": {
+            "type": "number",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "retentionPolicyRef": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "amountRial",
+          "currency",
+          "accessMode",
+          "quoteTtlSeconds"
+        ]
+      },
+      "DraftPublicationItemDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string"
+          },
+          "expectedRevision": {
+            "type": "number"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DraftCommercialDto"
+          }
+        },
+        "required": [
+          "serviceId",
+          "expectedRevision"
+        ]
+      },
+      "DraftPublicationPreviewRequestDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftPublicationItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "DraftPublicationResultDto": {
+        "type": "object",
+        "properties": {
+          "serviceId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "code": {
+            "type": "string"
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/DraftCommercialDto"
+          },
+          "termsBody": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "audience": {
+            "type": "string",
+            "enum": [
+              "SHARED",
+              "FEMALE",
+              "MALE",
+              "REVIEW_REQUIRED"
+            ]
+          },
+          "pairs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contentChanged": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "serviceId",
+          "title",
+          "ready"
+        ]
+      },
+      "DraftPublicationPreviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftPublicationResultDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "expiresAt",
+          "items"
+        ]
+      },
+      "DraftPublicationApplyDto": {
+        "type": "object",
+        "properties": {
+          "serviceIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "serviceIds"
+        ]
+      },
+      "DraftPublicationResultsDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DraftPublicationResultDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       }
     }

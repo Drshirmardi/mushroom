@@ -10,7 +10,7 @@ export function programError(error: unknown) {
   if (error.status === 409) return 'اطلاعات تغییر کرده است. نوشته‌های شما حفظ شده؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.';
   if (error.status === 401) return 'نشست شما پایان یافته است. دوباره وارد شوید.';
   if (error.status === 403) return 'برای این کار، دسترسی معتبر همین کلینیک لازم است.';
-  if (error.code === 'PROGRAM_DRAFT_INCOMPLETE') return 'برای ثبت نسخه، معرفی، متن، شرایط استفاده و همهٔ اطلاعات ایمنی را کامل کنید.';
+  if (error.code === 'PROGRAM_DRAFT_INCOMPLETE') return 'برای ثبت نسخه، نام، متن کامل و دسته‌بندی را مشخص کنید.';
   if (error.code === 'PROGRAM_PRICING_INVALID') return 'قیمت، درصد یا بازهٔ زمانی تخفیف معتبر نیست.';
   if (error.status === 429) return 'درخواست‌ها زیاد شده‌اند؛ کمی بعد دوباره تلاش کنید.';
   if (error.status >= 500) return 'نتیجهٔ کامل دریافت نشد؛ بعضی موارد ممکن است ثبت شده باشند. تلاش دوباره، موارد ثبت‌شده را تکرار نمی‌کند.';

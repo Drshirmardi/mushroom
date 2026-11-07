@@ -93,9 +93,8 @@ export class ProgramServicesService {
       await this.audit(tx, ctx, archived ? 'ARCHIVED' : 'RESTORED', id); return serviceView(row);
     });
   }
-  submit(id: string, revision: number, ctx: Context) {
-    return this.scoped(ctx, async (tx, clinicId) => {
-      const row = await this.owned(tx, clinicId, id, revision), draft = row.draft as Prisma.JsonObject;
+  async validateDraft(row: ProgramService) {
+      const draft = row.draft as Prisma.JsonObject;
       const input = plainToInstance(ProgramDefinitionCreateDto, {
         programKey: row.programKey, locale: row.locale, kind: 'READY_EDUCATION',
         title: draft.title, summary: draft.summary, body: draft.body, category: draft.category,
@@ -104,10 +103,18 @@ export class ProgramServicesService {
       if ((await validate(input, { whitelist: true, forbidNonWhitelisted: true })).length) {
         throw new UnprocessableEntityException({ code: 'PROGRAM_DRAFT_INCOMPLETE', message: 'Complete curriculum, eligibility and medical safety before submitting for review.', details: {} });
       }
-      const definition = await this.definitions.create(input, `service-submit:${row.id}:${revision}`, ctx, tx);
-      await this.audit(tx, ctx, 'SUBMITTED', id);
+      return input;
+  }
+  submit(id: string, revision: number, ctx: Context) { return this.scoped(ctx, async (tx, clinicId) => this.submitInTransaction(tx, await this.owned(tx, clinicId, id, revision), ctx)); }
+  async submitInTransaction(tx: Tx, row: ProgramService, ctx: Context) {
+      const input = await this.validateDraft(row);
+      // Reuse an identical approved curriculum even when metadata alone changed.
+      const latest = await tx.programDefinitionVersion.findFirst({ where: { clinicId: row.clinicId, programKey: row.programKey, locale: row.locale }, orderBy: { versionNumber: 'desc' } });
+      const safety = { intendedAudience: input.safety?.intendedAudience?.trim() ?? '', limitations: input.safety?.limitations?.trim() ?? '', seekProfessionalCare: input.safety?.seekProfessionalCare?.trim() ?? '', contraindications: input.safety?.contraindications ?? [] };
+      if (latest?.status === 'APPROVED' && latest.title === input.title.trim() && latest.summary === (input.summary?.trim() ?? '') && latest.body === input.body.trim() && latest.category === input.category.trim() && latest.eligibilityDescription === (input.eligibilityDescription?.trim() ?? '') && isDeepStrictEqual(latest.safety, safety)) return this.definitions.approveReadyByAdmin(tx, latest.id, ctx);
+      const definition = await this.definitions.create(input, `service-submit:${row.id}:${row.revision}`, ctx, tx);
+      await this.audit(tx, ctx, 'SUBMITTED', row.id);
       return this.definitions.approveReadyByAdmin(tx, definition.id, ctx);
-    });
   }
   categories(ctx: Context) { return this.scoped(ctx, async (tx, clinicId) => { const items = await tx.programServiceCategory.findMany({ where: { clinicId }, orderBy: { name: 'asc' } }); await this.audit(tx, ctx, 'CATEGORIES_READ', clinicId); return { items: items.map(({ clinicId: _, ...row }) => row) }; }, false); }
   createCategory(input: ProgramCategoryCreateDto, ctx: Context) {

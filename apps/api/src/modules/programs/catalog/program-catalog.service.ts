@@ -4,7 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Prisma } from '../../../generated/prisma/client';
 import type { GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
-import { CONTENT_FIELDS, mergeDraft, type Draft, type Resolution, type SourceField } from './catalog-merge';
+import { SOURCE_FIELDS, mergeDraft, type Draft, type Resolution, type SourceField } from './catalog-merge';
 import { ProgramCatalogBundle, type CatalogEntry } from './program-catalog.bundle';
 import { catalogConflict, catalogInvalid, ProgramServicesService } from './program-services.service';
 import { ProgramWorkingDraftDto, type CatalogApplyRequestDto, type CatalogPreviewRequestDto, type CatalogApplyResultDto } from './program-services.dto';
@@ -21,19 +21,19 @@ export class ProgramCatalogService {
     return this.services.scoped(ctx, async (tx, clinicId) => {
       const bundle = await this.bundles.load();
       await this.services.audit(tx, ctx, 'CATALOG_READ', clinicId);
-      return { bundleHash: bundle.hash, items: bundle.entries.map(entry => ({ key: entryKey(entry), title: String(entry.draft.title), category: String(entry.draft.category), audience: String(entry.draft.audience), baseAmountRial: entry.baseAmountRial, reviewRequired: entry.reviewRequired, sourceCount: entry.sources.length, ...(entry.invalidReason ? { invalidReason: entry.invalidReason } : {}) })) };
+      return { bundleHash: bundle.hash, items: bundle.entries.map(entry => ({ key: entryKey(entry), title: String(entry.draft.title), category: String(entry.draft.category), audience: String(entry.draft.audience), baseAmountRial: entry.baseAmountRial, catalogRole: entry.catalogRole ?? 'SERVICE', reviewRequired: entry.reviewRequired, sourceCount: entry.sources.length, ...(entry.invalidReason ? { invalidReason: entry.invalidReason } : {}) })) };
     }, false);
   }
   preview(input: CatalogPreviewRequestDto, ctx: Context) {
     return this.services.scoped(ctx, async (tx, clinicId) => {
-      const bundle = await this.bundles.load(), fields = input.fields ?? CONTENT_FIELDS;
+      const bundle = await this.bundles.load(), fields = input.fields ?? [...SOURCE_FIELDS];
       const items: SnapshotItem[] = [];
       for (const key of input.entries) {
         const entry = bundle.entries.find(item => entryKey(item) === key) ?? null;
         const row = entry ? await tx.programService.findUnique({ where: { clinicId_programKey_locale: { clinicId, programKey: entry.programKey, locale: entry.locale } } }) : null;
-        const current = row?.draft as Draft | null ?? null;
+        const current = row ? { ...(row.draft as Draft), audience: row.audience } : null;
         let state = 'INVALID', conflicts: string[] = [];
-        if (entry && !entry.invalidReason && !(await validate(plainToInstance(ProgramWorkingDraftDto, entry.draft), { whitelist: true, forbidNonWhitelisted: true })).length) {
+        if (entry && entry.catalogRole !== 'REFERENCE' && !entry.invalidReason && !(await validate(plainToInstance(ProgramWorkingDraftDto, entry.draft), { whitelist: true, forbidNonWhitelisted: true })).length) {
           if (!row) state = await tx.programDefinitionVersion.count({ where: { clinicId, programKey: entry.programKey, locale: entry.locale } }) ? 'INVALID' : 'NEW';
           else if (row.archivedAt) state = 'ARCHIVED';
           else { const merge = mergeDraft(row.importBaseline as Draft ?? {}, current ?? {}, entry.draft, fields); conflicts = merge.conflicts; state = conflicts.length ? 'CONFLICT' : merge.changed ? 'CHANGED' : 'UNCHANGED'; }
@@ -71,6 +71,7 @@ export class ProgramCatalogService {
           const [clock] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`SELECT CURRENT_TIMESTAMP AS now`);
           if (clock.now >= preview.expiresAt || (await this.bundles.load()).hash !== preview.bundleHash) throw catalogConflict();
           const snapshot = preview.snapshot as unknown as Snapshot, original = snapshot.items.find(value => value.key === item.key);
+          if (!Array.isArray(snapshot.fields)) throw catalogInvalid();
           if (!original || !original.entry || original.state === 'INVALID') throw catalogInvalid();
           if (Object.keys(resolutions).some(field => !snapshot.fields.includes(field as SourceField))) throw catalogInvalid();
           const entry = original.entry;
@@ -87,7 +88,7 @@ export class ProgramCatalogService {
             result = { key: item.key, state: 'APPLIED', serviceId: row.id };
           } else {
             const baseline = row.importBaseline as Draft ?? {};
-            const merge = mergeDraft(baseline, row.draft as Draft, entry.draft, snapshot.fields, resolutions);
+            const merge = mergeDraft(baseline, { ...(row.draft as Draft), audience: row.audience }, entry.draft, snapshot.fields, resolutions);
             if (merge.conflicts.length) throw catalogConflict();
             const category = snapshot.fields.includes('category') && typeof merge.draft.category === 'string' ? await this.services.category(tx, clinicId, merge.draft.category) : null;
             if (category) merge.draft.category = category.name;

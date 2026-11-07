@@ -6625,6 +6625,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/program-service-publications/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramDraftPublicationPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-service-publications/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramDraftPublicationApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -10086,6 +10118,12 @@ export interface components {
             /** @enum {boolean} */
             videoSupported: false;
         };
+        WorkingSafetyDto: {
+            intendedAudience?: string;
+            limitations?: string;
+            contraindications?: string[];
+            seekProfessionalCare?: string;
+        };
         ProgramContentReferenceDto: {
             /** Format: uuid */
             id: string;
@@ -10097,12 +10135,12 @@ export interface components {
             /** @enum {string} */
             kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
             title: string;
-            summary: string;
+            summary?: string;
             category: string;
             /** @description Exact plain educational curriculum or professional service specification; never execute as HTML. */
             body: string;
-            eligibilityDescription: string;
-            safety: components["schemas"]["GuidanceSafetyDto"];
+            eligibilityDescription?: string;
+            safety?: components["schemas"]["WorkingSafetyDto"];
             /** @default [] */
             contentReferences?: components["schemas"]["ProgramContentReferenceDto"][];
             /** Format: uuid */
@@ -11870,6 +11908,8 @@ export interface components {
             jointText: string | null;
         };
         CatalogEntrySummaryDto: {
+            /** @enum {string} */
+            catalogRole: "SERVICE" | "REFERENCE";
             invalidReason?: string;
             key: string;
             title: string;
@@ -11887,12 +11927,6 @@ export interface components {
         CatalogPreviewRequestDto: {
             entries: string[];
             fields?: ("title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs")[];
-        };
-        WorkingSafetyDto: {
-            intendedAudience?: string;
-            limitations?: string;
-            contraindications?: string[];
-            seekProfessionalCare?: string;
         };
         ProgramWorkingDraftDto: {
             title?: string;
@@ -12004,6 +12038,59 @@ export interface components {
         };
         ProgramRevisionDto: {
             expectedRevision: number;
+        };
+        DraftCommercialDto: {
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+        };
+        DraftPublicationItemDto: {
+            serviceId: string;
+            expectedRevision: number;
+            configuration?: components["schemas"]["DraftCommercialDto"];
+        };
+        DraftPublicationPreviewRequestDto: {
+            items: components["schemas"]["DraftPublicationItemDto"][];
+        };
+        DraftPublicationResultDto: {
+            serviceId: string;
+            title: string;
+            ready: boolean;
+            code?: string;
+            published?: boolean;
+            configuration?: components["schemas"]["DraftCommercialDto"];
+            termsBody?: string;
+            summary?: string;
+            category?: string;
+            /** @enum {string} */
+            audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            pairs?: string[];
+            contentChanged?: boolean;
+        };
+        DraftPublicationPreviewDto: {
+            id: string;
+            /** Format: date-time */
+            expiresAt: string;
+            items: components["schemas"]["DraftPublicationResultDto"][];
+        };
+        DraftPublicationApplyDto: {
+            serviceIds: string[];
+        };
+        DraftPublicationResultsDto: {
+            items: components["schemas"]["DraftPublicationResultDto"][];
         };
     };
     responses: never;
@@ -34533,6 +34620,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDraftPublicationPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftPublicationPreviewRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftPublicationPreviewDto"];
+                };
+            };
+        };
+    };
+    adminProgramDraftPublicationApply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftPublicationApplyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftPublicationResultsDto"];
                 };
             };
         };

@@ -70,7 +70,8 @@ export async function compileCatalog(rawRoot, manifest) {
     if (!Array.isArray(metadata.pairs) || metadata.pairs.length > 16 || metadata.pairs.some(p => !/^(damavi|safravi|balgami|sodavi)\/(damavi|safravi|balgami|sodavi)$/.test(p))) throw new Error('Invalid temperament pairs');
     const draft = { ...metadata, body: bodies.join('\n\n---\n\n') };
     if (draft.body.length > 100000) throw new Error('Combined body exceeds service limit');
-    entries.push({ programKey: entry.programKey, locale: entry.locale, kind: entry.kind, baseAmountRial: entry.baseAmountRial, reviewRequired: true, draft, sources });
+    if (entry.catalogRole !== undefined && !['SERVICE','REFERENCE'].includes(entry.catalogRole)) throw new Error('Invalid catalog role');
+    entries.push({ programKey: entry.programKey, locale: entry.locale, kind: entry.kind, catalogRole: entry.catalogRole ?? 'SERVICE', baseAmountRial: entry.baseAmountRial, reviewRequired: true, draft, sources });
     } catch (error) {
       entries.push({ programKey: entry.programKey, locale: entry.locale, kind: entry.kind, baseAmountRial: String(entry.baseAmountRial ?? ''), reviewRequired: true,
         draft: { title: typeof entry.metadata?.title === 'string' ? entry.metadata.title : entry.programKey, category: typeof entry.metadata?.category === 'string' ? entry.metadata.category : '', audience: 'REVIEW_REQUIRED', pairs: [] },

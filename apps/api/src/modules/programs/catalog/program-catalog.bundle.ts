@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 import type { Draft } from './catalog-merge';
 
-export type CatalogEntry = { programKey: string; locale: string; kind: 'READY_EDUCATION'; baseAmountRial: string; reviewRequired: boolean; draft: Draft; sources: object[]; invalidReason?: string };
+export type CatalogEntry = { programKey: string; locale: string; kind: 'READY_EDUCATION'; catalogRole?: 'SERVICE' | 'REFERENCE'; baseAmountRial: string; reviewRequired: boolean; draft: Draft; sources: object[]; invalidReason?: string };
 export type CatalogBundle = { schemaVersion: 1; entries: CatalogEntry[]; hash: string };
 @Injectable()
 export class ProgramCatalogBundle {

@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, Equals, IsArray, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, Equals, IsArray, IsIn, IsInt, IsObject, IsOptional, IsString, IsUUID, Length, Matches, Max, Min, MaxLength, ValidateNested } from 'class-validator';
 import { GuidanceSafetyDto } from '../../content/guidance/guidance-content.dto';
+import { WorkingSafetyDto } from '../catalog/program-services.dto';
 export const PROGRAM_KINDS = ['READY_EDUCATION', 'CUSTOM_PROFESSIONAL_PLAN'] as const;
 export class ProgramContentReferenceDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') id!: string;
@@ -12,11 +13,11 @@ export class ProgramDefinitionCreateDto {
   @ApiProperty() @Matches(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8}){0,3}$/u) locale!: string;
   @ApiProperty({ enum: PROGRAM_KINDS }) @IsIn(PROGRAM_KINDS) kind!: typeof PROGRAM_KINDS[number];
   @ApiProperty() @IsString() @Length(1, 240) @Matches(/\S/u) title!: string;
-  @ApiProperty() @IsString() @Length(1, 2000) @Matches(/\S/u) summary!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(2000) summary?: string;
   @ApiProperty() @IsString() @Length(1, 100) @Matches(/\S/u) category!: string;
   @ApiProperty({ description: 'Exact plain educational curriculum or professional service specification; never execute as HTML.' }) @IsString() @Length(1, 100000) @Matches(/\S/u) body!: string;
-  @ApiProperty() @IsString() @Length(1, 4000) @Matches(/\S/u) eligibilityDescription!: string;
-  @ApiProperty({ type: GuidanceSafetyDto }) @IsObject() @ValidateNested() @Type(() => GuidanceSafetyDto) safety!: GuidanceSafetyDto;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(4000) eligibilityDescription?: string;
+  @ApiPropertyOptional({ type: WorkingSafetyDto }) @IsOptional() @IsObject() @ValidateNested() @Type(() => WorkingSafetyDto) safety?: WorkingSafetyDto;
   @ApiPropertyOptional({ type: [ProgramContentReferenceDto], default: [] }) @IsOptional() @IsArray() @ArrayMaxSize(50) @ValidateNested({ each: true }) @Type(() => ProgramContentReferenceDto) contentReferences: ProgramContentReferenceDto[] = [];
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') doctorServiceId?: string;
 }

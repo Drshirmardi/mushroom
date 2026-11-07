@@ -15,6 +15,7 @@ const invalid = () => new UnprocessableEntityException({ code: 'PROGRAM_PUBLICAT
 @Injectable()
 export class ProgramPublicationService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService) {}
+  validateCommercial(input: ProgramCommercialConfigDto) { return this.config(input); }
   async setup(id: string, ctx: Context) {
     return this.prisma.$transaction(async tx => {
       const clinicId = await this.authority.scope(tx, 'admin', ctx);
@@ -33,15 +34,16 @@ export class ProgramPublicationService {
       };
     }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
   }
-  async preview(input: ProgramCommercialConfigDto, ctx: Context) {
+  async preview(input: ProgramCommercialConfigDto, ctx: Context, transaction?: Tx) {
     const requested = this.config(input);
-    return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), configuration = await this.resolveConfiguration(tx, clinicId, requested, ctx.actorUserId), source = await this.sources(tx, clinicId, configuration, false, input.expectedServiceRevision), latest = await this.latest(tx, source.definition);
+    const operation = async (tx: Tx) => { const clinicId = await this.authority.scope(tx, 'admin', ctx), configuration = await this.resolveConfiguration(tx, clinicId, requested, ctx.actorUserId), source = await this.sources(tx, clinicId, configuration, false, input.expectedServiceRevision), latest = await this.latest(tx, source.definition);
       await this.audit(tx, 'PREVIEW_READ', source.definition.id, ctx); return { configuration, definition: { id: source.definition.id, programKey: source.definition.programKey, locale: source.definition.locale, kind: source.definition.kind, title: source.definition.title, contentHash: source.definition.contentHash, status: source.definition.status, usable: source.usable }, termsPolicy: source.terms ? { id: source.terms.id, policyKey: source.terms.policyKey as 'PROGRAM_PURCHASE_TERMS' | 'READY_PROGRAM_PURCHASE_TERMS', versionNumber: source.terms.versionNumber, locale: source.terms.locale, title: source.terms.title, body: source.terms.body, contentHash: source.terms.contentHash } : null, policy: PROGRAM_COMMERCIAL_POLICY, publicationHash: source.hash, expectedPublicationNumber: latest?.publicationNumber ?? 0, configurationReady: !source.blockers.length, blockers: source.blockers, checkoutAvailable: false as const };
-    }, { isolationLevel: 'ReadCommitted', timeout: 15_000 });
+    };
+    return transaction ? operation(transaction) : this.prisma.$transaction(operation, { isolationLevel: 'ReadCommitted', timeout: 15_000 });
   }
-  async publish(input: PublishProgramOfferingDto, rawKey: string | undefined, ctx: Context) {
+  async publish(input: PublishProgramOfferingDto, rawKey: string | undefined, ctx: Context, transaction?: Tx) {
     const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key) || input.reviewedTermsAndRetention !== true) throw invalid(); const requested = this.config(input), payloadHash = hash({ expectedServiceRevision: input.expectedServiceRevision ?? null, configuration: requested, publicationHash: input.publicationHash, expectedPublicationNumber: input.expectedPublicationNumber, reviewedTermsAndRetention: true });
-    return this.prisma.$transaction(async tx => {
+    const operation = async (tx: Tx) => {
       const clinicId = await this.authority.scope(tx, 'admin', ctx); await this.lock(tx, 'program-publication-command:' + ctx.actorUserId + ':' + key);
       const replay = await tx.programOfferingPublication.findUnique({ where: { clinicId_publishedByUserId_idempotencyKey: { clinicId, publishedByUserId: ctx.actorUserId, idempotencyKey: key } } }); if (replay) { if (replay.payloadHash !== payloadHash) throw new ConflictException({ code: 'IDEMPOTENCY_KEY_REUSED', message: 'Command key already used for different publication.', details: {} }); await this.audit(tx, 'READ', replay.id, ctx); return this.response(tx, replay); }
       const configuration = await this.resolveConfiguration(tx, clinicId, requested, ctx.actorUserId);
@@ -49,7 +51,8 @@ export class ProgramPublicationService {
       const source = await this.sources(tx, clinicId, configuration, true, input.expectedServiceRevision); if (source.blockers.length || !source.terms || !source.hash || source.hash !== input.publicationHash) throw conflict();
       const now = await this.time(tx, latest?.retiredAt ?? latest?.createdAt); if (latest?.status === 'ACTIVE') await this.retireRow(tx, latest, 'REPLACED', now, ctx);
       const row = await tx.programOfferingPublication.create({ data: { ...configuration, amountRial: moneyRial(configuration.amountRial, true), clinicId, programKey: definition.programKey, locale: definition.locale, definitionContentHash: definition.contentHash, publicationNumber: (latest?.publicationNumber ?? 0) + 1, termsContentHash: source.terms.contentHash, policySnapshot: PROGRAM_COMMERCIAL_POLICY, publicationHash: source.hash, publishedByUserId: ctx.actorUserId, publishedSessionId: ctx.actorSessionId, idempotencyKey: key, payloadHash, createdAt: now } }); await this.audit(tx, 'PUBLISHED', row.id, ctx); return this.response(tx, row);
-    }, { maxWait: 30_000, timeout: 15_000 });
+    };
+    return transaction ? operation(transaction) : this.prisma.$transaction(operation, { maxWait: 30_000, timeout: 15_000 });
   }
   async list(query: ProgramPublicationQueryDto, ctx: Context) {
     return this.prisma.$transaction(async tx => { const clinicId = await this.authority.scope(tx, 'admin', ctx), where = { clinicId, ...(query.programKey ? { programKey: query.programKey } : {}), ...(query.status ? { status: query.status } : {}) };

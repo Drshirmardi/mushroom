@@ -6,9 +6,12 @@ import { ProgramDiscountFields } from './program-discount-fields';
 import { priceFromInput } from './program-price';
 import { pricePreview, tehranInstant } from './program-schedule';
 import { ProgramModal, programError, useProgramCommand } from './program-management-shared';
+import { ProgramDraftPublication } from './program-draft-publication';
 
 type Prepared = { service:ManagedService; configuration?:Commercial; preview?:Preview; error?:string; key:string };
-export function ProgramBulkPublication({token,services,mode,onClose,onChanged}: {token:string;services:ManagedService[];mode:'publish'|'pricing';onClose:()=>void;onChanged:()=>void}) {
+type BulkProps={token:string;services:ManagedService[];mode:'publish'|'pricing';onClose:()=>void;onChanged:()=>void};
+export function ProgramBulkPublication(props:BulkProps){return props.mode==='publish'?<ProgramDraftPublication {...props}/>:<ProgramBulkPricing {...props}/>;}
+function ProgramBulkPricing({token,services,mode,onClose,onChanged}: BulkProps) {
   const [amount,setAmount]=useState(''),[percent,setPercent]=useState(''),[start,setStart]=useState(''),[end,setEnd]=useState(''),[prepared,setPrepared]=useState<Prepared[]>([]),[accepted,setAccepted]=useState(false),[results,setResults]=useState<Record<string,string>>({}),[progress,setProgress]=useState('');
   const command=useProgramCommand(), ready=prepared.filter(p=>p.preview?.configurationReady&&p.preview.publicationHash);
   const changed=()=>{setPrepared([]);setAccepted(false);setResults({});};

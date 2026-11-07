@@ -1,3 +1,6 @@
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
+import { GuidanceSafetyDto as StrictSafety } from '../../content/guidance/guidance-content.dto';
 import { createHash } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
@@ -17,8 +20,9 @@ export class ProgramDefinitionService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly content: GuidanceContentService) {}
   async create(input: ProgramDefinitionCreateDto, rawKey: string | undefined, ctx: Context, transaction?: Tx) {
     const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key)) throw invalid();
-    const safety = { intendedAudience: input.safety.intendedAudience.trim(), limitations: input.safety.limitations.trim(), contraindications: input.safety.contraindications.map(s => s.trim()), seekProfessionalCare: input.safety.seekProfessionalCare.trim() };
-    const definition = { programKey: input.programKey, locale: input.locale, kind: input.kind, title: input.title.trim(), summary: input.summary.trim(), category: input.category.trim(), body: input.body.trim(), eligibilityDescription: input.eligibilityDescription.trim(), safety, contentReferences: (input.contentReferences ?? []).map(r => ({ id: r.id.toLowerCase(), contentHash: r.contentHash })), doctorServiceId: input.doctorServiceId?.toLowerCase() ?? null };
+    if (input.kind === 'CUSTOM_PROFESSIONAL_PLAN' && (!input.summary?.trim() || !input.eligibilityDescription?.trim() || (await validate(plainToInstance(StrictSafety, input.safety ?? {}))).length)) throw invalid();
+    const safety = { intendedAudience: input.safety?.intendedAudience?.trim() ?? '', limitations: input.safety?.limitations?.trim() ?? '', contraindications: input.safety?.contraindications?.map(s => s.trim()).filter(Boolean) ?? [], seekProfessionalCare: input.safety?.seekProfessionalCare?.trim() ?? '' };
+    const definition = { programKey: input.programKey, locale: input.locale, kind: input.kind, title: input.title.trim(), summary: input.summary?.trim() ?? '', category: input.category.trim(), body: input.body.trim(), eligibilityDescription: input.eligibilityDescription?.trim() ?? '', safety, contentReferences: (input.contentReferences ?? []).map(r => ({ id: r.id.toLowerCase(), contentHash: r.contentHash })), doctorServiceId: input.doctorServiceId?.toLowerCase() ?? null };
     if (new Set(definition.contentReferences.map(r => r.id)).size !== definition.contentReferences.length || definition.kind === 'READY_EDUCATION' && definition.doctorServiceId || definition.kind === 'CUSTOM_PROFESSIONAL_PLAN' && !definition.doctorServiceId) throw invalid();
     const payloadHash = hash(definition);
     const operation = async (tx: Tx) => {

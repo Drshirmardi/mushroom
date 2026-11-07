@@ -33,7 +33,7 @@ export function ManagedProgramsWorkspace({token,doctor}: {token:string;doctor:bo
       {!services.loading&&!services.error&&!rows.length&&<div className="program-empty"><BookOpen size={28} aria-hidden="true"/><h2>{state==='ARCHIVED'?'آرشیو خالی است':'خدمتی پیدا نشد'}</h2><p>برای شروع، موارد کاتالوگ را انتخاب و به‌صورت گروهی وارد کنید.</p><button className="dashboard-button" onClick={()=>setTab('catalog')}>رفتن به کاتالوگ منابع</button></div>}
       {services.data&&<nav className="program-pagination" aria-label="صفحه‌های خدمات"><button className="dashboard-button" disabled={page===1} onClick={()=>{setPage(p=>p-1);setSelected({});}}>قبلی</button><span>صفحهٔ {page.toLocaleString('fa-IR')} · {services.data.total.toLocaleString('fa-IR')} خدمت</span><button className="dashboard-button" disabled={page*20>=services.data.total} onClick={()=>{setPage(p=>p+1);setSelected({});}}>بعدی</button></nav>}
     </section>}
-    {tab==='catalog'&&<ProgramCatalogManager token={token} onChanged={changed} onOpen={setEditing}/>}
+    {tab==='catalog'&&<ProgramCatalogManager token={token} onChanged={changed} onOpen={setEditing} onPublish={services=>setBulk({mode:'publish',services})}/>}
     {tab==='categories'&&<><ResourceMessage error={categories.error} loading={categories.loading} retry={categories.refresh}/>{categories.data&&<ProgramCategoryManager token={token} items={categories.data.items} onChanged={changed}/>}</>}
     {editing&&<ManagedProgramEditor token={token} id={editing} categories={categories.data?.items ?? []} doctor={doctor} onClose={()=>setEditing(null)} onChanged={changed}/>}
     {creating&&<CreateService token={token} onClose={()=>setCreating(false)} onCreated={id=>{setCreating(false);setEditing(id);changed();}}/>}

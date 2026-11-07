@@ -97,6 +97,7 @@ export class CatalogApplyRequestDto {
   @ApiProperty({ type: [CatalogApplyItemDto], maxItems: 10 }) @IsArray() @ArrayMinSize(1) @ArrayMaxSize(10) @ValidateNested({ each: true }) @Type(() => CatalogApplyItemDto) items!: CatalogApplyItemDto[];
 }
 export class CatalogEntrySummaryDto {
+  @ApiProperty({ enum: ['SERVICE','REFERENCE'] }) catalogRole!: string;
   @ApiPropertyOptional() invalidReason?: string;
   @ApiProperty() key!: string;
   @ApiProperty() title!: string;

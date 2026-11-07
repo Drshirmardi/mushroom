@@ -55,3 +55,11 @@ Load only for this feature. This is implementation guidance, not a claim that th
 - Browser regressions: `apps/app/e2e/program-workspace.browser.mjs` and `program-pricing.browser.mjs` use a synthetic API fixture, cover mobile/desktop, and never write clinic data. Set `DASHBOARD_URL` if the dashboard is not on local port 3002.
 
 - Current approval policy: READY_EDUCATION submission records administrator approval in the same transaction; retain completeness, actor/session audit, explicit publication, revocation, and all custom-program physician requirements.
+
+## Complete catalog and ready-draft publication
+- `catalogRole` separates SERVICE and REFERENCE source entries. Reference documents remain visible but cannot import/sync into commercial services; existing records are retained.
+- Catalog supplies stored summaries, audience and ordered recommendation pairs. Single-temperament services map to all seven pairs containing that temperament. Marriage documents describe two people and are not mapped to one person's primary/secondary result. Unknown applicability stays out of recommendations.
+- Ordinary Sync now includes category/audience/pairs with three-way conflict handling. Financial settings and archive remain protected.
+- READY_EDUCATION needs title, body and category; summary, eligibility and safety text can be empty. Custom professional definitions keep their full requirements. API normalizes missing ready-only text to empty strings/arrays without inventing statements; clients hide empty sections.
+- `/admin/program-service-publications/preview` captures the current draft revision, commercial settings, terms hash and publication number. `/:id/apply` validates that snapshot, registers/reuses an administrator-approved version and publishes in one per-item transaction. Actor-owned snapshots expire after 30 minutes; receipts make successful retries safe. Existing bulk pricing only reprices published content.
+- Draft publication uses the retained preview/receipt storage with an explicit purpose discriminator; never mix it with source-import snapshots. No content-version mutation occurs at Preview. No AI call is used during compilation, Sync or publication.

@@ -49,3 +49,7 @@ export const previewProgramImport = (token: string, entries: string[]) => data(a
 export const applyProgramImport = (token: string, id: string, items: ImportApplyItem[]) => data(apiClient.POST('/v1/admin/program-catalog/{id}/apply', { headers: headers(token), params: { path: { id } }, body: { items } }), 60000);
 export const previewProgramBatch = (token: string, items: Commercial[]) => data(apiClient.POST('/v1/admin/program-offerings/bulk-preview', { headers: headers(token), body: { items } }), 60000);
 export const publishProgramBatch = (token: string, items: components['schemas']['ProgramBulkPublishItemDto'][]) => data(apiClient.POST('/v1/admin/program-offerings/bulk-publish', { headers: headers(token), body: { items } }), 60000);
+export type DraftPublicationItem = components['schemas']['DraftPublicationItemDto'];
+export type DraftPublicationResult = components['schemas']['DraftPublicationResultDto'];
+export const previewDraftPublication = (token:string,items:DraftPublicationItem[])=>data(apiClient.POST('/v1/admin/program-service-publications/preview',{headers:headers(token),body:{items}}),60000);
+export const applyDraftPublication = (token:string,id:string,serviceIds:string[])=>data(apiClient.POST('/v1/admin/program-service-publications/{id}/apply',{headers:headers(token),params:{path:{id}},body:{serviceIds}}),60000);

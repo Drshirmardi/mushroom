@@ -38,13 +38,54 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program cata
   async function preview() { const r = await request('POST', 'program-catalog/preview', { entries: [key()] }); expect(r.statusCode, r.body).toBe(201); return r.json(); }
   async function apply(id: string, resolutions?: { field: string; choice: string }[]) { const r = await request('POST', `program-catalog/${id}/apply`, { items: [{ key: key(), ...(resolutions ? { resolutions } : {}) }] }); expect(r.statusCode, r.body).toBe(201); return r.json().items[0]; }
   async function imported() { const result = await apply((await preview()).id); expect(result.state).toBe('APPLIED'); return db.programService.findUniqueOrThrow({ where: { id: result.serviceId } }); }
+  const commercial = { amountRial:'2500000',currency:'IRR',accessMode:'PERPETUAL',quoteTtlSeconds:1800,discountPercent:20 };
+  async function publicationPreview(row:{id:string;revision:number}) {
+    const r=await request('POST','program-service-publications/preview',{items:[{serviceId:row.id,expectedRevision:row.revision,configuration:commercial}]});
+    expect(r.statusCode,r.body).toBe(201);return r.json();
+  }
+  async function publicationApply(id:string,serviceId:string){const r=await request('POST',`program-service-publications/${id}/apply`,{serviceIds:[serviceId]});expect(r.statusCode,r.body).toBe(201);return r.json().items[0];}
+
+  it('previews complete ready drafts without versions, publishes with empty optional metadata atomically and replays without duplicates',async()=>{
+    const row=await imported(),p=await publicationPreview(row);
+    expect(p.items[0]).toMatchObject({ready:true,serviceId:row.id});
+    expect(await db.programDefinitionVersion.count({where:{programKey:row.programKey}})).toBe(0);
+    const result=await publicationApply(p.id,row.id);expect(result).toMatchObject({published:true});
+    expect(await publicationApply(p.id,row.id)).toEqual(result);
+    expect(await db.programOfferingPublication.count({where:{programKey:row.programKey}})).toBe(1);
+    const definition=await db.programDefinitionVersion.findFirstOrThrow({where:{programKey:row.programKey}});
+    expect(definition).toMatchObject({summary:'',eligibilityDescription:'',status:'APPROVED',approvedDoctorId:null,safety:{limitations:'',seekProfessionalCare:'',intendedAudience:'',contraindications:[]}});
+    const current=await db.programService.findUniqueOrThrow({where:{id:row.id}});
+    const next=await publicationPreview(current);expect((await publicationApply(next.id,row.id)).published).toBe(true);
+    expect(await db.programDefinitionVersion.count({where:{programKey:row.programKey}})).toBe(1);
+  });
+  it('rejects stale/expired draft publication previews and never partially registers a version',async()=>{
+    const row=await imported(),stale=await publicationPreview(row);
+    await db.programService.update({where:{id:row.id},data:{draft:JSON.parse(JSON.stringify({...entry.draft,body:'Updated draft'})),revision:{increment:1}}});
+    expect(await publicationApply(stale.id,row.id)).toMatchObject({ready:false,code:'PROGRAM_SERVICE_CONFLICT'});
+    expect(await db.programDefinitionVersion.count({where:{programKey:row.programKey}})).toBe(0);
+    const expired=await publicationPreview(await db.programService.findUniqueOrThrow({where:{id:row.id}}));
+    await db.programImportPreview.update({where:{id:expired.id},data:{expiresAt:new Date(0)}});
+    expect((await publicationApply(expired.id,row.id)).ready).toBe(false);
+    const outsider=await actor();expect((await request('POST',`program-service-publications/${stale.id}/apply`,{serviceIds:[row.id]},outsider)).json().items[0].ready).toBe(false);
+  });
+  it('retains reference documents in catalog but rejects service import and sync',async()=>{
+    entry.catalogRole='REFERENCE';updateBundle();
+    expect((await request('GET','program-catalog')).json().items[0]).toMatchObject({catalogRole:'REFERENCE'});
+    const p=await preview();expect(p.items[0].state).toBe('INVALID');expect((await apply(p.id)).state).toBe('INVALID');
+    expect(await db.programService.count({where:{programKey:entry.programKey}})).toBe(0);
+  });
+  it('syncs temperament and audience with three-way protection and keeps price unchanged',async()=>{
+    const row=await imported();entry.draft.pairs=['balgami/damavi'];entry.draft.audience='FEMALE';updateBundle();
+    expect((await apply((await preview()).id)).state).toBe('APPLIED');
+    expect(await db.programService.findUniqueOrThrow({where:{id:row.id}})).toMatchObject({audience:'FEMALE',baseAmountRial:2050000n,draft:{pairs:['balgami/damavi']}});
+  });
 
   it('imports incomplete data without invented safety, immutable definition, sale or patient content exposure', async () => {
     const list = await request('GET', 'program-catalog'); expect(list.statusCode).toBe(200); expect(list.body).not.toContain(String(entry.draft.body));
     const row = await imported(); expect(row).toMatchObject({ baseAmountRial: 2050000n, discountPercent: 0, audience: 'SHARED', publishedDefinitionId: null, sellingEnabled: false });
     expect(row.draft).not.toHaveProperty('safety');
-    expect((await request('POST', `program-services/${row.id}/submit`, { expectedRevision: row.revision })).statusCode).toBe(422);
-    expect(await db.programDefinitionVersion.count({ where: { clinicId, programKey: entry.programKey } })).toBe(0);
+    expect((await request('POST', `program-services/${row.id}/submit`, { expectedRevision: row.revision })).statusCode).toBe(201);
+    expect(await db.programDefinitionVersion.count({ where: { clinicId, programKey: entry.programKey } })).toBe(1);
     const patient = await actor('PATIENT'); expect((await request('GET', 'program-catalog', undefined, patient)).statusCode).toBe(403);
     expect((await request('GET', `program-services/${row.id}`, undefined, patient)).statusCode).toBe(403);
   });
@@ -91,9 +132,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('program cata
     const row = await imported();
     await db.programService.update({ where: { id: row.id }, data: { draft: JSON.parse(JSON.stringify({ ...entry.draft, body: 'Manual body', category: 'Manual category' })), audience: 'FEMALE', baseAmountRial: 9990000n, discountPercent: 20, revision: { increment: 1 } } });
     entry.draft.body = 'Changed source body'; entry.draft.category = 'Changed source category'; entry.draft.audience = 'MALE'; entry.baseAmountRial = '3000000'; updateBundle();
-    const p = await preview(); expect(p.items[0]).toMatchObject({ state: 'CONFLICT', conflicts: ['body'] });
+    const p = await preview(); expect(p.items[0]).toMatchObject({ state: 'CONFLICT', conflicts: ['body', 'category', 'audience'] });
     expect((await apply(p.id)).state).toBe('CONFLICT');
-    expect((await apply(p.id, [{ field: 'body', choice: 'SOURCE' }])).state).toBe('APPLIED');
+    expect((await apply(p.id, [{ field: 'body', choice: 'SOURCE' }, { field: 'category', choice: 'DASHBOARD' }, { field: 'audience', choice: 'DASHBOARD' }])).state).toBe('APPLIED');
     expect(await db.programService.findUniqueOrThrow({ where: { id: row.id } })).toMatchObject({ draft: { body: 'Changed source body', category: 'Manual category' }, audience: 'FEMALE', baseAmountRial: 9990000n, discountPercent: 20, sellingEnabled: false });
   });
   it('never resurrects archived services and keeps restoration paused', async () => {

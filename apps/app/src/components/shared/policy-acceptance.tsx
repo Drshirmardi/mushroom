@@ -14,5 +14,7 @@ export function PolicyAcceptance({ policy, accepted, onChange, disabled = false,
 }
 
 export function GuidanceSafety({ safety }: { safety: components["schemas"]["GuidanceSafetyDto"] }) {
-  return <aside className="space-y-2 rounded-xl bg-amber-50 p-4 text-xs leading-6 text-amber-900"><p>{safety.intendedAudience}</p><p>{safety.limitations}</p>{safety.contraindications.map((item, index) => <p key={index}>{item}</p>)}<p>{safety.seekProfessionalCare}</p></aside>;
+  const parts = [safety.intendedAudience, safety.limitations, ...safety.contraindications, safety.seekProfessionalCare].filter(value => value?.trim());
+  if (!parts.length) return null;
+  return <aside className="space-y-2 rounded-xl bg-amber-50 p-4 text-xs leading-6 text-amber-900">{parts.map((value,index) => <p key={index}>{value}</p>)}</aside>;
 }

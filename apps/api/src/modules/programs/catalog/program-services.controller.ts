@@ -8,10 +8,22 @@ import { ProgramDefinitionRateGuard } from '../definitions/program-definition.co
 import { ProgramDefinitionResponseDto } from '../definitions/program-definition.dto';
 import { ProgramCatalogService } from './program-catalog.service';
 import { ProgramServicesService } from './program-services.service';
+import { ProgramDraftPublicationService } from './program-draft-publication.service';
+import { DraftPublicationApplyDto, DraftPublicationPreviewDto, DraftPublicationPreviewRequestDto, DraftPublicationResultsDto } from './program-draft-publication.dto';
 import { CatalogApplyRequestDto, CatalogApplyResponseDto, CatalogListDto, CatalogPreviewRequestDto, CatalogPreviewResponseDto, ProgramCategoryCreateDto, ProgramCategoryListDto, ProgramCategoryResponseDto, ProgramCategorySaveDto, ProgramDraftSaveDto, ProgramRevisionDto, ProgramServiceCreateDto, ProgramServicePageDto, ProgramServiceQueryDto, ProgramServiceResponseDto } from './program-services.dto';
 
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
+
+@ApiTags('Program draft publication') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @RequirePermissions(PERMISSIONS.CONTENT_MANAGE) @UseGuards(ProgramDefinitionRateGuard)
+@Controller('admin/program-service-publications')
+export class ProgramDraftPublicationController {
+  constructor(private readonly publications:ProgramDraftPublicationService){}
+  @Post('preview') @Header('Cache-Control','private, no-store') @ApiOperation({operationId:'adminProgramDraftPublicationPreview'}) @ApiOkResponse({type:DraftPublicationPreviewDto})
+  preview(@Body() body:DraftPublicationPreviewRequestDto,@Req() r:AuthenticatedRequest){return this.publications.preview(body,context(r));}
+  @Post(':id/apply') @Header('Cache-Control','private, no-store') @ApiOperation({operationId:'adminProgramDraftPublicationApply'}) @ApiCreatedResponse({type:DraftPublicationResultsDto})
+  apply(@Param('id',uuid()) id:string,@Body() body:DraftPublicationApplyDto,@Req() r:AuthenticatedRequest){return this.publications.apply(id,body,context(r));}
+}
 
 @ApiTags('Program services') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @RequirePermissions(PERMISSIONS.CONTENT_MANAGE) @UseGuards(ProgramDefinitionRateGuard)
 @ApiErrorResponse(400, 'Invalid input.') @ApiErrorResponse(401, 'Active session required.') @ApiErrorResponse(403, 'Same-clinic content administrator required.') @ApiErrorResponse(404, 'Service unavailable.') @ApiErrorResponse(409, 'Service revision changed.')
