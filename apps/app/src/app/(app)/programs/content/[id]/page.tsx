@@ -25,6 +25,9 @@ import { usePatientResource } from '@/lib/use-patient-resource';
 import { parseProgramBody, type ReadingBlock } from '@/lib/program-reading';
 import { toP } from '@/lib/format';
 
+import { ResultRecommendations } from '@/components/programs/result-recommendations';
+import { getCurrentMezaj } from '@/lib/assessment-api';
+
 type ProgramContent = components['schemas']['PatientProgramContentDto'];
 
 type ReadingSize = 'normal' | 'large';
@@ -49,6 +52,7 @@ function formatDate(value: string | Date | null): string | null {
 export default function ProgramContentPage() {
   const { id } = useParams<{ id: string }>();
   const { authentication } = useAuthSession();
+  const token = authentication.accessToken;
 
   const resource = usePatientResource(
     useCallback(
@@ -59,9 +63,7 @@ export default function ProgramContentPage() {
 
   const content = resource.data;
 
-  const backHref = content
-    ? `/programs/purchases/${encodeURIComponent(content.purchaseId)}`
-    : '/programs?view=mine';
+  const backHref = '/programs?view=mine';
 
   return (
     <main dir="rtl" className="min-h-full bg-white text-foreground">
@@ -76,7 +78,7 @@ export default function ProgramContentPage() {
             className="inline-flex min-h-11 items-center gap-2 rounded-xl text-sm font-medium text-muted-foreground transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
           >
             <ArrowRight size={19} aria-hidden="true" />
-            <span>بازگشت به برنامه</span>
+            <span>برنامه‌های من</span>{' '}
           </Link>
 
           <span className="inline-flex items-center gap-2 text-xs font-medium text-primary">
@@ -99,6 +101,7 @@ export default function ProgramContentPage() {
           <ProgramReadingPage
             key={`${content.id}:${content.contentHash}`}
             content={content}
+            token={token}
             refreshing={resource.refreshing}
             onRefresh={() => void resource.reload()}
           />
@@ -110,15 +113,17 @@ export default function ProgramContentPage() {
 
 function ProgramReadingPage({
   content,
+  token,
   refreshing,
   onRefresh,
 }: {
   content: ProgramContent;
+  token: string;
   refreshing: boolean;
   onRefresh: () => void;
 }) {
   const [readingSize, setReadingSize] = useState<ReadingSize>('normal');
-
+  const mezaj = usePatientResource(useCallback(() => getCurrentMezaj(token), [token]));
   const endsAt = formatDate(content.endsAt);
   const grantedAt = formatDate(content.grantedAt);
 
@@ -136,8 +141,6 @@ function ProgramReadingPage({
         <h1 className="text-[clamp(1.65rem,6vw,2.25rem)] font-extrabold leading-[1.65] tracking-tight text-foreground">
           {content.title}
         </h1>
-
-        <p className="mt-3 text-sm leading-7 text-muted-foreground">متن کامل برنامه آموزشی شما</p>
 
         {/* Access metadata */}
         <div className="mt-6 flex flex-wrap gap-x-5 gap-y-3 border-y border-border/70 py-4">
@@ -281,30 +284,64 @@ function ProgramReadingPage({
       )}
 
       {/* End actions */}
-      <footer className="mx-5 mt-10 space-y-4 border-t border-border pt-7">
-        <p className="text-center text-xs leading-6 text-muted-foreground">
-          پایان محتوای آموزشی این نسخه از برنامه
-        </p>
 
-        <button
-          type="button"
-          disabled={refreshing}
-          onClick={onRefresh}
-          aria-busy={refreshing}
-          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-primary"
-        >
-          <RefreshCw size={17} className={refreshing ? 'animate-spin' : ''} aria-hidden="true" />
+      {/* End of article */}
+      <footer className="mx-5 mt-12 space-y-7 border-t border-border pt-8">
+        <div className="space-y-2 text-center">
+          <p className="text-sm font-semibold text-foreground">پایان محتوای آموزشی</p>
 
-          {refreshing ? 'در حال بررسی…' : 'بررسی دسترسی و محتوای تازه'}
-        </button>
+          <p className="text-xs leading-6 text-muted-foreground">
+            می‌توانید سایر خدمات و محصولات مرتبط با مزاج خود را نیز بررسی کنید.
+          </p>
+        </div>
 
-        <Link
-          href={`/programs/purchases/${encodeURIComponent(content.purchaseId)}`}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border text-sm font-medium text-foreground transition-colors hover:bg-muted/40"
-        >
-          بازگشت به جزئیات برنامه
-          <ArrowLeft size={16} aria-hidden="true" />
-        </Link>
+        {/* Personalized recommendations */}
+        <section aria-label="پیشنهادهای متناسب با مزاج" className="space-y-4">
+          {mezaj.loading ? (
+            <div
+              role="status"
+              className="rounded-2xl bg-slate-50 p-5 text-center text-sm text-muted-foreground"
+            >
+              در حال بررسی نتیجه مزاج شما…
+            </div>
+          ) : mezaj.error ? (
+            <div className="rounded-2xl border border-border bg-white p-4">
+              <p role="alert" className="text-sm leading-7 text-muted-foreground">
+                دریافت اطلاعات مزاج برای نمایش پیشنهادها ممکن نشد.
+              </p>
+
+              <button
+                type="button"
+                onClick={() => void mezaj.reload()}
+                className="mt-3 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary"
+              >
+                تلاش دوباره
+              </button>
+            </div>
+          ) : mezaj.data?.assessmentSubmissionId ? (
+            <ResultRecommendations
+              token={token}
+              submissionId={mezaj.data.assessmentSubmissionId}
+              layout="horizontal"
+            />
+          ) : (
+            <div className="rounded-2xl border border-border bg-slate-50 p-5 text-center">
+              <p className="text-sm font-semibold text-foreground">پیشنهادهای متناسب با مزاج شما</p>
+
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                برای دریافت پیشنهادهای اختصاصی، ابتدا یک نتیجه معتبر مزاج‌شناسی در حساب خود داشته
+                باشید.
+              </p>
+
+              <Link
+                href="/assessment"
+                className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground"
+              >
+                مشاهده ارزیابی‌ها
+              </Link>
+            </div>
+          )}
+        </section>
       </footer>
     </div>
   );
