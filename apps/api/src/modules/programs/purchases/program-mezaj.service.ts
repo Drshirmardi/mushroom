@@ -168,10 +168,11 @@ export class ProgramMezajService {
               discountEndsAt: Date | null;
               grantId: string | null;
               purchaseId: string | null;
+              matchRank: number;
             }[]
           >(Prisma.sql`
           SELECT pub.id,d.id AS "definitionId",service.id AS "serviceId",d.title,d.summary,m.icon,pub.amount_rial AS amount,pub.discount_percent AS "discountPercent",pub.discount_starts_at AS "discountStartsAt",pub.discount_ends_at AS "discountEndsAt",
-            owned.id AS "grantId",COALESCE(owned.purchase_id,pending.id) AS "purchaseId"
+            owned.id AS "grantId",COALESCE(owned.purchase_id,pending.id) AS "purchaseId", relevance."matchRank" AS "matchRank"
           FROM program_mezaj_presentations m JOIN program_definition_versions d ON d.id=m.program_definition_id AND d.clinic_id=m.clinic_id
           JOIN program_offering_publications pub ON pub.program_definition_id=d.id AND pub.clinic_id=d.clinic_id
           JOIN program_services service ON service.clinic_id=d.clinic_id AND service.program_key=d.program_key AND service.locale=d.locale
@@ -194,6 +195,9 @@ export class ProgramMezajService {
             state: row.grantId ? 'OWNED' : row.purchaseId ? 'PENDING' : 'BUY',
             accessGrantId: row.grantId,
             purchaseId: row.purchaseId,
+
+            matchType:
+              row.matchRank === 0 ? 'EXACT' : row.matchRank === 1 ? 'PRIMARY' : 'SECONDARY',
           }));
         }
         await this.audit(tx, 'RECOMMENDATIONS_READ', source.submissionId ?? patient.id, ctx);
