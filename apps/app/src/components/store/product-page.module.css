@@ -44,8 +44,7 @@
 .page :global(.store-detail--panel[data-compact='true']) {
   scroll-padding-block-start: 1rem;
 }
-.page :global(.store-detail--panel[data-compact='true'] .store-detail__handle-button),
-.page :global(.store-detail--panel[data-compact='true'] .store-content-nav) {
+.page :global(.store-detail--panel[data-compact='true'] .store-detail__handle-button) {
   position: relative;
   top: auto;
 }
