@@ -292,11 +292,16 @@ export default function ProductDetailPage() {
           />
         }
       >
-        <div className="store-detail__title">
-          <div>
-            <h2>{product.title}</h2>
+        <div className="mb-2 flex min-w-0 flex-wrap items-start justify-between gap-2 pt-1 @sm:gap-4">
+          <div className="min-w-0 flex-1 basis-[185px]">
+            <h2
+              data-product-title
+              className="min-w-0 text-[1.1875rem] leading-[1.6] font-[700] text-slate-900 [font-family:var(--font-vazirmatn)] [overflow-wrap:anywhere] @sm:text-[1.375rem]"
+            >
+              {product.title}
+            </h2>
           </div>
-          <div className="store-detail__actions">
+          <div className="flex shrink-0 items-center gap-2">
             <Button
               variant="ghost"
               className="store-icon-button"
@@ -318,10 +323,11 @@ export default function ProductDetailPage() {
           </div>
         </div>
         {product.skus.length > 1 && (
-          <div className="store-variant">
-            <label htmlFor="product-variant">انتخاب نوع محصول</label>
+          <div className="my-4 flex min-w-0 flex-col gap-2">
+            <label htmlFor="product-variant" className="text-xs font-[600] text-slate-700">انتخاب نوع محصول</label>
             <select
               id="product-variant"
+              className="min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#087c91]"
               value={sku.id}
               disabled={busy}
               onChange={(event) => {
@@ -339,8 +345,9 @@ export default function ProductDetailPage() {
             </select>
           </div>
         )}
-        <div className="store-unit-price">
-          <span>
+        <div data-product-unit-price className="mb-3 mt-3 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-slate-200/80 pb-4">
+
+          <span className="text-xs leading-6 text-slate-500">
             {BigInt(sku.currentTaxToman) > BigInt(0) ? 'قیمت هر عدد، پیش از مالیات' : 'قیمت هر عدد'}
           </span>
           <ProductPrice amount={BigInt(sku.currentPriceToman)} />
