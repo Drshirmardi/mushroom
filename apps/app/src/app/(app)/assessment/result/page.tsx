@@ -185,12 +185,29 @@ function Result({ id }: { id: string }) {
               بررسی شرایط و رزرو مشاوره
             </Link>
 
-            {/* خدمات و محصولات مرتبط با نتیجه مزاج */}
-            {!currentInvitationContext() &&
-              questionnaire.data &&
-              ['MEZAJ', 'MIZAJ'].includes(questionnaire.data.assessmentKey) && (
-                <ResultRecommendations token={token} submissionId={id} />
-              )}
+            {/* خدمات و محصولات مرتبط با مزاج */}
+            {questionnaire.loading ? (
+              <LoadingState label="در حال بررسی نوع آزمون…" variant="list" />
+            ) : questionnaire.error ? (
+              <div role="alert" className="rounded-2xl border border-border p-4">
+                <p className="text-sm">
+                  اطلاعات نوع آزمون دریافت نشد؛ امکان بررسی پیشنهادهای مرتبط وجود ندارد.
+                </p>
+                <button
+                  type="button"
+                  className="mt-3 text-sm font-medium text-primary"
+                  onClick={() => void questionnaire.reload()}
+                >
+                  تلاش دوباره
+                </button>
+              </div>
+            ) : ['MEZAJ', 'MIZAJ'].includes(questionnaire.data?.assessmentKey ?? '') ? (
+              <ResultRecommendations token={token} submissionId={id} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                پیشنهاد خدمات و محصولات مزاجی برای این نوع آزمون ارائه نمی‌شود.
+              </p>
+            )}
           </>
         )}
       </div>
