@@ -10522,6 +10522,8 @@ export interface components {
             state: "BUY" | "PENDING" | "OWNED";
             accessGrantId: string | null;
             purchaseId: string | null;
+            /** @enum {string} */
+            matchType: "EXACT" | "PRIMARY" | "SECONDARY";
         };
         MezajProgramRecommendationsDto: {
             /** @enum {string} */
