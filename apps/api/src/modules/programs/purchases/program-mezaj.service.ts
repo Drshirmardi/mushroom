@@ -269,8 +269,6 @@ export class ProgramMezajService {
 
         if (source.status === 'READY') {
           const exactPair = `${source.primary}/${source.secondary}`;
-
-          // شروع اندازه‌گیری زمان اجرای Query
           const queryStartedAt = performance.now();
 
           const rows = await tx.$queryRaw<
@@ -290,42 +288,41 @@ export class ProgramMezajService {
               matchRank: number;
             }[]
           >(Prisma.sql`
-          SELECT
-            pub.id,
-            d.id AS "definitionId",
-            service.id AS "serviceId",
-            d.title,
-            d.summary,
-            m.icon,
-            pub.amount_rial AS amount,
-            pub.discount_percent AS "discountPercent",
-            pub.discount_starts_at AS "discountStartsAt",
-            pub.discount_ends_at AS "discountEndsAt",
-            owned.id AS "grantId",
-            COALESCE(
-              owned.purchase_id,
-              pending.id
-            ) AS "purchaseId",
-            relevance."matchRank" AS "matchRank"
-
-          FROM program_mezaj_presentations m
-
-          JOIN program_definition_versions d
-            ON d.id = m.program_definition_id
-            AND d.clinic_id = m.clinic_id
-
-          JOIN program_offering_publications pub
-            ON pub.program_definition_id = d.id
-            AND pub.clinic_id = d.clinic_id
-
-          JOIN program_services service
-            ON service.clinic_id = d.clinic_id
-            AND service.program_key = d.program_key
-            AND service.locale = d.locale
-
-          CROSS JOIN LATERAL (
+          WITH shortlisted AS MATERIALIZED (
             SELECT
-              CASE
+              pub.id,
+              d.id AS "definitionId",
+              service.id AS "serviceId",
+              d.title,
+              d.summary,
+              m.icon,
+              pub.amount_rial AS amount,
+              pub.discount_percent AS "discountPercent",
+              pub.discount_starts_at AS "discountStartsAt",
+              pub.discount_ends_at AS "discountEndsAt",
+              d.clinic_id AS "clinicId",
+              d.program_key AS "programKey",
+              d.locale,
+              pub.created_at AS "createdAt",
+              relevance."matchRank" AS "matchRank"
+
+            FROM program_mezaj_presentations m
+
+            JOIN program_definition_versions d
+              ON d.id = m.program_definition_id
+              AND d.clinic_id = m.clinic_id
+
+            JOIN program_offering_publications pub
+              ON pub.program_definition_id = d.id
+              AND pub.clinic_id = d.clinic_id
+
+            JOIN program_services service
+              ON service.clinic_id = d.clinic_id
+              AND service.program_key = d.program_key
+              AND service.locale = d.locale
+
+            CROSS JOIN LATERAL (
+              SELECT CASE
                 WHEN ${exactPair} = ANY(m.pairs)
                   THEN 0
 
@@ -334,9 +331,7 @@ export class ProgramMezajService {
                   FROM unnest(m.pairs)
                     AS configured(pair_code)
                   WHERE split_part(
-                    configured.pair_code,
-                    '/',
-                    1
+                    configured.pair_code, '/', 1
                   ) = ${source.primary}
                 )
                   THEN 1
@@ -346,16 +341,61 @@ export class ProgramMezajService {
                   FROM unnest(m.pairs)
                     AS configured(pair_code)
                   WHERE split_part(
-                    configured.pair_code,
-                    '/',
-                    2
+                    configured.pair_code, '/', 2
                   ) = ${source.secondary}
                 )
                   THEN 2
 
                 ELSE NULL
               END AS "matchRank"
-          ) relevance
+            ) relevance
+
+            WHERE
+              m.clinic_id = ${patient.clinicId}::uuid
+              AND m.enabled
+              AND relevance."matchRank" IS NOT NULL
+
+              AND (
+                service.audience = 'SHARED'
+                OR service.audience = (
+                  SELECT profile.gender
+                  FROM user_profiles profile
+                  WHERE profile.user_id =
+                    ${patient.userId}::uuid
+                )
+              )
+
+              AND d.kind = 'READY_EDUCATION'
+              AND pub.status = 'ACTIVE'
+              AND program_publication_current(pub.id)
+
+            ORDER BY
+              relevance."matchRank" ASC,
+              pub.created_at DESC,
+              pub.id DESC
+
+            LIMIT 12
+          )
+
+          SELECT
+            shortlisted.id,
+            shortlisted."definitionId",
+            shortlisted."serviceId",
+            shortlisted.title,
+            shortlisted.summary,
+            shortlisted.icon,
+            shortlisted.amount,
+            shortlisted."discountPercent",
+            shortlisted."discountStartsAt",
+            shortlisted."discountEndsAt",
+            owned.id AS "grantId",
+            COALESCE(
+              owned.purchase_id,
+              pending.id
+            ) AS "purchaseId",
+            shortlisted."matchRank"
+
+          FROM shortlisted
 
           LEFT JOIN LATERAL (
             SELECT
@@ -366,9 +406,10 @@ export class ProgramMezajService {
               ON p.id = g.purchase_id
             JOIN program_definition_versions historical
               ON historical.id = p.program_definition_id
-            WHERE historical.clinic_id = d.clinic_id
-              AND historical.program_key = d.program_key
-              AND historical.locale = d.locale
+            WHERE
+              historical.clinic_id = shortlisted."clinicId"
+              AND historical.program_key = shortlisted."programKey"
+              AND historical.locale = shortlisted.locale
               AND g.patient_id = ${patient.id}::uuid
               AND g.clinic_id = ${patient.clinicId}::uuid
               AND program_grant_readable(
@@ -389,9 +430,10 @@ export class ProgramMezajService {
               ON b.program_purchase_id = p.id
             JOIN program_definition_versions historical
               ON historical.id = p.program_definition_id
-            WHERE historical.clinic_id = d.clinic_id
-              AND historical.program_key = d.program_key
-              AND historical.locale = d.locale
+            WHERE
+              historical.clinic_id = shortlisted."clinicId"
+              AND historical.program_key = shortlisted."programKey"
+              AND historical.locale = shortlisted.locale
               AND p.patient_id = ${patient.id}::uuid
               AND p.clinic_id = ${patient.clinicId}::uuid
               AND b.status = 'PENDING'
@@ -402,44 +444,20 @@ export class ProgramMezajService {
             LIMIT 1
           ) pending ON true
 
-          WHERE
-            m.clinic_id = ${patient.clinicId}::uuid
-            AND m.enabled
-            AND relevance."matchRank" IS NOT NULL
-
-            AND (
-              service.audience = 'SHARED'
-              OR service.audience = (
-                SELECT profile.gender
-                FROM user_profiles profile
-                WHERE profile.user_id =
-                  ${patient.userId}::uuid
-              )
-            )
-
-            AND d.kind = 'READY_EDUCATION'
-            AND pub.status = 'ACTIVE'
-            AND program_publication_current(pub.id)
-
           ORDER BY
-            relevance."matchRank" ASC,
-            pub.created_at DESC,
-            pub.id DESC
-
-          LIMIT 12
+            shortlisted."matchRank" ASC,
+            shortlisted."createdAt" DESC,
+            shortlisted.id DESC
         `);
 
-          // پایان اندازه‌گیری و ثبت زمان در لاگ سرور
           console.info('[MEZAJ_QUERY_PERFORMANCE]', {
             durationMs: Math.round(performance.now() - queryStartedAt),
             rows: rows.length,
           });
 
-          const [clock] = await tx.$queryRaw<{ now: Date }[]>(
-            Prisma.sql`
-            SELECT CURRENT_TIMESTAMP AS now
-          `,
-          );
+          const [clock] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`
+          SELECT CURRENT_TIMESTAMP AS now
+        `);
 
           response.items = rows.map((row) => ({
             programDefinitionId: row.definitionId,
@@ -449,13 +467,7 @@ export class ProgramMezajService {
             summary: row.summary,
             icon: row.icon,
 
-            ...programPrice(
-              {
-                ...row,
-                amountRial: row.amount,
-              },
-              clock.now,
-            ),
+            ...programPrice({ ...row, amountRial: row.amount }, clock.now),
 
             currency: 'IRR',
 
