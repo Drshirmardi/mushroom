@@ -4,10 +4,12 @@ import { useCallback, useState, type MouseEvent } from 'react';
 
 import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
 import { LoadingState } from '@/components/shared/skeletons';
-import { getMezajServices } from '@/lib/mezaj-services-api';
-import { getCommerceRecommendations } from '@/lib/commerce-catalog-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
 import { ProductCard } from '@/components/store/product-card';
+
+import { getCommerceRecommendations } from '@/lib/commerce-catalog-api';
+import { getMezajServices } from '@/lib/mezaj-services-api';
+import { usePatientResource } from '@/lib/use-patient-resource';
+
 import { ServiceCard } from './service-card';
 
 export type RecommendationsLayout = 'vertical' | 'horizontal';
@@ -18,6 +20,20 @@ export type ResultRecommendationsProps = {
   onNavigate?: (href: string) => Promise<void>;
   layout?: RecommendationsLayout;
 };
+
+// Shared visual styles.
+const stateClass =
+  'rounded-xl border border-border bg-muted/50 p-4 text-sm leading-7 text-muted-foreground';
+
+const retryClass =
+  'mt-3 inline-flex min-h-11 items-center justify-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-semibold text-primary transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
+const headingClass = 'text-base font-bold leading-7 text-foreground @sm:text-lg';
+
+const descriptionClass = 'mt-1 text-xs leading-6 text-muted-foreground @sm:text-sm';
+
+const railClass =
+  'flex w-full min-w-0 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-px-1 pb-3';
 
 export function ResultRecommendations({
   token,
@@ -30,7 +46,7 @@ export function ResultRecommendations({
 
   const horizontal = layout === 'horizontal';
 
-  // Preserve the optional welcome/onboarding navigation flow.
+  // Handle optional welcome/onboarding navigation.
   const open = async (event: MouseEvent<HTMLDivElement>) => {
     if (!onNavigate) return;
 
@@ -58,45 +74,53 @@ export function ResultRecommendations({
     }
   };
 
-  // Fetch services for the exact assessment submission.
+  // Services associated with this completed assessment.
   const services = usePatientResource(
     useCallback(() => getMezajServices(token, submissionId), [token, submissionId]),
   );
 
-  // Fetch products for the exact assessment submission.
+  // Products associated with this completed assessment.
   const products = usePatientResource(
     useCallback(() => getCommerceRecommendations(token, submissionId), [token, submissionId]),
   );
 
   return (
     <div
-      className="mezaj-recommendations min-w-0"
+      className="@container grid w-full min-w-0 gap-7 text-start"
       onClickCapture={(event) => void open(event)}
       aria-busy={navigating}
       data-layout={layout}
     >
+      {/* Navigation state */}
+
       {navigating && <RefreshIndicator label="در حال تکمیل ورود و باز کردن صفحه…" />}
 
       {navigationError && (
-        <p role="alert" className="mezaj-state">
+        <div role="alert" className={stateClass}>
           تکمیل ورود انجام نشد. دوباره روی گزینهٔ موردنظر بزنید.
-        </p>
+        </div>
       )}
 
-      {/* Services recommendations */}
-      <section aria-label="خدمات مرتبط با نتیجه" className="min-w-0">
-        <div className="mezaj-section-heading">
-          <h2>شناخت بیشتر از خودتان</h2>
-          <p>مطالعهٔ بیشتر بر اساس نتیجهٔ همین آزمون؛ انتخاب با شماست.</p>
-        </div>
+      {/* =========================================
+          RELATED SERVICES
+         ========================================= */}
+
+      <section aria-label="خدمات مرتبط با نتیجه" className="w-full min-w-0">
+        <header className="mb-4">
+          <h2 className={headingClass}>شناخت بیشتر از خودتان</h2>
+
+          <p className={descriptionClass}>
+            مطالعهٔ بیشتر بر اساس نتیجهٔ همین آزمون؛ انتخاب با شماست.
+          </p>
+        </header>
 
         {services.loading ? (
           <LoadingState label="در حال دریافت خدمات مرتبط…" variant="list" />
         ) : services.error ? (
-          <div role="alert" className="mezaj-state">
+          <div role="alert" className={stateClass}>
             <p>خدمات مرتبط دریافت نشد.</p>
 
-            <button type="button" onClick={() => void services.reload()}>
+            <button type="button" className={retryClass} onClick={() => void services.reload()}>
               تلاش دوباره
             </button>
           </div>
@@ -104,45 +128,53 @@ export function ResultRecommendations({
           <div
             className={
               horizontal
-                ? 'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3'
-                : 'mezaj-service-grid'
+                ? railClass
+                : 'grid w-full min-w-0 grid-cols-1 gap-3 @md:grid-cols-2 @2xl:grid-cols-3'
             }
             role={horizontal ? 'region' : undefined}
             aria-label={horizontal ? 'فهرست افقی خدمات مرتبط' : undefined}
             tabIndex={horizontal ? 0 : undefined}
           >
-            {services.data.items.map((item) =>
-              horizontal ? (
-                <div
-                  key={item.programDefinitionId}
-                  className="w-[min(85vw,21rem)] min-w-0 shrink-0 snap-start [&>.mezaj-service-card]:h-full"
-                >
-                  <ServiceCard item={item} />
-                </div>
-              ) : (
-                <ServiceCard key={item.programDefinitionId} item={item} />
-              ),
-            )}
+            {services.data.items.map((item) => (
+              <div
+                key={item.programDefinitionId}
+                className={
+                  horizontal
+                    ? 'w-[clamp(13rem,68cqw,17.5rem)] max-w-[90cqw] shrink-0 snap-start [&>.mezaj-service-card]:h-full'
+                    : 'min-w-0 [&>.mezaj-service-card]:h-full'
+                }
+              >
+                <ServiceCard item={item} />
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="mezaj-state">هنوز خدمت متنی قابل خریدی برای این نتیجه معرفی نشده است.</p>
+          <p role="status" className={stateClass}>
+            هنوز خدمت متنی قابل خریدی برای این نتیجه معرفی نشده است.
+          </p>
         )}
       </section>
 
-      {/* Product recommendations */}
-      <section aria-label="محصولات مرتبط با نتیجه" className="min-w-0">
-        <div className="mezaj-section-heading">
-          <h2>محصولات مرتبط با مزاج شما</h2>
-          <p>محصولاتی که کلینیک برای این ترکیب مزاج انتخاب کرده است.</p>
-        </div>
+      {/* =========================================
+          RELATED PRODUCTS
+         ========================================= */}
+
+      <section aria-label="محصولات مرتبط با نتیجه" className="w-full min-w-0">
+        <header className="mb-4">
+          <h2 className={headingClass}>محصولات مرتبط با مزاج شما</h2>
+
+          <p className={descriptionClass}>
+            محصولاتی که کلینیک برای این ترکیب مزاج انتخاب کرده است.
+          </p>
+        </header>
 
         {products.loading ? (
           <LoadingState label="در حال دریافت محصولات…" variant="grid" />
         ) : products.error ? (
-          <div role="alert" className="mezaj-state">
+          <div role="alert" className={stateClass}>
             <p>محصولات مرتبط دریافت نشد.</p>
 
-            <button type="button" onClick={() => void products.reload()}>
+            <button type="button" className={retryClass} onClick={() => void products.reload()}>
               تلاش دوباره
             </button>
           </div>
@@ -150,31 +182,23 @@ export function ResultRecommendations({
           <div
             className={
               horizontal
-                ? 'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-3'
-                : 'mezaj-product-grid'
+                ? railClass
+                : 'grid w-full min-w-0 grid-cols-1 gap-3 @xs:grid-cols-2 @lg:grid-cols-3 @2xl:grid-cols-4'
             }
             role={horizontal ? 'region' : undefined}
             aria-label={horizontal ? 'فهرست افقی محصولات مرتبط' : undefined}
             tabIndex={horizontal ? 0 : undefined}
           >
-            {products.data.items.map((product) =>
-              horizontal ? (
-                <div
-                  key={product.id}
-                  className="w-[min(58vw,15rem)] min-w-0 shrink-0 snap-start [&>.store-product]:h-full"
-                >
-                  <ProductCard
-                    product={product}
-                    saved={false}
-                    inCart={false}
-                    busy={false}
-                    onFavorite={() => {}}
-                    showFavorite={false}
-                  />
-                </div>
-              ) : (
+            {products.data.items.map((product) => (
+              <div
+                key={product.id}
+                className={
+                  horizontal
+                    ? 'w-[clamp(9.25rem,48cqw,11.25rem)] max-w-[90cqw] shrink-0 snap-start [&>.store-product]:h-full'
+                    : 'min-w-0 [&>.store-product]:h-full'
+                }
+              >
                 <ProductCard
-                  key={product.id}
                   product={product}
                   saved={false}
                   inCart={false}
@@ -182,11 +206,11 @@ export function ResultRecommendations({
                   onFavorite={() => {}}
                   showFavorite={false}
                 />
-              ),
-            )}
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="mezaj-state">
+          <p role="status" className={stateClass}>
             {products.data?.status === 'REVIEW_REQUIRED'
               ? 'پیشنهاد محصول پس از بررسی نتیجه توسط متخصص نمایش داده می‌شود.'
               : 'هنوز محصولی برای این نتیجه معرفی نشده است.'}
