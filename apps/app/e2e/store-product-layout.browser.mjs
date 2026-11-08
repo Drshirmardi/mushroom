@@ -58,6 +58,22 @@ try {
 
   state.longTitle = true; state.long = true;
   await page.goto(base + '/store/products/p1?sku=s2'); await page.getByLabel('انتخاب نوع محصول', { exact: true }).waitFor();
+  const typography = await page.evaluate(() => Object.fromEntries(
+    Object.entries({
+      title: '[data-product-title]',
+      copy: '#product-about p',
+      heading: '#product-about h3',
+      unitPrice: '[data-product-unit-price] .store-price',
+      purchasePrice: '.store-purchase-bar .store-price'
+    }).map(([key, selector]) => {
+      const computed = getComputedStyle(document.querySelector(selector));
+      return [key, { family: computed.fontFamily, weight: Number(computed.fontWeight) }];
+    })
+  ));
+  for (const result of Object.values(typography)) {
+    expect(result.family.startsWith('IRANYekanX') || result.family.startsWith('"IRANYekanX"')).toBe(true);
+    expect(result.weight).toBeLessThanOrEqual(500);
+  }
   for (const width of [320, 375, 414, 768, 1024, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 }); await overflow();
     // Product sheet copy uses the compact Tailwind type scale and never clips long Farsi text.
