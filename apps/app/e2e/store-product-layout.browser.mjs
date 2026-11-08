@@ -71,7 +71,7 @@ try {
     })
   ));
   for (const result of Object.values(typography)) {
-    expect(result.family.startsWith('IRANYekanX') || result.family.startsWith('"IRANYekanX"')).toBe(true);
+    expect(result.family.split(',')[0].replace(/['"]/g, '').trim()).toBe('IRANYekanX');
     expect(result.weight).toBeLessThanOrEqual(500);
   }
   for (const width of [320, 375, 414, 768, 1024, 1280, 1440]) {
