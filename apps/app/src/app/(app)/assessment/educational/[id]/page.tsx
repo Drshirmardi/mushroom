@@ -199,7 +199,7 @@ function FreeAccess({
             disabled={busy}
           />
         ))}
-      {/* {offering.priceMode === 'PAID' &&
+      {offering.priceMode === 'PAID' &&
         offering.termsPolicy &&
         (ownedGrantId ? (
           <HistoricalPolicy policy={offering.termsPolicy} accepted={!!offering.termsConsentId} />
@@ -210,7 +210,7 @@ function FreeAccess({
             onChange={setTermsAccepted}
             disabled={busy}
           />
-        ))} */}
+        ))}
       {!available && (
         <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
           {offering.blockers.includes('ADULT_BIRTH_DATE_REQUIRED')
@@ -261,7 +261,7 @@ function FreeAccess({
           className="w-full rounded-xl border border-border p-3 text-primary"
           onClick={() => {
             setAccepted(false);
-            setTermsAccepted(true);
+            setTermsAccepted(false);
             setRepurchasing(true);
           }}
         >
@@ -287,14 +287,6 @@ function FreeAccess({
           پس‌گرفتن رضایت پردازش
         </AsyncButton>
       )}
-      <button
-        type="button"
-        disabled={busy}
-        onClick={reload}
-        className="w-full p-3 text-sm text-primary"
-      >
-        بازخوانی شرایط جاری
-      </button>
     </>
   );
 }
