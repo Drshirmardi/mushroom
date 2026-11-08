@@ -20,6 +20,17 @@ export class ProgramDefinitionService {
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly content: GuidanceContentService) {}
   async create(input: ProgramDefinitionCreateDto, rawKey: string | undefined, ctx: Context, transaction?: Tx) {
     const key = rawKey?.trim(); if (!key || !/^[\x21-\x7e]{8,200}$/u.test(key)) throw invalid();
+    // Partial educational notes may be omitted or explicitly empty, but nonempty
+    // whitespace-only values must not be silently normalized into empty safety fields.
+    const safetyNotes = input.safety
+      ? [
+          input.safety.intendedAudience,
+          input.safety.limitations,
+          input.safety.seekProfessionalCare,
+          ...(input.safety.contraindications ?? []),
+        ]
+      : [];
+    if (safetyNotes.some(note => typeof note === 'string' && note.length > 0 && !note.trim())) throw invalid();
     if (input.kind === 'CUSTOM_PROFESSIONAL_PLAN' && (!input.summary?.trim() || !input.eligibilityDescription?.trim() || (await validate(plainToInstance(StrictSafety, input.safety ?? {}))).length)) throw invalid();
     const safety = { intendedAudience: input.safety?.intendedAudience?.trim() ?? '', limitations: input.safety?.limitations?.trim() ?? '', contraindications: input.safety?.contraindications?.map(s => s.trim()).filter(Boolean) ?? [], seekProfessionalCare: input.safety?.seekProfessionalCare?.trim() ?? '' };
     const definition = { programKey: input.programKey, locale: input.locale, kind: input.kind, title: input.title.trim(), summary: input.summary?.trim() ?? '', category: input.category.trim(), body: input.body.trim(), eligibilityDescription: input.eligibilityDescription?.trim() ?? '', safety, contentReferences: (input.contentReferences ?? []).map(r => ({ id: r.id.toLowerCase(), contentHash: r.contentHash })), doctorServiceId: input.doctorServiceId?.toLowerCase() ?? null };
