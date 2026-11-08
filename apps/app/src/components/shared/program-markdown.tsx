@@ -25,43 +25,66 @@ function normalizeMarkdown(body: string): string {
   const lines = body.replace(/\r\n?/g, '\n').split('\n');
   const result: string[] = [];
 
+  let codeFence: string | null = null;
+
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    // Existing content uses **Heading** on separate
-    // lines instead of Markdown heading syntax.
-    const standaloneBold = /^\*\*(.+?)\*\*$/u.exec(trimmed);
+    // Do not modify text inside fenced code.
+    const fenceMatch = /^(`{3,}|~{3,})/u.exec(trimmed);
 
-    if (standaloneBold) {
-      result.push(`## ${standaloneBold[1]}`);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+
+      if (codeFence === null) {
+        codeFence = marker;
+      } else if (codeFence === marker) {
+        codeFence = null;
+      }
+
+      result.push(line);
       continue;
     }
 
-    // Some legacy tables have an empty header and
-    // their actual headings in the first body row.
-    const emptyHeader = tableCells(line);
+    if (codeFence !== null) {
+      result.push(line);
+      continue;
+    }
+
+    // Legacy standalone bold titles.
+    const heading = /^\*\*(.+?)\*\*$/u.exec(trimmed);
+
+    if (heading) {
+      result.push('', `## ${heading[1].trim()}`, '');
+      continue;
+    }
+
+    // Repair a known legacy Markdown-table format:
+    // empty headings followed by bold column names.
+    const header = tableCells(line);
     const separator = tableCells(lines[i + 1] ?? '');
-    const nextRow = tableCells(lines[i + 2] ?? '');
+    const next = tableCells(lines[i + 2] ?? '');
 
-    const isEmptyHeader =
-      emptyHeader !== null && emptyHeader.length > 1 && emptyHeader.every((cell) => cell === '');
+    const emptyHeader = header !== null && header.length > 1 && header.every((cell) => cell === '');
 
-    const isSeparator = separator !== null && separator.every((cell) => /^:?-{3,}:?$/u.test(cell));
+    const validSeparator =
+      separator !== null && separator.every((cell) => /^:?-{3,}:?$/u.test(cell));
 
-    const isBoldHeader = nextRow !== null && nextRow.every((cell) => /^\*\*.+\*\*$/u.test(cell));
+    const boldHeadings = next !== null && next.every((cell) => /^\*\*.+\*\*$/u.test(cell));
 
     if (
-      isEmptyHeader &&
-      isSeparator &&
-      isBoldHeader &&
-      emptyHeader.length === nextRow.length &&
-      separator.length === nextRow.length
+      emptyHeader &&
+      validSeparator &&
+      boldHeadings &&
+      header.length === separator.length &&
+      header.length === next.length
     ) {
-      const headings = nextRow.map((cell) => cell.slice(2, -2).trim());
+      const headings = next.map((cell) => cell.slice(2, -2).trim());
 
       result.push(`| ${headings.join(' | ')} |`);
       result.push(lines[i + 1]);
+
       i += 2;
       continue;
     }
@@ -76,33 +99,43 @@ export function ProgramMarkdown({ body }: Props) {
   const markdown = useMemo(() => normalizeMarkdown(body), [body]);
 
   return (
-    <div dir="rtl" className="min-w-0 text-foreground">
+    <div
+      dir="rtl"
+      className="
+        w-full min-w-0 max-w-full
+        text-foreground
+        [overflow-wrap:anywhere]
+        [&>*:first-child]:mt-0
+      "
+    >
       <Markdown
         remarkPlugins={[remarkGfm]}
         skipHtml
         components={{
           h1: ({ node, ...props }) => (
-            <h2
-              {...props}
-              className="mb-5 mt-10 text-xl font-extrabold leading-9 text-foreground"
-            />
+            <h2 {...props} className="mb-5 mt-10 break-words text-xl font-extrabold leading-10" />
           ),
 
           h2: ({ node, ...props }) => (
             <h2
               {...props}
-              className="mb-4 mt-10 border-r-[3px] border-primary pr-3 text-lg font-bold leading-9 text-foreground first:mt-0"
+              className="mb-4 mt-10 break-words border-r-[3px] border-primary pr-3 text-lg font-bold leading-9"
             />
           ),
 
           h3: ({ node, ...props }) => (
-            <h3 {...props} className="mb-3 mt-7 text-base font-bold leading-8 text-foreground" />
+            <h3 {...props} className="mb-3 mt-7 break-words text-base font-bold leading-8" />
           ),
 
           p: ({ node, ...props }) => (
             <p
               {...props}
-              className="mb-5 whitespace-pre-line break-words text-[15px] leading-[2.25] text-foreground/90"
+              className="
+                mb-5 max-w-full
+                whitespace-pre-line break-words
+                leading-[2.15] text-foreground/90
+                [overflow-wrap:anywhere]
+              "
             />
           ),
 
@@ -113,29 +146,42 @@ export function ProgramMarkdown({ body }: Props) {
           ul: ({ node, ...props }) => (
             <ul
               {...props}
-              className="mb-6 list-disc space-y-2 pr-6 text-[15px] leading-8 marker:text-primary"
+              className="mb-6 max-w-full list-disc space-y-2 pr-6 leading-8 marker:text-primary"
             />
           ),
 
           ol: ({ node, ...props }) => (
             <ol
               {...props}
-              className="mb-6 list-decimal space-y-2 pr-6 text-[15px] leading-8 marker:text-primary"
+              className="mb-6 max-w-full list-decimal space-y-2 pr-6 leading-8 marker:text-primary"
             />
           ),
 
-          li: ({ node, ...props }) => <li {...props} className="break-words pr-1" />,
+          li: ({ node, ...props }) => (
+            <li {...props} className="min-w-0 break-words [overflow-wrap:anywhere]" />
+          ),
 
+          // Each table has its own horizontal scroll.
           table: ({ node, ...props }) => (
             <div
               role="region"
               aria-label="جدول اطلاعات برنامه"
               tabIndex={0}
-              className="mb-7 w-full max-w-full overflow-x-auto overscroll-x-contain rounded-2xl border border-border bg-white focus-visible:outline-2 focus-visible:outline-primary"
+              className="
+                my-6 block w-full min-w-0 max-w-full
+                overflow-x-auto overscroll-x-contain
+                rounded-2xl border border-border bg-white
+                [-webkit-overflow-scrolling:touch]
+                focus-visible:outline-2
+                focus-visible:outline-primary
+              "
             >
               <table
                 {...props}
-                className="w-full min-w-[680px] border-collapse text-right text-sm"
+                className="
+                  w-full min-w-[680px] table-fixed
+                  border-collapse text-right text-sm
+                "
               />
             </div>
           ),
@@ -147,27 +193,73 @@ export function ProgramMarkdown({ body }: Props) {
           th: ({ node, ...props }) => (
             <th
               {...props}
-              className="border-b border-l border-border/60 px-4 py-3 text-right font-bold leading-7 last:border-l-0"
+              className="
+                border-b border-l border-border/60
+                px-3 py-3 text-right align-top
+                font-bold leading-7 last:border-l-0
+                [overflow-wrap:anywhere]
+              "
             />
           ),
 
           td: ({ node, ...props }) => (
             <td
               {...props}
-              className="border-b border-l border-border/60 px-4 py-3 text-right align-top leading-7 last:border-l-0"
+              className="
+                border-b border-l border-border/60
+                px-3 py-3 text-right align-top
+                leading-7 last:border-l-0
+                [overflow-wrap:anywhere]
+              "
             />
           ),
 
           tr: ({ node, ...props }) => <tr {...props} className="even:bg-slate-50/70" />,
 
           a: ({ node, ...props }) => (
-            <a {...props} className="font-medium text-primary underline underline-offset-4" />
+            <a
+              {...props}
+              className="
+                break-words font-medium text-primary
+                underline underline-offset-4
+                [overflow-wrap:anywhere]
+              "
+            />
           ),
+
+          img: ({ node, ...props }) => (
+            <img
+              {...props}
+              loading="lazy"
+              className="
+                my-5 block h-auto max-w-full
+                rounded-xl object-contain
+              "
+            />
+          ),
+
+          pre: ({ node, ...props }) => (
+            <pre
+              {...props}
+              className="
+                my-5 w-full min-w-0 max-w-full
+                overflow-x-auto rounded-xl bg-slate-100
+                p-4 text-sm leading-7
+              "
+            />
+          ),
+
+          code: ({ node, ...props }) => <code {...props} className="font-mono text-sm" />,
 
           blockquote: ({ node, ...props }) => (
             <blockquote
               {...props}
-              className="my-6 border-r-4 border-primary/40 bg-slate-50 px-5 py-4 text-sm leading-8 text-muted-foreground"
+              className="
+                my-6 max-w-full break-words
+                border-r-4 border-primary/40
+                bg-slate-50 px-5 py-4 leading-8
+                text-muted-foreground
+              "
             />
           ),
         }}

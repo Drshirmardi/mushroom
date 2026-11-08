@@ -22,7 +22,6 @@ import { GuidanceSafety } from '@/components/shared/policy-acceptance';
 
 import { getProgramContent } from '@/lib/digital-services-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
-import { parseProgramBody, type ReadingBlock } from '@/lib/program-reading';
 import { toP } from '@/lib/format';
 
 import { ResultRecommendations } from '@/components/programs/result-recommendations';
@@ -68,7 +67,11 @@ export default function ProgramContentPage() {
   const backHref = '/programs?view=mine';
 
   return (
-    <main dir="rtl" className="min-h-full bg-white text-foreground">
+    <main
+      dir="rtl"
+      className="min-h-full w-full min-w-0 max-w-full overflow-x-clip bg-white text-foreground"
+    >
+      {' '}
       {/* Reading navigation */}
       <nav
         aria-label="مسیر صفحه"
@@ -89,8 +92,8 @@ export default function ProgramContentPage() {
           </span>
         </div>
       </nav>
-
-      <div className="mx-auto w-full max-w-[720px]">
+      <div className="mx-auto w-full min-w-0 max-w-[720px]">
+        {' '}
         <div className="px-5 pt-5">
           <PatientResourceState
             variant="detail"
@@ -98,7 +101,6 @@ export default function ProgramContentPage() {
             retry={() => void resource.reload()}
           />
         </div>
-
         {content && (
           <ProgramReadingPage
             key={`${content.id}:${content.contentHash}`}
@@ -192,7 +194,7 @@ function ProgramReadingPage({
         </div>
 
         {/* Reader preferences */}
-        <div className="mx-5 mt-5 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+        {/* <div className="mx-5 mt-5 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <Type size={17} aria-hidden="true" />
             اندازه متن
@@ -229,7 +231,7 @@ function ProgramReadingPage({
               بزرگ
             </button>
           </div>
-        </div>
+        </div> */}
 
         <ReadingArticle body={content.body} readingSize={readingSize} />
       </section>
@@ -288,7 +290,8 @@ function ProgramReadingPage({
       {/* End actions */}
 
       {/* End of article */}
-      <footer className="mx-5 mt-12 space-y-7 border-t border-border pt-8">
+      <footer className="mx-5 mt-12 min-w-0 max-w-full space-y-7 border-t border-border pt-8">
+        {' '}
         <div className="space-y-2 text-center">
           <p className="text-sm font-semibold text-foreground">پایان محتوای آموزشی</p>
 
@@ -296,7 +299,6 @@ function ProgramReadingPage({
             می‌توانید سایر خدمات و محصولات مرتبط با مزاج خود را نیز بررسی کنید.
           </p>
         </div>
-
         {/* Personalized recommendations */}
         <section aria-label="پیشنهادهای متناسب با مزاج" className="space-y-4">
           {mezaj.loading ? (
@@ -321,11 +323,13 @@ function ProgramReadingPage({
               </button>
             </div>
           ) : mezaj.data?.assessmentSubmissionId ? (
-            <ResultRecommendations
-              token={token}
-              submissionId={mezaj.data.assessmentSubmissionId}
-              layout="horizontal"
-            />
+            <div className="w-full min-w-0 max-w-full overflow-x-clip">
+              <ResultRecommendations
+                token={token}
+                submissionId={mezaj.data.assessmentSubmissionId}
+                layout="horizontal"
+              />
+            </div>
           ) : (
             <div className="rounded-2xl border border-border bg-slate-50 p-5 text-center">
               <p className="text-sm font-semibold text-foreground">پیشنهادهای متناسب با مزاج شما</p>
@@ -353,48 +357,15 @@ function ReadingArticle({ body, readingSize }: { body: string; readingSize: Read
   return (
     <article
       dir="rtl"
-      className={`mx-auto max-w-[660px] space-y-6 px-5 pb-3 pt-8 font-normal text-foreground ${readingStyles[readingSize]}`}
+      className={`
+        mx-auto w-full min-w-0 max-w-[660px]
+        px-5 pb-3 pt-8
+        font-normal text-foreground
+        [overflow-wrap:anywhere]
+        $DIL1
+      `}
     >
       <ProgramMarkdown body={body} />
     </article>
   );
-}
-
-function ReadingBlockView({ block }: { block: ReadingBlock }) {
-  if (block.type === 'heading') {
-    if (block.level === 3) {
-      return (
-        <h3 className="!mt-8 break-words border-r-[3px] border-primary/50 pr-3 text-base font-bold leading-9 text-foreground">
-          {block.text}
-        </h3>
-      );
-    }
-
-    return (
-      <h2 className="!mt-10 break-words border-r-[3px] border-primary pr-3 text-lg font-extrabold leading-10 text-foreground">
-        {block.text}
-      </h2>
-    );
-  }
-
-  if (block.type === 'list') {
-    return (
-      <ul className="space-y-3 pr-1">
-        {block.items.map((item, index) => (
-          <li key={index} className="flex items-start gap-3">
-            <span
-              aria-hidden="true"
-              className="mt-1 inline-flex min-w-6 shrink-0 justify-center text-sm font-bold text-primary"
-            >
-              {item.marker}
-            </span>
-
-            <span className="min-w-0 flex-1 break-words text-foreground/90">{item.text}</span>
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
-  return <p className="whitespace-pre-line break-words text-foreground/90">{block.text}</p>;
 }
