@@ -187,19 +187,6 @@ function Result({ id }: { id: string }) {
 
             {/* تست نمایش پیشنهادهای مزاج */}
             <div className="mt-8 space-y-4">
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-                <p>تست پیشنهادهای مزاج</p>
-                <p>نوع آزمون: {questionnaire.data?.assessmentKey ?? 'نامشخص'}</p>
-                <p>
-                  وضعیت پرسش‌نامه:
-                  {questionnaire.loading
-                    ? ' در حال بارگذاری'
-                    : questionnaire.error
-                      ? ` خطا: ${questionnaire.error}`
-                      : ' دریافت شده'}
-                </p>
-              </div>
-
               <ResultRecommendations token={token} submissionId={id} />
             </div>
           </>
