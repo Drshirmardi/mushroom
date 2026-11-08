@@ -29,7 +29,7 @@ services:
     volumes: [postgres_data:/var/lib/postgresql/data]
     ports: []
     restart: unless-stopped
-    cpus: "${DEV_POSTGRES_CPUS:-0.50}"
+    cpus: "${DEV_POSTGRES_CPUS:-1.00}"
     mem_limit: "${DEV_POSTGRES_MEMORY:-512m}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]

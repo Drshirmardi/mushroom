@@ -1,12 +1,16 @@
-"use client";
-import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+'use client';
+import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, CreditCard, Info, TriangleAlert } from "lucide-react";
-import { BottomSheet } from "@/components/shared/bottom-sheet";
-import { useAuthSession } from "@/components/auth/session-gate";
-import { createGatewayAttempt, createTopupIntent, walletErrorMessage } from "@/lib/wallet-billing-api";
+import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ChevronLeft, CreditCard, Info, TriangleAlert } from 'lucide-react';
+import { BottomSheet } from '@/components/shared/bottom-sheet';
+import { useAuthSession } from '@/components/auth/session-gate';
+import {
+  createGatewayAttempt,
+  createTopupIntent,
+  walletErrorMessage,
+} from '@/lib/wallet-billing-api';
 import {
   MAX_TOPUP_TOMAN,
   MIN_TOPUP_TOMAN,
@@ -15,7 +19,7 @@ import {
   formatTopupInput,
   parseTopupToman,
   topupValidationMessage,
-} from "@/lib/wallet-money";
+} from '@/lib/wallet-money';
 
 /**
  * Bottom-sheet wallet recharge. The whole top-up flow (amount → intent →
@@ -46,15 +50,25 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
     setError(null);
     setPendingIntentId(null);
     try {
-      const intent = await createTopupIntent(authentication.accessToken, validation.toman, intentKey.current.key);
+      const intent = await createTopupIntent(
+        authentication.accessToken,
+        validation.toman,
+        intentKey.current.key,
+      );
       setPendingIntentId(intent.id);
-      const attempt = await createGatewayAttempt(authentication.accessToken, intent.id, crypto.randomUUID());
+      const attempt = await createGatewayAttempt(
+        authentication.accessToken,
+        intent.id,
+        crypto.randomUUID(),
+      );
       if (attempt.redirectUrl) {
         window.location.assign(attempt.redirectUrl);
         return;
       }
       setPendingIntentId(intent.id);
-      setError("پرداخت در وضعیت نامشخص است و نیاز به بررسی دارد. تا مشخص‌شدن نتیجه، پرداخت دیگری انجام ندهید.");
+      setError(
+        'پرداخت در وضعیت نامشخص است و نیاز به بررسی دارد. تا مشخص‌شدن نتیجه، پرداخت دیگری انجام ندهید.',
+      );
     } catch (cause) {
       setError(walletErrorMessage(cause));
     } finally {
@@ -63,10 +77,13 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <BottomSheet title="افزایش موجودی" onClose={onClose}>
+    <BottomSheet onBeforeClose={() => !busy} size="auto" title="افزایش موجودی" onClose={onClose}>
       <div className="font-iranyekanx [--font-weight-medium:500] space-y-4 pb-2">
         {error && (
-          <div role="alert" className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5">
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-3.5"
+          >
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
               <TriangleAlert size={18} aria-hidden="true" />
             </span>
@@ -75,7 +92,11 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
               {pendingIntentId && (
                 <button
                   type="button"
-                  onClick={() => router.push(`/profile/wallet/payment-result?intentId=${encodeURIComponent(pendingIntentId)}`)}
+                  onClick={() =>
+                    router.push(
+                      `/profile/wallet/payment-result?intentId=${encodeURIComponent(pendingIntentId)}`,
+                    )
+                  }
                   className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-900 underline underline-offset-4"
                 >
                   مشاهدهٔ نتیجه
@@ -87,7 +108,12 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         )}
 
         <div>
-          <label htmlFor="topup-amount" className="mb-1.5 block text-xs font-medium text-muted-foreground">مبلغ شارژ (تومان)</label>
+          <label
+            htmlFor="topup-amount"
+            className="mb-1.5 block text-xs font-medium text-muted-foreground"
+          >
+            مبلغ شارژ (تومان)
+          </label>
           <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/25">
             <input
               id="topup-amount"
@@ -98,19 +124,28 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
               placeholder="مبلغ دلخواه"
               value={amount}
               aria-invalid={fieldError ? true : undefined}
-              aria-describedby={fieldError ? "topup-amount-error" : "topup-amount-help"}
+              aria-describedby={fieldError ? 'topup-amount-error' : 'topup-amount-help'}
               onChange={(event) => setAmount(formatTopupInput(event.target.value))}
               onBlur={() => setTouched(true)}
               className="wallet-topup-amount w-full min-w-0 flex-1 border-0 bg-transparent py-3 text-center font-iransans-fanum text-2xl font-normal tabular-nums tracking-normal text-foreground outline-none placeholder:text-center placeholder:text-xs placeholder:font-normal placeholder:text-muted-foreground"
             />
-            <span className="shrink-0 text-sm font-medium text-muted-foreground" aria-hidden="true">تومان</span>
+            <span className="shrink-0 text-sm font-medium text-muted-foreground" aria-hidden="true">
+              تومان
+            </span>
           </div>
 
           {fieldError ? (
-            <p id="topup-amount-error" role="alert" className="mt-1.5 text-[11px] font-medium text-red-600">{fieldError}</p>
+            <p
+              id="topup-amount-error"
+              role="alert"
+              className="mt-1.5 text-[11px] font-medium text-red-600"
+            >
+              {fieldError}
+            </p>
           ) : (
             <p id="topup-amount-help" className="mt-1.5 text-[11px] text-muted-foreground">
-              مبلغ دلخواه شما باید بین {formatToman(MIN_TOPUP_TOMAN)} و {formatToman(MAX_TOPUP_TOMAN)} تومان باشد.
+              مبلغ دلخواه شما باید بین {formatToman(MIN_TOPUP_TOMAN)} و{' '}
+              {formatToman(MAX_TOPUP_TOMAN)} تومان باشد.
             </p>
           )}
 
@@ -123,11 +158,18 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
                   key={preset.toString()}
                   type="button"
                   aria-pressed={selected}
-                  onClick={() => { setAmount(formatTopupInput(preset.toString())); setTouched(true); }}
-                  className={`rounded-lg border px-3 py-3 font-iransans-fanum text-sm font-normal transition-colors active:scale-[0.99] ${selected ? "border-primary bg-primary text-primary-foreground" : "border-slate-200 bg-white text-muted-foreground"
-                    }`}
+                  onClick={() => {
+                    setAmount(formatTopupInput(preset.toString()));
+                    setTouched(true);
+                  }}
+                  className={`rounded-lg border px-3 py-3 font-iransans-fanum text-sm font-normal transition-colors active:scale-[0.99] ${
+                    selected
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-slate-200 bg-white text-muted-foreground'
+                  }`}
                 >
-                  {formatToman(preset)} <span className="text-[11px] font-medium opacity-80">تومان</span>
+                  {formatToman(preset)}{' '}
+                  <span className="text-[11px] font-medium opacity-80">تومان</span>
                 </button>
               );
             })}
@@ -136,7 +178,10 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
 
         <div className="flex items-start gap-2 rounded-xl bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
           <Info size={15} className="mt-0.5 flex-shrink-0 text-gray-500" aria-hidden="true" />
-          <span>پرداخت از طریق درگاه امن بانکی انجام می‌شود و به‌محض تأیید، مبلغ بلافاصله به کیف پول شما اضافه می‌شود.</span>
+          <span>
+            پرداخت از طریق درگاه امن بانکی انجام می‌شود و به‌محض تأیید، مبلغ بلافاصله به کیف پول شما
+            اضافه می‌شود.
+          </span>
         </div>
 
         <button
@@ -144,8 +189,19 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           disabled={busy}
           onClick={() => void submit()}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-         aria-busy={Boolean(busy)}>
-          {busy ? <><HeartbeatLoader />در حال انتقال به درگاه…</> : <><CreditCard size={17} aria-hidden="true" />پرداخت و شارژ</>}
+          aria-busy={Boolean(busy)}
+        >
+          {busy ? (
+            <>
+              <HeartbeatLoader />
+              در حال انتقال به درگاه…
+            </>
+          ) : (
+            <>
+              <CreditCard size={17} aria-hidden="true" />
+              پرداخت و شارژ
+            </>
+          )}
         </button>
       </div>
     </BottomSheet>
