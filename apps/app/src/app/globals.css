@@ -142,6 +142,7 @@
     margin: 0;
     height: 100%;
     font-family: var(--font-vazirmatn), sans-serif;
+    position: relative;
   }
 
   h1 {
@@ -1329,38 +1330,6 @@
   overflow: hidden;
   background: transparent;
   color: var(--patient-ink);
-}
-.patient-bottom-sheet::backdrop {
-  background: transparent;
-}
-.patient-bottom-sheet {
-  --patient-action: var(--patient-blue-600);
-  --primary: var(--patient-action);
-}
-.patient-bottom-sheet__title {
-  font-family: var(--font-vazirmatn), sans-serif;
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 700;
-  color: var(--patient-ink);
-  text-align: center;
-}
-.patient-bottom-sheet__close {
-  color: var(--patient-blue-600);
-}
-.patient-bottom-sheet__close:hover {
-  color: var(--patient-blue-700);
-}
-.patient-bottom-sheet .patient-bottom-sheet__handle {
-  -webkit-tap-highlight-color: transparent;
-}
-/* Owner requests a neutral grip without a focus ring; modal focus stays intact. */
-.patient-bottom-sheet .patient-bottom-sheet__handle:focus {
-  outline: none;
-}
-.patient-bottom-sheet .patient-bottom-sheet__handle > span {
-  background: #cbd5e1;
-  outline: none;
 }
 .store-product__incart {
   position: absolute;
@@ -5778,18 +5747,7 @@ html[data-keyboard-open='true'] .patient-shell-footer {
   bottom: calc(var(--app-footer-height, 0px) + 0.5rem);
   max-width: calc(100% - 2rem);
 }
-.patient-bottom-sheet {
-  top: var(--app-viewport-top, 0px);
-  bottom: auto;
-  height: var(--app-visible-height, 100dvh);
-}
-.patient-sheet-panel {
-  max-height: calc(var(--app-visible-height, 100dvh) * 0.85);
-}
-html[data-keyboard-open='true'] .patient-sheet-panel {
-  max-height: 100%;
-  padding-bottom: 1rem;
-}
+
 .patient-chat-room {
   min-height: 0;
 }

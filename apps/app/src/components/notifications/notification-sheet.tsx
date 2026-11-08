@@ -1,10 +1,25 @@
-"use client";
+'use client';
 
-import { BottomSheet } from "@/components/shared/bottom-sheet";
-import { NotificationCenter } from "./notification-center";
+import { BottomSheet } from '@/components/shared/bottom-sheet';
+import { NotificationCenter } from './notification-center';
 
-export function NotificationSheet({ onClose, onUpdated }: { onClose: () => void; onUpdated: () => void }) {
-  return <BottomSheet title="اعلان‌ها" onClose={onClose}>
+type NotificationSheetProps = {
+  onClose: () => void;
+  onUpdated: () => void;
+};
+
+export function NotificationSheet({ onClose, onUpdated }: NotificationSheetProps) {
+  return (
+    <BottomSheet
+      title="اعلان‌ها"
+      ariaLabel="مرکز اعلان‌ها"
+      size="auto"
+      dismissible
+      showHandle
+      showCloseButton
+      onClose={onClose}
+    >
       <NotificationCenter embedded onUpdated={onUpdated} />
-    </BottomSheet>;
+    </BottomSheet>
+  );
 }
