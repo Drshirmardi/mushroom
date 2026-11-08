@@ -60,6 +60,28 @@ try {
   await page.goto(base + '/store/products/p1?sku=s2'); await page.getByLabel('انتخاب نوع محصول', { exact: true }).waitFor();
   for (const width of [320, 375, 414, 768, 1024, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 }); await overflow();
+    // Product sheet copy uses the compact Tailwind type scale and never clips long Farsi text.
+    const copy = await page.evaluate(() => {
+      const title = document.querySelector('[data-product-title]');
+      const paragraph = document.querySelector('#product-about p');
+      const sectionHeading = document.querySelector('[data-product-info-heading]');
+      const nav = document.querySelector('.store-content-nav');
+      const size = (node) => parseFloat(getComputedStyle(node).fontSize);
+      return {
+        title: size(title),
+        body: size(paragraph),
+        sectionHeading: size(sectionHeading),
+        hasHorizontalNav: Boolean(nav && getComputedStyle(nav).overflowX === 'auto'),
+        bodyOverflows: paragraph.scrollWidth > paragraph.clientWidth + 1
+      };
+    });
+    expect(copy.title).toBeGreaterThanOrEqual(18);
+    expect(copy.title).toBeLessThanOrEqual(23);
+    expect(copy.body).toBeGreaterThanOrEqual(14);
+    expect(copy.body).toBeLessThanOrEqual(16);
+    expect(copy.sectionHeading).toBeLessThanOrEqual(17);
+    expect(copy.hasHorizontalNav).toBe(true);
+    expect(copy.bodyOverflows).toBe(false);
     const g = await page.evaluate(() => {
       const gallery = document.querySelector('.store-gallery').getBoundingClientRect(), sheet = document.querySelector('.store-detail__sheet').getBoundingClientRect();
       const handle = document.querySelector('.store-detail__handle-button');
