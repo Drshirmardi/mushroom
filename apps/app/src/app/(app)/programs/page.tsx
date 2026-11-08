@@ -1,216 +1,120 @@
 'use client';
-import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { ArrowLeft, BookOpen, FileHeart } from 'lucide-react';
+
+import { Suspense } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { BookOpen, BookOpenText, HeartHandshake, LibraryBig } from 'lucide-react';
+
 import { useAuthSession } from '@/components/auth/session-gate';
-import {
-  ServicePage,
-  ServiceSection,
-  ServiceEmpty,
-  ServiceTabs,
-} from '@/components/shared/service-page';
-import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { PatientPagination } from '@/components/shared/patient-pagination';
-import {
-  listProgramOfferings,
-  listProgramPurchases,
-  listCustomOfferings,
-  listCustomRequests,
-} from '@/lib/digital-services-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
-import { formatRial } from '@/lib/wallet-money';
+import { ServicePage, ServiceTabs } from '@/components/shared/service-page';
+
+import { ProgramCatalog } from '@/components/programs/program-catalog';
+import { MyPrograms } from '@/components/programs/my-programs';
 
 type View = 'education' | 'custom' | 'mine';
-export default function ProgramsPage() {
+
+function isView(value: string | null): value is View {
+  return value === 'education' || value === 'custom' || value === 'mine';
+}
+
+const OPTIONS: { value: View; label: string }[] = [
+  { value: 'education', label: 'آموزشی' },
+  { value: 'custom', label: 'اختصاصی' },
+  { value: 'mine', label: 'برنامه‌های من' },
+];
+
+function ProgramsContent() {
   const { authentication } = useAuthSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const requestedView = searchParams.get('view');
+  const view: View = isView(requestedView) ? requestedView : 'education';
+
   const token = authentication.accessToken;
-  const [view, setView] = useState<View>('education');
-  useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get('view');
-    if (value === 'education' || value === 'custom' || value === 'mine') setView(value);
-  }, []);
-  const changeView = (value: View) => {
-    setView(value);
-    const url = new URL(window.location.href);
-    url.searchParams.set('view', value);
-    window.history.replaceState(null, '', url);
+
+  const changeView = (next: View) => {
+    if (next === view) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', next);
+
+    router.replace(`${pathname}?${params.toString()}`, {
+      scroll: false,
+    });
   };
-  const [page, setPage] = useState(1);
-  const [purchasePage, setPurchasePage] = useState(1);
-  const [customPage, setCustomPage] = useState(1);
-  const [requestPage, setRequestPage] = useState(1);
-  const programs = usePatientResource(
-    useCallback(() => listProgramOfferings(token, page), [token, page]),
-  );
-  const purchases = usePatientResource(
-    useCallback(() => listProgramPurchases(token, purchasePage), [token, purchasePage]),
-  );
-  const custom = usePatientResource(
-    useCallback(() => listCustomOfferings(token, customPage), [token, customPage]),
-  );
-  const requests = usePatientResource(
-    useCallback(() => listCustomRequests(token, requestPage), [token, requestPage]),
-  );
+
   return (
     <ServicePage
       title="برنامه‌های سلامت"
-      description="محتوای آموزشی آماده را ببینید یا برنامهٔ اختصاصی تحت نظر متخصص را پیگیری کنید."
+      description="برنامه‌های آموزشی، خدمات اختصاصی و محتوای خودتان را در یک مکان دنبال کنید."
       icon={BookOpen}
     >
-      <ServiceTabs<View>
-        value={view}
-        onChange={changeView}
-        options={[
-          { value: 'education', label: 'آموزشی' },
-          { value: 'custom', label: 'اختصاصی' },
-          { value: 'mine', label: 'برنامه‌های من' },
-        ]}
-      />
-      {view === 'education' && (
-        <>
-          <p className="service-note">
-            برنامهٔ آموزشی برای آگاهی و یادگیری است. شرایط دسترسی، محتوا و هزینه را پیش از خرید
-            بررسی کنید.
-          </p>
-          <ServiceSection
-            title="برنامه‌های آموزشی"
-            description="برنامه‌های منتشرشدهٔ کلینیک، با محتوای مشخص و دسترسی قابل پیگیری."
-          >
-            <PatientResourceState {...programs} retry={() => void programs.reload()} />
-            {programs.data?.items.map((item) => (
-              <Link key={item.id} href={`/programs/offerings/${item.id}`} className="service-card">
-                <span className="service-badge">آموزشی</span>
-                <h3 className="mt-2">{item.title}</h3>
-                {item.summary && <p>{item.summary}</p>}
-                <strong className="service-price">
-                  {formatRial(BigInt(item.amountRial))} تومان
-                </strong>
-                <span className="service-text-action">
-                  محتوا و شرایط دسترسی
-                  <ArrowLeft size={17} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
-            {programs.data?.items.length === 0 && (
-              <ServiceEmpty
-                icon={BookOpen}
-                title="برنامهٔ آموزشی تازه‌ای فعال نیست"
-                description="پس از انتشار، برنامه‌های قابل دریافت اینجا دیده می‌شوند. اگر قبلاً برنامه‌ای گرفته‌اید، بخش «برنامه‌های من» را باز کنید."
-              />
-            )}
-            {programs.data && (
-              <PatientPagination page={page} total={programs.data.total} onChange={setPage} />
-            )}
-          </ServiceSection>
-        </>
-      )}
-      {view === 'custom' && (
-        <>
-          <p className="service-note">
-            ابتدا جزئیات خدمت را بخوانید، سپس درخواست خود را ثبت کنید. وضعیت بررسی و نسخه‌های
-            منتشرشده از بخش «برنامه‌های من» قابل پیگیری‌اند.
-          </p>
-          <ServiceSection
-            title="خدمات برنامهٔ اختصاصی"
-            description="هر خدمت، شرایط پذیرش و مراحل دریافت خودش را دارد."
-          >
-            <PatientResourceState {...custom} retry={() => void custom.reload()} />
-            {custom.data?.items.map((item) => (
-              <Link
-                key={item.id}
-                href={`/programs/custom-offerings/${item.id}`}
-                className="service-card"
-              >
-                <h3>{item.title}</h3>
-                {item.summary && <p>{item.summary}</p>}
-                <strong className="service-price">
-                  {formatRial(BigInt(item.amountRial))} تومان
-                </strong>
-                <span className="service-text-action">
-                  جزئیات و مراحل درخواست
-                  <ArrowLeft size={17} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
-            {custom.data?.items.length === 0 && (
-              <ServiceEmpty
-                icon={FileHeart}
-                title="خدمت اختصاصی تازه‌ای فعال نیست"
-                description="درخواست‌های قبلی همچنان از بخش «برنامه‌های من» قابل پیگیری‌اند. برای دریافت مشاوره می‌توانید نوبت رزرو کنید."
-                href="/appointments/book"
-                action="رزرو مشاوره"
-              />
-            )}
-            {custom.data && (
-              <PatientPagination
-                page={customPage}
-                total={custom.data.total}
-                onChange={setCustomPage}
-              />
-            )}
-          </ServiceSection>
-        </>
-      )}
-      {view === 'mine' && (
-        <>
-          <ServiceSection
-            title="برنامه‌های خریداری‌شده"
-            description="پرداخت، دسترسی و محتوای هر برنامه را از همین بخش ببینید."
-          >
-            <PatientResourceState {...purchases} retry={() => void purchases.reload()} />
-            {purchases.data?.items.map((item) => (
-              <Link key={item.id} href={`/programs/purchases/${item.id}`} className="service-card">
-                <h3>{item.title}</h3>
-                <span className="service-text-action">
-                  بازکردن برنامه و بررسی دسترسی
-                  <ArrowLeft size={17} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
-            {purchases.data?.items.length === 0 && (
-              <ServiceEmpty
-                title="هنوز برنامه‌ای خریداری نکرده‌اید"
-                description="برنامه‌های شما پس از خرید اینجا قرار می‌گیرند. برای دیدن گزینه‌های موجود، بخش «آموزشی» را باز کنید."
-              />
-            )}
-            {purchases.data && (
-              <PatientPagination
-                page={purchasePage}
-                total={purchases.data.total}
-                onChange={setPurchasePage}
-              />
-            )}
-          </ServiceSection>
-          <ServiceSection
-            title="درخواست‌های اختصاصی"
-            description="از ثبت درخواست تا بررسی متخصص و دریافت برنامه."
-          >
-            <PatientResourceState {...requests} retry={() => void requests.reload()} />
-            {requests.data?.items.map((item) => (
-              <Link key={item.id} href={`/programs/custom/${item.id}`} className="service-card">
-                <h3>{item.title}</h3>
-                <span className="service-text-action">
-                  وضعیت درخواست و نسخه‌های برنامه
-                  <ArrowLeft size={17} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
-            {requests.data?.items.length === 0 && (
-              <ServiceEmpty
-                title="درخواست اختصاصی ثبت نشده"
-                description="برای آشنایی با خدمات و ثبت درخواست، بخش «اختصاصی» را بررسی کنید."
-              />
-            )}
-            {requests.data && (
-              <PatientPagination
-                page={requestPage}
-                total={requests.data.total}
-                onChange={setRequestPage}
-              />
-            )}
-          </ServiceSection>
-        </>
-      )}
+      <div className="min-w-0 space-y-6 pb-8">
+        {/* Introduction */}
+        <section className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-5 sm:p-7">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-12 -top-12 size-40 rounded-full bg-primary/10 blur-3xl"
+          />
+
+          <div className="relative space-y-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-background/80 px-3 py-1.5 text-xs font-semibold text-primary">
+              <HeartHandshake size={15} aria-hidden="true" />
+              همراه شما در مسیر سلامت
+            </span>
+
+            <div className="space-y-2">
+              <h2 className="text-xl font-extrabold leading-9 tracking-tight text-foreground sm:text-2xl">
+                آموزش، آگاهی و پیگیری برنامه‌ها
+              </h2>
+
+              <p className="max-w-xl text-sm leading-8 text-muted-foreground">
+                مطالب آموزشی را بررسی کنید، با خدمات اختصاصی آشنا شوید و به برنامه‌هایی که قبلاً
+                دریافت کرده‌اید دسترسی داشته باشید.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/75 px-3 py-2 text-xs text-foreground/80">
+                <BookOpenText size={16} />
+                محتوای آموزشی
+              </span>
+
+              <span className="inline-flex items-center gap-2 rounded-xl border border-border/70 bg-background/75 px-3 py-2 text-xs text-foreground/80">
+                <LibraryBig size={16} />
+                دسترسی به برنامه‌های من
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Navigation */}
+        <div className="min-w-0">
+          <ServiceTabs<View> value={view} onChange={changeView} options={OPTIONS} />
+        </div>
+
+        {/* Only the active tab mounts and fetches data */}
+        {view === 'education' && <ProgramCatalog token={token} kind="education" />}
+
+        {view === 'custom' && <ProgramCatalog token={token} kind="custom" />}
+
+        {view === 'mine' && <MyPrograms token={token} />}
+      </div>
     </ServicePage>
+  );
+}
+
+export default function ProgramsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div role="status" className="mx-auto max-w-[720px] p-6 text-sm text-muted-foreground">
+          در حال آماده‌سازی برنامه‌های سلامت…
+        </div>
+      }
+    >
+      <ProgramsContent />
+    </Suspense>
   );
 }
