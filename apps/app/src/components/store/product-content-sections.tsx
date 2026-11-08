@@ -208,23 +208,6 @@ export function ProductContentSections({
         </dl>
       )}
 
-      {sections.length > 1 && (
-        <nav
-          className="store-content-nav sticky top-12 z-20 -mx-2 mb-1 flex min-w-0 snap-x snap-proximity gap-2 overflow-x-auto border-b border-slate-200 bg-white/95 px-2 py-2 backdrop-blur-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          aria-label="بخش‌های اطلاعات محصول"
-        >
-          {sections.map((section) => (
-            <a
-              key={section.id}
-              href={`#${section.id}`}
-              className="inline-flex min-h-11 shrink-0 snap-start items-center justify-center whitespace-nowrap rounded-xl bg-slate-100 px-3 text-xs leading-5 font-medium text-slate-600 transition-colors hover:bg-slate-200/80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087c91] aria-[current=true]:bg-[#087c91] aria-[current=true]:text-white @sm:text-[0.8125rem]"
-            >
-              {section.title}
-            </a>
-          ))}
-        </nav>
-      )}
-
       <div className="min-w-0">
         {sections.map(({ id, label, title, value, icon: Icon }) => {
           const safety = id === 'product-warnings' || id === 'product-contraindications';
