@@ -14,6 +14,8 @@ import { listProgramOfferings, listCustomOfferings } from '@/lib/digital-service
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { toP } from '@/lib/format';
 
+import { EducationProgramCard } from './education-program-card';
+
 type Props = {
   token: string;
   kind: 'education' | 'custom';
@@ -110,28 +112,19 @@ function EducationCatalog({ token }: { token: string }) {
 
         {resource.data && filtered.length > 0 && (
           <div className="grid min-w-0 grid-cols-1 gap-3">
-            {filtered.map((item) => {
-              const accessLabel =
-                item.accessMode === 'PERPETUAL'
-                  ? 'دسترسی بدون محدودیت زمانی'
-                  : item.accessDurationDays != null
-                    ? `دسترسی ${toP(item.accessDurationDays)} روزه`
-                    : 'دسترسی مدت‌دار';
-
-              return (
-                <ProgramCard
-                  key={item.id}
-                  variant="education"
-                  href={`/programs/offerings/${encodeURIComponent(item.id)}`}
-                  title={item.title}
-                  summary={item.summary}
-                  meta={`${item.category} · ${accessLabel}`}
-                  priceRial={item.amountRial}
-                  basePriceRial={item.baseAmountRial}
-                  actionLabel="مشاهده جزئیات و شرایط"
-                />
-              );
-            })}
+            {resource.data && filtered.length > 0 && (
+              <div
+                className="
+                  grid min-w-0
+                  grid-cols-1 gap-3
+                  sm:grid-cols-2 sm:gap-4
+                "
+              >
+                {filtered.map((item) => (
+                  <EducationProgramCard key={item.id} item={item} />
+                ))}
+              </div>
+            )}
           </div>
         )}
 
