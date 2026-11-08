@@ -82,6 +82,26 @@ try {
     expect(copy.sectionHeading).toBeLessThanOrEqual(17);
     expect(copy.hasHorizontalNav).toBe(true);
     expect(copy.bodyOverflows).toBe(false);
+    // The product detail experience must use the existing IRANYekanX face, never Vazirmatn.
+    const fonts = await page.evaluate(() => {
+      const sample = (selector) => {
+        const style = getComputedStyle(document.querySelector(selector));
+        return { family: style.fontFamily, weight: Number(style.fontWeight) };
+      };
+      return {
+        title: sample('[data-product-title]'),
+        description: sample('#product-about p'),
+        section: sample('#product-ingredients h3'),
+        unitPrice: sample('[data-product-unit-price] .store-price'),
+        sheet: sample('.store-detail__sheet')
+      };
+    });
+    for (const entry of Object.values(fonts)) {
+      expect(entry.family).toContain('IRANYekanX');
+      expect(entry.family.startsWith('IRANYekanX') || entry.family.startsWith('"IRANYekanX"')).toBe(true);
+    }
+    expect(fonts.title.weight).toBeLessThanOrEqual(500);
+    expect(fonts.section.weight).toBeLessThanOrEqual(500);
     const g = await page.evaluate(() => {
       const gallery = document.querySelector('.store-gallery').getBoundingClientRect(), sheet = document.querySelector('.store-detail__sheet').getBoundingClientRect();
       const handle = document.querySelector('.store-detail__handle-button');
