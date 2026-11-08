@@ -33,7 +33,7 @@ function SectionBody({ id, value }: { id: string; value: string }) {
       {collapsible && (
         <button
           type="button"
-          className="mt-2 inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-semibold text-[#087c91] transition-colors hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087c91]"
+          className="mt-2 inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-medium text-[#087c91] transition-colors hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087c91]"
           aria-expanded={open}
           aria-controls={paragraphId}
           onClick={() => setOpen((current) => !current)}
@@ -127,7 +127,7 @@ export function ProductContentSections({
   );
 
   return (
-    <div className="min-w-0 pb-3 [font-family:var(--font-vazirmatn)]">
+    <div className="min-w-0 pb-3 [font-family:var(--font-iranyekanx)]">
       {shortDescription && (
         <p className="mb-4 max-w-[68ch] min-w-0 break-words text-sm leading-[1.8] text-slate-600 @sm:text-[0.9375rem]">
           {shortDescription}
@@ -141,7 +141,7 @@ export function ProductContentSections({
       mb-5 w-full min-w-0 overflow-hidden
       rounded-[18px] border border-slate-200/80
       bg-white
-      [font-family:var(--font-vazirmatn)]
+      [font-family:var(--font-iranyekanx)]
     "
         >
           {mainSpecs.map((spec, index) => (
@@ -170,7 +170,7 @@ export function ProductContentSections({
               <dd
                 className="
             min-w-0 flex-1 text-end
-            text-[13px] leading-6 font-semibold
+            text-[13px] leading-6 font-medium
             text-slate-800
             [overflow-wrap:anywhere]
             sm:text-sm
@@ -224,7 +224,7 @@ export function ProductContentSections({
             >
               <h3
                 data-product-info-heading
-                className={`flex min-w-0 items-center gap-2 text-[0.9375rem] leading-7 font-semibold @sm:text-base ${safety ? 'text-amber-900' : 'text-slate-900'}`}
+                className={`flex min-w-0 items-center gap-2 text-[0.9375rem] leading-7 font-medium @sm:text-base ${safety ? 'text-amber-900' : 'text-slate-900'}`}
               >
                 <span
                   className={`inline-flex size-8 shrink-0 items-center justify-center rounded-xl ${safety ? 'bg-amber-100 text-amber-800' : 'bg-teal-50 text-[#087c91]'}`}
