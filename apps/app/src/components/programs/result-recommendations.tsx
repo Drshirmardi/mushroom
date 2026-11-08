@@ -109,9 +109,7 @@ export function ResultRecommendations({
         <header className="mb-4">
           <h2 className={headingClass}>شناخت بیشتر از خودتان</h2>
 
-          <p className={descriptionClass}>
-            مطالعهٔ بیشتر بر اساس نتیجهٔ همین آزمون؛ انتخاب با شماست.
-          </p>
+          <p className={descriptionClass}>مطالعهٔ بیشتر بر اساس مزاج شما؛ انتخاب با شماست.</p>
         </header>
 
         {services.loading ? (
