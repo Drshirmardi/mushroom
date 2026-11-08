@@ -185,9 +185,8 @@ function Result({ id }: { id: string }) {
               بررسی شرایط و رزرو مشاوره
             </Link>
 
-            {/* تست نمایش پیشنهادهای مزاج */}
             <div className="mt-8 space-y-4">
-              <ResultRecommendations token={token} submissionId={id} />
+              <ResultRecommendations token={token} submissionId={id} layout="horizontal" />
             </div>
           </>
         )}
