@@ -28,6 +28,8 @@ import { toP } from '@/lib/format';
 import { ResultRecommendations } from '@/components/programs/result-recommendations';
 import { getCurrentMezaj } from '@/lib/assessment-api';
 
+import { ProgramMarkdown } from '@/components/shared/program-markdown';
+
 type ProgramContent = components['schemas']['PatientProgramContentDto'];
 
 type ReadingSize = 'normal' | 'large';
@@ -348,24 +350,12 @@ function ProgramReadingPage({
 }
 
 function ReadingArticle({ body, readingSize }: { body: string; readingSize: ReadingSize }) {
-  const blocks = useMemo(() => parseProgramBody(body), [body]);
-
-  if (blocks.length === 0) {
-    return (
-      <p className="px-5 py-8 text-sm leading-8 text-muted-foreground">
-        متن این نسخه از برنامه خالی است.
-      </p>
-    );
-  }
-
   return (
     <article
       dir="rtl"
       className={`mx-auto max-w-[660px] space-y-6 px-5 pb-3 pt-8 font-normal text-foreground ${readingStyles[readingSize]}`}
     >
-      {blocks.map((block, index) => (
-        <ReadingBlockView key={index} block={block} />
-      ))}
+      <ProgramMarkdown body={body} />
     </article>
   );
 }
