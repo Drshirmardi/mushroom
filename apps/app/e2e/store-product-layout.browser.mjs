@@ -81,13 +81,13 @@ try {
       const title = document.querySelector('[data-product-title]');
       const paragraph = document.querySelector('#product-about p');
       const sectionHeading = document.querySelector('[data-product-info-heading]');
-      const nav = document.querySelector('.store-content-nav');
+      const sectionNav = document.querySelector('.store-content-nav');
       const size = (node) => parseFloat(getComputedStyle(node).fontSize);
       return {
         title: size(title),
         body: size(paragraph),
         sectionHeading: size(sectionHeading),
-        hasHorizontalNav: Boolean(nav && getComputedStyle(nav).overflowX === 'auto'),
+        noNavigationChips: sectionNav === null,
         bodyOverflows: paragraph.scrollWidth > paragraph.clientWidth + 1
       };
     });
@@ -96,7 +96,7 @@ try {
     expect(copy.body).toBeGreaterThanOrEqual(14);
     expect(copy.body).toBeLessThanOrEqual(16);
     expect(copy.sectionHeading).toBeLessThanOrEqual(17);
-    expect(copy.hasHorizontalNav).toBe(true);
+    expect(copy.noNavigationChips).toBe(true);
     expect(copy.bodyOverflows).toBe(false);
     const g = await page.evaluate(() => {
       const gallery = document.querySelector('.store-gallery').getBoundingClientRect(), sheet = document.querySelector('.store-detail__sheet').getBoundingClientRect();
@@ -111,18 +111,19 @@ try {
     results.push({ route: 'product', width, ...g });
   }
   await page.screenshot({ path: `${dir}/product-desktop.png` });
-  await page.getByRole('link', { name: 'هشدارها', exact: true }).click();
-  await expect(page.getByRole('link', { name: 'هشدارها', exact: true })).toHaveAttribute('aria-current', 'true');
+  await expect(page.locator('.store-content-nav')).toHaveCount(0);
+  await page.locator('#product-warnings').scrollIntoViewIfNeeded();
   await expect.poll(() => page.evaluate(() => {
-    const h = document.querySelector('#product-warnings').getBoundingClientRect(), nav = document.querySelector('.store-content-nav').getBoundingClientRect(), root = document.querySelector('.store-detail').getBoundingClientRect();
-    return h.top >= nav.bottom - 2 && h.top < root.bottom;
+    const section = document.querySelector('#product-warnings').getBoundingClientRect();
+    const root = document.querySelector('.store-detail').getBoundingClientRect();
+    return section.top < root.bottom - 20 && section.bottom > root.top + 20;
   })).toBe(true);
   const productAxe = await axe();
   for (const size of [{ width: 375, height: 812 }, { width: 768, height: 390 }, { width: 720, height: 450 }]) {
     await page.setViewportSize(size); await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; }); await overflow();
-    const link = page.getByRole('link', { name: 'هشدارها', exact: true }); await link.click();
-    expect(await link.getAttribute('aria-current')).toBe('true');
+    await page.locator('#product-warnings').scrollIntoViewIfNeeded();
+    await expect(page.locator('.store-content-nav')).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => {
       const root = document.querySelector('.store-detail').getBoundingClientRect(), target = document.querySelector('#product-warnings').getBoundingClientRect();
       return root.height > 60 && target.top >= root.top && target.top < root.bottom - 20;
@@ -154,6 +155,6 @@ try {
   console.log(JSON.stringify({ PASS: true, widths: 7, storeAxe, productAxe, errors, warnings: warnings.length }));
 } catch (error) {
   await page.screenshot({ path: `${dir}/layout-failure.png` });
-  await writeFile(`${dir}/layout-failure.json`, JSON.stringify({ message: String(error).slice(0,1400), viewport: page.viewportSize(), last: results.at(-1), geometry: await page.evaluate(() => Object.fromEntries(['.store-detail', '.store-detail__handle-button', '.store-content-nav', '.store-purchase-bar', '.store-page-header'].map(s => [s, document.querySelector(s)?.getBoundingClientRect().toJSON()]))) }, null, 2));
+  await writeFile(`${dir}/layout-failure.json`, JSON.stringify({ message: String(error).slice(0,1400), viewport: page.viewportSize(), last: results.at(-1), geometry: await page.evaluate(() => Object.fromEntries(['.store-detail', '.store-detail__handle-button', '#product-warnings', '.store-purchase-bar', '.store-page-header'].map(s => [s, document.querySelector(s)?.getBoundingClientRect().toJSON()]))) }, null, 2));
   throw error;
 } finally { await browser.close(); }
