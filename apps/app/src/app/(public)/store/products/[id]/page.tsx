@@ -81,12 +81,13 @@ export default function ProductDetailPage() {
   const cartAction = (
     <Link
       href="/store/cart"
-      className="store-icon-button relative inline-flex items-center justify-center"
-      aria-label={count ? `سبد خرید، ${toP(count)} کالا` : 'سبد خرید'}
+      className={`patient-button patient-button--ghost store-icon-button ${styles.cartLink}`}
+      aria-label={`سبد خرید، ${toP(count)} کالا`}
     >
-      <ShoppingCart size={20} aria-hidden="true" />
+      <ShoppingCart aria-hidden="true" size={23} strokeWidth={1.75} />
+
       {count > 0 && (
-        <span className="store-badge" aria-hidden="true">
+        <span className={`store-badge store-badge--danger ${styles.cartBadge}`} aria-hidden="true">
           {toP(count)}
         </span>
       )}

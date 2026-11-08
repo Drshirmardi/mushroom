@@ -179,20 +179,6 @@ function ProgramReadingPage({
 
       {/* Article */}
       <section aria-labelledby="program-reading-title" className="mt-9">
-        <div className="px-5">
-          <div className="flex items-center gap-2">
-            <FileText size={20} className="text-primary" aria-hidden="true" />
-
-            <h2 id="program-reading-title" className="text-lg font-bold text-foreground">
-              متن برنامه
-            </h2>
-          </div>
-
-          <p className="mt-2 text-xs leading-6 text-muted-foreground">
-            برای مطالعه راحت‌تر می‌توانید اندازه نوشته‌ها را تغییر دهید.
-          </p>
-        </div>
-
         {/* Reader preferences */}
         {/* <div className="mx-5 mt-5 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <span className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground">
