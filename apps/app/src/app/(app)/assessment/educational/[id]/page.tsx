@@ -261,7 +261,7 @@ function FreeAccess({
           className="w-full rounded-xl border border-border p-3 text-primary"
           onClick={() => {
             setAccepted(false);
-            setTermsAccepted(false);
+            setTermsAccepted(true);
             setRepurchasing(true);
           }}
         >
