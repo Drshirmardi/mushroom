@@ -1601,12 +1601,12 @@
   line-height: 36px;
   font-weight: 500;
 }
-.store-page h2 {
+.store-page h2:not([data-product-title]) {
   font-size: 20px;
   line-height: 32px;
   font-weight: 500;
 }
-.store-page h3 {
+.store-page h3:not([data-product-info-heading]) {
   font-size: 16px;
   line-height: 28px;
   font-weight: 500;
@@ -2220,55 +2220,7 @@
   outline: 2px solid var(--patient-action);
   outline-offset: 2px;
 }
-.store-product-page .store-content-nav {
-  position: sticky;
-  top: 60px;
-  z-index: 2;
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  padding-block: 8px 12px;
-  border-bottom: 1px solid var(--patient-divider);
-  background: #fff;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.store-product-page .store-content-nav::-webkit-scrollbar {
-  display: none;
-}
-.store-product-page .store-content-nav a {
-  flex-shrink: 0;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  padding-inline: 14px;
-  border-radius: 12px;
-  background: #f4f6fb;
-  color: #34476b;
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-}
-.store-product-page .store-content-nav a:hover {
-  background: #e8efff;
-  color: #1d49bd;
-}
-.store-product-page .store-content-nav a[aria-current='true'] {
-  background: var(--patient-action);
-  color: #fff;
-  box-shadow: 0 4px 12px rgb(36 88 216 / 28%);
-}
-@media (prefers-reduced-motion: no-preference) {
-  .store-product-page .store-content-nav a {
-    transition:
-      background-color 180ms ease,
-      color 180ms ease,
-      box-shadow 180ms ease;
-  }
-}
+/* PDP section chips are now styled in product-content-sections.tsx (Tailwind). */
 .store-product-page .store-description {
   margin-top: 0;
   padding-block: 20px;
