@@ -1,9 +1,22 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { Drawer } from '@base-ui/react/drawer';
 import { X } from 'lucide-react';
 import { cn } from '@/components/ui/utils';
+
+export type BottomSheetHandle = {
+  /** Close after an explicitly confirmed action. */
+  close: () => void;
+};
 
 export type BottomSheetProps = {
   title?: string;
@@ -19,46 +32,129 @@ export type BottomSheetProps = {
   className?: string;
 
   /**
-   * Wait for the exit transition before calling onClose.
-   *
-   * Keep false for legacy callers that use onClose
-   * as a dismissal request or confirmation guard.
+   * Return false to prevent dismissal.
+   * Useful for dirty forms and pending payments.
    */
+  onBeforeClose?: () => boolean;
+
+  /**
+   * Require another upward pull after reaching
+   * the bottom of a scrollable list.
+   */
+  overscrollToDismiss?: boolean;
+
+  /** Deprecated. Exit animation is now always enabled. */
   animateExit?: boolean;
 };
 
 const sizes = {
-  auto: cn('h-auto', 'max-h-[min(76dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]'),
-  medium: cn('h-[min(52dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]'),
-  large: cn('h-[min(88dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]'),
+  auto: 'max-h-[min(76dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
+  medium: 'h-[min(52dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
+  large: 'h-[min(88dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
 } as const;
 
-export function BottomSheet({
-  title,
-  ariaLabel,
-  onClose,
-  children,
-  size = 'auto',
-  dismissible = true,
-  showHandle = true,
-  showCloseButton = true,
-  footer,
-  className,
-  animateExit = false,
-}: BottomSheetProps) {
-  const [open, setOpen] = useState(true);
+type TouchStart = {
+  y: number;
+  atEnd: boolean;
+};
 
-  const accessibleTitle = title ?? ariaLabel ?? 'پنجره گزینه‌ها';
+export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(function BottomSheet(
+  {
+    title,
+    ariaLabel,
+    onClose,
+    children,
+    size = 'auto',
+    dismissible = true,
+    showHandle = true,
+    showCloseButton = true,
+    footer,
+    className,
+    onBeforeClose,
+    overscrollToDismiss = true,
+  },
+  ref,
+) {
+  // Begin closed so the entrance transition
+  // starts from below the viewport.
+  const [open, setOpen] = useState(false);
 
-  const requestClose = () => {
+  const openedRef = useRef(false);
+  const completedRef = useRef(false);
+  const touchStartRef = useRef<TouchStart | null>(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      openedRef.current = true;
+      setOpen(true);
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  const forceClose = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ close: forceClose }), [forceClose]);
+
+  const requestClose = useCallback(() => {
     if (!dismissible || !open) return;
 
-    if (animateExit) {
-      setOpen(false);
-    } else {
-      onClose();
+    if (onBeforeClose?.() === false) {
+      return;
+    }
+
+    setOpen(false);
+  }, [dismissible, onBeforeClose, open]);
+
+  const onScrollTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = null;
+
+    if (!overscrollToDismiss || !dismissible || event.touches.length !== 1) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (
+      target instanceof Element &&
+      target.closest('input, textarea, select, [contenteditable="true"]')
+    ) {
+      return;
+    }
+
+    const element = event.currentTarget;
+    const maxScroll = element.scrollHeight - element.clientHeight;
+
+    touchStartRef.current = {
+      y: event.touches[0].clientY,
+      atEnd: maxScroll > 8 && element.scrollTop >= maxScroll - 3,
+    };
+  };
+
+  const onScrollTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+
+    if (!start?.atEnd || !open) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const upwardPull = start.y - touch.clientY;
+    const element = event.currentTarget;
+
+    const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+
+    // A deliberate second pull, not simply arriving
+    // at the last item.
+    if (upwardPull >= 110 && remaining <= 3) {
+      requestClose();
     }
   };
+
+  const accessibleTitle = title ?? ariaLabel ?? 'پنجره گزینه‌ها';
 
   return (
     <Drawer.Root
@@ -72,37 +168,29 @@ export function BottomSheet({
           return;
         }
 
-        if (!dismissible) {
+        if (!dismissible || onBeforeClose?.() === false) {
           details.cancel();
           return;
         }
 
-        if (animateExit) {
-          setOpen(false);
-        } else {
-          // Preserve existing close-guard behavior.
-          details.cancel();
-          onClose();
-        }
+        setOpen(false);
       }}
       onOpenChangeComplete={(nextOpen) => {
-        if (!nextOpen && animateExit) {
+        if (!nextOpen && openedRef.current && !completedRef.current) {
+          completedRef.current = true;
           onClose();
         }
       }}
     >
       <Drawer.VirtualKeyboardProvider>
-        <Drawer.Portal className="patient-app-shell">
-          {/* Backdrop */}
+        <Drawer.Portal>
           <Drawer.Backdrop
             className={cn(
               'fixed inset-0 z-[100]',
               'bg-slate-950/30',
-
               'opacity-[calc(1-var(--drawer-swipe-progress,0))]',
-              'transition-opacity duration-[400ms]',
+              'transition-opacity duration-[380ms]',
               'ease-[cubic-bezier(0.22,1,0.36,1)]',
-
               'data-[starting-style]:opacity-0',
               'data-[ending-style]:opacity-0',
               'data-[swiping]:duration-0',
@@ -110,7 +198,6 @@ export function BottomSheet({
             )}
           />
 
-          {/* Drawer viewport */}
           <Drawer.Viewport
             className={cn(
               'pointer-events-none',
@@ -118,10 +205,13 @@ export function BottomSheet({
               'flex items-end justify-center',
             )}
           >
-            {/* Animated surface */}
             <Drawer.Popup
               dir="rtl"
               className={cn(
+                // App-specific theme variables
+                'patient-app-shell',
+
+                // Layout
                 'pointer-events-auto relative',
                 'mx-auto flex min-h-0 w-full flex-col',
                 'max-w-[720px]',
@@ -130,63 +220,62 @@ export function BottomSheet({
                 // Surface
                 'overflow-hidden',
                 'rounded-t-[28px]',
-                'border border-b-0 border-slate-200/70',
-                'bg-white text-slate-900',
-                'shadow-[0_-12px_50px_-20px_rgba(15,23,42,0.18)]',
+                'border border-b-0',
+                'border-slate-200/60',
+                'bg-white text-foreground',
+                'shadow-[0_-12px_48px_-20px_rgba(15,23,42,0.18)]',
                 'outline-none',
 
-                // Swipe position
-                'transform-[translate3d(0,var(--drawer-swipe-movement-y,0px),0)]',
+                // Base UI swipe position
+                'transform-[translateY(var(--drawer-swipe-movement-y,0px))]',
 
-                // Smooth opening and closing
-                'transition-transform',
-                'duration-[520ms]',
+                // Smooth entrance and exit
+                'transition-[transform]',
+                'duration-[480ms]',
                 'ease-[cubic-bezier(0.22,1,0.36,1)]',
 
-                // Start below screen
-                'data-[starting-style]:transform-[translate3d(0,100%,0)]',
+                // Enter from below
+                'data-[starting-style]:transform-[translateY(100%)]',
 
-                // Exit below screen
-                'data-[ending-style]:transform-[translate3d(0,100%,0)]',
+                // Exit below
+                'data-[ending-style]:transform-[translateY(100%)]',
 
-                // Let the surface follow the finger
-                'data-[swiping]:duration-0',
+                // Follow finger immediately
+                'data-[swiping]:transition-none',
 
-                // Respect accessibility preferences
+                // Accessibility
                 'motion-reduce:transition-none',
 
                 className,
               )}
             >
-              {/* Handle */}
               {showHandle && (
                 <div
                   aria-hidden="true"
                   className={cn(
                     'flex shrink-0 justify-center',
+                    'cursor-grab select-none',
+                    'touch-none active:cursor-grabbing',
                     'px-5 pt-3 pb-2',
-                    'select-none touch-none',
-                    'cursor-grab active:cursor-grabbing',
                   )}
                 >
-                  <span className={cn('block h-1 w-9 rounded-full', 'bg-slate-300')} />
+                  <span className="block h-1 w-9 rounded-full bg-slate-300" />
                 </div>
               )}
 
               <Drawer.Content className="flex min-h-0 flex-1 flex-col">
-                {/* Fixed header */}
                 <header
                   className={cn(
-                    'relative flex shrink-0',
-                    'min-h-14 items-center justify-center',
+                    'relative flex min-h-14',
+                    'shrink-0 items-center justify-center',
                     'px-14 py-2',
                   )}
                 >
                   <Drawer.Title
                     className={cn(
-                      'text-center text-[16px]',
-                      'leading-7 font-semibold',
-                      'tracking-tight text-slate-900',
+                      'text-center text-base',
+                      'font-semibold leading-7',
+                      'tracking-tight text-foreground',
                       !title && 'sr-only',
                     )}
                   >
@@ -206,15 +295,14 @@ export function BottomSheet({
                         'absolute end-4 top-1/2',
                         '-translate-y-1/2',
                         'flex size-9 items-center justify-center',
-                        'rounded-full',
-                        'text-slate-400',
+                        'rounded-full text-slate-400',
                         'transition-colors duration-200',
                         'hover:bg-slate-100',
                         'hover:text-slate-700',
                         'active:bg-slate-200',
                         'focus-visible:outline-2',
                         'focus-visible:outline-offset-2',
-                        'focus-visible:outline-blue-600',
+                        'focus-visible:outline-primary',
                       )}
                     >
                       <X size={19} strokeWidth={1.8} aria-hidden="true" />
@@ -222,17 +310,19 @@ export function BottomSheet({
                   )}
                 </header>
 
-                {/* Scrollable content */}
+                {/* Scrollable body: swipe is NOT ignored */}
                 <div
-                  data-base-ui-swipe-ignore=""
+                  onTouchStart={onScrollTouchStart}
+                  onTouchEnd={onScrollTouchEnd}
+                  onTouchCancel={() => {
+                    touchStartRef.current = null;
+                  }}
                   className={cn(
                     'min-h-0 flex-1',
                     'overflow-x-hidden overflow-y-auto',
                     'overscroll-contain',
                     'px-5 pt-2',
-
                     footer ? 'pb-5' : 'pb-[max(24px,env(safe-area-inset-bottom))]',
-
                     '[scrollbar-width:none]',
                     '[&::-webkit-scrollbar]:hidden',
                   )}
@@ -240,14 +330,11 @@ export function BottomSheet({
                   {children}
                 </div>
 
-                {/* Optional sticky footer */}
                 {footer && (
                   <footer
                     className={cn(
-                      'shrink-0',
-                      'border-t border-slate-100',
-                      'bg-white',
-                      'px-5 pt-4',
+                      'shrink-0 border-t border-border/60',
+                      'bg-background px-5 pt-4',
                       'pb-[max(16px,env(safe-area-inset-bottom))]',
                     )}
                   >
@@ -261,4 +348,4 @@ export function BottomSheet({
       </Drawer.VirtualKeyboardProvider>
     </Drawer.Root>
   );
-}
+});

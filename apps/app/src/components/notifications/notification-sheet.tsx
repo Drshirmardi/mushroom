@@ -17,7 +17,6 @@ export function NotificationSheet({ onClose, onUpdated }: NotificationSheetProps
       dismissible
       showHandle
       showCloseButton
-      animateExit
       onClose={onClose}
     >
       <NotificationCenter embedded onUpdated={onUpdated} />
