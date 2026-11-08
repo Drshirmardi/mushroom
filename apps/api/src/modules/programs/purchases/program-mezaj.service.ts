@@ -354,6 +354,7 @@ export class ProgramMezajService {
               m.clinic_id = ${patient.clinicId}::uuid
               AND m.enabled
               AND relevance."matchRank" IS NOT NULL
+              AND m.pairs @> ARRAY[${exactPair}]::text[]
 
               AND (
                 service.audience = 'SHARED'
