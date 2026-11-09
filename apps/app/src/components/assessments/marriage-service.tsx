@@ -6,7 +6,7 @@ import { marriageHref } from '@/lib/marriage-context';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { HeartHandshake } from 'lucide-react';
+import { ArrowLeft, HeartHandshake } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { ServicePage } from '@/components/shared/service-page';
@@ -78,7 +78,62 @@ export function MarriageHistory() {
 }
 
 export function MarriageOffers() {
- const { authentication } = useAuthSession(); const [page,setPage] = useState(1);
- const resource = usePatientResource(useCallback(() => listEducationalAssessmentOfferings(authentication.accessToken,page,'COUPLES','MARRIAGE'),[authentication.accessToken,page]));
- return <section className="space-y-3"><h2 className="font-bold">خدمات شناخت پیش از ازدواج</h2><PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />{resource.data?.total === 0 && <p className="service-card text-sm leading-8 text-muted-foreground">فعلاً خدمت شناخت پیش از ازدواج برای شروع در دسترس نیست. پس از انتشار خدمت، شرایط و دعوت تلفنی همین‌جا نمایش داده می‌شود.</p>}{resource.data?.items.filter(item => item.servicePurpose === 'MARRIAGE').map(item => <Link key={item.id} href={marriageHref(`/assessment/marriage/new/${item.id}`)} className="service-card block"><h3>{item.title}</h3><p className="mt-2 text-sm">{formatRial(BigInt(item.amountRial ?? '0'))} تومان برای هر دو نفر</p><span className="service-text-action">شرایط و دعوت همراه</span></Link>)}<Link href="/assessment/marriage" className={secondary}>پیگیری دعوت‌های ازدواج</Link>{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</section>;
+  const { authentication } = useAuthSession();
+  const [page, setPage] = useState(1);
+  const resource = usePatientResource(
+    useCallback(
+      () => listEducationalAssessmentOfferings(authentication.accessToken, page, 'COUPLES', 'MARRIAGE'),
+      [authentication.accessToken, page],
+    ),
+  );
+
+  return (
+    <section aria-label="انتخاب خدمت شناخت پیش از ازدواج" className="space-y-4">
+      <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+
+      {resource.data?.total === 0 && (
+        <p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">
+          فعلاً آزمونی برای شروع در دسترس نیست. دعوت‌های قبلی را می‌توانی از بخش پیگیری باز کنی.
+        </p>
+      )}
+
+      {resource.data?.items
+        .filter(item => item.servicePurpose === 'MARRIAGE')
+        .map(item => (
+          <Link
+            key={item.id}
+            href={marriageHref('/assessment/marriage/new/' + item.id)}
+            className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
+          >
+            <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
+            <p className="mt-1 text-sm leading-7 text-muted-foreground">
+              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شمارهٔ موبایل همراه را لازم داری.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
+              <span className="text-sm font-semibold text-foreground">
+                {item.priceMode === 'FREE'
+                  ? 'رایگان'
+                  : formatRial(BigInt(item.amountRial ?? '0')) + ' تومان برای هر دو نفر'}
+              </span>
+              <span className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
+                انتخاب و ادامه
+                <ArrowLeft aria-hidden="true" size={18} />
+              </span>
+            </div>
+          </Link>
+        ))}
+
+      <Link
+        href="/assessment/marriage"
+        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+      >
+        پیگیری دعوت‌های ارسالی و دریافتی
+        <ArrowLeft aria-hidden="true" size={16} />
+      </Link>
+
+      {resource.data && (
+        <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
+      )}
+    </section>
+  );
 }
