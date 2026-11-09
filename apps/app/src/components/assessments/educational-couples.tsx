@@ -16,8 +16,8 @@ import { usePatientResource } from '@/lib/use-patient-resource';
 import { finishOperation, useOperationKey } from '@/lib/use-operation-key';
 import { patientErrorMessage } from '@/lib/patient-request';
 import { formatRial } from '@/lib/wallet-money';
-const button = 'block min-h-11 w-full rounded-xl border border-border p-3 text-sm disabled:opacity-40';
-const primary = `${button} bg-primary font-bold text-white`;
+const button = 'flex min-h-12 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium disabled:opacity-40';
+const primary = `${button} border-primary bg-primary font-semibold text-white`;
 
 export function EducationalCoupleHistory({ token, linkId }: { token: string; linkId?: string }) {
   const [page, setPage] = useState(1);
@@ -157,9 +157,9 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         </section>
       )}
 
-      {data.ownAccessGrantId ? (
+      {alreadyAccepted && (data.ownAccessGrantId ? (
         <Link
-          className={primary}
+          className={data.jointResultAvailable ? button : primary}
           href={marriageHref(
             data.ownSubmissionId
               ? '/assessment/resume?submissionId=' + data.ownSubmissionId
@@ -208,9 +208,9 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         <p role="status" className="text-sm leading-7 text-muted-foreground">
           همراه هنوز رضایت مستقل خودش را ثبت نکرده است.
         </p>
-      ) : null}
+      ) : null)}
 
-      {data.jointResultAvailable && (
+      {data.jointResultAvailable && alreadyAccepted && (
         <Link
           className={primary}
           href={marriageHref('/assessment/couples/educational/result/' + data.id)}
