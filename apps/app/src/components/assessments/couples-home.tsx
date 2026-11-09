@@ -11,33 +11,47 @@ import { PatientPagination } from '@/components/shared/patient-pagination';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { listMarriageRequests, type MarriageRequest } from '@/lib/marriage-api';
 import { prioritizeCoupleRequests, selectedCoupleTest } from '@/lib/couples-flow';
+import { classifyCoupleRequests, coupleRequestStatus } from '@/lib/couples-overview';
 import { MarriageNew, MarriageOffers } from './marriage-service';
 
 function RequestLink({ item, primary = false }: { item: MarriageRequest; primary?: boolean }) {
   const label =
     item.status === 'PENDING' && !item.isInitiator ? 'بررسی دعوت'
       : item.status === 'PENDING' ? 'مشاهده لینک دعوت'
-      : item.status === 'ACCEPTED' ? 'مشاهده تست'
+      : item.status === 'ACCEPTED' ? 'مشاهده و ادامه تست'
       : 'مشاهده جزئیات';
-  const status =
-    item.status === 'PENDING' && !item.isInitiator ? 'منتظر پاسخ شما'
-      : item.status === 'PENDING' ? 'منتظر پاسخ نفر دوم'
-      : item.status === 'ACCEPTED' ? 'دعوت پذیرفته شده'
-      : item.status === 'CANCELLED' ? 'لغو شده'
-      : 'جایگزین شده';
+
   return (
     <Link
       href={item.invitationPath}
-      className={'block rounded-xl border p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ' +
-        (primary ? 'border-primary/30 bg-primary/5' : 'border-border/80 bg-white')}
+      className={[
+        'group block min-w-0 rounded-2xl border p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5',
+        primary ? 'border-primary/30 bg-primary/5' : 'border-border/80 bg-white',
+      ].join(' ')}
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold leading-7">{item.service.title}</h3>
-        <span className="text-xs text-muted-foreground">{status}</span>
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h3 className="min-w-0 text-sm font-semibold leading-7 text-foreground">{item.service.title}</h3>
+        <span className="text-xs leading-6 text-muted-foreground">{coupleRequestStatus(item)}</span>
       </div>
-      <div className="mt-2 flex min-h-11 items-center justify-between gap-2">
-        <span className="text-xs text-muted-foreground">{item.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'}</span>
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary">
+      {item.status === 'PENDING' && !item.isInitiator && (
+        <p className="mt-2 text-sm leading-7 text-muted-foreground">
+          {item.initiatorName
+            ? item.initiatorName + ' تو رو به این تست دعوت کرده.'
+            : 'برای شرکت در این تست دعوت شدی.'}
+        </p>
+      )}
+      {item.isInitiator && item.recipientPhoneMasked && (
+        <p className="mt-2 text-xs leading-6 text-muted-foreground">
+          نفر دوم: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
+        </p>
+      )}
+      <div className="mt-3 flex min-h-11 flex-wrap items-center justify-between gap-2 border-t border-border/70 pt-3">
+        <span className="text-xs text-muted-foreground">
+          {item.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'}
+          {' · '}
+          {new Date(item.createdAt).toLocaleDateString('fa-IR', { timeZone: 'Asia/Tehran' })}
+        </span>
+        <span className="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary">
           {label}<ArrowLeft aria-hidden="true" size={16} />
         </span>
       </div>
@@ -55,22 +69,21 @@ function CouplesOverview({ showHistory }: { showHistory: boolean }) {
   );
   useEffect(() => { if (showHistory) setHistoryOpen(true); }, [showHistory]);
   const ordered = prioritizeCoupleRequests(resource.data?.items ?? []);
-  const incoming = ordered.filter(row => row.status === 'PENDING' && !row.isInitiator);
-  const active = ordered.filter(row => row.status === 'ACCEPTED' || row.status === 'PENDING' && row.isInitiator);
+  const { incoming, active } = classifyCoupleRequests(ordered);
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-7">
-      <section aria-label="دعوت‌ها و تست‌های من" className="space-y-3">
+      <section aria-label="تست‌ها و دعوت‌های من" className="space-y-3">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
         {incoming.length > 0 && (
           <div className="space-y-2">
-            <h2 className="text-base font-semibold">دعوت جدید داری</h2>
+            <h2 className="text-base font-bold">دعوت جدید داری</h2>
             {incoming.slice(0, 3).map(item => <RequestLink key={item.id} item={item} primary />)}
           </div>
         )}
         {active.length > 0 && (
           <div className="space-y-2">
-            <h2 className="text-base font-semibold">پیگیری تست‌ها و دعوت‌ها</h2>
+            <h2 className="text-base font-bold">تست‌ها و دعوت‌های من</h2>
             {active.slice(0, 3).map(item => <RequestLink key={item.id} item={item} />)}
           </div>
         )}
@@ -84,7 +97,7 @@ function CouplesOverview({ showHistory }: { showHistory: boolean }) {
       <details
         open={historyOpen}
         onToggle={event => setHistoryOpen(event.currentTarget.open)}
-        className="border-t border-border/70 pt-3"
+        className="rounded-2xl border border-border/70 bg-white px-4 py-2"
       >
         <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-medium text-foreground">
           همه دعوت‌ها و سوابق

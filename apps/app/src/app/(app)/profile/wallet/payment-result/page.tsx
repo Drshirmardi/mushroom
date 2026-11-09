@@ -67,7 +67,7 @@ function PaymentResult() {
 
   const invitation = currentInvitationContext();
   const primaryTarget = invitation
-    ? { href: `/assessment/marriage/requests/${invitation}`, label: 'ادامه خدمت دعوت‌شده' }
+    ? { href: `/assessment/marriage/requests/${invitation}`, label: 'ادامه تست دو نفره' }
     : intent
       ? intent.purpose === 'ORDER' && intent.orderId
         ? {
@@ -77,7 +77,7 @@ function PaymentResult() {
         : intent.purpose === 'APPOINTMENT'
           ? { href: '/appointments', label: 'مشاهدهٔ نوبت‌ها' }
           : intent.purpose === 'ENTRY_ASSESSMENT'
-            ? { href: '/welcome', label: 'ادامهٔ آزمون ورود اولیه' }
+            ? { href: '/welcome', label: 'ادامهٔ تست ورود اولیه' }
             : intent.purpose === 'ASSESSMENT'
               ? {
                   href: intent.assessmentPurchaseId

@@ -17,8 +17,8 @@ import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
 
 const services = [
-  { href: "/assessment", title: "ارزیابی فردی", description: "شروع آزمون، ادامه و نتایج", icon: ClipboardList },
-  { href: "/assessment/couples", title: "ارزیابی زوجین", description: "اتصال همراه و مراحل مشترک", icon: Users },
+  { href: "/assessment", title: "تست فردی", description: "شروع تست، ادامه و نتایج", icon: ClipboardList },
+  { href: "/assessment/couples", title: "تست دو نفره", description: "دعوت نفر دوم، ادامه تست و نتیجه", icon: Users },
   { href: "/appointments/book", title: "رزرو مشاوره", description: "انتخاب پزشک، خدمت و زمان", icon: CalendarDays },
   { href: "/programs", title: "برنامه‌های سلامت", description: "آموزشی و اختصاصی", icon: BookOpen },
 ];
@@ -48,7 +48,7 @@ export default function HomePage() {
       <button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog" aria-expanded={notificationsOpen} aria-label={unread ? "اعلان‌ها؛ پیام خوانده‌نشده دارید" : "اعلان‌ها"} className="home-icon-link"><Bell size={21} aria-hidden="true" />{unread && <span className="home-unread" />}</button>
     </header>
 
-    {entry?.status?.reminder&&<section className="home-panel"><h2>آزمون ورود اولیهٔ شما هنوز کامل نشده است</h2><p>{entry.status.assessmentTitle}</p><AsyncButton className="entry-primary" disabled={entryBusy} onClick={async()=>{setEntryBusy(true);setEntryError('');try{await resumeEntry(token);window.location.assign('/welcome');}catch{setEntryError('بازگشت به آزمون انجام نشد؛ دوباره تلاش کنید.');setEntryBusy(false);}}}>ادامهٔ آزمون من</AsyncButton>{entryError&&<p role="alert">{entryError}</p>}</section>}
+    {entry?.status?.reminder&&<section className="home-panel"><h2>تست ورود اولیهٔ شما هنوز کامل نشده است</h2><p>{entry.status.assessmentTitle}</p><AsyncButton className="entry-primary" disabled={entryBusy} onClick={async()=>{setEntryBusy(true);setEntryError('');try{await resumeEntry(token);window.location.assign('/welcome');}catch{setEntryError('بازگشت به تست انجام نشد؛ دوباره تلاش کنید.');setEntryBusy(false);}}}>ادامهٔ تست من</AsyncButton>{entryError&&<p role="alert">{entryError}</p>}</section>}
     <HomeJourney key={authentication.user.id} journey={journey} token={token} />
     <OwnedServices key={`services:${authentication.user.id}`} />
 

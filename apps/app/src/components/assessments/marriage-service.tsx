@@ -25,7 +25,7 @@ const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-x
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const statuses: Record<string,string> = { PENDING: 'منتظر پاسخ نفر دوم', ACCEPTED: 'دعوت پذیرفته شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
-const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
+const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از نفر دوم بپرس.' };
 
 export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
   const { authentication } = useAuthSession();
@@ -178,7 +178,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   </label>
 
                   <p id="marriage-phone-help" className="text-xs leading-6 text-muted-foreground">
-                    فقط شماره نفر دوم را لازم داریم؛ دعوت به‌معنی تأیید شرایط شرکت او نیست.
+                    فقط شماره نفر دوم رو لازم داریم؛ شرایط شرکتش بعد از ورود بررسی می‌شه.
                   </p>
                   {phoneError && (
                     <p id="marriage-phone-error" role="alert" className="text-sm text-red-700">
@@ -192,7 +192,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy}
-                    label="شرایط اتصال حسابم به نفر دوم رو می‌پذیرم."
+                    label="با اتصال حسابم به نفر دوم برای این تست موافقم."
                   />
 
                   <button
@@ -292,7 +292,7 @@ export function MarriageRequestView({ id }: { id: string }) {
     if (!data) return;
     const url = new URL(data.invitationPath, window.location.origin).toString();
     void navigator.clipboard.writeText(url)
-      .then(() => setNotice('لینک کپی شد؛ اون رو برای نفر دوم بفرست.'))
+      .then(() => setNotice('لینک دعوت کپی شد؛ اون رو برای نفر دوم بفرست.'))
       .catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'));
   };
 
@@ -386,7 +386,7 @@ export function MarriageRequestView({ id }: { id: string }) {
 
             {data.eligibilityNotConfirmed && (
               <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm leading-7 text-amber-900">
-                شرایط شرکت در این خدمت هنوز تأیید نشده است.
+                شرایط شرکت در این تست هنوز تأیید نشده است.
               </p>
             )}
 

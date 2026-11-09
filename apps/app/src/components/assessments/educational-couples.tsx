@@ -23,7 +23,7 @@ export function EducationalCoupleHistory({ token, linkId }: { token: string; lin
   const [page, setPage] = useState(1);
   const resource = usePatientResource(useCallback(() => listEducationalCouples(token, page, linkId), [token, page, linkId]));
   if (!resource.loading && !resource.error && !resource.data?.total) return null;
-  return <ServiceSection title="تست‌های دو نفره من"><PatientResourceState {...resource} retry={() => void resource.reload()} />{resource.data?.items.map(item => <Link key={item.id} href={marriageHref(`/assessment/couples/educational/${item.id}`)} className="service-card"><h3>{item.title}</h3><p>{item.jointResultAvailable ? 'نتیجهٔ هر دو نفر آماده است' : item.ownAccessGrantId ? 'دسترسی پاسخ‌گویی شما آماده است' : item.mutualConsentComplete ? 'رضایت هر دو نفر ثبت شده است' : 'در انتظار رضایت مستقل هر دو نفر'}</p><span className="service-text-action">ادامه تست</span></Link>)}{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</ServiceSection>;
+  return <ServiceSection title="تست‌های دو نفره من"><PatientResourceState {...resource} retry={() => void resource.reload()} />{resource.data?.items.map(item => <Link key={item.id} href={marriageHref(`/assessment/couples/educational/${item.id}`)} className="service-card"><h3>{item.title}</h3><p>{item.jointResultAvailable ? 'نتیجهٔ هر دو نفر آماده است' : item.ownAccessGrantId ? 'دسترسی پاسخ‌گویی شما آماده است' : item.mutualConsentComplete ? 'رضایت هر دو نفر ثبت شده است' : 'در انتظار رضایت مستقل هر دو نفر'}</p><span className="service-text-action">ادامهٔ تست دو نفره</span></Link>)}{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</ServiceSection>;
 }
 export function EducationalCoupleOffers({ token, userId, linkId }: { token: string; userId: string; linkId: string }) {
   const router = useRouter(), lock = useRef(false);
@@ -35,7 +35,7 @@ export function EducationalCoupleOffers({ token, userId, linkId }: { token: stri
     if (lock.current) return; lock.current = true; setBusy(true); setError('');
     try { const body = { coupleSessionId: linkId, publicationId: item.id, publicationHash: item.publicationHash }; const result = await createEducationalCouple(token, body, await key(body)); await finishOperation(`${userId}:educational-couple-select:${linkId}`,body); router.push(marriageHref(`/assessment/couples/educational/${result.id}`)); }
     catch (reason) { setError(patientErrorMessage(reason)); lock.current = false; setBusy(false); }
-  }}>انتخاب تست</AsyncButton></article>)}{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</ServiceSection></>;
+  }}>انتخاب این تست برای دو نفر</AsyncButton></article>)}{error && <p role="alert" className="text-sm text-red-700">{error}</p>}{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</ServiceSection></>;
 }
 export function EducationalCoupleWorkspace({ token, userId, id }: { token: string; userId: string; id: string }) {
   const scope = `${id}:${userId}`;
@@ -181,7 +181,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         </p>
       ) : !data.newAccessAvailable ? (
         <p role="status" className="text-sm leading-7 text-muted-foreground">
-          برای شروع دوباره، یک تست جدید انتخاب کن.
+          نسخهٔ تازه را از صفحهٔ تست‌های دو نفره انتخاب کن.
         </p>
       ) : data.mutualConsentComplete ? (
         data.priceMode === 'FREE' ? (
@@ -206,7 +206,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         )
       ) : alreadyAccepted ? (
         <p role="status" className="text-sm leading-7 text-muted-foreground">
-          نفر دوم هنوز شرایط رو تأیید نکرده.
+          نفر دوم هنوز رضایت مستقل خودش را ثبت نکرده است.
         </p>
       ) : null)}
 
@@ -230,7 +230,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
                 className={button}
                 disabled={busy}
                 onClick={() => {
-                  if (window.confirm('اجازهٔ نمایش نتیجهٔ مشترک پس گرفته شود؟ نتیجهٔ شخصی شما باقی می‌ماند.')) {
+                  if (window.confirm('اجازهٔ نمایش نتیجهٔ دو نفره پس گرفته شود؟ نتیجهٔ شخصی شما باقی می‌ماند.')) {
                     return run(async () => {
                       await withdrawEducationalCoupleSharing(
                         token, data.id,
