@@ -137,9 +137,9 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
                 onSubmit={submit}
                 className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5"
               >
-                <h2 className="text-base font-semibold text-foreground">دعوت همراه</h2>
+                <h2 className="text-base font-semibold text-foreground">دعوت نفر دوم</h2>
                 <p className="mt-1 text-sm leading-7 text-muted-foreground">
-                  همراهت می‌تواند پس از بازکردن لینک، وارد حساب خودش شود یا ثبت‌نام کند.
+                  نفر دوم می‌تونه با این لینک وارد حسابش بشه یا ثبت‌نام کنه.
                 </p>
 
                 <fieldset disabled={busy} className="mt-5 space-y-4">
@@ -192,7 +192,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy}
-                    label="اتصال حسابم به همین همراه برای این خدمت را می‌پذیرم."
+                    label="شرایط اتصال حسابم به نفر دوم رو می‌پذیرم."
                   />
 
                   <button
@@ -302,7 +302,7 @@ export function MarriageRequestView({ id }: { id: string }) {
     if (!data) return;
     const url = new URL(data.invitationPath, window.location.origin).toString();
     void navigator.clipboard.writeText(url)
-      .then(() => setNotice('لینک دعوت کپی شد؛ آن را برای همراهت بفرست.'))
+      .then(() => setNotice('لینک کپی شد؛ اون رو برای نفر دوم بفرست.'))
       .catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'));
   };
 
@@ -608,7 +608,7 @@ export function MarriageHistory() {
             </p>
             {item.isInitiator && item.recipientPhoneMasked && (
               <p className="mt-1 text-xs text-muted-foreground">
-                همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
+                نفر دوم: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
               </p>
             )}
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
@@ -664,7 +664,7 @@ export function MarriageOffers({ hideHistoryLink = false }: { hideHistoryLink?: 
           >
             <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
             <p className="mt-1 text-sm leading-7 text-muted-foreground">
-              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شمارهٔ موبایل همراه را لازم داری.
+              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شماره موبایل نفر دوم رو لازم داری.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
               <span className="text-sm font-semibold text-foreground">
