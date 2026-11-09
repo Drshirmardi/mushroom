@@ -1,7 +1,7 @@
 "use client";
 import { participationLoader } from '@/lib/participation-loader';
 import { PatientRequestError } from '@/lib/patient-request';
-import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
+import { currentInvitationContext } from '@/lib/marriage-context';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Users } from 'lucide-react';
