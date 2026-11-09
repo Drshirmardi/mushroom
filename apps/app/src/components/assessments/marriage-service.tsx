@@ -242,6 +242,8 @@ export function MarriageRequestView({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [origin, setOrigin] = useState('');
+  useEffect(() => { setOrigin(window.location.origin); }, []);
   const [confirmCancel, setConfirmCancel] = useState(false);
   const lock = useRef(false);
   const smsKey = useRef<string | null>(null);
@@ -423,7 +425,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                   <input
                     dir="ltr"
                     readOnly
-                    value={data.invitationPath}
+                    value={origin ? new URL(data.invitationPath, origin).toString() : data.invitationPath}
                     onFocus={event => event.currentTarget.select()}
                     className="block min-h-12 w-full rounded-xl border border-border bg-muted/20 px-3 text-left text-sm text-foreground"
                   />
