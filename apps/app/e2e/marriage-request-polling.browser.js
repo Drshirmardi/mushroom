@@ -33,7 +33,7 @@ async (page) => {
  await page.clock.fastForward(60000);assert(reads===blocked,'cooldown ignored');
  limited=false;await page.clock.fastForward(31000);
  await page.getByRole('button',{name:'پذیرش دعوت و ادامه',exact:true}).click();
- await page.getByRole('heading',{name:'همراهی تأیید شد'}).waitFor();
+ await page.getByText('دعوت پذیرفته شد',{exact:true}).first().waitFor();
  const done=reads;await page.clock.fastForward(90000);assert(reads===done,'terminal polling');
  assert(errors.length===0,JSON.stringify(errors));
  console.log(JSON.stringify({PASS:true,reads,reviews,consentPreserved:true,cooldown:true,terminalStopped:true}));
