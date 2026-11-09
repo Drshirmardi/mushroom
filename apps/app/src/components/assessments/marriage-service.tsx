@@ -24,7 +24,7 @@ const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-x
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const statuses: Record<string,string> = { PENDING: 'در انتظار پاسخ نفر دوم', ACCEPTED: 'دعوت پذیرفته شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
-const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
+const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از نفر دوم بپرس.' };
 
 function InvitationFormFrame({ embedded, title, children }: { embedded: boolean; title: string; children: ReactNode }) {
   if (embedded) return <>{children}</>;
@@ -156,7 +156,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
               >
                 <h2 className="text-base font-semibold text-foreground">دعوت نفر دوم</h2>
                 <p className="mt-1 text-sm leading-7 text-muted-foreground">
-                  همراهت می‌تواند پس از بازکردن لینک، وارد حساب خودش شود یا ثبت‌نام کند.
+                  نفر دوم می‌تونه با این لینک وارد حساب خودش بشه یا ثبت‌نام کنه.
                 </p>
 
                 <fieldset disabled={busy} className="mt-5 space-y-4">
@@ -195,7 +195,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
                   </label>
 
                   <p id="marriage-phone-help" className="text-xs leading-6 text-muted-foreground">
-                    فقط شمارهٔ همراه را لازم داریم؛ دعوت به‌معنی تأیید شرایط شرکت او نیست.
+                    فقط شماره نفر دوم رو لازم داریم؛ شرایط شرکتش بعد از ورود بررسی می‌شه.
                   </p>
                   {phoneError && (
                     <p id="marriage-phone-error" role="alert" className="text-sm text-red-700">
@@ -209,7 +209,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy}
-                    label="اتصال حسابم به همین همراه برای این خدمت را می‌پذیرم."
+                    label="با اتصال حسابم به نفر دوم برای این تست موافقم."
                   />
 
                   <button
@@ -308,7 +308,7 @@ export function MarriageRequestView({ id }: { id: string }) {
     if (!data) return;
     const url = new URL(data.invitationPath, window.location.origin).toString();
     void navigator.clipboard.writeText(url)
-      .then(() => setNotice('لینک دعوت کپی شد؛ آن را برای همراهت بفرست.'))
+      .then(() => setNotice('لینک دعوت کپی شد؛ اون رو برای نفر دوم بفرست.'))
       .catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'));
   };
 
@@ -355,7 +355,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               <dl className="mt-4 grid gap-2 border-t border-border/70 pt-4 text-sm sm:grid-cols-2">
                 {data.isInitiator && data.recipientPhoneMasked && (
                   <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">شمارهٔ همراه</dt>
+                    <dt className="text-xs text-muted-foreground">شماره نفر دوم</dt>
                     <dd className="mt-1 font-medium"><bdi dir="ltr">{data.recipientPhoneMasked}</bdi></dd>
                   </div>
                 )}
@@ -477,7 +477,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                         '&replaceRequestId=' + encodeURIComponent(id),
                       )}
                     >
-                      تغییر شمارهٔ همراه (لینک قبلی غیرفعال می‌شود)
+                      تغییر شماره نفر دوم (لینک قبلی غیرفعال می‌شود)
                     </Link>
                     <button type="button" className={secondary} disabled={busy} onClick={() => setConfirmCancel(true)}>
                       لغو این دعوت
@@ -612,7 +612,7 @@ export function MarriageHistory() {
             </p>
             {item.isInitiator && item.recipientPhoneMasked && (
               <p className="mt-1 text-xs text-muted-foreground">
-                همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
+                نفر دوم: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
               </p>
             )}
             <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
