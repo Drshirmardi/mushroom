@@ -55675,6 +55675,14 @@
           "purchaseId": {
             "type": "string",
             "nullable": true
+          },
+          "matchType": {
+            "type": "string",
+            "enum": [
+              "EXACT",
+              "PRIMARY",
+              "SECONDARY"
+            ]
           }
         },
         "required": [
@@ -55690,7 +55698,8 @@
           "currency",
           "state",
           "accessGrantId",
-          "purchaseId"
+          "purchaseId",
+          "matchType"
         ]
       },
       "MezajProgramRecommendationsDto": {

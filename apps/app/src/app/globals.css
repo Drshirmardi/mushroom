@@ -2031,7 +2031,10 @@
 }
 .store-product-page,
 .patient-product-actions {
-  font-family: var(--font-vazirmatn), sans-serif;
+  --font-iranyekanx: 'IRANYekanX', Tahoma, sans-serif;
+  --font-price: var(--font-iranyekanx);
+  font-family: var(--font-iranyekanx);
+  font-synthesis: none;
   --patient-ink: #14213d;
   --patient-muted: #455473;
   --patient-action: #176b9a;

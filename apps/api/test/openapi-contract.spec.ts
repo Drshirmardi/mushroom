@@ -63,6 +63,15 @@ describe('identity OpenAPI contract', () => {
     expect(document).toEqual(generatedSource);
   });
 
+  it('publishes recommendation matchType as a required supported enum', () => {
+    const card = document.components.schemas.MezajProgramCardDto;
+    expect(card.properties.matchType).toEqual({
+      type: 'string',
+      enum: ['EXACT', 'PRIMARY', 'SECONDARY'],
+    });
+    expect(card.required).toContain('matchType');
+  });
+
   it('publishes stable unique operation ids and typed error envelopes', () => {
     const operations = identityOperations.map(([path, method]) =>
       document.paths[path][method]);

@@ -301,7 +301,7 @@ export default function ProductDetailPage() {
           <div className="min-w-0 flex-1 basis-[185px]">
             <h2
               data-product-title
-              className="min-w-0 text-[1.1875rem] leading-[1.6] font-[700] text-slate-900 [font-family:var(--font-vazirmatn)] [overflow-wrap:anywhere] @sm:text-[1.375rem]"
+              className="min-w-0 text-[1.1875rem] leading-[1.6] font-medium text-slate-900 [font-family:var(--font-iranyekanx)] [overflow-wrap:anywhere] @sm:text-[1.375rem]"
             >
               {product.title}
             </h2>
@@ -335,9 +335,7 @@ export default function ProductDetailPage() {
         </div>
         {product.skus.length > 1 && (
           <div className="my-4 flex min-w-0 flex-col gap-2">
-            <label htmlFor="product-variant" className="text-xs font-[600] text-slate-700">
-              انتخاب نوع محصول
-            </label>
+            <label htmlFor="product-variant" className="text-xs font-medium text-slate-700">انتخاب نوع محصول</label>
             <select
               id="product-variant"
               className="min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#087c91]"

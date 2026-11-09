@@ -14,22 +14,23 @@ const open = async () => {
   await page.getByRole('button', { name: 'افزودن به سبد', exact: true }).waitFor();
 };
 const sections = async () => {
-  for (const name of ['دربارهٔ محصول', 'ترکیبات', 'دستور مصرف', 'هشدارها', 'موارد منع مصرف']) {
-    const link = page.getByRole('link', { name, exact: true });
-    await link.click();
-    await expect(link).toHaveAttribute('aria-current', 'true');
-    await expect.poll(() => page.evaluate(title => {
-      const link = [...document.querySelectorAll('.store-content-nav a')].find(a => a.textContent === title);
-      const section = document.querySelector(link.getAttribute('href')), root = document.querySelector('.store-detail');
-      const nav = document.querySelector('.store-content-nav'), r = section.getBoundingClientRect(), v = root.getBoundingClientRect();
-      return r.top >= nav.getBoundingClientRect().bottom - 2 && r.top < v.bottom - 20;
-    }, name)).toBe(true);
+  await expect(page.locator('.store-content-nav')).toHaveCount(0);
+  for (const id of ['product-about', 'product-ingredients', 'product-usage', 'product-warnings', 'product-contraindications']) {
+    const section = page.locator(`#${id}`);
+    await expect(section).toHaveCount(1);
+    await section.scrollIntoViewIfNeeded();
+    await expect(section.locator('h3')).toBeVisible();
+    expect(await section.evaluate(element => {
+      const root = document.querySelector('.store-detail').getBoundingClientRect();
+      const bounds = element.getBoundingClientRect();
+      return bounds.top < root.bottom - 20 && bounds.bottom > root.top + 20;
+    })).toBe(true);
   }
 };
 try {
   await open();
-  await sections(); log('all short-content destinations visible below sticky navigation');
-  state.long = true; await open(); await sections(); log('all long-content destinations and RTL active chips');
+  await sections(); log('all short-content sections readable without navigation chips');
+  state.long = true; await open(); await sections(); log('all long-content sections readable with vertical scrolling');
   const handle = page.locator('.store-detail__handle-button');
   await handle.press('ArrowUp'); await expect.poll(() => page.locator('.store-detail').evaluate(e => e.scrollTop)).toBeLessThan(2);
   await handle.press('ArrowDown'); await expect(handle).toHaveAttribute('aria-expanded', 'true');

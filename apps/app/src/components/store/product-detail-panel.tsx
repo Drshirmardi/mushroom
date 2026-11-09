@@ -22,79 +22,28 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
     viewport.current?.scrollTo({ top: target, behavior: prefersReducedMotion() ? "auto" : "smooth" });
   };
 
+  // Keep viewport height handling independent of the product-copy presentation.
+  // The section navigation and scroll spy were removed; drag/snap remains unchanged.
   useEffect(() => {
     const root = viewport.current;
     const container = sheet.current;
     if (!root || !container) return;
-    const links = Array.from(container.querySelectorAll<HTMLAnchorElement>(".store-content-nav a[href^='#']"));
-    if (links.length === 0) return;
-    const entries = links
-      .map((link) => ({ link, target: container.querySelector<HTMLElement>(link.getAttribute("href") ?? "") }))
-      .filter((entry): entry is { link: HTMLAnchorElement; target: HTMLElement } => entry.target !== null);
-    if (entries.length === 0) return;
     const handle = container.querySelector<HTMLElement>(".store-detail__handle-button");
-    const strip = container.querySelector<HTMLElement>(".store-content-nav");
-    let selected: typeof entries[number] | null = null;
-    const position = (element: HTMLElement) => root.scrollTop + element.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientTop;
-    const offset = () => {
-      const handleHeight = handle && getComputedStyle(handle).position === "sticky" ? handle.getBoundingClientRect().height : 0;
-      return strip && getComputedStyle(strip).position === "sticky" ? Math.max(handleHeight, parseFloat(getComputedStyle(strip).top) || 0) + strip.getBoundingClientRect().height + 8 : handleHeight + 8;
-    };
-    const clear = () => entries.forEach(({ link }) => link.removeAttribute("aria-current"));
-    const onClick = (event: MouseEvent) => {
-      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(".store-content-nav a[href^='#']");
-      if (!link) return;
-      const target = container.querySelector<HTMLElement>(link.getAttribute("href") ?? "");
-      if (!target) return;
-      event.preventDefault();
-      selected = entries.find(entry => entry.target === target) ?? null;
-      root.scrollTo({ top: Math.max(0, position(target) - offset()), behavior: prefersReducedMotion() ? "auto" : "smooth" });
-      sync();
-    };
     const sync = () => {
-      let current = entries[0];
-      const atEnd = root.scrollTop + root.clientHeight >= root.scrollHeight - 2;
-      if (atEnd) current = entries[entries.length - 1];
-      else for (const entry of entries) if (root.scrollTop >= position(entry.target) - offset() - 4) current = entry;
-      // A short final section may clamp scrolling; retain the clicked destination until manual scrolling.
-      if (selected) current = selected;
-      entries.forEach(({ link, target }) => {
-        if (target === current.target) link.setAttribute("aria-current", "true");
-        else link.removeAttribute("aria-current");
-      });
-      if (strip) {
-        const bounds = strip.getBoundingClientRect();
-        const chip = current.link.getBoundingClientRect();
-        const delta = chip.left < bounds.left + 8 ? chip.left - bounds.left - 8 : chip.right > bounds.right - 8 ? chip.right - bounds.right + 8 : 0;
-        if (delta) strip.scrollBy({ left: delta, behavior: "instant" });
-      }
+      const handleHeight = handle?.getBoundingClientRect().height ?? 0;
+      root.dataset.compact = String(root.clientHeight < handleHeight + 96);
+      const sheetTop = root.scrollTop + container.getBoundingClientRect().top - root.getBoundingClientRect().top - root.clientTop;
+      setExpanded(handleHeight > 0 && root.scrollTop >= sheetTop - 2);
     };
-    const manual = () => { selected = null; };
-    const keyboard = (event: KeyboardEvent) => { if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) manual(); };
-    const resize = new ResizeObserver(() => {
-      selected = null;
-      root.dataset.compact = String(root.clientHeight < (handle?.getBoundingClientRect().height ?? 0) + (strip?.getBoundingClientRect().height ?? 0) + 96);
-      setExpanded(Boolean(handle?.getBoundingClientRect().height) && root.scrollTop >= position(container) - 2);
-      sync();
-    });
-    [root, container, handle, strip].forEach(element => { if (element) resize.observe(element); });
-    container.addEventListener("click", onClick);
-    root.addEventListener("scroll", sync, { passive: true });
-    root.addEventListener("wheel", manual, { passive: true });
-    root.addEventListener("pointerdown", manual);
-    root.addEventListener("keydown", keyboard);
+    const resize = new ResizeObserver(sync);
+    [root, container, handle].forEach(element => { if (element) resize.observe(element); });
     sync();
     return () => {
-      container.removeEventListener("click", onClick);
-      root.removeEventListener("scroll", sync);
-      root.removeEventListener("wheel", manual);
-      root.removeEventListener("pointerdown", manual);
-      root.removeEventListener("keydown", keyboard);
       resize.disconnect();
       delete root.dataset.compact;
-      clear();
     };
   }, [children]);
+
   return <div ref={viewport} className="store-detail store-detail--panel" tabIndex={0} role="region" aria-label="جزئیات محصول و تصاویر"
     onScroll={() => {
       if (viewport.current && sheet.current) setExpanded(viewport.current.scrollTop >= detent() - 2);
