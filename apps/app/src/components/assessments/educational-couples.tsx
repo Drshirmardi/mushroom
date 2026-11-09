@@ -79,11 +79,198 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
     const intent = await createEducationalCouplePurchase(token, data.id, body, await key(operation));
     await finishOperation(scope, operation); router.push(marriageHref(`/profile/wallet/pay?intentId=${intent.id}`));
   });
-  return <><section className="service-card"><h2>{data.title}</h2><strong className="service-price">{data.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(data.amountRial))} تومان برای هر دو نفر`}</strong><ul className="space-y-2 text-sm">{data.participants.map(p => <li key={p.slot}>{p.isSelf ? 'شما' : 'همراه'}: {p.consentState === 'ACCEPTED' ? 'رضایت ثبت شده' : p.consentState === 'WITHDRAWN' ? 'رضایت پس گرفته شده' : 'در انتظار رضایت'}</li>)}</ul></section>
-    {!alreadyAccepted && own?.consentState !== 'WITHDRAWN' && <><PolicyAcceptance policy={data.processingPolicy} accepted={processing} onChange={setProcessing} disabled={busy} /><PolicyAcceptance policy={data.disclosurePolicy} accepted={disclosure} onChange={setDisclosure} disabled={busy} /><AsyncButton type="button" className={primary} disabled={busy || !processing || !disclosure} onClick={() => accept()}>ثبت رضایت مستقل من برای این آزمون و همین همراه</AsyncButton></>}
-    {data.ownAccessGrantId ? <Link className={primary} href={marriageHref(data.ownSubmissionId ? `/assessment/resume?submissionId=${data.ownSubmissionId}` : `/assessment/resume?grantId=${data.ownAccessGrantId}`)}>باز کردن آزمون شخصی من</Link> : data.ownPendingIntentId ? <Link className={primary} href={marriageHref(`/profile/wallet/pay?intentId=${data.ownPendingIntentId}`)}>ادامهٔ پرداخت من</Link> : data.paymentPending ? <p role="status" className="text-sm leading-7">پرداخت این ارزیابی در حال پیگیری است. پس از تأیید، دسترسی هر دو نفر باز می‌شود.</p> : !data.newAccessAvailable ? <p role="status" className="text-sm leading-7">این نسخه برای شروع جدید عرضه نمی‌شود؛ نسخهٔ تازه را از صفحهٔ همراهی انتخاب کنید.</p> : data.mutualConsentComplete ? data.priceMode === 'FREE' ? <AsyncButton className={primary} disabled={busy} onClick={() => start()}>شروع آزمون رایگان من</AsyncButton> : <>{data.termsPolicy && <PolicyAcceptance policy={data.termsPolicy} accepted={terms} onChange={setTerms} disabled={busy} />}<AsyncButton className={primary} disabled={busy || !terms} onClick={() => purchase()}>پرداخت هزینهٔ ارزیابی هر دو نفر</AsyncButton></> : <p role="status" className="text-sm leading-7">شروع مشترک به رضایت مستقل هر دو نفر نیاز دارد. هر نفر همین ارزیابی را از حساب خودش باز می‌کند.</p>}
-    {data.jointResultAvailable && <Link className={primary} href={marriageHref(`/assessment/couples/educational/result/${data.id}`)}>مشاهدهٔ دو نتیجه و نمودار مشترک</Link>}
-    {alreadyAccepted && <AsyncButton className={button} disabled={busy} onClick={() => { if (window.confirm('اجازهٔ نمایش نتیجهٔ مشترک پس گرفته شود؟ نتیجهٔ شخصی شما باقی می‌ماند.'))  return run(async () => { await withdrawEducationalCoupleSharing(token, data.id, await key({ action: 'withdraw-sharing', contextHash: data.contextHash })); await reload(); }); }}>پس‌گرفتن اجازهٔ اشتراک نتیجه</AsyncButton>}
-    {data.ownProcessingConsentRecordId && <AsyncButton className={button} disabled={busy} onClick={() => { if (window.confirm('رضایت پردازش پس گرفته شود؟ ادامهٔ آزمون و دسترسی به نتیجهٔ شما متوقف می‌شود؛ سوابق حذف نمی‌شوند.'))  return run(async () => { await withdrawAssessmentConsent(token, data.ownProcessingConsentRecordId!, await key({ action: 'withdraw-processing', id: data.ownProcessingConsentRecordId })); await reload(); }); }}>پس‌گرفتن رضایت پردازش من</AsyncButton>}
-    {error && <p role="alert" className="text-sm text-red-700">{error}</p>}<AsyncButton className={button} disabled={busy} onClick={() => refresh()}>به‌روزرسانی وضعیت</AsyncButton></>;
+  const nextStep = own?.consentState === 'WITHDRAWN'
+    ? 'رضایت شما پس گرفته شده است؛ ادامهٔ این مشارکت ممکن نیست.'
+    : !alreadyAccepted
+      ? 'برای ادامه، ابتدا رضایت مستقل خودت را ثبت کن.'
+      : data.jointResultAvailable
+        ? 'نتیجهٔ مشترک آمادهٔ مشاهده است.'
+        : data.ownAccessGrantId
+          ? 'دسترسی آزمون شخصی شما آماده است.'
+          : data.ownPendingIntentId
+            ? 'پرداخت را از همان جایی که متوقف شد ادامه بده.'
+            : data.paymentPending
+              ? 'پرداخت در حال بررسی است؛ پس از تأیید، دسترسی فعال می‌شود.'
+              : !data.newAccessAvailable
+                ? 'این نسخه دیگر برای شروع جدید عرضه نمی‌شود.'
+                : !data.mutualConsentComplete
+                  ? 'منتظر ثبت رضایت نفر دوم هستیم.'
+                  : data.priceMode === 'FREE'
+                    ? 'هر دو نفر رضایت داده‌اید؛ آزمون رایگان آمادهٔ شروع است.'
+                    : 'هر دو نفر رضایت داده‌اید؛ نوبت پرداخت هزینه است.';
+
+  return (
+    <div className="mx-auto w-full max-w-2xl space-y-4">
+      <section className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+        <h2 className="text-base font-semibold leading-8 text-foreground">{data.title}</h2>
+        <p className="mt-1 text-sm font-semibold text-foreground">
+          {data.priceMode === 'FREE'
+            ? 'رایگان'
+            : formatRial(BigInt(data.amountRial)) + ' تومان برای هر دو نفر'}
+        </p>
+        <div className="mt-4 space-y-2 border-t border-border/70 pt-4">
+          {data.participants.map(participant => (
+            <div
+              key={participant.slot}
+              className="flex flex-wrap items-center justify-between gap-2 text-sm"
+            >
+              <span>{participant.isSelf ? 'شما' : 'همراه'}</span>
+              <span className="text-xs text-muted-foreground">
+                {participant.consentState === 'ACCEPTED'
+                  ? 'رضایت ثبت شده'
+                  : participant.consentState === 'WITHDRAWN'
+                    ? 'رضایت پس گرفته شده'
+                    : 'در انتظار رضایت'}
+              </span>
+            </div>
+          ))}
+        </div>
+        <p role="status" className="mt-4 rounded-xl bg-muted/40 p-3 text-sm leading-7 text-foreground">
+          {nextStep}
+        </p>
+      </section>
+
+      {!alreadyAccepted && own?.consentState !== 'WITHDRAWN' && (
+        <section className="space-y-3" aria-label="رضایت مستقل من">
+          <PolicyAcceptance
+            variant="compact"
+            policy={data.processingPolicy}
+            accepted={processing}
+            onChange={setProcessing}
+            disabled={busy}
+          />
+          <PolicyAcceptance
+            variant="compact"
+            policy={data.disclosurePolicy}
+            accepted={disclosure}
+            onChange={setDisclosure}
+            disabled={busy}
+          />
+          <AsyncButton
+            type="button"
+            className={primary}
+            disabled={busy || !processing || !disclosure}
+            onClick={() => accept()}
+          >
+            ثبت رضایت من و ادامه
+          </AsyncButton>
+        </section>
+      )}
+
+      {data.ownAccessGrantId ? (
+        <Link
+          className={primary}
+          href={marriageHref(
+            data.ownSubmissionId
+              ? '/assessment/resume?submissionId=' + data.ownSubmissionId
+              : '/assessment/resume?grantId=' + data.ownAccessGrantId,
+          )}
+        >
+          باز کردن آزمون شخصی من
+        </Link>
+      ) : data.ownPendingIntentId ? (
+        <Link
+          className={primary}
+          href={marriageHref('/profile/wallet/pay?intentId=' + data.ownPendingIntentId)}
+        >
+          ادامهٔ پرداخت
+        </Link>
+      ) : data.paymentPending ? (
+        <p role="status" className="text-sm leading-7 text-muted-foreground">
+          پرداخت این ارزیابی در حال پیگیری است؛ پس از تأیید، دسترسی هر دو نفر باز می‌شود.
+        </p>
+      ) : !data.newAccessAvailable ? (
+        <p role="status" className="text-sm leading-7 text-muted-foreground">
+          نسخهٔ تازه را از صفحهٔ همراهی انتخاب کنید.
+        </p>
+      ) : data.mutualConsentComplete ? (
+        data.priceMode === 'FREE' ? (
+          <AsyncButton type="button" className={primary} disabled={busy} onClick={() => start()}>
+            شروع آزمون رایگان من
+          </AsyncButton>
+        ) : (
+          <section className="space-y-3" aria-label="پرداخت ارزیابی">
+            {data.termsPolicy && (
+              <PolicyAcceptance
+                variant="compact"
+                policy={data.termsPolicy}
+                accepted={terms}
+                onChange={setTerms}
+                disabled={busy}
+              />
+            )}
+            <AsyncButton className={primary} disabled={busy || !terms} onClick={() => purchase()}>
+              پرداخت هزینهٔ ارزیابی هر دو نفر
+            </AsyncButton>
+          </section>
+        )
+      ) : alreadyAccepted ? (
+        <p role="status" className="text-sm leading-7 text-muted-foreground">
+          همراه هنوز رضایت مستقل خودش را ثبت نکرده است.
+        </p>
+      ) : null}
+
+      {data.jointResultAvailable && (
+        <Link
+          className={primary}
+          href={marriageHref('/assessment/couples/educational/result/' + data.id)}
+        >
+          مشاهدهٔ نتیجهٔ مشترک
+        </Link>
+      )}
+
+      {(alreadyAccepted || data.ownProcessingConsentRecordId) && (
+        <details className="rounded-2xl border border-border/80 bg-white px-4 py-2">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm text-muted-foreground">
+            مدیریت رضایت‌های ثبت‌شده
+          </summary>
+          <div className="space-y-2 border-t border-border/70 py-3">
+            {alreadyAccepted && (
+              <AsyncButton
+                className={button}
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm('اجازهٔ نمایش نتیجهٔ مشترک پس گرفته شود؟ نتیجهٔ شخصی شما باقی می‌ماند.')) {
+                    return run(async () => {
+                      await withdrawEducationalCoupleSharing(
+                        token, data.id,
+                        await key({ action: 'withdraw-sharing', contextHash: data.contextHash }),
+                      );
+                      await reload();
+                    });
+                  }
+                }}
+              >
+                پس‌گرفتن اجازهٔ اشتراک نتیجه
+              </AsyncButton>
+            )}
+            {data.ownProcessingConsentRecordId && (
+              <AsyncButton
+                className={button}
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm('رضایت پردازش پس گرفته شود؟ ادامهٔ آزمون و دسترسی به نتیجهٔ شما متوقف می‌شود؛ سوابق حذف نمی‌شوند.')) {
+                    return run(async () => {
+                      await withdrawAssessmentConsent(
+                        token, data.ownProcessingConsentRecordId!,
+                        await key({ action: 'withdraw-processing', id: data.ownProcessingConsentRecordId }),
+                      );
+                      await reload();
+                    });
+                  }
+                }}
+              >
+                پس‌گرفتن رضایت پردازش من
+              </AsyncButton>
+            )}
+          </div>
+        </details>
+      )}
+
+      {error && <p role="alert" className="text-sm leading-7 text-red-700">{error}</p>}
+      <AsyncButton className={button} disabled={busy} onClick={() => refresh()}>
+        به‌روزرسانی وضعیت
+      </AsyncButton>
+    </div>
+  );
 }
