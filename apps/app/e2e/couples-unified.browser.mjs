@@ -72,6 +72,7 @@ try {
     const offering = page.getByRole('link', { name: /انتخاب و ادامه/ });
     await offering.click();
     await expect(page).toHaveURL(new RegExp('/assessment/couples\\?start=' + publication));
+    await expect(page.getByRole('heading', { name: service.title, exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'دعوت نفر دوم' })).toBeVisible();
     await page.getByLabel('شماره موبایل نفر دوم').fill('09123456789');
     const submit = page.getByRole('button', { name: 'ساخت دعوت و دریافت لینک' });
