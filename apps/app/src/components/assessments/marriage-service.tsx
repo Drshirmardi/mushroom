@@ -93,7 +93,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
       const request = replacesId
         ? await replaceMarriageRequest(token, replacesId, body, command.current.key)
         : await createMarriageRequest(token, body, command.current.key);
-      router.push(marriageHref('/assessment/marriage/requests/' + request.id));
+      router.push('/assessment/marriage/requests/' + request.id);
     } catch (cause) {
       const fieldError = marriagePhoneError(cause);
       if (fieldError) setPhoneError(fieldError);
