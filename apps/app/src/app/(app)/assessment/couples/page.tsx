@@ -47,7 +47,7 @@ function CoupleRequests() {
 
       {groups.active.length > 0 && (
         <section className="space-y-2" aria-label="تست‌های در جریان">
-          <h2 className="text-base font-bold text-foreground">تست‌های در جریان</h2>
+          <h2 className="text-base font-bold text-foreground">تست‌ها و دعوت‌های من</h2>
           {groups.active.map(item => (
             <Link href={item.invitationPath} key={item.id} className={card}>
               <div className="flex flex-wrap items-start justify-between gap-2">
