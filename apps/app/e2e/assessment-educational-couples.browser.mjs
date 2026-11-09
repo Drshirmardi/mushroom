@@ -23,12 +23,12 @@ try {
    return send({items:[],total:0,unreadCount:0});
   });
   await page.goto(`http://localhost:3001/assessment/couples/educational/${id}`);
-  const accept=page.getByRole('button',{name:'ثبت رضایت مستقل من برای این آزمون و همین همراه',exact:true});
+  const accept=page.getByRole('button',{name:'ثبت رضایت من و ادامه',exact:true});
   await accept.waitFor();assert.equal(await accept.isDisabled(),true);assert.deepEqual(writes,[]);
   for(const checkbox of await page.getByRole('checkbox').all())await checkbox.check();
   await accept.click();
-  if(mode==='FREE'){await page.getByRole('button',{name:'شروع آزمون رایگان من',exact:true}).click();await page.waitForURL(`**/assessment/resume?grantId=${grant}`);assert.deepEqual(writes,['processing','sharing','free']);}
-  else{await page.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینهٔ ارزیابی هر دو نفر',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
+  if(mode==='FREE'){await page.getByRole('button',{name:'شروع تست رایگان من',exact:true}).click();await page.waitForURL(`**/assessment/resume?grantId=${grant}`);assert.deepEqual(writes,['processing','sharing','free']);}
+  else{await page.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینه تست دو نفره',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
   assert.deepEqual(errors,[]);console.log('PASS independent couple processing/disclosure and owned access or existing billing',mode,width);await page.close();
  }
  for(const width of [390,1440]){
@@ -42,7 +42,7 @@ try {
    if(path===`${base}/${id}/result`){reads++;return revoked?send({code:'COUPLE_ASSESSMENT_NOT_FOUND',message:'Unavailable',requestId:'synthetic',details:{}},404):send({results:[{slot:'INITIATOR',isSelf:true,resultSnapshot:snapshot},{slot:'PARTNER',isSelf:false,resultSnapshot:{...snapshot,status:'PRIMARY_TIE',profile:null,primary:null,secondary:null,tiedDimensions:['A','B']}}],jointText:'توضیح مشترک اختیاری این ترکیب'});}
    return send({items:[],total:0,unreadCount:0});});
   await page.goto(`http://localhost:3001/assessment/couples/educational/result/${id}`);
-  await page.getByRole('heading',{name:'نتیجهٔ شما',exact:true}).waitFor();const partner=page.getByRole('heading',{name:'نتیجهٔ همراه',exact:true});await partner.waitFor();await page.getByText('پاسخ‌ها هنوز گرایش غالب مشخصی نشان نمی‌دهند.',{exact:true}).waitFor();await page.getByText('توضیح مشترک اختیاری این ترکیب',{exact:true}).waitFor();
+  await page.getByRole('heading',{name:'نتیجهٔ شما',exact:true}).waitFor();const partner=page.getByRole('heading',{name:'نتیجهٔ نفر دوم',exact:true});await partner.waitFor();await page.getByText('پاسخ‌ها هنوز گرایش غالب مشخصی نشان نمی‌دهند.',{exact:true}).waitFor();await page.getByText('توضیح مشترک اختیاری این ترکیب',{exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
   revoked=true;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await partner.waitFor({state:'detached'});assert.ok(reads>=2);assert.deepEqual(errors,[]);
   console.log('PASS two actual charts, explicit ambiguity and removal after sharing revocation',width);await page.close();
