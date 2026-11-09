@@ -18,12 +18,14 @@ import { marriageRequestLoader } from '@/lib/marriage-request-loader';
 import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
 import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
-import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
+import { canStartCoupleTest, coupleStartHref } from '@/lib/couples-flow';
+import { EducationalCoupleWorkspace } from './educational-couples';
+import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms } from '@/lib/marriage-api';
 const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
-const statuses: Record<string,string> = { PENDING: 'در انتظار پذیرش همراه', ACCEPTED: 'همراهی تأیید شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
+const statuses: Record<string,string> = { PENDING: 'منتظر پاسخ نفر دوم', ACCEPTED: 'دعوت پذیرفته شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
-const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
+const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از نفر دوم بپرس.' };
 
 export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
   const { authentication } = useAuthSession();
@@ -48,8 +50,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 
   const data = resource.data;
   const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
-  const returnTo = '/assessment/marriage/new/' + publicationId +
-    (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
+  const returnTo = coupleStartHref(publicationId, replacesId);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -87,16 +88,10 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
     }
   };
 
-  return (
-    <ServicePage
-      title={data?.title ?? 'شناخت پیش از ازدواج'}
-      description="نقشت را مشخص کن و شمارهٔ همراهت را وارد کن تا لینک دعوت ساخته شود."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="انتخاب خدمت"
-    >
+  const formContent = (
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+        {data && <h2 className="text-lg font-semibold leading-8 text-foreground">{data.title}</h2>}
 
         {data && (
           <>
@@ -110,7 +105,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               </p>
               <details className="group mt-3 border-t border-border/60 pt-2">
                 <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
-                  شرایط شرکت در این آزمون
+                  شرایط شرکت در این تست
                   <ChevronDown aria-hidden="true" size={17} className="transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="space-y-1 pb-2 text-sm leading-7 text-muted-foreground">
@@ -128,7 +123,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               <section role="status" className="rounded-2xl border border-border bg-white p-4 sm:p-5">
                 <h2 className="text-base font-semibold">ابتدا مشخصاتت را بررسی کن</h2>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  برای انتخاب نقش در این آزمون، اطلاعات حساب و شرایط شرکت باید بررسی شود.
+                  برای انتخاب نقش در این تست، اطلاعات حساب و شرایط شرکت باید بررسی شود.
                 </p>
                 <Link
                   href={'/profile/edit?returnTo=' + encodeURIComponent(returnTo)}
@@ -142,9 +137,9 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 onSubmit={submit}
                 className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5"
               >
-                <h2 className="text-base font-semibold text-foreground">دعوت همراه</h2>
+                <h2 className="text-base font-semibold text-foreground">دعوت نفر دوم</h2>
                 <p className="mt-1 text-sm leading-7 text-muted-foreground">
-                  همراهت می‌تواند پس از بازکردن لینک، وارد حساب خودش شود یا ثبت‌نام کند.
+                  نفر دوم می‌تونه با این لینک وارد حسابش بشه یا ثبت‌نام کنه.
                 </p>
 
                 <fieldset disabled={busy} className="mt-5 space-y-4">
@@ -164,7 +159,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   </label>
 
                   <label className="block space-y-2 text-sm font-medium text-foreground">
-                    <span>شماره موبایل همراه</span>
+                    <span>شماره موبایل نفر دوم</span>
                     <input
                       ref={phoneInput}
                       required
@@ -183,7 +178,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   </label>
 
                   <p id="marriage-phone-help" className="text-xs leading-6 text-muted-foreground">
-                    فقط شمارهٔ همراه را لازم داریم؛ دعوت به‌معنی تأیید شرایط شرکت او نیست.
+                    فقط شماره نفر دوم رو لازم داریم؛ شرایط شرکتش بعد از ورود بررسی می‌شه.
                   </p>
                   {phoneError && (
                     <p id="marriage-phone-error" role="alert" className="text-sm text-red-700">
@@ -197,7 +192,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy}
-                    label="اتصال حسابم به همین همراه برای این خدمت را می‌پذیرم."
+                    label="با اتصال حسابم به نفر دوم برای این تست موافقم."
                   />
 
                   <button
@@ -221,8 +216,9 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
           </>
         )}
       </div>
-    </ServicePage>
   );
+
+  return formContent;
 }
 
 export function MarriageRequestView({ id }: { id: string }) {
@@ -296,7 +292,7 @@ export function MarriageRequestView({ id }: { id: string }) {
     if (!data) return;
     const url = new URL(data.invitationPath, window.location.origin).toString();
     void navigator.clipboard.writeText(url)
-      .then(() => setNotice('لینک دعوت کپی شد؛ آن را برای همراهت بفرست.'))
+      .then(() => setNotice('لینک دعوت کپی شد؛ اون رو برای نفر دوم بفرست.'))
       .catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'));
   };
 
@@ -305,8 +301,8 @@ export function MarriageRequestView({ id }: { id: string }) {
       title={data?.service.title ?? 'پیگیری دعوت'}
       description="وضعیت دعوت و کار بعدی را همین‌جا ببین."
       icon={HeartHandshake}
-      backHref="/assessment/marriage"
-      backLabel="دعوت‌های من"
+      backHref="/assessment/couples"
+      backLabel="تست‌های دو نفره"
     >
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState
@@ -343,7 +339,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               <dl className="mt-4 grid gap-2 border-t border-border/70 pt-4 text-sm sm:grid-cols-2">
                 {data.isInitiator && data.recipientPhoneMasked && (
                   <div className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">شمارهٔ همراه</dt>
+                    <dt className="text-xs text-muted-foreground">شماره نفر دوم</dt>
                     <dd className="mt-1 font-medium"><bdi dir="ltr">{data.recipientPhoneMasked}</bdi></dd>
                   </div>
                 )}
@@ -390,7 +386,7 @@ export function MarriageRequestView({ id }: { id: string }) {
 
             {data.eligibilityNotConfirmed && (
               <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm leading-7 text-amber-900">
-                شرایط شرکت در این خدمت هنوز تأیید نشده است.
+                شرایط شرکت در این تست هنوز تأیید نشده است.
               </p>
             )}
 
@@ -465,7 +461,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                         '?replaceRequestId=' + encodeURIComponent(id),
                       )}
                     >
-                      تغییر شمارهٔ همراه (لینک قبلی غیرفعال می‌شود)
+                      تغییر شماره نفر دوم (لینک قبلی غیرفعال می‌شود)
                     </Link>
                     <button type="button" className={secondary} disabled={busy} onClick={() => setConfirmCancel(true)}>
                       لغو این دعوت
@@ -503,14 +499,13 @@ export function MarriageRequestView({ id }: { id: string }) {
 
             {data.status === 'ACCEPTED' && data.educationalId &&
               !data.continuation?.profileRequired && (
-                <Link
-                  className={button}
-                  href={data.continuation?.nextPath ??
-                    marriageHref('/assessment/couples/educational/' + data.educationalId)}
-                >
-                  ادامهٔ آزمون
-                  <ArrowLeft aria-hidden="true" size={18} className="inline-block align-middle" />
-                </Link>
+                <section aria-label="ادامه تست دو نفره" className="space-y-3">
+                  <EducationalCoupleWorkspace
+                    token={token}
+                    userId={authentication.user.id}
+                    id={data.educationalId}
+                  />
+                </section>
               )}
 
             {data.status === 'ACCEPTED' && !data.educationalId && (
@@ -523,7 +518,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               data.isInitiator && (
                 <Link
                   className={secondary}
-                  href={marriageHref('/assessment/marriage/new/' + data.service.publicationId)}
+                  href={coupleStartHref(data.service.publicationId)}
                 >
                   ساخت دعوت جدید
                 </Link>
@@ -564,73 +559,7 @@ export function MarriageRequestView({ id }: { id: string }) {
   );
 }
 
-export function MarriageHistory() {
-  const { authentication } = useAuthSession();
-  const [page, setPage] = useState(1);
-  const resource = usePatientResource(
-    useCallback(
-      () => listMarriageRequests(authentication.accessToken, page),
-      [authentication.accessToken, page],
-    ),
-  );
-
-  return (
-    <ServicePage
-      title="دعوت‌های من"
-      description="دعوت‌های ارسالی و دریافتی را از همین‌جا ادامه بده."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="شناخت پیش از ازدواج"
-    >
-      <div className="mx-auto w-full max-w-2xl space-y-3">
-        <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
-        {resource.data?.items.map(item => (
-          <Link
-            key={item.id}
-            href={item.invitationPath}
-            className="group block rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <h2 className="text-base font-semibold leading-7">{item.service.title}</h2>
-              <span className="text-xs leading-6 text-muted-foreground">
-                {item.isInitiator ? 'ارسالی' : 'دریافتی'}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-foreground">
-              {item.status === 'PENDING' && !item.isInitiator
-                ? 'منتظر پاسخ شما'
-                : statuses[item.status] ?? 'بررسی وضعیت'}
-            </p>
-            {item.isInitiator && item.recipientPhoneMasked && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
-              </p>
-            )}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
-              <time className="text-xs text-muted-foreground">
-                {new Date(item.createdAt).toLocaleDateString('fa-IR', { timeZone: 'Asia/Tehran' })}
-              </time>
-              <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary">
-                مشاهده و ادامه
-                <ArrowLeft aria-hidden="true" size={17} />
-              </span>
-            </div>
-          </Link>
-        ))}
-        {resource.data?.total === 0 && (
-          <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">
-            هنوز دعوتی برای این حساب ثبت نشده است.
-          </p>
-        )}
-        {resource.data && (
-          <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
-        )}
-      </div>
-    </ServicePage>
-  );
-}
-
-export function MarriageOffers() {
+export function MarriageOffers({ hideHistoryLink = false }: { hideHistoryLink?: boolean } = {}) {
   const { authentication } = useAuthSession();
   const [page, setPage] = useState(1);
   const resource = usePatientResource(
@@ -640,27 +569,26 @@ export function MarriageOffers() {
     ),
   );
 
+  const available = resource.data?.items.filter(canStartCoupleTest) ?? [];
   return (
-    <section aria-label="انتخاب خدمت شناخت پیش از ازدواج" className="space-y-4">
+    <section aria-label="انتخاب تست دو نفره" className="space-y-4">
       <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
-      {resource.data?.total === 0 && (
+      {resource.data && available.length === 0 && (
         <p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">
-          فعلاً آزمونی برای شروع در دسترس نیست. دعوت‌های قبلی را می‌توانی از بخش پیگیری باز کنی.
+          فعلاً تست جدیدی برای شروع در دسترس نیست.
         </p>
       )}
 
-      {resource.data?.items
-        .filter(item => item.servicePurpose === 'MARRIAGE')
-        .map(item => (
+      {available.map(item => (
           <Link
             key={item.id}
-            href={marriageHref('/assessment/marriage/new/' + item.id)}
+            href={coupleStartHref(item.id)}
             className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
           >
             <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
             <p className="mt-1 text-sm leading-7 text-muted-foreground">
-              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شمارهٔ موبایل همراه را لازم داری.
+              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شماره موبایل نفر دوم رو لازم داری.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
               <span className="text-sm font-semibold text-foreground">
@@ -676,13 +604,15 @@ export function MarriageOffers() {
           </Link>
         ))}
 
-      <Link
-        href="/assessment/marriage"
-        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      >
-        پیگیری دعوت‌های ارسالی و دریافتی
-        <ArrowLeft aria-hidden="true" size={16} />
-      </Link>
+      {!hideHistoryLink && (
+        <Link
+          href="/assessment/couples?history=1"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          همه دعوت‌ها و سوابق
+          <ArrowLeft aria-hidden="true" size={16} />
+        </Link>
+      )}
 
       {resource.data && (
         <PatientPagination page={page} total={resource.data.total} onChange={setPage} />

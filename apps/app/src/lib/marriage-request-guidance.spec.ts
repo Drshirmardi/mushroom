@@ -10,15 +10,15 @@ const base = {
 describe("marriage invitation next action guidance", () => {
   it("tells the sender to share a pending invitation instead of paying", () => {
     expect(describeMarriageRequest({ ...base, status: "PENDING", isInitiator: true })).toEqual({
-      title: "منتظر پذیرش همراه",
-      description: "لینک دعوت را برای همراهت بفرست. بعد از پذیرش او، مرحلهٔ بعد باز می‌شود.",
+      title: "منتظر پاسخ نفر دوم",
+      description: "لینک دعوت رو برای نفر دوم بفرست. پس از پذیرش می‌تونید ادامه بدید.",
     });
   });
 
   it("tells the recipient to review and accept the invitation", () => {
     expect(describeMarriageRequest({ ...base, status: "PENDING", isInitiator: false })).toEqual({
-      title: "دعوت جدید برای شما",
-      description: "پیش از پذیرش، مشخصات دعوت و شرایط اتصال را بررسی کن.",
+      title: "دعوت جدید داری",
+      description: "قبل از پذیرش، جزئیات دعوت و شرایط رو ببین.",
     });
   });
 

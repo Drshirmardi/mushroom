@@ -2,7 +2,7 @@
 import { BrandLogo } from '@/components/shared/brand-logo';
 import { AppLoading } from '@/components/shared/heartbeat-loader';
 import { invitationContext, invitationServiceRoute, rememberInvitationActor, restoredInvitation, subscribeInvitation } from '@/lib/marriage-context';
-import { rememberMarriageReturn, marriageReturn, clearMarriageReturn } from '@/lib/marriage-return';
+import { rememberOnboardingReturn, marriageReturn, clearOnboardingReturn } from '@/lib/marriage-return';
 import { createContext, useCallback, useContext, useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAuthSessionSnapshot, useOptionalAuthSession } from './session-gate';
@@ -33,10 +33,10 @@ export function PatientEntryGate({ children }: { children: ReactNode }) {
     if (!patient && session && pathname === '/welcome') { router.replace('/'); return; }
     if (!patient || resource.loading || resource.error || !resource.data) return;
     if (contextId && pathname === '/welcome' && resource.data.phase !== 'PROFILE') { router.replace(`/assessment/marriage/requests/${contextId}`); return; }
-    if (required && !invitationRoute && pathname !== '/welcome') { if (userId) rememberMarriageReturn(userId, pathname); router.replace('/welcome'); }
+    if (required && !invitationRoute && pathname !== '/welcome') { if (userId) rememberOnboardingReturn(userId, pathname, query); router.replace('/welcome'); return; }
     if (!required && pathname === '/welcome') router.replace(userId ? marriageReturn(userId) ?? '/' : '/');
-    if (!required && userId) clearMarriageReturn(userId,pathname);
-  }, [patient, session, resource.loading, resource.error, resource.data, required, pathname, router, invitationRoute, contextId, userId]);
+    if (!required && userId) clearOnboardingReturn(userId, pathname, query);
+  }, [patient, session, resource.loading, resource.error, resource.data, required, pathname, query, router, invitationRoute, contextId, userId]);
   if (!snapshot || snapshot.status === 'checking') return <EntryWait />;
   if (snapshot.status === 'unavailable') return <EntryWait error="unavailable" retry={() => window.location.reload()} />;
   if (!patient) return session && pathname === '/welcome' ? <EntryWait /> : children;
