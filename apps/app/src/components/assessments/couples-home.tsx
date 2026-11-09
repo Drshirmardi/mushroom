@@ -70,7 +70,7 @@ function CouplesOverview({ showHistory }: { showHistory: boolean }) {
         )}
         {active.length > 0 && (
           <div className="space-y-2">
-            <h2 className="text-base font-semibold">تست‌ها و دعوت‌های فعال</h2>
+            <h2 className="text-base font-semibold">پیگیری تست‌ها و دعوت‌ها</h2>
             {active.slice(0, 3).map(item => <RequestLink key={item.id} item={item} />)}
           </div>
         )}
