@@ -29,8 +29,7 @@ async (page) => {
  await page.getByRole('button',{name:'ثبت و ادامه به آزمون',exact:true}).click();
  await page.getByRole('heading',{name:'پذیرش نقش و دعوت'}).waitFor();
  await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پذیرش دعوت و ادامه',exact:true}).click();
- await page.getByRole('link',{name:'ادامه به رضایت، پرداخت و آزمون خودم'}).click();
- await page.getByRole('link',{name:'ادامهٔ پرداخت من'}).click();
+ await page.getByRole('link',{name:'ادامهٔ پرداخت',exact:true}).click();
  await page.getByRole('heading',{name:'پرداخت',exact:true}).waitFor();
  await page.goto(`http://127.0.0.1:3017/profile/wallet/payment-result?intentId=${replacement}`);
  await page.getByRole('button',{name:'ادامه خدمت دعوت‌شده'}).waitFor();
