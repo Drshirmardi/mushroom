@@ -61,26 +61,14 @@ export function ProductCard({
         <Link
           href={href}
           aria-label={`مشاهدهٔ ${product.title}`}
-          className="
-            absolute inset-0
-            flex items-center justify-center
-            p-2
-            @min-[210px]/card:p-3
-            focus-visible:outline-2
-            focus-visible:outline-offset-[-2px]
-            focus-visible:outline-sky-600
-          "
+          className="absolute inset-0 flex items-center justify-center p-0"
         >
           <ProductImage
             src={productImageUrl(product)}
             alt=""
             width={320}
             height={320}
-            className="
-              store-product__image
-              block h-full w-full
-              object-contain object-center
-            "
+            className="store-product__image block h-full w-full object-cover object-center"
           />
         </Link>
 
