@@ -9,9 +9,9 @@ if(p.endsWith('/entry'))return send({required:false});
 if(p==='/v1/patients/me'){if(req.method()==='PATCH')patches++;return send({firstName:'آزمایش',lastName:'کاربر',gender:'MALE',phone:'09120000000'});}
 if(p.includes('/settings/')){settingsReads++;return send({title:'خدمت آزمایشی',amountRial:'100000',eligibleRoles:[],definition:{roles:[]}});}
 return send({items:[],total:0});});
-try {for(const suffix of ['', '?replaceRequestId='+id]){const destination='/assessment/marriage/new/'+id+suffix;
-await page.goto(base+destination);await page.getByRole('link',{name:'تکمیل مشخصات و بازگشت به دعوت'}).click();await page.getByRole('button',{name:'بدون تغییر',exact:true}).waitFor();await page.screenshot({path:'.local/mz13-profile-before.png'});
+try {for(const suffix of ['', '?replaceRequestId='+id]){const legacy='/assessment/marriage/new/'+id+suffix;const destination='/assessment/couples?start='+id+(suffix?'&replaceRequestId='+id:'');
+await page.goto(base+legacy);await page.waitForURL(base+destination);await page.getByRole('link',{name:'تکمیل مشخصات و بازگشت'}).click();await page.getByRole('button',{name:'بدون تغییر',exact:true}).waitFor();await page.screenshot({path:'.local/mz13-profile-before.png'});
 await page.getByRole('button',{name:'بازگشت',exact:true}).click();await page.waitForURL(base+destination);
-await page.getByRole('link',{name:'تکمیل مشخصات و بازگشت به دعوت'}).click();await page.getByRole('button',{name:'تغییر نام',exact:true}).click();await page.locator('#firstName').fill('نام جدید');await page.getByRole('button',{name:'ذخیره تغییرات',exact:true}).click();await page.waitForURL(base+destination);await page.screenshot({path:'.local/mz13-profile-after.png'});
+await page.getByRole('link',{name:'تکمیل مشخصات و بازگشت'}).click();await page.getByRole('button',{name:'تغییر نام',exact:true}).click();await page.locator('#firstName').fill('نام جدید');await page.getByRole('button',{name:'ذخیره تغییرات',exact:true}).click();await page.waitForURL(base+destination);await page.screenshot({path:'.local/mz13-profile-after.png'});
 }
 if(patches!==2||settingsReads<4||errors.length)throw new Error(JSON.stringify({patches,settingsReads,errors}));console.log(JSON.stringify({PASS:true,patches,settingsReads,errors}));}finally{await browser.close();}
