@@ -36,11 +36,11 @@ export function describeMarriageRequest({
   if (status === "PENDING") {
     return isInitiator
       ? {
-          title: "منتظر پذیرش همراه",
-          description: "لینک دعوت را برای همراهت بفرست. بعد از پذیرش او، مرحلهٔ بعد باز می‌شود.",
+          title: "منتظر پذیرش نفر دوم",
+          description: "لینک دعوت را برای نفر دوم بفرست. بعد از پذیرش او، مرحلهٔ بعد باز می‌شود.",
         }
       : {
-          title: "دعوت جدید برای شما",
+          title: "دعوت جدید برای تو",
           description: "پیش از پذیرش، مشخصات دعوت و شرایط اتصال را بررسی کن.",
         };
   }
@@ -48,7 +48,7 @@ export function describeMarriageRequest({
     return hasEducationalId
       ? {
           title: "دعوت پذیرفته شد",
-          description: "حالا هر نفر با حساب خودش رضایت و ادامهٔ آزمون را انجام می‌دهد.",
+          description: "حالا هر نفر با حساب خودش رضایت و ادامهٔ تست را انجام می‌دهد.",
         }
       : {
           title: "دعوت پذیرفته شد؛ در حال آماده‌سازی ادامه",
