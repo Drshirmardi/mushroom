@@ -1,2 +1,5 @@
-import { MarriageHistory } from '@/components/assessments/marriage-service';
-export default function Page() { return <MarriageHistory />; }
+import { redirect } from 'next/navigation';
+
+export default function Page() {
+  redirect('/assessment/couples');
+}
