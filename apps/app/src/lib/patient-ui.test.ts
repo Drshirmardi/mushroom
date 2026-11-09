@@ -195,16 +195,21 @@ const approvedProduct: CommerceProduct = {
 };
 
 describe("Store real product content sections (Phase B1C)", () => {
-  it("links navigation only to sections with real product content", () => {
+  it("renders real product sections in document order without duplicate navigation chips", () => {
     const html = renderToStaticMarkup(createElement(ProductContentSections, { product: approvedProduct }));
+    let lastIndex = -1;
     for (const id of ["product-about", "product-ingredients", "product-usage", "product-warnings", "product-contraindications"]) {
-      expect(html).toContain(`href="#${id}"`);
-      expect(html).toContain(`id="${id}"`);
+      const index = html.indexOf(`id="${id}"`);
+      expect(index).toBeGreaterThan(lastIndex);
+      lastIndex = index;
     }
+    expect(html).not.toContain('<nav');
+    expect(html).not.toContain('store-content-nav');
     const singleSection = renderToStaticMarkup(createElement(ProductContentSections, {
       product: { ...product, content: null, description: "توضیح واقعی" },
     }));
-    expect(singleSection).not.toContain("<nav");
+    expect(singleSection).toContain('id="product-about"');
+    expect(singleSection).not.toContain('<nav');
   });
 
   it("renders every nonempty approved field and nothing else", () => {

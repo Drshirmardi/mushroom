@@ -44,8 +44,7 @@
 .page :global(.store-detail--panel[data-compact='true']) {
   scroll-padding-block-start: 1rem;
 }
-.page :global(.store-detail--panel[data-compact='true'] .store-detail__handle-button),
-.page :global(.store-detail--panel[data-compact='true'] .store-content-nav) {
+.page :global(.store-detail--panel[data-compact='true'] .store-detail__handle-button) {
   position: relative;
   top: auto;
 }
@@ -225,8 +224,8 @@
 /* Currency markup stays shared, but PDP's displayed unit price has its own scale. */
 .page :global([data-product-unit-price] .store-price) {
   color: #087c91;
-  font-family: var(--font-vazirmatn);
+  font-family: var(--font-iranyekanx);
   font-size: clamp(1.125rem, 4cqi, 1.375rem);
-  font-weight: 700;
+  font-weight: 500;
   line-height: 1.5;
 }
