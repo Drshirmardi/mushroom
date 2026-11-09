@@ -46,9 +46,11 @@ describe('return from onboarding to the selected two-person test', () => {
       setItem: (key: string, value: string) => { values.set(key, value); },
       removeItem: (key: string) => { values.delete(key); },
     });
-    const path = '/assessment/marriage/new/' + id + '?replaceRequestId=' + id;
+    const selected = '/assessment/couples?start=' + id + '&replaceRequestId=' + id;
     rememberOnboardingReturn('legacy', '/assessment/marriage/new/' + id, '?replaceRequestId=' + id);
-    expect(marriageReturn('legacy')).toBe(path);
+    expect(marriageReturn('legacy')).toBe(selected);
+    clearOnboardingReturn('legacy', '/assessment/couples', 'start=' + id + '&replaceRequestId=' + id);
+    expect(marriageReturn('legacy')).toBeNull();
   });
 
 });
