@@ -17,6 +17,11 @@ export function selectedCoupleTest(query: URLSearchParams): { publicationId: str
   return replacesId ? { publicationId, replacesId } : { publicationId };
 }
 
+export function isCoupleSelectionRoute(pathname: string, search: string): boolean {
+  return pathname === '/assessment/couples' &&
+    selectedCoupleTest(new URLSearchParams(search)) !== null;
+}
+
 /** Historical and current offerings coexist; only new, payable MARRIAGE publications may be started here. */
 export function canStartCoupleTest(row: { servicePurpose?: string | null; priceMode: string }): boolean {
   return row.servicePurpose === 'MARRIAGE' && row.priceMode === 'PAID';
