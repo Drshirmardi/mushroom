@@ -67,7 +67,7 @@ function NewAssessments({ token }: { token: string }) {
   return <div className={styles.stack}>
     {([{resource:individual,page:individualPage,set:setIndividualPage,label:'آزمون‌های فردی'}, {resource:marriage,page:marriagePage,set:setMarriagePage,label:'آزمون‌های دو نفره'}]).map(({resource,page,set,label}) => <Panel key={label} label={label}>
       <AssessmentResourceState {...resource} retry={() => void resource.reload()} />
-      {resource.data?.items.filter((item,index,all) => all.findIndex(other => other.id === item.id) === index).map(item => <Link key={item.id} className={styles.test} href={item.servicePurpose === 'MARRIAGE' ? `/assessment/marriage/new/${item.id}` : `/assessment/educational/${item.id}`}>
+      {resource.data?.items.filter((item,index,all) => all.findIndex(other => other.id === item.id) === index).map(item => <Link key={item.id} className={styles.test} href={item.servicePurpose === 'MARRIAGE' ? `/assessment/couples?newTestId=${encodeURIComponent(item.id)}` : `/assessment/educational/${item.id}`}>
         <div className={styles.testHead}><span className={styles.icon}>{item.kind === 'COUPLES' ? <HeartHandshake aria-hidden="true" size={22} /> : <Leaf aria-hidden="true" size={22} />}</span><h2>{item.title}</h2></div>
         <div className={styles.testFoot}><span>{item.priceMode === 'FREE' ? 'رایگان' : formatRialWithUnit(BigInt(item.amountRial ?? '0'))}{item.kind === 'COUPLES' && ' · دو نفر'}</span><span className={styles.textAction}>مشاهده آزمون<ArrowLeft size={16} aria-hidden="true" /></span></div>
       </Link>)}
