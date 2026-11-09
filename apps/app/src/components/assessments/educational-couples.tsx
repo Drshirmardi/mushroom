@@ -114,7 +114,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
               key={participant.slot}
               className="flex flex-wrap items-center justify-between gap-2 text-sm"
             >
-              <span>{participant.isSelf ? 'شما' : 'همراه'}</span>
+              <span>{participant.isSelf ? 'شما' : 'نفر دوم'}</span>
               <span className="text-xs text-muted-foreground">
                 {participant.consentState === 'ACCEPTED'
                   ? 'رضایت ثبت شده'
@@ -181,7 +181,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         </p>
       ) : !data.newAccessAvailable ? (
         <p role="status" className="text-sm leading-7 text-muted-foreground">
-          نسخهٔ تازه را از صفحهٔ همراهی انتخاب کنید.
+          برای شروع دوباره، یک تست جدید انتخاب کن.
         </p>
       ) : data.mutualConsentComplete ? (
         data.priceMode === 'FREE' ? (
@@ -189,7 +189,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
             شروع تست رایگان من
           </AsyncButton>
         ) : (
-          <section className="space-y-3" aria-label="پرداخت ارزیابی">
+          <section className="space-y-3" aria-label="پرداخت تست">
             {data.termsPolicy && (
               <PolicyAcceptance
                 variant="compact"
@@ -206,7 +206,7 @@ function Participation({ token, userId, data, reload, refresh, begin, end }: { t
         )
       ) : alreadyAccepted ? (
         <p role="status" className="text-sm leading-7 text-muted-foreground">
-          همراه هنوز رضایت مستقل خودش را ثبت نکرده است.
+          نفر دوم هنوز شرایط رو تأیید نکرده.
         </p>
       ) : null)}
 
