@@ -63,6 +63,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<CommerceProduct | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [wishlistBusy, setWishlistBusy] = useState(false);
   const cart = useCartStore((state) => state.items);
   const wishlist = useWishlistStore((state) => state.ids);
   const searchParams = useSearchParams();
@@ -234,8 +235,12 @@ export default function ProductDetailPage() {
       navigateScreen('WishlistScreen');
       return;
     }
-    setBusy(true);
+
+    if (wishlistBusy) return;
+
+    setWishlistBusy(true);
     setError(null);
+
     try {
       cacheWishlist(
         await updateCommerceWishlist(session.authentication.accessToken, sku.id, !saved),
@@ -243,7 +248,7 @@ export default function ProductDetailPage() {
     } catch (cause) {
       setError(commerceErrorMessage(cause));
     } finally {
-      setBusy(false);
+      setWishlistBusy(false);
     }
   };
   const share = async () => {
@@ -312,8 +317,14 @@ export default function ProductDetailPage() {
             </Button>
             <Button
               variant="secondary"
-              className="store-icon-button"
-              busy={busy}
+              className="
+                store-icon-button
+                !text-slate-500
+                hover:!text-rose-600
+                aria-pressed:!text-rose-600
+                aria-busy:!text-rose-600
+              "
+              busy={wishlistBusy}
               aria-pressed={saved}
               aria-label={saved ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
               onClick={() => void toggle()}
@@ -345,8 +356,10 @@ export default function ProductDetailPage() {
             </select>
           </div>
         )}
-        <div data-product-unit-price className="mb-3 mt-3 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-slate-200/80 pb-4">
-
+        <div
+          data-product-unit-price
+          className="mb-3 mt-3 flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-slate-200/80 pb-4"
+        >
           <span className="text-xs leading-6 text-slate-500">
             {BigInt(sku.currentTaxToman) > BigInt(0) ? 'قیمت هر عدد، پیش از مالیات' : 'قیمت هر عدد'}
           </span>
