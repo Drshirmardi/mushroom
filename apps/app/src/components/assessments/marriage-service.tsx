@@ -18,6 +18,7 @@ import { marriageRequestLoader } from '@/lib/marriage-request-loader';
 import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
 import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
+import { canStartCoupleTest, coupleStartHref } from '@/lib/couples-flow';
 import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
 const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
@@ -25,7 +26,7 @@ const statuses: Record<string,string> = { PENDING: 'در انتظار پذیرش
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
 const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
 
-export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
+export function MarriageNew({ publicationId, replacesId, embedded = false }: { publicationId: string; replacesId?: string; embedded?: boolean }) {
   const { authentication } = useAuthSession();
   const token = authentication.accessToken;
   const router = useRouter();
@@ -48,7 +49,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 
   const data = resource.data;
   const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
-  const returnTo = '/assessment/marriage/new/' + publicationId +
+  const returnTo = embedded ? coupleStartHref(publicationId, replacesId) : '/assessment/marriage/new/' + publicationId +
     (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -87,14 +88,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
     }
   };
 
-  return (
-    <ServicePage
-      title={data?.title ?? 'شناخت پیش از ازدواج'}
-      description="نقشت را مشخص کن و شمارهٔ همراهت را وارد کن تا لینک دعوت ساخته شود."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="انتخاب خدمت"
-    >
+  const formContent = (
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
@@ -110,7 +104,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               </p>
               <details className="group mt-3 border-t border-border/60 pt-2">
                 <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
-                  شرایط شرکت در این آزمون
+                  شرایط شرکت در این تست
                   <ChevronDown aria-hidden="true" size={17} className="transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="space-y-1 pb-2 text-sm leading-7 text-muted-foreground">
@@ -128,7 +122,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               <section role="status" className="rounded-2xl border border-border bg-white p-4 sm:p-5">
                 <h2 className="text-base font-semibold">ابتدا مشخصاتت را بررسی کن</h2>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  برای انتخاب نقش در این آزمون، اطلاعات حساب و شرایط شرکت باید بررسی شود.
+                  برای انتخاب نقش در این تست، اطلاعات حساب و شرایط شرکت باید بررسی شود.
                 </p>
                 <Link
                   href={'/profile/edit?returnTo=' + encodeURIComponent(returnTo)}
@@ -221,6 +215,17 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
           </>
         )}
       </div>
+  );
+
+  return embedded ? formContent : (
+    <ServicePage
+      title={data?.title ?? 'تست دو نفره'}
+      description="نقش خودت و شماره نفر دوم رو وارد کن."
+      icon={HeartHandshake}
+      backHref="/assessment/couples"
+      backLabel="تست‌ها"
+    >
+      {formContent}
     </ServicePage>
   );
 }
@@ -508,7 +513,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                   href={data.continuation?.nextPath ??
                     marriageHref('/assessment/couples/educational/' + data.educationalId)}
                 >
-                  ادامهٔ آزمون
+                  ادامهٔ تست
                   <ArrowLeft aria-hidden="true" size={18} className="inline-block align-middle" />
                 </Link>
               )}
@@ -630,7 +635,7 @@ export function MarriageHistory() {
   );
 }
 
-export function MarriageOffers() {
+export function MarriageOffers({ hideHistoryLink = false }: { hideHistoryLink?: boolean } = {}) {
   const { authentication } = useAuthSession();
   const [page, setPage] = useState(1);
   const resource = usePatientResource(
@@ -640,22 +645,21 @@ export function MarriageOffers() {
     ),
   );
 
+  const available = resource.data?.items.filter(canStartCoupleTest) ?? [];
   return (
-    <section aria-label="انتخاب خدمت شناخت پیش از ازدواج" className="space-y-4">
+    <section aria-label="انتخاب تست دو نفره" className="space-y-4">
       <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
-      {resource.data?.total === 0 && (
+      {resource.data && available.length === 0 && (
         <p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">
-          فعلاً آزمونی برای شروع در دسترس نیست. دعوت‌های قبلی را می‌توانی از بخش پیگیری باز کنی.
+          فعلاً تست جدیدی برای شروع در دسترس نیست.
         </p>
       )}
 
-      {resource.data?.items
-        .filter(item => item.servicePurpose === 'MARRIAGE')
-        .map(item => (
+      {available.map(item => (
           <Link
             key={item.id}
-            href={marriageHref('/assessment/marriage/new/' + item.id)}
+            href={coupleStartHref(item.id)}
             className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
           >
             <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
@@ -676,13 +680,15 @@ export function MarriageOffers() {
           </Link>
         ))}
 
-      <Link
-        href="/assessment/marriage"
-        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      >
-        پیگیری دعوت‌های ارسالی و دریافتی
-        <ArrowLeft aria-hidden="true" size={16} />
-      </Link>
+      {!hideHistoryLink && (
+        <Link
+          href="/assessment/couples?history=1"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+        >
+          همه دعوت‌ها و سوابق
+          <ArrowLeft aria-hidden="true" size={16} />
+        </Link>
+      )}
 
       {resource.data && (
         <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
