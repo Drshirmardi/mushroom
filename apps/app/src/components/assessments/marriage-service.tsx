@@ -565,9 +565,69 @@ export function MarriageRequestView({ id }: { id: string }) {
 }
 
 export function MarriageHistory() {
-  const { authentication } = useAuthSession(); const [page,setPage] = useState(1);
-  const resource = usePatientResource(useCallback(() => listMarriageRequests(authentication.accessToken,page),[authentication.accessToken,page]));
-  return <ServicePage title="درخواست‌های ازدواج" description="دعوت‌های ارسالی و دریافتی همین شماره و وضعیت ادامهٔ خدمت" icon={HeartHandshake} backHref="/assessment" backLabel="خدمات و آزمون‌ها"><PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />{resource.data?.items.map(item => <Link key={item.id} className="service-card my-3 block" href={item.invitationPath}><h2>{item.service.title}</h2>{item.isInitiator && item.recipientPhoneMasked && <p>همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi></p>}<p className="text-sm">{new Date(item.createdAt).toLocaleDateString('fa-IR',{timeZone:'Asia/Tehran'})}</p><p className="mt-2 text-sm">{item.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'} · {statuses[item.status]}</p></Link>)}{resource.data?.total === 0 && <p className="service-card">هنوز درخواستی برای این حساب وجود ندارد.</p>}{resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}</ServicePage>;
+  const { authentication } = useAuthSession();
+  const [page, setPage] = useState(1);
+  const resource = usePatientResource(
+    useCallback(
+      () => listMarriageRequests(authentication.accessToken, page),
+      [authentication.accessToken, page],
+    ),
+  );
+
+  return (
+    <ServicePage
+      title="دعوت‌های من"
+      description="دعوت‌های ارسالی و دریافتی را از همین‌جا ادامه بده."
+      icon={HeartHandshake}
+      backHref="/assessment/couples"
+      backLabel="شناخت پیش از ازدواج"
+    >
+      <div className="mx-auto w-full max-w-2xl space-y-3">
+        <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+        {resource.data?.items.map(item => (
+          <Link
+            key={item.id}
+            href={item.invitationPath}
+            className="group block rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h2 className="text-base font-semibold leading-7">{item.service.title}</h2>
+              <span className="text-xs leading-6 text-muted-foreground">
+                {item.isInitiator ? 'ارسالی' : 'دریافتی'}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-foreground">
+              {item.status === 'PENDING' && !item.isInitiator
+                ? 'منتظر پاسخ شما'
+                : statuses[item.status] ?? 'بررسی وضعیت'}
+            </p>
+            {item.isInitiator && item.recipientPhoneMasked && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                همراه: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
+              <time className="text-xs text-muted-foreground">
+                {new Date(item.createdAt).toLocaleDateString('fa-IR', { timeZone: 'Asia/Tehran' })}
+              </time>
+              <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary">
+                مشاهده و ادامه
+                <ArrowLeft aria-hidden="true" size={17} />
+              </span>
+            </div>
+          </Link>
+        ))}
+        {resource.data?.total === 0 && (
+          <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">
+            هنوز دعوتی برای این حساب ثبت نشده است.
+          </p>
+        )}
+        {resource.data && (
+          <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
+        )}
+      </div>
+    </ServicePage>
+  );
 }
 
 export function MarriageOffers() {
