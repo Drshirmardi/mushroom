@@ -20,14 +20,14 @@ import { formatRial } from '@/lib/wallet-money';
 import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
 import { canStartCoupleTest, coupleStartHref } from '@/lib/couples-flow';
 import { EducationalCoupleWorkspace } from './educational-couples';
-import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
+import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms } from '@/lib/marriage-api';
 const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const statuses: Record<string,string> = { PENDING: 'منتظر پاسخ نفر دوم', ACCEPTED: 'دعوت پذیرفته شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
 const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
 
-export function MarriageNew({ publicationId, replacesId, embedded = false }: { publicationId: string; replacesId?: string; embedded?: boolean }) {
+export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
   const { authentication } = useAuthSession();
   const token = authentication.accessToken;
   const router = useRouter();
@@ -50,8 +50,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
 
   const data = resource.data;
   const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
-  const returnTo = embedded ? coupleStartHref(publicationId, replacesId) : '/assessment/marriage/new/' + publicationId +
-    (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
+  const returnTo = coupleStartHref(publicationId, replacesId);
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -92,6 +91,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
   const formContent = (
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+        {data && <h2 className="text-lg font-semibold leading-8 text-foreground">{data.title}</h2>}
 
         {data && (
           <>
@@ -218,17 +218,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
       </div>
   );
 
-  return embedded ? formContent : (
-    <ServicePage
-      title={data?.title ?? 'تست دو نفره'}
-      description="نقش خودت و شماره نفر دوم رو وارد کن."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="تست‌ها"
-    >
-      {formContent}
-    </ServicePage>
-  );
+  return formContent;
 }
 
 export function MarriageRequestView({ id }: { id: string }) {
@@ -565,72 +555,6 @@ export function MarriageRequestView({ id }: { id: string }) {
           </button>
         </BottomSheet>
       )}
-    </ServicePage>
-  );
-}
-
-export function MarriageHistory() {
-  const { authentication } = useAuthSession();
-  const [page, setPage] = useState(1);
-  const resource = usePatientResource(
-    useCallback(
-      () => listMarriageRequests(authentication.accessToken, page),
-      [authentication.accessToken, page],
-    ),
-  );
-
-  return (
-    <ServicePage
-      title="دعوت‌های من"
-      description="دعوت‌های ارسالی و دریافتی را از همین‌جا ادامه بده."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="شناخت پیش از ازدواج"
-    >
-      <div className="mx-auto w-full max-w-2xl space-y-3">
-        <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
-        {resource.data?.items.map(item => (
-          <Link
-            key={item.id}
-            href={item.invitationPath}
-            className="group block rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <h2 className="text-base font-semibold leading-7">{item.service.title}</h2>
-              <span className="text-xs leading-6 text-muted-foreground">
-                {item.isInitiator ? 'ارسالی' : 'دریافتی'}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-foreground">
-              {item.status === 'PENDING' && !item.isInitiator
-                ? 'منتظر پاسخ شما'
-                : statuses[item.status] ?? 'بررسی وضعیت'}
-            </p>
-            {item.isInitiator && item.recipientPhoneMasked && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                نفر دوم: <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
-              </p>
-            )}
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3">
-              <time className="text-xs text-muted-foreground">
-                {new Date(item.createdAt).toLocaleDateString('fa-IR', { timeZone: 'Asia/Tehran' })}
-              </time>
-              <span className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary">
-                مشاهده و ادامه
-                <ArrowLeft aria-hidden="true" size={17} />
-              </span>
-            </div>
-          </Link>
-        ))}
-        {resource.data?.total === 0 && (
-          <p className="rounded-2xl border border-border bg-white p-5 text-sm text-muted-foreground">
-            هنوز دعوتی برای این حساب ثبت نشده است.
-          </p>
-        )}
-        {resource.data && (
-          <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
-        )}
-      </div>
     </ServicePage>
   );
 }
