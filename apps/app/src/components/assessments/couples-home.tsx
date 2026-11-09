@@ -139,7 +139,6 @@ export function CouplesHome() {
             key={selected.publicationId + ':' + (selected.replacesId ?? '')}
             publicationId={selected.publicationId}
             replacesId={selected.replacesId}
-            embedded
           />
         </div>
       ) : search.has('start') || search.has('replaceRequestId') ? (
