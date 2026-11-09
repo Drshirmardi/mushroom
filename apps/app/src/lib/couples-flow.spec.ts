@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coupleStartHref, selectedCoupleTest, prioritizeCoupleRequests, canStartCoupleTest } from './couples-flow';
+import { coupleStartHref, selectedCoupleTest, prioritizeCoupleRequests, canStartCoupleTest, isCoupleSelectionRoute } from './couples-flow';
 
 const a = '11111111-1111-4111-8111-111111111111';
 const b = '22222222-2222-4222-8222-222222222222';
@@ -10,6 +10,13 @@ describe('single couple test journey navigation', () => {
     expect(coupleStartHref(a, b)).toBe('/assessment/couples?start=' + a + '&replaceRequestId=' + b);
     expect(selectedCoupleTest(new URLSearchParams('start=' + a))).toEqual({ publicationId: a });
     expect(selectedCoupleTest(new URLSearchParams('start=' + a + '&replaceRequestId=' + b))).toEqual({ publicationId: a, replacesId: b });
+  });
+
+  it('retains only validated selected tests across login, not arbitrary query strings', () => {
+    expect(isCoupleSelectionRoute('/assessment/couples', '?start=' + a)).toBe(true);
+    expect(isCoupleSelectionRoute('/assessment/couples', '?start=bad')).toBe(false);
+    expect(isCoupleSelectionRoute('/assessment/couples', '?history=1')).toBe(false);
+    expect(isCoupleSelectionRoute('/store', '?start=' + a)).toBe(false);
   });
 
   it('rejects arbitrary query parameters, invalid ids, repeated ids and replacement without a selected test', () => {
