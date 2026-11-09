@@ -508,7 +508,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               )}
 
             {data.status === 'ACCEPTED' && data.educationalId &&
-              data.ownEligible && !data.continuation?.profileRequired && (
+              !data.continuation?.profileRequired && (
                 <section aria-label="ادامه تست دو نفره" className="space-y-3">
                   <EducationalCoupleWorkspace
                     token={token}
