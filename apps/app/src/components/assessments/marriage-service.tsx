@@ -4,7 +4,7 @@ import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { marriageAccountRecovery, marriageError, marriagePhoneError } from '@/lib/marriage-errors';
 import { marriageHref } from '@/lib/marriage-context';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronDown, HeartHandshake } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
@@ -18,14 +18,28 @@ import { marriageRequestLoader } from '@/lib/marriage-request-loader';
 import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
 import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
+import { EducationalCoupleWorkspace } from './educational-couples';
 import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
 const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
-const statuses: Record<string,string> = { PENDING: 'در انتظار پذیرش همراه', ACCEPTED: 'همراهی تأیید شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
+const statuses: Record<string,string> = { PENDING: 'در انتظار پاسخ نفر دوم', ACCEPTED: 'دعوت پذیرفته شد', CANCELLED: 'دعوت لغو شده', REPLACED: 'دعوت جایگزین شده' };
 const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات خودت برای بررسی شرایط کامل نیست.', GENDER_NOT_ALLOWED: 'جنسیت ثبت‌شدهٔ شما با شرایط این نقش سازگار نیست.', AGE_BELOW_MINIMUM: 'سن ثبت‌شدهٔ شما کمتر از حداقل سن این نقش است.' };
 const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
 
-export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
+function InvitationFormFrame({ embedded, title, children }: { embedded: boolean; title: string; children: ReactNode }) {
+  if (embedded) return <>{children}</>;
+  return (
+    <ServicePage
+      title={title}
+      description="نقشت رو انتخاب کن و نفر دوم رو برای انجام تست دعوت کن."
+      icon={HeartHandshake}
+      backHref="/assessment/couples"
+      backLabel="تست دو نفره"
+    >{children}</ServicePage>
+  );
+}
+
+export function MarriageNew({ publicationId, replacesId, embedded = false }: { publicationId: string; replacesId?: string; embedded?: boolean }) {
   const { authentication } = useAuthSession();
   const token = authentication.accessToken;
   const router = useRouter();
@@ -48,8 +62,11 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 
   const data = resource.data;
   const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
-  const returnTo = '/assessment/marriage/new/' + publicationId +
-    (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
+  const returnTo = embedded
+    ? '/assessment/couples?newTestId=' + encodeURIComponent(publicationId) +
+      (replacesId ? '&replaceRequestId=' + encodeURIComponent(replacesId) : '')
+    : '/assessment/marriage/new/' + publicationId +
+      (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -88,13 +105,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
   };
 
   return (
-    <ServicePage
-      title={data?.title ?? 'شناخت پیش از ازدواج'}
-      description="نقشت را مشخص کن و شمارهٔ همراهت را وارد کن تا لینک دعوت ساخته شود."
-      icon={HeartHandshake}
-      backHref="/assessment/couples"
-      backLabel="انتخاب خدمت"
-    >
+    <InvitationFormFrame embedded={embedded} title={data?.title ?? 'تست دو نفره'}>
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
@@ -110,7 +121,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               </p>
               <details className="group mt-3 border-t border-border/60 pt-2">
                 <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
-                  شرایط شرکت در این آزمون
+                  شرایط شرکت در این تست
                   <ChevronDown aria-hidden="true" size={17} className="transition-transform group-open:rotate-180" />
                 </summary>
                 <div className="space-y-1 pb-2 text-sm leading-7 text-muted-foreground">
@@ -128,7 +139,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
               <section role="status" className="rounded-2xl border border-border bg-white p-4 sm:p-5">
                 <h2 className="text-base font-semibold">ابتدا مشخصاتت را بررسی کن</h2>
                 <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                  برای انتخاب نقش در این آزمون، اطلاعات حساب و شرایط شرکت باید بررسی شود.
+                  برای انتخاب نقش در این تست، اطلاعات حساب و شرایط شرکت باید بررسی شود.
                 </p>
                 <Link
                   href={'/profile/edit?returnTo=' + encodeURIComponent(returnTo)}
@@ -142,7 +153,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 onSubmit={submit}
                 className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5"
               >
-                <h2 className="text-base font-semibold text-foreground">دعوت همراه</h2>
+                <h2 className="text-base font-semibold text-foreground">دعوت نفر دوم</h2>
                 <p className="mt-1 text-sm leading-7 text-muted-foreground">
                   همراهت می‌تواند پس از بازکردن لینک، وارد حساب خودش شود یا ثبت‌نام کند.
                 </p>
@@ -164,7 +175,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   </label>
 
                   <label className="block space-y-2 text-sm font-medium text-foreground">
-                    <span>شماره موبایل همراه</span>
+                    <span>شماره موبایل نفر دوم</span>
                     <input
                       ref={phoneInput}
                       required
@@ -221,7 +232,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
           </>
         )}
       </div>
-    </ServicePage>
+    </InvitationFormFrame>
   );
 }
 
@@ -305,8 +316,8 @@ export function MarriageRequestView({ id }: { id: string }) {
       title={data?.service.title ?? 'پیگیری دعوت'}
       description="وضعیت دعوت و کار بعدی را همین‌جا ببین."
       icon={HeartHandshake}
-      backHref="/assessment/marriage"
-      backLabel="دعوت‌های من"
+      backHref="/assessment/couples"
+      backLabel="تست دو نفره"
     >
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState
@@ -461,8 +472,8 @@ export function MarriageRequestView({ id }: { id: string }) {
                       onClick={event => { if (lock.current) event.preventDefault(); }}
                       className={secondary}
                       href={marriageHref(
-                        '/assessment/marriage/new/' + data.service.publicationId +
-                        '?replaceRequestId=' + encodeURIComponent(id),
+                        '/assessment/couples?newTestId=' + encodeURIComponent(data.service.publicationId) +
+                        '&replaceRequestId=' + encodeURIComponent(id),
                       )}
                     >
                       تغییر شمارهٔ همراه (لینک قبلی غیرفعال می‌شود)
@@ -502,15 +513,12 @@ export function MarriageRequestView({ id }: { id: string }) {
               )}
 
             {data.status === 'ACCEPTED' && data.educationalId &&
-              !data.continuation?.profileRequired && (
-                <Link
-                  className={button}
-                  href={data.continuation?.nextPath ??
-                    marriageHref('/assessment/couples/educational/' + data.educationalId)}
-                >
-                  ادامهٔ آزمون
-                  <ArrowLeft aria-hidden="true" size={18} className="inline-block align-middle" />
-                </Link>
+              data.ownEligible && !data.continuation?.profileRequired && (
+                <EducationalCoupleWorkspace
+                  token={token}
+                  userId={authentication.user.id}
+                  id={data.educationalId}
+                />
               )}
 
             {data.status === 'ACCEPTED' && !data.educationalId && (
@@ -523,7 +531,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               data.isInitiator && (
                 <Link
                   className={secondary}
-                  href={marriageHref('/assessment/marriage/new/' + data.service.publicationId)}
+                  href={'/assessment/couples?newTestId=' + encodeURIComponent(data.service.publicationId)}
                 >
                   ساخت دعوت جدید
                 </Link>
@@ -630,7 +638,7 @@ export function MarriageHistory() {
   );
 }
 
-export function MarriageOffers() {
+export function MarriageOffers({ onSelect }: { onSelect?: (publicationId: string) => void } = {}) {
   const { authentication } = useAuthSession();
   const [page, setPage] = useState(1);
   const resource = usePatientResource(
@@ -646,7 +654,7 @@ export function MarriageOffers() {
 
       {resource.data?.total === 0 && (
         <p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">
-          فعلاً آزمونی برای شروع در دسترس نیست. دعوت‌های قبلی را می‌توانی از بخش پیگیری باز کنی.
+          فعلاً تستی برای شروع در دسترس نیست. دعوت‌های قبلی را می‌توانی از بخش پیگیری باز کنی.
         </p>
       )}
 
@@ -655,7 +663,8 @@ export function MarriageOffers() {
         .map(item => (
           <Link
             key={item.id}
-            href={marriageHref('/assessment/marriage/new/' + item.id)}
+            href={'/assessment/couples?newTestId=' + encodeURIComponent(item.id)}
+            onClick={onSelect ? event => { event.preventDefault(); onSelect(item.id); } : undefined}
             className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
           >
             <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
@@ -676,13 +685,7 @@ export function MarriageOffers() {
           </Link>
         ))}
 
-      <Link
-        href="/assessment/marriage"
-        className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-medium text-muted-foreground underline-offset-4 hover:text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-      >
-        پیگیری دعوت‌های ارسالی و دریافتی
-        <ArrowLeft aria-hidden="true" size={16} />
-      </Link>
+      {!onSelect && <Link href="/assessment/couples" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary">بازگشت به تست‌های دو نفره <ArrowLeft size={16} aria-hidden="true" /></Link>}
 
       {resource.data && (
         <PatientPagination page={page} total={resource.data.total} onChange={setPage} />
