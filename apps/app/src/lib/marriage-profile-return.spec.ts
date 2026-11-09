@@ -8,4 +8,18 @@ describe('service profile return', () => {
  it('rejects external, malformed and unrelated destinations', () => {
   for (const path of [null,'https://outside.example','//outside.example','/store','/assessment/marriage/new/bad','/assessment/marriage/new/'+id+'?replaceRequestId=bad','/assessment/marriage/new/'+id+'?other=yes','/assessment/marriage/new/'+id+'?replaceRequestId='+id+'&replaceRequestId='+id,'/assessment/marriage/requests/'+id+'#x']) expect(marriageProfileReturn(path)).toBeNull();
  });
+ it('returns to an inline test invitation without accepting arbitrary destinations', () => {
+  const select = '/assessment/couples?newTestId=' + id;
+  const replace = select + '&replaceRequestId=' + id;
+  expect(marriageProfileReturn(select)).toBe(select);
+  expect(marriageProfileReturn(replace)).toBe(replace);
+  for (const invalid of [
+    '/assessment/couples?newTestId=bad',
+    '/assessment/couples?replaceRequestId=' + id,
+    select + '&other=value',
+    select + '&newTestId=' + id,
+    select + '#fragment',
+    '//outside.example/assessment/couples?newTestId=' + id,
+  ]) expect(marriageProfileReturn(invalid)).toBeNull();
+ });
 });
