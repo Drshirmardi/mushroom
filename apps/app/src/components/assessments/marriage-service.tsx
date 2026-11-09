@@ -4,9 +4,9 @@ import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { marriageAccountRecovery, marriageError, marriagePhoneError } from '@/lib/marriage-errors';
 import { marriageHref } from '@/lib/marriage-context';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, ChevronDown, HeartHandshake } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { ServicePage } from '@/components/shared/service-page';
@@ -25,20 +25,203 @@ const ineligibility: Record<string,string> = { PROFILE_INCOMPLETE: 'مشخصات
 const smsStatuses: Record<string,string> = { QUEUED: 'پیامک در صف ارسال است.', SENDING: 'در حال بررسی ارسال پیامک…', ACCEPTED: 'ارسال پیامک توسط سرویس‌دهنده پذیرفته شد؛ تحویل قطعی تأیید نشده است.', FAILED: 'ارسال پیامک انجام نشد؛ لینک دعوت همچنان قابل استفاده است.', UNKNOWN: 'وضعیت ارسال مشخص نیست. پیش از ارسال دوباره، از همراهت بپرس.' };
 
 export function MarriageNew({ publicationId, replacesId }: { publicationId: string; replacesId?: string }) {
-  const { authentication } = useAuthSession(); const token = authentication.accessToken; const router = useRouter();
-  const resource = usePatientResource(useCallback(() => getMarriageSettings(token,publicationId),[token,publicationId]));
-  const [role,setRole] = useState(''), [phone,setPhone] = useState(''), [accepted,setAccepted] = useState(false), [busy,setBusy] = useState(false), [error,setError] = useState('');
-  const [phoneError,setPhoneError] = useState<string|null>(null);
+  const { authentication } = useAuthSession();
+  const token = authentication.accessToken;
+  const router = useRouter();
+  const resource = usePatientResource(
+    useCallback(() => getMarriageSettings(token, publicationId), [token, publicationId]),
+  );
+  const [role, setRole] = useState('');
+  const [phone, setPhone] = useState('');
+  const [accepted, setAccepted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const phoneInput = useRef<HTMLInputElement>(null);
-  useEffect(() => { if (phoneError && !busy) phoneInput.current?.focus(); }, [phoneError,busy]);
-  const command = useRef<{ fingerprint: string; key: string }|null>(null), lock = useRef(false);
-  const data = resource.data, ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
-  return <ServicePage title={data?.title ?? 'خدمت شناخت پیش از ازدواج'} description="ابتدا شرایط و نقش خودت را بررسی کن؛ بعد فقط شماره همراهت را وارد کن." icon={HeartHandshake} backHref="/assessment" backLabel="خدمات و آزمون‌ها"><div className="service-detail space-y-5"><PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />{data && <>
-    <section className="service-card space-y-3"><h2>شرایط دو نفر</h2><strong>{formatRial(BigInt(data.amountRial))} تومان برای هر دو نفر</strong>{data.definition.roles.map(item => <p key={item.id} className="text-sm leading-7">{item.title}: حداقل {item.minimumAgeYears.toLocaleString('fa-IR')} سال؛ {item.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}</p>)}<p className="text-xs leading-7 text-muted-foreground">هر نفر آزمون مستقل خودش را انجام می‌دهد. پرداخت پس از پذیرش و رضایت هر دو نفر انجام می‌شود.</p></section>
-    {!data.eligibleRoles.length ? <div role="status" className="service-card space-y-3"><p>اطلاعات خودت را تکمیل کن یا شرایط شرکت در این خدمت را بررسی کن.</p><Link href={`/profile/edit?returnTo=${encodeURIComponent(`/assessment/marriage/new/${publicationId}${replacesId ? `?replaceRequestId=${replacesId}` : ''}`)}`} className={secondary}>تکمیل مشخصات و بازگشت به دعوت</Link></div> : <form className="space-y-4" onSubmit={async event => { event.preventDefault(); if (lock.current || !accepted || !ownRole) return; lock.current = true; setBusy(true); setError(''); setPhoneError(null); const body = { publicationId, initiatorRole: ownRole as 'FIRST'|'SECOND', recipientPhone: phone, consentPolicyVersionId: data.linkingPolicy.id, consentAccepted: true as const }; const fingerprint = JSON.stringify(body); if (command.current?.fingerprint !== fingerprint) command.current = { fingerprint,key:crypto.randomUUID() }; try { const request = replacesId ? await replaceMarriageRequest(token,replacesId,body,command.current.key) : await createMarriageRequest(token,body,command.current.key); router.push(marriageHref(`/assessment/marriage/requests/${request.id}`)); } catch (cause) { const fieldError = marriagePhoneError(cause); if (fieldError) { setPhoneError(fieldError); } else setError(marriageError(cause)); } finally { lock.current = false; setBusy(false); } }}>
-      <fieldset disabled={busy} className="space-y-4"><label className="block space-y-2 text-sm">نقش من<select required className={secondary} value={ownRole} onChange={event => setRole(event.target.value)}><option value="">انتخاب کنید</option>{data.definition.roles.filter(item => data.eligibleRoles.includes(item.id)).map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select></label><label className="block space-y-2 text-sm">شماره همراه شخص موردنظر<input ref={phoneInput} aria-invalid={!!phoneError} aria-describedby={phoneError ? "marriage-phone-error" : undefined} required type="tel" inputMode="tel" dir="ltr" maxLength={32} autoComplete="off" className={secondary} value={phone} onChange={event => { setPhone(event.target.value); setPhoneError(null); }} /></label>{phoneError && <p id="marriage-phone-error" role="alert" className="text-sm text-red-700">{phoneError}</p>}<p className="text-xs leading-7 text-muted-foreground">همراهت می‌تواند از قبل حساب داشته باشد یا پس از بازکردن دعوت حساب بسازد. دعوت به معنی تأیید شرایط شرکت نیست.</p><PolicyAcceptance policy={{ title: 'شرایط اتصال حساب‌ها', body: data.linkingPolicy.body }} accepted={accepted} onChange={setAccepted} disabled={busy} label="شرایط اتصال به همین همراه برای همین خدمت را می‌پذیرم." /><button className={button} disabled={!accepted || !ownRole} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{'در حال ساخت دعوت…'}</> : replacesId ? 'جایگزینی دعوت و دریافت لینک جدید' : 'ساخت دعوت و دریافت لینک'}</button>{(!accepted || !ownRole) && <p className="text-sm leading-7">{!ownRole ? 'نقش خودتان را انتخاب کنید.' : 'برای ساخت دعوت، شرایط اتصال را مطالعه و تأیید کنید.'}</p>}</fieldset>
-    </form>}{error && <p role="alert" className="text-sm leading-7 text-red-700">{error}</p>}
-  </>}</div></ServicePage>;
+  const command = useRef<{ fingerprint: string; key: string } | null>(null);
+  const lock = useRef(false);
+
+  useEffect(() => {
+    if (phoneError && !busy) phoneInput.current?.focus();
+  }, [phoneError, busy]);
+
+  const data = resource.data;
+  const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
+  const returnTo = '/assessment/marriage/new/' + publicationId +
+    (replacesId ? '?replaceRequestId=' + encodeURIComponent(replacesId) : '');
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!data || lock.current || !accepted || !ownRole) return;
+
+    lock.current = true;
+    setBusy(true);
+    setError('');
+    setPhoneError(null);
+
+    const body = {
+      publicationId,
+      initiatorRole: ownRole as 'FIRST' | 'SECOND',
+      recipientPhone: phone,
+      consentPolicyVersionId: data.linkingPolicy.id,
+      consentAccepted: true as const,
+    };
+    const fingerprint = JSON.stringify(body);
+    if (command.current?.fingerprint !== fingerprint) {
+      command.current = { fingerprint, key: crypto.randomUUID() };
+    }
+
+    try {
+      const request = replacesId
+        ? await replaceMarriageRequest(token, replacesId, body, command.current.key)
+        : await createMarriageRequest(token, body, command.current.key);
+      router.push(marriageHref('/assessment/marriage/requests/' + request.id));
+    } catch (cause) {
+      const fieldError = marriagePhoneError(cause);
+      if (fieldError) setPhoneError(fieldError);
+      else setError(marriageError(cause));
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+
+  return (
+    <ServicePage
+      title={data?.title ?? 'شناخت پیش از ازدواج'}
+      description="نقشت را مشخص کن و شمارهٔ همراهت را وارد کن تا لینک دعوت ساخته شود."
+      icon={HeartHandshake}
+      backHref="/assessment/couples"
+      backLabel="انتخاب خدمت"
+    >
+      <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
+        <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+
+        {data && (
+          <>
+            <div className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+              <p className="text-xs text-muted-foreground">هزینهٔ کل دو نفر</p>
+              <p className="mt-1 text-lg font-semibold text-foreground">
+                {formatRial(BigInt(data.amountRial))} تومان
+              </p>
+              <p className="mt-2 text-xs leading-6 text-muted-foreground">
+                هر نفر جداگانه پاسخ می‌دهد. پرداخت پس از پذیرش دعوت و رضایت هر دو نفر انجام می‌شود.
+              </p>
+              <details className="group mt-3 border-t border-border/60 pt-2">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+                  شرایط شرکت در این آزمون
+                  <ChevronDown aria-hidden="true" size={17} className="transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="space-y-1 pb-2 text-sm leading-7 text-muted-foreground">
+                  {data.definition.roles.map(item => (
+                    <p key={item.id}>
+                      {item.title}: حداقل {item.minimumAgeYears.toLocaleString('fa-IR')} سال؛
+                      {' '}{item.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}
+                    </p>
+                  ))}
+                </div>
+              </details>
+            </div>
+
+            {data.eligibleRoles.length === 0 ? (
+              <section role="status" className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+                <h2 className="text-base font-semibold">ابتدا مشخصاتت را بررسی کن</h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  برای انتخاب نقش در این آزمون، اطلاعات حساب و شرایط شرکت باید بررسی شود.
+                </p>
+                <Link
+                  href={'/profile/edit?returnTo=' + encodeURIComponent(returnTo)}
+                  className={secondary + ' mt-4'}
+                >
+                  تکمیل مشخصات و بازگشت
+                </Link>
+              </section>
+            ) : (
+              <form
+                onSubmit={submit}
+                className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5"
+              >
+                <h2 className="text-base font-semibold text-foreground">دعوت همراه</h2>
+                <p className="mt-1 text-sm leading-7 text-muted-foreground">
+                  همراهت می‌تواند پس از بازکردن لینک، وارد حساب خودش شود یا ثبت‌نام کند.
+                </p>
+
+                <fieldset disabled={busy} className="mt-5 space-y-4">
+                  <label className="block space-y-2 text-sm font-medium text-foreground">
+                    <span>نقش من</span>
+                    <select
+                      required
+                      value={ownRole}
+                      onChange={event => setRole(event.target.value)}
+                      className="block min-h-12 w-full rounded-xl border border-border bg-white px-3 py-2 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    >
+                      <option value="">انتخاب نقش</option>
+                      {data.definition.roles
+                        .filter(item => data.eligibleRoles.includes(item.id))
+                        .map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
+                    </select>
+                  </label>
+
+                  <label className="block space-y-2 text-sm font-medium text-foreground">
+                    <span>شماره موبایل همراه</span>
+                    <input
+                      ref={phoneInput}
+                      required
+                      type="tel"
+                      inputMode="tel"
+                      dir="ltr"
+                      maxLength={32}
+                      autoComplete="off"
+                      placeholder="09..."
+                      value={phone}
+                      aria-invalid={Boolean(phoneError)}
+                      aria-describedby={phoneError ? 'marriage-phone-error' : 'marriage-phone-help'}
+                      onChange={event => { setPhone(event.target.value); setPhoneError(null); }}
+                      className="block min-h-12 w-full rounded-xl border border-border bg-white px-3 py-2 text-left text-base font-normal text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    />
+                  </label>
+
+                  <p id="marriage-phone-help" className="text-xs leading-6 text-muted-foreground">
+                    فقط شمارهٔ همراه را لازم داریم؛ دعوت به‌معنی تأیید شرایط شرکت او نیست.
+                  </p>
+                  {phoneError && (
+                    <p id="marriage-phone-error" role="alert" className="text-sm text-red-700">
+                      {phoneError}
+                    </p>
+                  )}
+
+                  <PolicyAcceptance
+                    variant="compact"
+                    policy={{ title: 'شرایط اتصال حساب‌ها', body: data.linkingPolicy.body }}
+                    accepted={accepted}
+                    onChange={setAccepted}
+                    disabled={busy}
+                    label="اتصال حسابم به همین همراه برای این خدمت را می‌پذیرم."
+                  />
+
+                  <button
+                    type="submit"
+                    className={button}
+                    disabled={busy || !accepted || !ownRole}
+                    aria-busy={Boolean(busy)}
+                  >
+                    {busy ? (
+                      <><HeartbeatLoader />در حال ساخت دعوت…</>
+                    ) : replacesId ? (
+                      'جایگزینی دعوت و دریافت لینک جدید'
+                    ) : (
+                      'ساخت دعوت و دریافت لینک'
+                    )}
+                  </button>
+                </fieldset>
+                {error && <p role="alert" className="mt-3 text-sm leading-7 text-red-700">{error}</p>}
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </ServicePage>
+  );
 }
 
 export function MarriageRequestView({ id }: { id: string }) {
