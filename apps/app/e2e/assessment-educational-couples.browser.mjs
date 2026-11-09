@@ -28,7 +28,7 @@ try {
   for(const checkbox of await page.getByRole('checkbox').all())await checkbox.check();
   await accept.click();
   if(mode==='FREE'){await page.getByRole('button',{name:'شروع تست رایگان من',exact:true}).click();await page.waitForURL(`**/assessment/resume?grantId=${grant}`);assert.deepEqual(writes,['processing','sharing','free']);}
-  else{await page.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینهٔ ارزیابی هر دو نفر',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
+  else{await page.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینه تست دو نفره',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
   assert.deepEqual(errors,[]);console.log('PASS independent couple processing/disclosure and owned access or existing billing',mode,width);await page.close();
  }
  for(const width of [390,1440]){
