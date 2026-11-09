@@ -17,6 +17,7 @@ import { listEducationalAssessmentOfferings } from '@/lib/digital-services-api';
 import { marriageRequestLoader } from '@/lib/marriage-request-loader';
 import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
+import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
 import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
 const button = 'block min-h-11 w-full rounded-2xl bg-primary p-4 text-center text-sm font-bold text-white disabled:opacity-50';
 const secondary = 'block min-h-11 w-full rounded-2xl border border-border bg-white p-3 text-center text-sm font-semibold disabled:opacity-50';
@@ -225,33 +226,340 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 }
 
 export function MarriageRequestView({ id }: { id: string }) {
-  const { authentication,logout } = useAuthSession(); const token = authentication.accessToken;
-  const scope = `${id}:${authentication.user.id}`;
+  const { authentication, logout } = useAuthSession();
+  const token = authentication.accessToken;
+  const scope = id + ':' + authentication.user.id;
   const loader = useMemo(() => {
     const requestId = scope.split(':')[0];
-    return marriageRequestLoader(token => getMarriageRequest(token!,requestId), token => reviewMarriageRequest(token!,requestId));
+    return marriageRequestLoader(
+      accessToken => getMarriageRequest(accessToken!, requestId),
+      accessToken => reviewMarriageRequest(accessToken!, requestId),
+    );
   }, [scope]);
-  const resource = usePatientResource(useCallback(() => loader.load(token),[loader,token]));
+  const resource = usePatientResource(useCallback(() => loader.load(token), [loader, token]));
   const refresh = resource.refresh;
-  const [accepted,setAccepted] = useState(false), [busy,setBusy] = useState(false), [error,setError] = useState(''), [notice,setNotice] = useState('');
-  const [confirmCancel,setConfirmCancel] = useState(false);
-  const lock = useRef(false), smsKey = useRef<string|null>(null), data = resource.data;
+  const [accepted, setAccepted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [confirmCancel, setConfirmCancel] = useState(false);
+  const lock = useRef(false);
+  const smsKey = useRef<string | null>(null);
+  const data = resource.data;
+
   useEffect(() => {
     if (data?.status !== 'PENDING') return;
-    const timer = window.setInterval(() => { if (!lock.current && document.visibilityState === 'visible' && navigator.onLine) void refresh(); },30000);
+    const timer = window.setInterval(() => {
+      if (!lock.current && document.visibilityState === 'visible' && navigator.onLine) {
+        void refresh();
+      }
+    }, 30000);
     return () => window.clearInterval(timer);
-  },[data?.status,refresh]);
-  const retry = () => { loader.reviewAgain(); void resource.refresh(); };
-  const run = async (action: () => Promise<unknown>) => { if (lock.current) return; lock.current = true; setBusy(true); setError(''); try { if (loader.pending) await loader.pending.catch(() => null); await action(); loader.mutationSucceeded(); await resource.refresh(); } catch (cause) { setError(marriageError(cause)); } finally { lock.current = false; setBusy(false); } };
-  return <ServicePage title={data?.service.title ?? 'دعوت خدمت ازدواج'} description="دعوت فقط با حساب و شماره تأییدشده خودت قابل پذیرش است." icon={HeartHandshake} backHref="/assessment/marriage" backLabel="درخواست‌های من"><div className="service-detail space-y-4"><PatientResourceState variant="detail" {...resource} error={resource.error ? marriageError(loader.failure) : null} retry={retry} />{resource.error && !data && marriageAccountRecovery(loader.failure) && <div className="space-y-3"><p className="text-sm leading-7">با همان شماره‌ای که دعوت برایش ساخته شده، با کد پیامکی وارد شو. بازکردن لینک به‌تنهایی اجازهٔ پذیرش نمی‌دهد.</p><button className={secondary} onClick={() => void (async () => { if (await logout()) window.location.assign(marriageLoginUrl()); })()}>ورود دوباره با شماره دعوت‌شده</button></div>}{data && <>
-    <section className="service-card space-y-3"><h2>{statuses[data.status]}</h2>{data.isInitiator && data.recipientPhoneMasked && <p>شماره همراه دعوت‌شده: <bdi dir="ltr">{data.recipientPhoneMasked}</bdi></p>}<p className="text-sm">تاریخ دعوت: {new Date(data.createdAt).toLocaleString('fa-IR',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Tehran'})}</p>{!data.isInitiator && data.initiatorName && <p>دعوت‌کننده: {data.initiatorName}</p>}<p>نقش شما: {data.service.definition.roles.find(role => role.id === data.ownRole)?.title}</p>{data.service.definition.roles.map(role => <p key={role.id} className="text-sm leading-7">{role.title}: حداقل {role.minimumAgeYears.toLocaleString('fa-IR')} سال؛ {role.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}</p>)}<p>{formatRial(BigInt(data.service.amountRial))} تومان برای هر دو نفر</p></section>
-    {data.eligibilityNotConfirmed && <p role="status" className="service-card">شرایط شرکت در این خدمت هنوز تأیید نشده است.</p>}
-    {(!data.ownEligible || data.continuation?.profileRequired) && <div className="service-card space-y-3"><p>{ineligibility[data.ownIneligibilityReason ?? ''] ?? 'اطلاعات خودت را تکمیل کن یا شرایط نقش خودت را بررسی کن.'}</p>{(data.ownIneligibilityReason !== 'AGE_BELOW_MINIMUM' || data.continuation?.profileRequired) && <Link href={marriageHref(data.continuation?.profileRequired ? `/welcome?returnTo=${encodeURIComponent(data.invitationPath)}` : `/profile/edit?returnTo=${encodeURIComponent(data.invitationPath)}`)} className={data.continuation?.profileRequired ? button : secondary}>{data.continuation?.profileRequired ? 'تکمیل مشخصات و ادامه' : 'ویرایش مشخصات من'}</Link>}</div>}
-    {data.status === 'PENDING' && data.isInitiator && <section className="service-card space-y-4"><label className="block space-y-2 text-sm">لینک دعوت<input className={secondary} dir="ltr" readOnly value={typeof window === 'undefined' ? data.invitationPath : new URL(data.invitationPath,window.location.origin).toString()} onFocus={event => event.target.select()} /></label><button className={secondary} onClick={() => void navigator.clipboard.writeText(new URL(data.invitationPath,window.location.origin).toString()).then(() => setNotice('لینک کپی شد.')).catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'))}>کپی لینک دعوت</button><button className={button} disabled={busy || data.smsStatus === 'QUEUED' || data.smsStatus === 'SENDING'} onClick={() => void run(async () => { const key = smsKey.current ??= crypto.randomUUID(); await sendMarriageSms(token,id,key); smsKey.current = null; })} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{'در حال ثبت درخواست…'}</> : 'ارسال پیامک دعوت'}</button>{data.smsStatus && <p role="status" className="text-sm leading-7">{smsStatuses[data.smsStatus]}</p>}<Link aria-disabled={busy} onClick={event => { if (lock.current) event.preventDefault(); }} className={secondary} href={marriageHref(`/assessment/marriage/new/${data.service.publicationId}?replaceRequestId=${id}`)}>جایگزینی شماره همراه؛ لینک قبلی غیرفعال می‌شود</Link><button className={secondary} disabled={busy} onClick={() => setConfirmCancel(true)}>لغو این دعوت</button></section>}
-    {data.status === 'PENDING' && !data.isInitiator && data.ownEligible && !data.continuation?.profileRequired && <section className="space-y-4"><PolicyAcceptance policy={{ title: 'پذیرش نقش و دعوت', body: data.service.linkingPolicy.body }} accepted={accepted} onChange={setAccepted} disabled={busy} label="نقش خودم و شرایط اتصال برای همین خدمت را می‌پذیرم." /><button className={button} disabled={busy || !accepted} onClick={() => void run(() => acceptMarriageRequest(token,id,{ consentPolicyVersionId: data.service.linkingPolicy.id,consentAccepted:true }))} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{'در حال ثبت پذیرش…'}</> : 'پذیرش دعوت و ادامه'}</button>{!accepted && <p className="text-sm leading-7">برای ادامه، نقش و شرایط اتصال را مطالعه و تأیید کنید.</p>}</section>}
-    {data.status === 'ACCEPTED' && data.educationalId && !data.continuation?.profileRequired && <Link className={button} href={data.continuation?.nextPath ?? marriageHref(`/assessment/couples/educational/${data.educationalId}`)}>ادامه به رضایت، پرداخت و آزمون خودم</Link>}
-    {(data.status === 'CANCELLED' || data.status === 'REPLACED') && data.isInitiator && <Link className={secondary} href={marriageHref(`/assessment/marriage/new/${data.service.publicationId}`)}>ساخت دعوت جدید</Link>}
-  </>}{confirmCancel && <BottomSheet title="لغو دعوت" onClose={() => { if (!lock.current) setConfirmCancel(false); }}><p className="text-sm leading-8">با لغو دعوت، لینک فعلی برای پذیرش غیرفعال می‌شود. دعوت لغو شود؟</p><button className={button} disabled={busy} onClick={() => void run(async () => { await cancelMarriageRequest(token,id); setConfirmCancel(false); })} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{'در حال لغو…'}</> : 'تأیید لغو دعوت'}</button><button className={secondary} disabled={busy} onClick={() => setConfirmCancel(false)}>انصراف</button></BottomSheet>}{notice && <p role="status">{notice}</p>}{error && <p role="alert" className="text-sm leading-7 text-red-700">{error}</p>}</div></ServicePage>;
+  }, [data?.status, refresh]);
+
+  const retry = () => {
+    loader.reviewAgain();
+    void resource.refresh();
+  };
+
+  const run = async (action: () => Promise<unknown>) => {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    setError('');
+    try {
+      if (loader.pending) await loader.pending.catch(() => null);
+      await action();
+      loader.mutationSucceeded();
+      await resource.refresh();
+    } catch (cause) {
+      setError(marriageError(cause));
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
+
+  const guidance = data
+    ? describeMarriageRequest({
+        status: data.status,
+        isInitiator: data.isInitiator,
+        ownEligible: data.ownEligible,
+        profileRequired: Boolean(data.continuation?.profileRequired),
+        hasEducationalId: Boolean(data.educationalId),
+      })
+    : null;
+
+  const copyInvitation = () => {
+    if (!data) return;
+    const url = new URL(data.invitationPath, window.location.origin).toString();
+    void navigator.clipboard.writeText(url)
+      .then(() => setNotice('لینک دعوت کپی شد؛ آن را برای همراهت بفرست.'))
+      .catch(() => setNotice('لینک را از کادر بالا انتخاب و کپی کن.'));
+  };
+
+  return (
+    <ServicePage
+      title={data?.service.title ?? 'پیگیری دعوت'}
+      description="وضعیت دعوت و کار بعدی را همین‌جا ببین."
+      icon={HeartHandshake}
+      backHref="/assessment/marriage"
+      backLabel="دعوت‌های من"
+    >
+      <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
+        <PatientResourceState
+          variant="detail"
+          {...resource}
+          error={resource.error ? marriageError(loader.failure) : null}
+          retry={retry}
+        />
+
+        {resource.error && !data && marriageAccountRecovery(loader.failure) && (
+          <div className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+            <p className="text-sm leading-7 text-muted-foreground">
+              برای پذیرش دعوت باید با همان شمارهٔ موبایلی وارد شوی که دعوت برایش ارسال شده است.
+            </p>
+            <button
+              type="button"
+              className={secondary + ' mt-3'}
+              onClick={() => void (async () => {
+                if (await logout()) window.location.assign(marriageLoginUrl());
+              })()}
+            >
+              ورود با شمارهٔ دعوت‌شده
+            </button>
+          </div>
+        )}
+
+        {data && (
+          <>
+            <section aria-live="polite" className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+              <p className="text-xs font-medium text-primary">{statuses[data.status] ?? 'وضعیت دعوت'}</p>
+              <h2 className="mt-2 text-lg font-semibold leading-8 text-foreground">{guidance?.title}</h2>
+              <p className="mt-1 text-sm leading-7 text-muted-foreground">{guidance?.description}</p>
+
+              <dl className="mt-4 grid gap-2 border-t border-border/70 pt-4 text-sm sm:grid-cols-2">
+                {data.isInitiator && data.recipientPhoneMasked && (
+                  <div className="min-w-0">
+                    <dt className="text-xs text-muted-foreground">شمارهٔ همراه</dt>
+                    <dd className="mt-1 font-medium"><bdi dir="ltr">{data.recipientPhoneMasked}</bdi></dd>
+                  </div>
+                )}
+                {!data.isInitiator && data.initiatorName && (
+                  <div className="min-w-0">
+                    <dt className="text-xs text-muted-foreground">دعوت‌کننده</dt>
+                    <dd className="mt-1 font-medium">{data.initiatorName}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-xs text-muted-foreground">نقش شما</dt>
+                  <dd className="mt-1 font-medium">
+                    {data.service.definition.roles.find(role => role.id === data.ownRole)?.title ?? 'در حال بررسی'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-muted-foreground">هزینهٔ کل دو نفر</dt>
+                  <dd className="mt-1 font-medium">{formatRial(BigInt(data.service.amountRial))} تومان</dd>
+                </div>
+              </dl>
+
+              <details className="group mt-3 border-t border-border/60 pt-2">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-sm text-muted-foreground [&::-webkit-details-marker]:hidden">
+                  شرایط و جزئیات دعوت
+                  <ChevronDown aria-hidden="true" size={16} className="transition-transform group-open:rotate-180" />
+                </summary>
+                <div className="space-y-1 pb-1 text-xs leading-6 text-muted-foreground">
+                  <p>
+                    زمان دعوت: {new Date(data.createdAt).toLocaleString('fa-IR', {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                      timeZone: 'Asia/Tehran',
+                    })}
+                  </p>
+                  {data.service.definition.roles.map(role => (
+                    <p key={role.id}>
+                      {role.title}: حداقل {role.minimumAgeYears.toLocaleString('fa-IR')} سال؛
+                      {' '}{role.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}
+                    </p>
+                  ))}
+                </div>
+              </details>
+            </section>
+
+            {data.eligibilityNotConfirmed && (
+              <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm leading-7 text-amber-900">
+                شرایط شرکت در این خدمت هنوز تأیید نشده است.
+              </p>
+            )}
+
+            {(!data.ownEligible || data.continuation?.profileRequired) && (
+              <section className="rounded-2xl border border-border bg-white p-4 sm:p-5">
+                <p className="text-sm leading-7">
+                  {ineligibility[data.ownIneligibilityReason ?? ''] ??
+                    'برای ادامه، مشخصات و شرایط نقش خودت را بررسی کن.'}
+                </p>
+                {(data.ownIneligibilityReason !== 'AGE_BELOW_MINIMUM' ||
+                  data.continuation?.profileRequired) && (
+                  <Link
+                    href={marriageHref(
+                      data.continuation?.profileRequired
+                        ? '/welcome?returnTo=' + encodeURIComponent(data.invitationPath)
+                        : '/profile/edit?returnTo=' + encodeURIComponent(data.invitationPath),
+                    )}
+                    className={button + ' mt-4'}
+                  >
+                    {data.continuation?.profileRequired
+                      ? 'تکمیل مشخصات و ادامه'
+                      : 'ویرایش مشخصات من'}
+                  </Link>
+                )}
+              </section>
+            )}
+
+            {data.status === 'PENDING' && data.isInitiator && (
+              <section className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+                <label className="block space-y-2 text-sm">
+                  <span className="font-medium">لینک دعوت</span>
+                  <input
+                    dir="ltr"
+                    readOnly
+                    value={data.invitationPath}
+                    onFocus={event => event.currentTarget.select()}
+                    className="block min-h-12 w-full rounded-xl border border-border bg-muted/20 px-3 text-left text-sm text-foreground"
+                  />
+                </label>
+                <button type="button" className={button + ' mt-3'} disabled={busy} onClick={copyInvitation}>
+                  کپی لینک دعوت
+                </button>
+                <button
+                  type="button"
+                  className={secondary + ' mt-2'}
+                  disabled={busy || data.smsStatus === 'QUEUED' || data.smsStatus === 'SENDING'}
+                  onClick={() => void run(async () => {
+                    const key = smsKey.current ??= crypto.randomUUID();
+                    await sendMarriageSms(token, id, key);
+                    smsKey.current = null;
+                  })}
+                  aria-busy={Boolean(busy)}
+                >
+                  {busy ? <><HeartbeatLoader />در حال ثبت درخواست…</> : 'ارسال پیامک دعوت'}
+                </button>
+                {data.smsStatus && (
+                  <p role="status" className="mt-3 text-xs leading-6 text-muted-foreground">
+                    {smsStatuses[data.smsStatus] ?? 'وضعیت ارسال پیامک مشخص نیست.'}
+                  </p>
+                )}
+                <details className="mt-4 border-t border-border/70 pt-2">
+                  <summary className="flex min-h-11 cursor-pointer items-center text-sm text-muted-foreground">
+                    تغییر شماره یا لغو دعوت
+                  </summary>
+                  <div className="space-y-2 pb-1">
+                    <Link
+                      aria-disabled={busy}
+                      onClick={event => { if (lock.current) event.preventDefault(); }}
+                      className={secondary}
+                      href={marriageHref(
+                        '/assessment/marriage/new/' + data.service.publicationId +
+                        '?replaceRequestId=' + encodeURIComponent(id),
+                      )}
+                    >
+                      تغییر شمارهٔ همراه (لینک قبلی غیرفعال می‌شود)
+                    </Link>
+                    <button type="button" className={secondary} disabled={busy} onClick={() => setConfirmCancel(true)}>
+                      لغو این دعوت
+                    </button>
+                  </div>
+                </details>
+              </section>
+            )}
+
+            {data.status === 'PENDING' && !data.isInitiator &&
+              data.ownEligible && !data.continuation?.profileRequired && (
+                <section className="space-y-4">
+                  <PolicyAcceptance
+                    variant="compact"
+                    policy={{ title: 'پذیرش نقش و دعوت', body: data.service.linkingPolicy.body }}
+                    accepted={accepted}
+                    onChange={setAccepted}
+                    disabled={busy}
+                    label="نقش خودم و شرایط اتصال برای همین خدمت را می‌پذیرم."
+                  />
+                  <button
+                    type="button"
+                    className={button}
+                    disabled={busy || !accepted}
+                    onClick={() => void run(() => acceptMarriageRequest(token, id, {
+                      consentPolicyVersionId: data.service.linkingPolicy.id,
+                      consentAccepted: true,
+                    }))}
+                    aria-busy={Boolean(busy)}
+                  >
+                    {busy ? <><HeartbeatLoader />در حال ثبت پذیرش…</> : 'پذیرش دعوت و ادامه'}
+                  </button>
+                </section>
+              )}
+
+            {data.status === 'ACCEPTED' && data.educationalId &&
+              !data.continuation?.profileRequired && (
+                <Link
+                  className={button}
+                  href={data.continuation?.nextPath ??
+                    marriageHref('/assessment/couples/educational/' + data.educationalId)}
+                >
+                  ادامهٔ آزمون
+                  <ArrowLeft aria-hidden="true" size={18} className="inline-block align-middle" />
+                </Link>
+              )}
+
+            {data.status === 'ACCEPTED' && !data.educationalId && (
+              <button type="button" className={secondary} onClick={retry}>
+                به‌روزرسانی وضعیت
+              </button>
+            )}
+
+            {(data.status === 'CANCELLED' || data.status === 'REPLACED') &&
+              data.isInitiator && (
+                <Link
+                  className={secondary}
+                  href={marriageHref('/assessment/marriage/new/' + data.service.publicationId)}
+                >
+                  ساخت دعوت جدید
+                </Link>
+              )}
+          </>
+        )}
+
+        {notice && <p role="status" className="text-sm leading-7 text-primary">{notice}</p>}
+        {error && <p role="alert" className="text-sm leading-7 text-red-700">{error}</p>}
+      </div>
+
+      {confirmCancel && (
+        <BottomSheet
+          title="لغو دعوت"
+          onClose={() => { if (!lock.current) setConfirmCancel(false); }}
+        >
+          <p className="text-sm leading-8">
+            با لغو دعوت، لینک فعلی برای پذیرش غیرفعال می‌شود. دعوت لغو شود؟
+          </p>
+          <button
+            type="button"
+            className={button}
+            disabled={busy}
+            onClick={() => void run(async () => {
+              await cancelMarriageRequest(token, id);
+              setConfirmCancel(false);
+            })}
+            aria-busy={Boolean(busy)}
+          >
+            {busy ? <><HeartbeatLoader />در حال لغو…</> : 'تأیید لغو دعوت'}
+          </button>
+          <button type="button" className={secondary} disabled={busy} onClick={() => setConfirmCancel(false)}>
+            انصراف
+          </button>
+        </BottomSheet>
+      )}
+    </ServicePage>
+  );
 }
 
 export function MarriageHistory() {
