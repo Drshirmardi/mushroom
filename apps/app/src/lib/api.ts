@@ -1,5 +1,6 @@
 import { analyticsFetch } from '../../../../config/analytics-browser';
 import { currentInvitationContext, invitationServiceRoute } from './marriage-context';
+import { isCoupleSelectionRoute } from './couples-flow';
 import { createApiClient, createSessionAwareFetch } from "@sabz-zendegi/api-client";
 import { runtimePublicUrl } from "./runtime-config";
 
@@ -25,4 +26,15 @@ export const apiClient = createApiClient({
 export const setAccessTokenProvider = sessionTransport.setAccessTokenProvider;
 export const loginUrl = new URL("/login", webBaseUrl).toString();
 
-export function marriageLoginUrl() { const url = new URL(loginUrl); if (currentInvitationContext() || invitationServiceRoute(window.location.pathname) || /^\/assessment\/marriage(?:\/|$)/.test(window.location.pathname)) url.searchParams.set('next', window.location.href); return url.toString(); }
+export function marriageLoginUrl() {
+  const url = new URL(loginUrl);
+  if (typeof window !== 'undefined' && (
+    currentInvitationContext() ||
+    invitationServiceRoute(window.location.pathname) ||
+    /^\/assessment\/marriage(?:\/|$)/.test(window.location.pathname) ||
+    isCoupleSelectionRoute(window.location.pathname, window.location.search)
+  )) {
+    url.searchParams.set('next', window.location.href);
+  }
+  return url.toString();
+}
