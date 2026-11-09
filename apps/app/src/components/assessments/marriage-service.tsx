@@ -513,7 +513,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               )}
 
             {data.status === 'ACCEPTED' && data.educationalId &&
-              data.ownEligible && !data.continuation?.profileRequired && (
+              !data.continuation?.profileRequired && (
                 <EducationalCoupleWorkspace
                   token={token}
                   userId={authentication.user.id}
@@ -649,7 +649,7 @@ export function MarriageOffers({ onSelect }: { onSelect?: (publicationId: string
   );
 
   return (
-    <section aria-label="انتخاب خدمت شناخت پیش از ازدواج" className="space-y-4">
+    <section aria-label="انتخاب تست دو نفره" className="space-y-4">
       <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
       {resource.data?.total === 0 && (
@@ -669,7 +669,7 @@ export function MarriageOffers({ onSelect }: { onSelect?: (publicationId: string
           >
             <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
             <p className="mt-1 text-sm leading-7 text-muted-foreground">
-              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شمارهٔ موبایل همراه را لازم داری.
+              هر نفر جداگانه پاسخ می‌ده؛ فقط شماره موبایل نفر دوم رو لازم داری.
             </p>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
               <span className="text-sm font-semibold text-foreground">
