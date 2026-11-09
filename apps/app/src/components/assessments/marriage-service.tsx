@@ -19,6 +19,7 @@ import { marriageLoginUrl } from '@/lib/api';
 import { formatRial } from '@/lib/wallet-money';
 import { describeMarriageRequest } from '@/lib/marriage-request-guidance';
 import { canStartCoupleTest, coupleStartHref } from '@/lib/couples-flow';
+import { EducationalCoupleWorkspace } from './educational-couples';
 import { reviewMarriageRequest, getMarriageSettings, replaceMarriageRequest, createMarriageRequest, getMarriageRequest, acceptMarriageRequest, cancelMarriageRequest, sendMarriageSms, listMarriageRequests } from '@/lib/marriage-api';
 const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const secondary = 'flex min-h-11 w-full items-center justify-center rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
@@ -310,8 +311,8 @@ export function MarriageRequestView({ id }: { id: string }) {
       title={data?.service.title ?? 'پیگیری دعوت'}
       description="وضعیت دعوت و کار بعدی را همین‌جا ببین."
       icon={HeartHandshake}
-      backHref="/assessment/marriage"
-      backLabel="دعوت‌های من"
+      backHref="/assessment/couples"
+      backLabel="تست‌های دو نفره"
     >
       <div className="service-detail mx-auto w-full max-w-2xl space-y-4">
         <PatientResourceState
@@ -507,15 +508,14 @@ export function MarriageRequestView({ id }: { id: string }) {
               )}
 
             {data.status === 'ACCEPTED' && data.educationalId &&
-              !data.continuation?.profileRequired && (
-                <Link
-                  className={button}
-                  href={data.continuation?.nextPath ??
-                    marriageHref('/assessment/couples/educational/' + data.educationalId)}
-                >
-                  ادامهٔ تست
-                  <ArrowLeft aria-hidden="true" size={18} className="inline-block align-middle" />
-                </Link>
+              data.ownEligible && !data.continuation?.profileRequired && (
+                <section aria-label="ادامه تست دو نفره" className="space-y-3">
+                  <EducationalCoupleWorkspace
+                    token={token}
+                    userId={authentication.user.id}
+                    id={data.educationalId}
+                  />
+                </section>
               )}
 
             {data.status === 'ACCEPTED' && !data.educationalId && (
@@ -528,7 +528,7 @@ export function MarriageRequestView({ id }: { id: string }) {
               data.isInitiator && (
                 <Link
                   className={secondary}
-                  href={marriageHref('/assessment/marriage/new/' + data.service.publicationId)}
+                  href={coupleStartHref(data.service.publicationId)}
                 >
                   ساخت دعوت جدید
                 </Link>
