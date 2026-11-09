@@ -112,6 +112,7 @@ export function MarriageNew({ publicationId, replacesId, embedded = false }: { p
         {data && (
           <>
             <div className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+              {embedded && <h2 className="mb-3 text-lg font-semibold leading-8 text-foreground">{data.title}</h2>}
               <p className="text-xs text-muted-foreground">هزینهٔ کل دو نفر</p>
               <p className="mt-1 text-lg font-semibold text-foreground">
                 {formatRial(BigInt(data.amountRial))} تومان
