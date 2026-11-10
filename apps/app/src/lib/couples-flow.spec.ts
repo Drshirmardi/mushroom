@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coupleStartHref, selectedCoupleTest, prioritizeCoupleRequests, canStartCoupleTest, isCoupleSelectionRoute } from './couples-flow';
+import { coupleStartHref, selectedCoupleTest, prioritizeCoupleRequests, canStartCoupleTest, isCoupleSelectionRoute, legacyCouplesDestination } from './couples-flow';
 
 const a = '11111111-1111-4111-8111-111111111111';
 const b = '22222222-2222-4222-8222-222222222222';
@@ -33,6 +33,16 @@ describe('single couple test journey navigation', () => {
     expect(canStartCoupleTest({ servicePurpose: 'EDUCATIONAL', priceMode: 'PAID' })).toBe(false);
   });
 });
+
+
+  it('moves retired legacy hub URLs into the canonical couples journey', () => {
+    expect(legacyCouplesDestination(null)).toBe('/assessment/couples?history=1');
+    expect(legacyCouplesDestination(undefined)).toBe('/assessment/couples?history=1');
+    expect(legacyCouplesDestination(a)).toBe('/assessment/couples?start=' + a);
+    expect(legacyCouplesDestination('not-a-uuid')).toBe('/assessment/couples?history=1');
+    expect(legacyCouplesDestination('//external.example')).toBe('/assessment/couples?history=1');
+    expect(legacyCouplesDestination(a + '&evil=1')).toBe('/assessment/couples?history=1');
+  });
 
 describe('couple test overview', () => {
   it('prioritizes a received pending invitation over a sent one and retains every other row', () => {
