@@ -2,7 +2,7 @@ import { Prisma } from '../../../generated/prisma/client';
 
 export const ownedAssessmentGrantWhere: Prisma.AssessmentAccessGrantWhereInput = {
   processingConsent: { withdrawnAt: null },
-  OR: [{ purchase: { intent: { purpose: 'ASSESSMENT', status: 'PAID' } } }, { purchaseId: null, method: 'FREE', freeAdminPublicationId: { not: null } }],
+  OR: [{ purchase: { intent: { purpose: { in: ['ASSESSMENT', 'MARRIAGE_REQUEST'] }, status: 'PAID' } } }, { purchaseId: null, method: 'FREE', freeAdminPublicationId: { not: null } }],
 };
 
 // Null contexts are grandfathered; SQL prevents new unentitled inserts for governed sources.

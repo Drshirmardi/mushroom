@@ -5,10 +5,22 @@ export type MarriageSettings = components['schemas']['MarriageSettingsDto'];
 export type MarriageRequest = components['schemas']['MarriageRequestDto'];
 type MarriageRequestFilters = Pick<NonNullable<paths['/v1/patients/me/marriage-requests']['get']['parameters']['query']>,'status'|'direction'>;
 export const getMarriageSettings = (token: string,id: string) => data(apiClient.GET('/v1/patients/me/marriage-requests/settings/{id}', { headers: auth(token), params: { path: { id } } }));
+export const createMarriagePrepaidIntent = (token: string, publicationId: string, termsConsentRecordId: string, key: string) =>
+  data(apiClient.POST('/v1/patients/me/marriage-requests/settings/{id}/billing-intents', {
+    headers: auth(token),
+    params: { path: { id: publicationId }, header: { 'Idempotency-Key': key } },
+    body: { termsConsentRecordId },
+  }));
+export const refundMarriagePrepayment = (token: string, publicationId: string) =>
+  data(apiClient.POST('/v1/patients/me/marriage-requests/settings/{id}/refund', {
+    headers: auth(token),
+    params: { path: { id: publicationId } },
+  }));
 export const createMarriageRequest = (token: string,body: components['schemas']['MarriageRequestCreateDto'],key: string) => data(apiClient.POST('/v1/patients/me/marriage-requests', { headers: auth(token), params: { header: { 'Idempotency-Key': key } }, body }));
 export const getMarriageRequest = (token: string,id: string) => data(apiClient.GET('/v1/patients/me/marriage-requests/{id}', { headers: auth(token), params: { path: { id } } }));
 export const listMarriageRequests = (token: string,page = 1, filters: MarriageRequestFilters = {}) => data(apiClient.GET('/v1/patients/me/marriage-requests', { headers: auth(token), params: { query: { page, pageSize: 20, ...filters } } }));
 export const acceptMarriageRequest = (token: string,id: string,body: components['schemas']['MarriageRequestAcceptDto']) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/accept', { headers: auth(token), params: { path: { id } }, body }));
+export const declineMarriageRequest = (token: string, id: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/decline', { headers: auth(token), params: { path: { id } } }));
 export const cancelMarriageRequest = (token: string,id: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/cancel', { headers: auth(token), params: { path: { id } } }));
 export const sendMarriageSms = (token: string,id: string,key: string) => data(apiClient.POST('/v1/patients/me/marriage-requests/{id}/sms', { headers: auth(token), params: { path: { id }, header: { 'Idempotency-Key': key } } }));
 

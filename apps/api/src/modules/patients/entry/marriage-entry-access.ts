@@ -44,7 +44,7 @@ export class MarriageEntryAccess {
     const receipt = /^\/v1\/patients\/me\/assessment-purchases\/([^/]+)$/.exec(path);
     if (method === 'GET' && receipt && uuid.test(receipt[1])) return !!await this.prisma.assessmentPurchase.count({ where: { id: receipt[1], patientId: patient.id, clinicId:patient.clinicId, educationalCoupleSessionId:row.educationalId } });
     const billing = /^\/v1\/patients\/me\/billing\/intents\/([^/]+)(?:\/(wallet-payment|gateway-attempts|cancel))?$/.exec(path);
-    if (billing && uuid.test(billing[1]) && (method === 'GET' && !billing[2] || method === 'POST' && !!billing[2])) return !!await this.prisma.billingIntent.count({ where: { id: billing[1], patientId: patient.id, clinicId: patient.clinicId, purpose: 'ASSESSMENT', assessmentPurchase: { educationalCoupleSessionId: row.educationalId } } });
+    if (billing && uuid.test(billing[1]) && (method === 'GET' && !billing[2] || method === 'POST' && !!billing[2])) return !!await this.prisma.billingIntent.count({ where: { id: billing[1], patientId: patient.id, clinicId: patient.clinicId, purpose: { in: ['ASSESSMENT', 'MARRIAGE_REQUEST'] }, assessmentPurchase: { educationalCoupleSessionId: row.educationalId } } });
     return false;
   }
 }

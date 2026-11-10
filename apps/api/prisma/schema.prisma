@@ -782,6 +782,7 @@ model BillingIntent {
   @@map("billing_intents")
   programPurchaseId String? @unique(map: "billing_intents_program_purchase_key") @map("program_purchase_id") @db.Uuid
   programPurchase ProgramPurchase? @relation(fields: [programPurchaseId], references: [id], onDelete: Restrict)
+  marriageRequests MarriageServiceRequest[] @relation("MarriagePayment")
 }
 
 model BillingGatewayAttempt {
@@ -4145,6 +4146,7 @@ model MarriageServiceRequest {
   encryptionKeyVersion String @map("encryption_key_version") @db.VarChar(40)
   linkId String @unique @map("link_id") @db.Uuid
   educationalId String? @unique @map("educational_id") @db.Uuid
+  paidIntentId String? @map("paid_intent_id") @db.Uuid
   status String @default("PENDING") @db.VarChar(24)
   recipientIneligible Boolean @default(false) @map("recipient_ineligible")
   idempotencyKey String @map("idempotency_key") @db.VarChar(200)
@@ -4157,6 +4159,7 @@ model MarriageServiceRequest {
   recipient PatientProfile? @relation("MarriageRecipient", fields: [recipientPatientId], references: [id], onDelete: Restrict)
   link CoupleSession @relation(fields: [linkId], references: [id], onDelete: Restrict)
   educational EducationalCoupleSession? @relation(fields: [educationalId], references: [id], onDelete: Restrict)
+  paidIntent BillingIntent? @relation("MarriagePayment", fields: [paidIntentId], references: [id], onDelete: Restrict)
   deliveries MarriageInvitationDelivery[]
   @@unique([initiatorPatientId, idempotencyKey])
   @@index([recipientHash, createdAt, id])

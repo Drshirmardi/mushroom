@@ -7,7 +7,7 @@ import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '
 import { financialKey, lockFinancial, pendingAttempts } from '../../../billing/billing.policy';
 import { AssessmentAccessService } from '../../access/assessment-access.service';
 import { canonicalAssessmentJson } from '../../domain/assessment-canonical-json';
-import { adminPublicationHash } from '../../purchases/assessment-admin-purchase.service';
+import { adminPublicationHash, type AdminPurchaseSnapshot } from '../../purchases/assessment-admin-purchase.service';
 import { ClinicalAccessAuditService } from '../../../clinical/clinical-access-audit.service';
 import type { EducationalCoupleAcceptDto, EducationalCoupleCreateDto, EducationalCoupleQueryDto } from './educational-couple.dto';
 
@@ -84,6 +84,9 @@ export class EducationalCoupleService {
         await tx.educationalCoupleParticipant.update({ where: { id: self.id }, data: { processingConsentRecordId: body.processingConsentRecordId, disclosureContentHash: body.disclosureContentHash, acceptedSessionId: ctx.actorSessionId, acceptedAt: new Date() } });
       }
       await this.audit(tx, 'COUPLE_ASSESSMENT_CONSENT_ACCEPTED', id, ctx);
+      if (await this.mutual(tx, id)) {
+        await this.issuePrepaidMarriageGrantsIfApplicable(tx, id, ctx);
+      }
       const next = await tx.educationalCoupleSession.findUniqueOrThrow({ where: { id }, include }); return this.project(next, patient.id, await this.mutual(tx, id), await this.isCurrent(tx, next.publication.offeringVersionId));
     });
   }
@@ -167,4 +170,121 @@ export class EducationalCoupleService {
   private async isCurrent(tx: Tx, offeringId: string) { return !!(await tx.$queryRaw<{ current: boolean }[]>(Prisma.sql`SELECT assessment_admin_offering_current(${offeringId}::uuid) AND assessment_publicly_available((SELECT assessment_version_id FROM assessment_offering_versions WHERE id=${offeringId}::uuid)) AS current`))[0]?.current; }
   private project(row: Row, selfId: string, mutual: boolean, newAccessAvailable: boolean) { const self = row.participants.find(p => p.patientId === selfId)!, offer = row.publication.offeringVersion; return { newAccessAvailable, id: row.id, coupleSessionId: row.coupleSessionId, publicationId: row.publicationId, contextHash: row.contextHash, title: offer.title, priceMode: offer.priceMode, amountRial: offer.amountRial!.toString(), currency: 'IRR', participants: row.participants.map(p => ({ slot: p.slot, isSelf: p.patientId === selfId, consentState: p.sharingWithdrawnAt || p.processingConsent?.withdrawnAt ? 'WITHDRAWN' : p.acceptedAt ? 'ACCEPTED' : 'PENDING' })), ownAccessGrantId: self.accessGrant?.id ?? null, ownSubmissionId: self.accessGrant?.submission?.id ?? null, ownProcessingConsentRecordId: self.processingConsentRecordId, mutualConsentComplete: mutual, jointResultAvailable: mutual && row.participants.every(p => p.accessGrant?.submission?.state === 'COMPLETE' && !p.accessGrant.submission.invalidatedAt) }; }
   private async audit(tx: Tx, action: string, id: string, ctx: Context) { await tx.auditEvent.create({ data: { action, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, subjectType: 'EDUCATIONAL_COUPLE_ASSESSMENT', subjectId: id, requestId: ctx.requestId.slice(0,128), ipAddress: ctx.ipAddress, metadata: {} } }); }
+
+  private async issuePrepaidMarriageGrantsIfApplicable(tx: Tx, educationalId: string, ctx: Context) {
+    const marriageRequest = await tx.marriageServiceRequest.findFirst({
+      where: { educationalId },
+      include: { paidIntent: true },
+    });
+    if (!marriageRequest?.paidIntent || marriageRequest.paidIntent.status !== 'PAID') return;
+
+    const existingPurchase = await tx.assessmentPurchase.findFirst({
+      where: { educationalCoupleSessionId: educationalId },
+    });
+    if (existingPurchase) return;
+
+    const session = await tx.educationalCoupleSession.findUniqueOrThrow({
+      where: { id: educationalId },
+      include,
+    });
+    const publication = session.publication;
+    const purchaseId = randomUUID();
+
+    let termsConsentRecordId = (marriageRequest.paidIntent.snapshot as { termsConsentRecordId?: string })?.termsConsentRecordId;
+    if (!termsConsentRecordId) {
+      const termsPolicy = publication.offeringVersion.consentPolicies.find(p => p.policyKey === 'ASSESSMENT_PURCHASE_TERMS');
+      if (termsPolicy) {
+        const termsRec = await tx.patientConsentRecord.findFirst({
+          where: {
+            patientId: marriageRequest.initiatorPatientId,
+            policyVersionId: termsPolicy.id,
+            contentHash: termsPolicy.contentHash,
+            withdrawnAt: null,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+        termsConsentRecordId = termsRec?.id;
+      }
+    }
+
+    const initiatorParticipant = session.participants.find(p => p.patientId === marriageRequest.initiatorPatientId);
+    if (!initiatorParticipant?.processingConsentRecordId || !termsConsentRecordId) return;
+
+    const snapshot: AdminPurchaseSnapshot = {
+      schemaVersion: 3,
+      publicationAuthority: 'ADMIN_PUBLISHED',
+      purchaseId,
+      publicationId: publication.id,
+      publicationHash: adminPublicationHash(publication),
+      assessmentVersionId: publication.offeringVersion.assessmentVersionId,
+      processingConsentRecordId: initiatorParticipant.processingConsentRecordId,
+      termsConsentRecordId,
+      title: publication.offeringVersion.title,
+      amountRial: marriageRequest.paidIntent.amountRial.toString(),
+      currency: 'IRR',
+      educationalCoupleSessionId: session.id,
+      contextHash: session.contextHash,
+      beneficiaries: session.participants.map(p => ({
+        participantId: p.id,
+        patientId: p.patientId,
+        slot: p.slot,
+        processingConsentRecordId: p.processingConsentRecordId!,
+      })),
+    };
+
+    await tx.assessmentPurchase.create({
+      data: {
+        id: purchaseId,
+        clinicId: session.clinicId,
+        patientId: marriageRequest.initiatorPatientId,
+        adminPublicationId: publication.id,
+        educationalCoupleSessionId: session.id,
+        publicationHash: snapshot.publicationHash,
+        processingConsentRecordId: snapshot.processingConsentRecordId,
+        termsConsentRecordId: snapshot.termsConsentRecordId,
+        amountRial: marriageRequest.paidIntent.amountRial,
+        snapshot,
+      },
+    });
+
+    await tx.billingIntent.update({
+      where: { id: marriageRequest.paidIntent.id },
+      data: { assessmentPurchaseId: purchaseId },
+    });
+
+    let walletJournalId: string | undefined;
+    let gatewayAttemptId: string | undefined;
+    if (marriageRequest.paidIntent.method === 'WALLET') {
+      const journal = await tx.walletJournal.findFirstOrThrow({
+        where: { reference: `intent:${marriageRequest.paidIntent.id}:debit`, kind: 'PAYMENT' },
+      });
+      walletJournalId = journal.id;
+    } else if (marriageRequest.paidIntent.method === 'GATEWAY') {
+      const attempt = await tx.billingGatewayAttempt.findFirstOrThrow({
+        where: { intentId: marriageRequest.paidIntent.id, status: 'VERIFIED', compensated: false },
+        orderBy: { verifiedAt: 'desc' },
+      });
+      gatewayAttemptId = attempt.id;
+    }
+
+    for (const b of snapshot.beneficiaries!) {
+      await tx.assessmentAccessGrant.create({
+        data: {
+          clinicId: session.clinicId,
+          patientId: b.patientId,
+          purchaseId,
+          educationalCoupleParticipantId: b.participantId,
+          slot: b.slot,
+          assessmentVersionId: snapshot.assessmentVersionId,
+          processingConsentRecordId: b.processingConsentRecordId,
+          method: marriageRequest.paidIntent.method!,
+          walletJournalId,
+          gatewayAttemptId,
+        },
+      });
+    }
+
+    await tx.$executeRaw(Prisma.sql`SELECT assessment_purchase_final_payment_check(${purchaseId}::uuid)`);
+    await this.audit(tx, 'COUPLE_ASSESSMENT_PREPAID_ACCESS_GRANTED', educationalId, ctx);
+  }
 }

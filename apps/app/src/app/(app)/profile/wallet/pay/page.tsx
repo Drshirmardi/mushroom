@@ -45,7 +45,18 @@ function Payment() {
           ) : intent.status === "CANCELLED" ? (
             <div role="status" className="space-y-3 rounded-2xl border border-border bg-white p-4">
               <p className="text-sm">{intent.purpose === "TOPUP" ? "درخواست شارژ کیف پول لغو شده است." : "این درخواست پرداخت لغو شده است."} این لغو فقط مربوط به همین درخواست است؛ درخواست‌های دیگر جداگانه پیگیری می‌شوند.</p>
-              <Link href="/" className="block rounded-xl bg-primary p-3 text-center text-sm font-medium text-white">بازگشت به خانه و قدم بعدی</Link>
+              <Link
+                href={
+                  intent.purpose === "MARRIAGE_REQUEST"
+                    ? intent.marriagePublicationId
+                      ? `/assessment/couples?start=${encodeURIComponent(intent.marriagePublicationId)}`
+                      : "/assessment/couples"
+                    : "/"
+                }
+                className="block rounded-xl bg-primary p-3 text-center text-sm font-medium text-white"
+              >
+                {intent.purpose === "MARRIAGE_REQUEST" ? "بازگشت به صفحهٔ تست دو نفره" : "بازگشت به خانه و قدم بعدی"}
+              </Link>
             </div>
           ) : <p className="text-sm text-muted-foreground">برای این وضعیت امکان پرداخت جدید وجود ندارد. وضعیت نهایی را بررسی کنید.</p>}
         </>}

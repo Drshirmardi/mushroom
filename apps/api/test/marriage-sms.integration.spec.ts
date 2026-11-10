@@ -12,6 +12,7 @@ import { SmsProviderRegistry } from '../src/modules/communications/sms/sms-provi
 import { SmsRuntimeService } from '../src/modules/communications/sms/sms-runtime.service';
 import { MarriageSmsService } from '../src/modules/assessments/couples/marriage-sms.service';
 import { MarriageRequestService } from '../src/modules/assessments/couples/marriage-request.service';
+import { WalletService } from '../src/modules/billing/wallet.service';
 import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 
@@ -23,7 +24,19 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('marriage SMS
   let responseMode='success',release:()=>void=()=>{},observed:()=>void=()=>{};
   const phone=()=>`+989${Math.floor(Math.random()*900000000+100000000)}`;
   const http=(actor:typeof admin,method:'GET'|'POST'|'PATCH',path:string,payload?:object,key=randomUUID())=>app.inject({method,url:`/v1${path}`,headers:{authorization:`Bearer ${actor.token}`,origin:'http://localhost:3000','idempotency-key':key},...(payload?{payload}:{})});
-  const createRequest=async(recipientPhone=phone(),actor=sender)=>{const r=await http(actor,'POST','/patients/me/marriage-requests',{publicationId,initiatorRole:'FIRST',recipientPhone,consentPolicyVersionId:policyId,consentAccepted:true});expect(r.statusCode,r.body).toBe(201);return r.json().id as string;};
+  const createRequest=async(recipientPhone=phone(),actor=sender)=>{
+    const settingsRes=await http(actor,'GET',`/patients/me/marriage-requests/settings/${publicationId}`);expect(settingsRes.statusCode,settingsRes.body).toBe(200);
+    if(settingsRes.json().prepayment?.status!=='PAID'){
+      const terms=settingsRes.json().termsPolicy as {id:string;contentHash:string};
+      const termsConsent=await http(actor,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(termsConsent.statusCode,termsConsent.body).toBe(201);
+      const profile=await db.patientProfile.findUniqueOrThrow({where:{userId:actor.userId}});
+      const wallet=app.get(WalletService),summary=await wallet.summary(profile);
+      await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},profile.id,{type:'CREDIT',amountToman:'20000',expectedVersion:summary.version,reason:'Marriage SMS fixture prepay'},randomUUID());
+      const intentRes=await http(actor,'POST',`/patients/me/marriage-requests/settings/${publicationId}/billing-intents`,{termsConsentRecordId:termsConsent.json().id});expect(intentRes.statusCode,intentRes.body).toBe(201);
+      const paidRes=await http(actor,'POST',`/patients/me/billing/intents/${intentRes.json().id}/wallet-payment`);expect(paidRes.statusCode,paidRes.body).toBe(201);
+    }
+    const r=await http(actor,'POST','/patients/me/marriage-requests',{publicationId,initiatorRole:'FIRST',recipientPhone,consentPolicyVersionId:policyId,consentAccepted:true});expect(r.statusCode,r.body).toBe(201);return r.json().id as string;
+  };
   beforeAll(async()=>{
     assertPatientJourneyTestDatabase();Logger.overrideLogger(false);
     app=await createApiApplication();await app.init();db=app.get(PrismaService);sms=app.get(MarriageSmsService);

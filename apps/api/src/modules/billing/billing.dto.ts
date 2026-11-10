@@ -9,7 +9,7 @@ export class BillingPageQuery {
 }
 export class BillingAdminQuery extends BillingPageQuery {
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') patientId?: string;
-  @ApiPropertyOptional({ enum: ['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT'] }) @IsOptional() @IsIn(['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT']) purpose?: string;
+  @ApiPropertyOptional({ enum: ['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT', 'MARRIAGE_REQUEST'] }) @IsOptional() @IsIn(['TOPUP', 'ORDER', 'APPOINTMENT', 'ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT', 'MARRIAGE_REQUEST']) purpose?: string;
   @ApiPropertyOptional({ enum: ['PENDING', 'PAID', 'EXPIRED', 'CANCELLED', 'COMPENSATED'] }) @IsOptional() @IsIn(['PENDING', 'PAID', 'EXPIRED', 'CANCELLED', 'COMPENSATED']) status?: string;
 }
 export class WalletAmountDto {
@@ -95,6 +95,7 @@ export class BillingPaymentMethodDto {
 export class BillingIntentDto {
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the PROGRAM target only' }) programPurchaseId?: string | null;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the ASSESSMENT target only' }) assessmentPurchaseId?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the MARRIAGE_REQUEST target only' }) marriagePublicationId?: string | null;
   @ApiPropertyOptional({ type: BillingPaymentMethodDto, isArray: true }) methods?: BillingPaymentMethodDto[];
   @ApiProperty() id!: string;
   @ApiProperty() purpose!: string;

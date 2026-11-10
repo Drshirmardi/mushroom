@@ -31,6 +31,7 @@ const retryHref = (intent: BillingIntent): string | null => {
     case 'APPOINTMENT':
       return `/appointments/book/pay?intentId=${encodeURIComponent(intent.id)}`;
     case 'ASSESSMENT':
+    case 'MARRIAGE_REQUEST':
     case 'PROGRAM':
       return `/profile/wallet/pay?intentId=${encodeURIComponent(intent.id)}`;
     default:
@@ -66,34 +67,42 @@ function PaymentResult() {
   const retry = intent ? retryHref(intent) : null;
 
   const invitation = currentInvitationContext();
-  const primaryTarget = invitation
-    ? { href: `/assessment/marriage/requests/${invitation}`, label: 'ادامه تست دو نفره' }
-    : intent
-      ? intent.purpose === 'ORDER' && intent.orderId
-        ? {
-            href: `/store/order-tracking?orderId=${encodeURIComponent(intent.orderId)}`,
-            label: 'پیگیری سفارش',
-          }
-        : intent.purpose === 'APPOINTMENT'
-          ? { href: '/appointments', label: 'مشاهدهٔ نوبت‌ها' }
-          : intent.purpose === 'ENTRY_ASSESSMENT'
-            ? { href: '/welcome', label: 'ادامهٔ تست ورود اولیه' }
-            : intent.purpose === 'ASSESSMENT'
-              ? {
-                  href: intent.assessmentPurchaseId
-                    ? `/assessment/purchases/${encodeURIComponent(intent.assessmentPurchaseId)}`
-                    : '/assessment/couples',
-                  label: 'پیگیری ارزیابی و دسترسی',
-                }
-              : intent.purpose === 'PROGRAM'
-                ? {
-                    href: intent.programPurchaseId
-                      ? `/programs/purchases/${encodeURIComponent(intent.programPurchaseId)}`
-                      : '/programs',
-                    label: 'مشاهدهٔ برنامه و دسترسی',
-                  }
-                : { href: '/profile/wallet', label: 'بازگشت به کیف پول' }
-      : { href: '/profile/wallet', label: 'بازگشت به کیف پول' };
+  const primaryTarget =
+    intent?.purpose === 'MARRIAGE_REQUEST'
+      ? {
+          href: intent.marriagePublicationId
+            ? `/assessment/couples?start=${encodeURIComponent(intent.marriagePublicationId)}`
+            : '/assessment/couples',
+          label: 'ادامه و ساخت لینک دعوت',
+        }
+      : invitation
+        ? { href: `/assessment/marriage/requests/${invitation}`, label: 'ادامه تست دو نفره' }
+        : intent
+          ? intent.purpose === 'ORDER' && intent.orderId
+            ? {
+                href: `/store/order-tracking?orderId=${encodeURIComponent(intent.orderId)}`,
+                label: 'پیگیری سفارش',
+              }
+            : intent.purpose === 'APPOINTMENT'
+              ? { href: '/appointments', label: 'مشاهدهٔ نوبت‌ها' }
+              : intent.purpose === 'ENTRY_ASSESSMENT'
+                ? { href: '/welcome', label: 'ادامهٔ تست ورود اولیه' }
+                : intent.purpose === 'ASSESSMENT'
+                  ? {
+                      href: intent.assessmentPurchaseId
+                        ? `/assessment/purchases/${encodeURIComponent(intent.assessmentPurchaseId)}`
+                        : '/assessment/couples',
+                      label: 'پیگیری ارزیابی و دسترسی',
+                    }
+                  : intent.purpose === 'PROGRAM'
+                    ? {
+                        href: intent.programPurchaseId
+                          ? `/programs/purchases/${encodeURIComponent(intent.programPurchaseId)}`
+                          : '/programs',
+                        label: 'مشاهدهٔ برنامه و دسترسی',
+                      }
+                    : { href: '/profile/wallet', label: 'بازگشت به کیف پول' }
+          : { href: '/profile/wallet', label: 'بازگشت به کیف پول' };
 
   return (
     <div className="profile-scope">

@@ -1,6 +1,7 @@
 import { MarriageRequestController } from '../couples/marriage-request.controller';
 import { MarriageRequestService } from '../couples/marriage-request.service';
 import { MarriageSmsService } from '../couples/marriage-sms.service';
+import { MarriageBillingTarget } from '../couples/marriage-billing.target';
 import { CoupleLinkModule } from '../couples/couple-link.module';
 import { SmsModule } from '../../communications/sms/sms.module';
 import { Module } from '@nestjs/common';
@@ -20,5 +21,5 @@ import { AssessmentAdminPurchaseService } from './assessment-admin-purchase.serv
 import { EducationalCoupleService } from '../couples/educational/educational-couple.service';
 import { EducationalCoupleController } from '../couples/educational/educational-couple.controller';
 import { ClinicalModule } from '../../clinical/clinical.module';
-@Module({ imports: [SmsModule, CoupleLinkModule, BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule, AssessmentAccessModule, ClinicalModule], controllers: [MarriageRequestController, AssessmentPurchaseController, EducationalCoupleController], providers: [MarriageRequestService, MarriageSmsService, AssessmentPurchaseService, AssessmentEducationalAccessService, AssessmentAdminPurchaseService, AssessmentBillingTarget, EducationalCoupleService] })
+@Module({ imports: [SmsModule, CoupleLinkModule, BillingModule, IdentityModule, GuidanceContentModule, AssessmentPublicationModule, AssessmentProtocolModule, PatientAssessmentsModule, CoupleAssessmentPaidModule, AssessmentAccessModule, ClinicalModule], controllers: [MarriageRequestController, AssessmentPurchaseController, EducationalCoupleController], providers: [MarriageRequestService, MarriageSmsService, MarriageBillingTarget, AssessmentPurchaseService, AssessmentEducationalAccessService, AssessmentAdminPurchaseService, AssessmentBillingTarget, EducationalCoupleService] })
 export class AssessmentPurchaseModule {}

@@ -11,6 +11,7 @@ const PURPOSE_LABELS: Record<string, string> = {
   ORDER: "پرداخت سفارش",
   APPOINTMENT: "پرداخت نوبت",
   ASSESSMENT: "پرداخت ارزیابی",
+  MARRIAGE_REQUEST: "پیش‌پرداخت تست دو نفره",
   PROGRAM: "پرداخت برنامه",
 };
 
