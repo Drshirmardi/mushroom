@@ -1,4 +1,5 @@
 import { CoupleLinkService } from '../src/modules/assessments/couples/couple-link.service';
+import { WalletService } from '../src/modules/billing/wallet.service';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
@@ -43,10 +44,18 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     const offer = await request('POST','/inline-versions',{ assessmentVersionId: source.id, title: 'Synthetic marriage', kind: 'COUPLES', priceMode: 'PAID', amountRial: '100000', texts: { processing: 'Synthetic processing', retention: 'Synthetic retention', visibility: 'Synthetic visibility', disclosure: 'Synthetic disclosure', terms: 'Synthetic terms', marriage: definition } });
     expect(offer.statusCode,offer.body).toBe(201);
     const policy = await db.consentPolicyVersion.findFirst({ where: { clinicId, policyKey: 'COUPLES_ACCOUNT_LINKING', status: 'ACTIVE' } }) ?? await db.consentPolicyVersion.create({ data: { clinicId, policyKey: 'COUPLES_ACCOUNT_LINKING', locale: 'fa-IR', versionNumber: 1, title: 'Synthetic linking', body: 'Synthetic linking fixture', contentHash: createHash('sha256').update('Synthetic linking fixture').digest('hex'), status: 'ACTIVE', activatedAt: new Date() } });
-    const sender = await actor('PATIENT'); await createCompleteTestPatient(db,{data:{ userId: sender.userId,clinicId }}); await db.userProfile.update({ where: { userId: sender.userId }, data: { gender: 'MALE' } });
+    const sender = await actor('PATIENT'); const senderProfile = await createCompleteTestPatient(db,{data:{ userId: sender.userId,clinicId }}); await db.userProfile.update({ where: { userId: sender.userId }, data: { gender: 'MALE' } });
     const http = (who:typeof sender,method:'GET'|'POST',path:string,body?:object,key=randomUUID()) => app.inject({ method,url:'/v1/patients/me/marriage-requests'+path,headers:{authorization:`Bearer ${who.token}`,origin:'http://localhost:3000','idempotency-key':key},...(body?{payload:body}:{}) });
+    const publicationId = offer.json().adminPublicationId as string;
+    const settingsRes = await http(sender,'GET',`/settings/${publicationId}`); expect(settingsRes.statusCode,settingsRes.body).toBe(200);
+    const termsPolicy = settingsRes.json().termsPolicy as { id: string; contentHash: string };
+    const termsConsent = await app.inject({ method:'POST',url:'/v1/patients/me/assessment-consents',headers:{authorization:`Bearer ${sender.token}`,origin:'http://localhost:3000','idempotency-key':randomUUID()},payload:{policyVersionId:termsPolicy.id,contentHash:termsPolicy.contentHash,accepted:true} }); expect(termsConsent.statusCode,termsConsent.body).toBe(201);
+    const wallet = app.get(WalletService), walletSummary = await wallet.summary(senderProfile);
+    await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},senderProfile.id,{type:'CREDIT',amountToman:'50000',expectedVersion:walletSummary.version,reason:'Synthetic marriage prepayment'},randomUUID());
+    const prepayIntent = await http(sender,'POST',`/settings/${publicationId}/billing-intents`,{termsConsentRecordId:termsConsent.json().id}); expect(prepayIntent.statusCode,prepayIntent.body).toBe(201);
+    const paidPrepay = await app.inject({ method:'POST',url:`/v1/patients/me/billing/intents/${prepayIntent.json().id}/wallet-payment`,headers:{authorization:`Bearer ${sender.token}`,origin:'http://localhost:3000','idempotency-key':randomUUID()} }); expect(paidPrepay.statusCode,paidPrepay.body).toBe(201);
     const phone = `+989${Math.floor(Math.random()*900000000+100000000)}`; const before = await db.user.count(); const key=randomUUID();
-    const body = { publicationId: offer.json().adminPublicationId, initiatorRole:'FIRST',recipientPhone:phone,consentPolicyVersionId:policy.id,consentAccepted:true };
+    const body = { publicationId, initiatorRole:'FIRST',recipientPhone:phone,consentPolicyVersionId:policy.id,consentAccepted:true };
     const created=await http(sender,'POST','',body,key); expect(created.statusCode,created.body).toBe(201); expect(await db.user.count()).toBe(before); let id=created.json().id;
     expect(created.json().recipientPhoneMasked).toBe('09•••••'+phone.slice(-4)); expect(created.body).not.toContain(phone);
     expect((await http(sender,'GET','')).json().items.find((item:{id:string})=>item.id===id).recipientPhoneMasked).toBe('09•••••'+phone.slice(-4));
@@ -60,10 +69,10 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment o
     await db.session.update({where:{id:receiver.sessionId},data:{verifiedPhone:phone}});
     // Older pending invitation must survive pages filled with newer closed requests.
     const original = await db.marriageServiceRequest.findUniqueOrThrow({where:{id}});
-    const {id: _id, ...copy} = original;
+    const {id: _id, paidIntentId: _paidIntentId, ...copy} = original;
     for(let i=0;i<21;i++){
       const link=await app.get(CoupleLinkService).create(sender.userId,{consentPolicyVersionId:policy.id,consentAccepted:true},randomUUID(),{actorUserId:sender.userId,actorSessionId:sender.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'});
-      await db.marriageServiceRequest.create({data:{...copy,id:randomUUID(),replacesId:null,linkId:link.id,idempotencyKey:randomUUID(),status:'CANCELLED',createdAt:new Date(original.createdAt.getTime()+1000+i)}});
+      await db.marriageServiceRequest.create({data:{...copy,id:randomUUID(),replacesId:null,paidIntentId:null,linkId:link.id,idempotencyKey:randomUUID(),status:'CANCELLED',createdAt:new Date(original.createdAt.getTime()+1000+i)}});
     }
     expect((await http(receiver,'GET','')).json().items.map((x:{id:string})=>x.id)).not.toContain(id);
     const filtered=await http(receiver,'GET','?status=PENDING&direction=RECEIVED');expect(filtered.statusCode,filtered.body).toBe(200);expect(filtered.json().items.map((x:{id:string})=>x.id)).toEqual([id]);expect(filtered.json().total).toBe(1);expect(filtered.json().items[0].recipientPhoneMasked).toBeNull();
