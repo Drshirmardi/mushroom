@@ -14,10 +14,23 @@ export class MarriageRequestCreateDto {
   @ApiProperty({ maxLength: 32 }) @IsString() @MaxLength(32) recipientPhone!: string;
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') consentPolicyVersionId!: string;
   @ApiProperty({ enum: [true] }) @Equals(true) consentAccepted!: true;
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID('4') paidIntentId?: string;
 }
 export class MarriageRequestAcceptDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID('4') consentPolicyVersionId!: string;
   @ApiProperty({ enum: [true] }) @Equals(true) consentAccepted!: true;
+}
+export class MarriagePrepaymentStatusDto {
+  @ApiProperty({ format: 'uuid' }) intentId!: string;
+  @ApiProperty({ enum: ['PENDING', 'PAID'] }) status!: 'PENDING' | 'PAID';
+  @ApiProperty() amountRial!: string;
+}
+export class MarriagePrepaidBillingDto {
+  @ApiProperty({ format: 'uuid' }) @IsUUID('4') termsConsentRecordId!: string;
+}
+export class MarriageRefundPrepaymentResultDto {
+  @ApiProperty() success!: boolean;
+  @ApiProperty() refundedAmountRial!: string;
 }
 export class MarriageSettingsDto {
   @ApiProperty({ format: 'uuid' }) publicationId!: string;
@@ -26,6 +39,8 @@ export class MarriageSettingsDto {
   @ApiProperty({ type: MarriageDefinitionDto }) definition!: MarriageDefinitionDto;
   @ApiProperty({ type: [String] }) eligibleRoles!: string[];
   @ApiProperty({ type: CoupleLinkPolicyDto }) linkingPolicy!: CoupleLinkPolicyDto;
+  @ApiPropertyOptional({ type: CoupleLinkPolicyDto }) termsPolicy?: CoupleLinkPolicyDto;
+  @ApiPropertyOptional({ type: MarriagePrepaymentStatusDto, nullable: true }) prepayment?: MarriagePrepaymentStatusDto | null;
 }
 export class MarriageContinuationDto {
   @ApiProperty() profileRequired!: boolean;

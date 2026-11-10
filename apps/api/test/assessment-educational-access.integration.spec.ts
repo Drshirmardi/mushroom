@@ -91,8 +91,32 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const algorithmVersion=2,offer=await offering(2,'PAID','COUPLES',false,true);
     const a=await patient(),b=await patient(true,false),stranger=await patient();
     await db.userProfile.update({where:{userId:a.userId},data:{gender:'MALE'}});
+    await db.patientEntry.update({where:{patientId:a.profile.id},data:{completedAt:new Date()}});
+    await db.patientEntry.update({where:{patientId:stranger.profile.id},data:{completedAt:new Date()}});
     const peer=await db.user.findUniqueOrThrow({where:{id:b.userId}});await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:peer.phone}});
     const linking=await request(a,'GET','/patients/me/couple-link-policy');expect(linking.statusCode,linking.body).toBe(200);
+    const settings=await request(a,'GET',`/patients/me/marriage-requests/settings/${offer.row.adminPublicationId}`);expect(settings.statusCode,settings.body).toBe(200);expect(settings.json().prepayment).toBeNull();
+    const unpaidCreate=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(unpaidCreate.statusCode,unpaidCreate.body).toBe(409);
+    const terms=settings.json().termsPolicy;const acceptedTerms=await request(a,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(acceptedTerms.statusCode,acceptedTerms.body).toBe(201);
+    const wallet=app.get(WalletService),balance=await wallet.summary(a.profile);
+    await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},a.profile.id,{type:'CREDIT',amountToman:'100000',expectedVersion:balance.version,reason:'Marriage prepay fixture'},randomUUID());
+    const prepayAndPay=async()=>{
+      const intentRes=await request(a,'POST',`/patients/me/marriage-requests/settings/${offer.row.adminPublicationId}/billing-intents`,{termsConsentRecordId:acceptedTerms.json().id});expect(intentRes.statusCode,intentRes.body).toBe(201);
+      expect(intentRes.json().marriagePublicationId).toBe(offer.row.adminPublicationId);
+      const paidRes=await request(a,'POST',`/patients/me/billing/intents/${intentRes.json().id}/wallet-payment`,undefined,randomUUID());expect(paidRes.statusCode,paidRes.body).toBe(201);
+      expect((await wallet.summary(a.profile)).balanceRial).toBe('900000');
+    };
+    await prepayAndPay();
+    const refundedPrepay=await request(a,'POST',`/patients/me/marriage-requests/settings/${offer.row.adminPublicationId}/refund`);expect(refundedPrepay.statusCode,refundedPrepay.body).toBe(201);expect(refundedPrepay.json()).toEqual({success:true,refundedAmountRial:'100000'});expect((await request(a,'GET',`/patients/me/marriage-requests/settings/${offer.row.adminPublicationId}`)).json().prepayment).toBeNull();expect((await wallet.summary(a.profile)).balanceRial).toBe('1000000');
+    await prepayAndPay();
+    const toCancel=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(toCancel.statusCode,toCancel.body).toBe(201);
+    const cancelled=await request(a,'POST',`/patients/me/marriage-requests/${toCancel.json().id}/cancel`);expect(cancelled.statusCode,cancelled.body).toBe(201);expect(cancelled.json().status).toBe('CANCELLED');expect((await wallet.summary(a.profile)).balanceRial).toBe('1000000');
+    await prepayAndPay();
+    const toDecline=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(toDecline.statusCode,toDecline.body).toBe(201);
+    invitationContexts.set(b.userId,toDecline.json().id);
+    const declined=await request(b,'POST',`/patients/me/marriage-requests/${toDecline.json().id}/decline`);expect(declined.statusCode,declined.body).toBe(201);expect(declined.json().status).toBe('CANCELLED');expect((await wallet.summary(a.profile)).balanceRial).toBe('1000000');
+    await prepayAndPay();
+    const prepaySettings=await request(a,'GET',`/patients/me/marriage-requests/settings/${offer.row.adminPublicationId}`);expect(prepaySettings.json().prepayment?.status).toBe('PAID');
     const invited=await request(a,'POST','/patients/me/marriage-requests',{publicationId:offer.row.adminPublicationId,initiatorRole:'SECOND',recipientPhone:peer.phone,consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(invited.statusCode,invited.body).toBe(201);
     const requestId = invited.json().id as string;
     invitationContexts.set(b.userId,requestId);
@@ -109,7 +133,6 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const preview=await request(b,'GET',`/patients/me/marriage-requests/${requestId}`);expect(preview.statusCode,preview.body).toBe(200);expect(preview.json().continuation.profileRequired).toBe(false);
     const accepted=await request(b,'POST',`/patients/me/marriage-requests/${invited.json().id}/accept`,{consentPolicyVersionId:linking.json().id,consentAccepted:true});expect(accepted.statusCode,accepted.body).toBe(201);
     const id=accepted.json().educationalId as string,base='/patients/me/educational-couple-assessments',pair={a,b};
-    const pub=await request(a,'GET',`/patients/me/educational-assessment-offerings/${offer.row.adminPublicationId}`);expect(pub.statusCode,pub.body).toBe(200);
     const history=await request(pair.a,'GET',base);expect(history.statusCode,history.body).toBe(200);expect(history.json().items.some((item:{id:string})=>item.id===id)).toBe(true);
     expect((await request(stranger,'GET',`${base}/${id}`)).statusCode).toBe(404);
     expect((await request(pair.a,'GET',`${base}/${id}/result`)).statusCode).toBe(404);
@@ -120,20 +143,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     const first=await request(pair.a,'POST',`${base}/${id}/consent`,agreement(aConsent));expect(first.statusCode,first.body).toBe(201);expect(first.json().mutualConsentComplete).toBe(false);
     expect((await request(pair.a,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
     const second=await request(pair.b,'POST',`${base}/${id}/consent`,agreement(bConsent));expect(second.statusCode,second.body).toBe(201);expect(second.json().mutualConsentComplete).toBe(true);
-    let grantIds:string[];
-    {
-      expect((await request(pair.b,'POST',`${base}/${id}/free-access`)).statusCode).toBe(409);
-      const terms=pub.json().termsPolicy, acceptedTerms=await request(pair.b,'POST','/patients/me/assessment-consents',{policyVersionId:terms.id,contentHash:terms.contentHash,accepted:true});expect(acceptedTerms.statusCode,acceptedTerms.body).toBe(201);
-      const key=randomUUID(), body={contextHash:d.contextHash,termsConsentRecordId:acceptedTerms.json().id};
-      const intents=await Promise.all([request(pair.b,'POST',`${base}/${id}/billing-intents`,body,key),request(pair.b,'POST',`${base}/${id}/billing-intents`,body,key)]);expect(intents.map(r=>r.statusCode),intents.map(r=>r.body).join('\n')).toEqual([201,201]);expect(intents[0].json().id).toBe(intents[1].json().id);const intent=intents[0].json();
-      const receipt=await request(pair.b,'GET',`/patients/me/assessment-purchases/${intent.assessmentPurchaseId}`);expect(receipt.statusCode,receipt.body).toBe(200);expect(receipt.json().managementHref).toBe(`/assessment/couples/educational/${id}`);
-      expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(0);
-      const wallet=app.get(WalletService), balance=await wallet.summary(pair.b.profile);
-      await wallet.adjust({actorUserId:admin.userId,actorSessionId:admin.sessionId,requestId:randomUUID(),ipAddress:'127.0.0.1'},pair.b.profile.id,{type:'CREDIT',amountToman:'100000',expectedVersion:balance.version,reason:'Synthetic educational couple fixture'},randomUUID());
-      const payKey=randomUUID(),pays=await Promise.all([request(pair.b,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey),request(pair.b,'POST',`/patients/me/billing/intents/${intent.id}/wallet-payment`,undefined,payKey)]);expect(pays.map(r=>r.statusCode),pays.map(r=>r.body).join('\n')).toEqual([201,201]);
-      expect((await wallet.summary(pair.b.profile)).balanceRial).toBe('900000');expect(await db.assessmentAccessGrant.count({where:{purchaseId:intent.assessmentPurchaseId}})).toBe(2);
-      grantIds=[];for(const who of [pair.a,pair.b]){const state=await request(who,'GET',`${base}/${id}`);expect(state.statusCode,state.body).toBe(200);grantIds.push(state.json().ownAccessGrantId);}
-    }
+    const grantIds:string[]=[];
+    expect(await db.assessmentAccessGrant.count({where:{purchase:{educationalCoupleSessionId:id}}})).toBe(2);
+    for(const who of [pair.a,pair.b]){const state=await request(who,'GET',`${base}/${id}`);expect(state.statusCode,state.body).toBe(200);grantIds.push(state.json().ownAccessGrantId!);}
     const submissions=[];
     for(const [index,who] of [pair.a,pair.b].entries()){
       const grant=grantIds[index];
@@ -160,6 +172,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ADMIN paid p
     expect((await request(laterHolder,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(404);
     expect((await request(laterHolder,'GET','/patients/me/marriage-requests')).json().items.some((item:{id:string})=>item.id===requestId)).toBe(false);
     const moved=await db.user.findUniqueOrThrow({where:{id:b.userId}});await db.session.update({where:{id:b.sessionId},data:{verifiedPhone:moved.phone}});expect((await request(b,'GET',`/patients/me/marriage-requests/${requestId}`)).statusCode).toBe(200);
+    await db.patientEntryPolicy.update({where:{clinicId},data:{enabled:false}});
   }, 30000);
 
   it.each([[1,'PAID'],[2,'PAID']] as [number,string][])('couple v%s %s retains two real charts and independent disclosure without a complete text matrix',async (algorithmVersion,priceMode)=>{

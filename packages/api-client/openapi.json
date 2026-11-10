@@ -10760,7 +10760,8 @@
                 "APPOINTMENT",
                 "ASSESSMENT",
                 "PROGRAM",
-                "ENTRY_ASSESSMENT"
+                "ENTRY_ASSESSMENT",
+                "MARRIAGE_REQUEST"
               ]
             }
           },
@@ -36973,6 +36974,136 @@
         ]
       }
     },
+    "/v1/patients/me/marriage-requests/settings/{id}/billing-intents": {
+      "post": {
+        "operationId": "patientMarriagePrepaidBillingIntent",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarriagePrepaidBillingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingIntentDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/settings/{id}/refund": {
+      "post": {
+        "operationId": "patientMarriagePrepaymentRefund",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRefundPrepaymentResultDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
     "/v1/patients/me/marriage-requests": {
       "get": {
         "operationId": "patientMarriageRequestsList",
@@ -37288,6 +37419,62 @@
             }
           }
         },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarriageRequestDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Marriage Services"
+        ]
+      }
+    },
+    "/v1/patients/me/marriage-requests/{id}/decline": {
+      "post": {
+        "operationId": "patientMarriageRequestDecline",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "201": {
             "description": "",
@@ -44849,6 +45036,12 @@
             "format": "uuid",
             "description": "Present for the ASSESSMENT target only"
           },
+          "marriagePublicationId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the MARRIAGE_REQUEST target only"
+          },
           "methods": {
             "type": "array",
             "items": {
@@ -46504,6 +46697,12 @@
             "nullable": true,
             "format": "uuid",
             "description": "Present for the ASSESSMENT target only"
+          },
+          "marriagePublicationId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid",
+            "description": "Present for the MARRIAGE_REQUEST target only"
           },
           "methods": {
             "type": "array",
@@ -59743,6 +59942,30 @@
           "recommendConsultation"
         ]
       },
+      "MarriagePrepaymentStatusDto": {
+        "type": "object",
+        "properties": {
+          "intentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "PAID"
+            ]
+          },
+          "amountRial": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "intentId",
+          "status",
+          "amountRial"
+        ]
+      },
       "MarriageSettingsDto": {
         "type": "object",
         "properties": {
@@ -59767,6 +59990,18 @@
           },
           "linkingPolicy": {
             "$ref": "#/components/schemas/CoupleLinkPolicyDto"
+          },
+          "termsPolicy": {
+            "$ref": "#/components/schemas/CoupleLinkPolicyDto"
+          },
+          "prepayment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MarriagePrepaymentStatusDto"
+              }
+            ]
           }
         },
         "required": [
@@ -59776,6 +60011,33 @@
           "definition",
           "eligibleRoles",
           "linkingPolicy"
+        ]
+      },
+      "MarriagePrepaidBillingDto": {
+        "type": "object",
+        "properties": {
+          "termsConsentRecordId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "termsConsentRecordId"
+        ]
+      },
+      "MarriageRefundPrepaymentResultDto": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "refundedAmountRial": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "refundedAmountRial"
         ]
       },
       "MarriageContinuationDto": {
@@ -59944,6 +60206,10 @@
             "enum": [
               true
             ]
+          },
+          "paidIntentId": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [

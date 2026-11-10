@@ -10,6 +10,8 @@ import { canonicalAssessmentJson } from '../domain/assessment-canonical-json';
 import { adminPublicationHash } from '../purchases/assessment-admin-purchase.service';
 import { CoupleLinkService } from './couple-link.service';
 import { EducationalCoupleService } from './educational/educational-couple.service';
+import { BillingService } from '../../billing/billing.service';
+import { lockFinancial } from '../../billing/billing.policy';
 import type { MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestListQueryDto } from './marriage-request.dto';
 
 type Tx = Prisma.TransactionClient;
@@ -19,18 +21,51 @@ const command = (key?: string) => { if (!key || !/^[\x21-\x7e]{1,200}$/u.test(ke
 
 @Injectable()
 export class MarriageRequestService {
-  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly crypto: SmsCredentialCryptoService, private readonly links: CoupleLinkService, private readonly educational: EducationalCoupleService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly authority: GuidanceAuthorityService,
+    private readonly crypto: SmsCredentialCryptoService,
+    private readonly links: CoupleLinkService,
+    private readonly educational: EducationalCoupleService,
+    private readonly billing: BillingService,
+  ) {}
 
   async settings(publicationId: string, ctx: Context) {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx);
       const source = await this.source(tx, publicationId, patient.clinicId, true);
       const policy = await this.links.policy(ctx.actorUserId, ctx);
-      return { publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition: marriageDefinition(source.offeringVersion.authoringTexts)!, eligibleRoles: await this.eligible(tx, patient.id, marriageDefinition(source.offeringVersion.authoringTexts)!), linkingPolicy: policy };
+      const terms = source.offeringVersion.consentPolicies.find(p => p.policyKey === 'ASSESSMENT_PURCHASE_TERMS');
+      const termsPolicy = terms ? { id: terms.id, versionNumber: terms.versionNumber, policyKey: terms.policyKey, locale: terms.locale, title: terms.title, body: terms.body, contentHash: terms.contentHash } : undefined;
+
+      const [prepay] = await tx.$queryRaw<{ id: string; status: 'PENDING' | 'PAID'; amountRial: bigint }[]>(
+        Prisma.sql`SELECT i.id, i.status, i.amount_rial AS "amountRial"
+          FROM billing_intents i
+          WHERE i.patient_id = ${patient.id}::uuid
+            AND i.purpose = 'MARRIAGE_REQUEST'
+            AND i.snapshot->>'publicationId' = ${publicationId}
+            AND (
+              (i.status = 'PENDING' AND (i.expires_at > CURRENT_TIMESTAMP OR EXISTS (SELECT 1 FROM billing_gateway_attempts a WHERE a.intent_id = i.id AND a.status IN ('CREATED','REDIRECT_READY','VERIFYING','REQUIRES_RECONCILIATION'))))
+              OR
+              (i.status = 'PAID' AND i.assessment_purchase_id IS NULL AND NOT EXISTS (
+                SELECT 1 FROM marriage_service_requests r WHERE r.paid_intent_id = i.id AND r.status IN ('PENDING', 'ACCEPTED')
+              ) AND NOT EXISTS (
+                SELECT 1 FROM billing_refunds rf WHERE rf.intent_id = i.id AND rf.status = 'COMPLETED'
+              ))
+            )
+          ORDER BY i.created_at DESC
+          LIMIT 1`,
+      );
+
+      const prepayment = prepay
+        ? { intentId: prepay.id, status: prepay.status, amountRial: prepay.amountRial.toString() }
+        : null;
+
+      return { publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition: marriageDefinition(source.offeringVersion.authoringTexts)!, eligibleRoles: await this.eligible(tx, patient.id, marriageDefinition(source.offeringVersion.authoringTexts)!), linkingPolicy: policy, termsPolicy, prepayment };
     });
   }
 
-  async create(body: MarriageRequestCreateDto, keyInput: string | undefined, ctx: Context, transaction?: Tx) {
+  async create(body: MarriageRequestCreateDto, keyInput: string | undefined, ctx: Context, transaction?: Tx, replacingRequestId?: string) {
     const key = command(keyInput);
     let phone: string;
     try { phone = normalizeIranianMobile(body.recipientPhone); } catch { throw new UnprocessableEntityException({ code: 'MARRIAGE_PHONE_INVALID', message: 'Enter a valid mobile number.', details: {} }); }
@@ -45,9 +80,80 @@ export class MarriageRequestService {
       const source = await this.source(tx, body.publicationId, patient.clinicId, true);
       const definition = marriageDefinition(source.offeringVersion.authoringTexts)!;
       if (!(await this.eligible(tx, patient.id, definition)).includes(body.initiatorRole)) throw new UnprocessableEntityException({ code: 'MARRIAGE_OWN_PROFILE_INELIGIBLE', message: 'Complete your profile and review the conditions for this role.', details: {} });
+
+      let paidIntentId: string;
+      if (body.paidIntentId) {
+        const intent = await tx.billingIntent.findFirst({
+          where: {
+            id: body.paidIntentId,
+            patientId: patient.id,
+            clinicId: patient.clinicId,
+            purpose: 'MARRIAGE_REQUEST',
+            status: 'PAID',
+            assessmentPurchaseId: null,
+          },
+        });
+        if (!intent || (intent.snapshot as { publicationId?: string })?.publicationId !== body.publicationId) {
+          throw new ConflictException({ code: 'MARRIAGE_PREPAYMENT_REQUIRED', message: 'A valid paid prepayment is required before creating an invitation.', details: {} });
+        }
+        const used = await tx.marriageServiceRequest.findFirst({
+          where: {
+            paidIntentId: intent.id,
+            status: { in: ['PENDING', 'ACCEPTED'] },
+            ...(replacingRequestId ? { id: { not: replacingRequestId } } : {}),
+          },
+        });
+        if (used) throw conflict();
+        const refunded = await tx.billingRefund.findFirst({ where: { intentId: intent.id, status: 'COMPLETED' } });
+        if (refunded) throw conflict();
+        paidIntentId = intent.id;
+      } else {
+        const intents = await tx.billingIntent.findMany({
+          where: {
+            patientId: patient.id,
+            clinicId: patient.clinicId,
+            purpose: 'MARRIAGE_REQUEST',
+            status: 'PAID',
+            assessmentPurchaseId: null,
+          },
+          orderBy: { createdAt: 'desc' },
+        });
+        const validIntent = intents.find(i => (i.snapshot as { publicationId?: string })?.publicationId === body.publicationId);
+        if (!validIntent) {
+          throw new ConflictException({ code: 'MARRIAGE_PREPAYMENT_REQUIRED', message: 'Prepayment is required before creating an invitation.', details: {} });
+        }
+        const used = await tx.marriageServiceRequest.findFirst({
+          where: {
+            paidIntentId: validIntent.id,
+            status: { in: ['PENDING', 'ACCEPTED'] },
+            ...(replacingRequestId ? { id: { not: replacingRequestId } } : {}),
+          },
+        });
+        if (used) throw conflict();
+        const refunded = await tx.billingRefund.findFirst({ where: { intentId: validIntent.id, status: 'COMPLETED' } });
+        if (refunded) throw conflict();
+        paidIntentId = validIntent.id;
+      }
+
       const link = await this.links.create(ctx.actorUserId, { consentPolicyVersionId: body.consentPolicyVersionId, consentAccepted: body.consentAccepted }, `marriage:${createHash('sha256').update(key).digest('hex')}`, ctx, tx);
       const encrypted = this.crypto.encrypt({ phone });
-      const row = await tx.marriageServiceRequest.create({ data: { clinicId: patient.clinicId, publicationId: body.publicationId, initiatorPatientId: patient.id, initiatorRole: body.initiatorRole, recipientHash: fingerprint, encryptedPayload: new Uint8Array(encrypted.ciphertext), encryptionNonce: new Uint8Array(encrypted.nonce), authenticationTag: new Uint8Array(encrypted.tag), encryptionKeyVersion: encrypted.keyVersion, linkId: link.id, idempotencyKey: key, payloadHash } });
+      const row = await tx.marriageServiceRequest.create({
+        data: {
+          clinicId: patient.clinicId,
+          publicationId: body.publicationId,
+          initiatorPatientId: patient.id,
+          initiatorRole: body.initiatorRole,
+          recipientHash: fingerprint,
+          encryptedPayload: new Uint8Array(encrypted.ciphertext),
+          encryptionNonce: new Uint8Array(encrypted.nonce),
+          authenticationTag: new Uint8Array(encrypted.tag),
+          encryptionKeyVersion: encrypted.keyVersion,
+          linkId: link.id,
+          idempotencyKey: key,
+          payloadHash,
+          paidIntentId,
+        },
+      });
       await this.audit(tx, 'MARRIAGE_REQUEST_CREATED', row.id, ctx);
       return this.project(tx, row, patient.id, ctx);
     };
@@ -120,9 +226,9 @@ export class MarriageRequestService {
       const { row, patient } = await this.owned(tx,id,ctx,true);
       if (row.initiatorPatientId !== patient.id || body.publicationId !== row.publicationId) throw missing();
       const prior = await tx.marriageServiceRequest.findUnique({ where: { replacesId: id } });
-      if (prior) { if (prior.idempotencyKey !== key) throw conflict(); return this.create(body,key,ctx,tx); }
+      if (prior) { if (prior.idempotencyKey !== key) throw conflict(); return this.create({ ...body, paidIntentId: body.paidIntentId ?? row.paidIntentId ?? undefined }, key, ctx, tx, id); }
       if (row.status !== 'PENDING') throw conflict();
-      const next = await this.create(body,key,ctx,tx);
+      const next = await this.create({ ...body, paidIntentId: body.paidIntentId ?? row.paidIntentId ?? undefined }, key, ctx, tx, id);
       if (next.id === id) throw conflict();
       await tx.marriageServiceRequest.update({ where: { id: next.id }, data: { replacesId: id } });
       await tx.marriageServiceRequest.update({ where: { id }, data: { status: 'REPLACED' } });
@@ -136,9 +242,90 @@ export class MarriageRequestService {
       const { patient, row } = await this.owned(tx, id, ctx, true);
       if (row.initiatorPatientId !== patient.id) throw missing();
       if (row.status !== 'PENDING' && row.status !== 'CANCELLED') throw conflict();
+      if (row.status === 'CANCELLED') return this.project(tx, row, patient.id, ctx);
       const next = await tx.marriageServiceRequest.update({ where: { id }, data: { status: 'CANCELLED' } });
+      if (row.paidIntentId) {
+        const intent = await tx.billingIntent.findUnique({ where: { id: row.paidIntentId } });
+        if (intent && intent.status === 'PAID' && !intent.assessmentPurchaseId) {
+          const refunded = await tx.billingRefund.findFirst({ where: { intentId: intent.id, status: 'COMPLETED' } });
+          if (!refunded) {
+            await this.billing.refundInTransaction(
+              tx,
+              ctx,
+              intent.id,
+              intent.amountRial,
+              'Marriage service request cancelled by initiator',
+              `marriage-cancel:${row.id}`,
+            );
+          }
+        }
+      }
       await this.audit(tx, 'MARRIAGE_REQUEST_CANCELLED', id, ctx);
       return this.project(tx, next, patient.id, ctx);
+    });
+  }
+
+  async decline(id: string, ctx: Context) {
+    return this.prisma.$transaction(async tx => {
+      const { patient, row } = await this.owned(tx, id, ctx, true);
+      if (row.initiatorPatientId === patient.id) throw missing();
+      if (row.status !== 'PENDING') throw conflict();
+      const next = await tx.marriageServiceRequest.update({ where: { id }, data: { status: 'CANCELLED' } });
+      if (row.paidIntentId) {
+        const intent = await tx.billingIntent.findUnique({ where: { id: row.paidIntentId } });
+        if (intent && intent.status === 'PAID' && !intent.assessmentPurchaseId) {
+          const refunded = await tx.billingRefund.findFirst({ where: { intentId: intent.id, status: 'COMPLETED' } });
+          if (!refunded) {
+            await this.billing.refundInTransaction(
+              tx,
+              ctx,
+              intent.id,
+              intent.amountRial,
+              'Marriage service request declined by recipient',
+              `marriage-decline:${row.id}`,
+            );
+          }
+        }
+      }
+      await this.audit(tx, 'MARRIAGE_REQUEST_DECLINED', id, ctx);
+      return this.project(tx, next, patient.id, ctx);
+    });
+  }
+
+  async refundPrepayment(publicationId: string, ctx: Context) {
+    return this.prisma.$transaction(async tx => {
+      const patient = await this.patient(tx, ctx);
+      await lockFinancial(tx, `marriage-prepay:${patient.id}:${publicationId.toLowerCase()}`);
+      const intent = await tx.billingIntent.findFirst({
+        where: {
+          patientId: patient.id,
+          clinicId: patient.clinicId,
+          purpose: 'MARRIAGE_REQUEST',
+          status: 'PAID',
+          assessmentPurchaseId: null,
+          snapshot: { path: ['publicationId'], equals: publicationId },
+          marriageRequests: {
+            none: { status: { in: ['PENDING', 'ACCEPTED'] } },
+          },
+          refunds: {
+            none: { status: 'COMPLETED' },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (!intent) {
+        throw new NotFoundException({ code: 'MARRIAGE_PREPAYMENT_NOT_FOUND', message: 'No refundable prepayment found for this assessment.', details: {} });
+      }
+      await this.billing.refundInTransaction(
+        tx,
+        ctx,
+        intent.id,
+        intent.amountRial,
+        'Marriage assessment prepayment refunded by patient',
+        `marriage-prepay-refund:${intent.id}`,
+      );
+      await this.audit(tx, 'MARRIAGE_PREPAYMENT_REFUNDED', intent.id, ctx);
+      return { success: true, refundedAmountRial: intent.amountRial.toString() };
     });
   }
 
@@ -159,7 +346,7 @@ export class MarriageRequestService {
   private async verified(tx: Tx, phone: string, ctx: Context) { return !!await tx.session.count({ where: { id: ctx.actorSessionId, userId: ctx.actorUserId, verifiedPhone: phone, revokedAt: null, expiresAt: { gt: new Date() } } }); }
   private async source(tx: Tx, id: string, clinicId: string, current: boolean) {
     if (current) await tx.$queryRaw(Prisma.sql`SELECT id FROM clinics WHERE id=${clinicId}::uuid FOR SHARE`);
-    const source = await tx.assessmentAdminPublication.findFirst({ where: { id, offeringVersion: { clinicId, kind: 'COUPLES' } }, include: { offeringVersion: true } });
+    const source = await tx.assessmentAdminPublication.findFirst({ where: { id, offeringVersion: { clinicId, kind: 'COUPLES' } }, include: { offeringVersion: { include: { consentPolicies: true } } } });
     if (!source || !marriageDefinition(source.offeringVersion.authoringTexts)) throw missing();
     if (current) {
       await tx.$queryRaw(Prisma.sql`SELECT id FROM assessment_admin_publications WHERE id=${id}::uuid FOR SHARE`);
@@ -199,7 +386,9 @@ export class MarriageRequestService {
     const ownProfile = await tx.userProfile.findFirst({ where: { user: { patientProfile: { id: patientId } } }, select: { firstName: true, lastName: true } });
     const profileRequired = ownIneligibilityReason === 'PROFILE_INCOMPLETE' || !ownProfile?.firstName?.trim() || !ownProfile.lastName?.trim();
     const nextPath = profileRequired ? `/welcome?marriageRequestId=${row.id}` : row.status === 'ACCEPTED' && row.educationalId ? `/assessment/couples/educational/${row.educationalId}?marriageRequestId=${row.id}` : `/assessment/marriage/requests/${row.id}`;
-    return { continuation: { profileRequired, nextPath }, id: row.id, status: row.status, isInitiator, recipientPhoneMasked, initiatorName, ownIneligibilityReason, ownEligible: (await this.eligible(tx, patientId, definition)).includes(ownRole), eligibilityNotConfirmed: row.recipientIneligible, ownRole, service: { publicationId: row.publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition, eligibleRoles: await this.eligible(tx, patientId, definition), linkingPolicy: { id: policy.id, versionNumber: policy.versionNumber, policyKey: policy.policyKey, locale: policy.locale, title: policy.title, body: policy.body, contentHash: policy.contentHash } }, invitationPath: `/assessment/marriage/requests/${row.id}`, educationalId: row.educationalId, smsStatus: deliveries?.status ?? null, createdAt: row.createdAt };
+    const terms = source.offeringVersion.consentPolicies.find(p => p.policyKey === 'ASSESSMENT_PURCHASE_TERMS');
+    const termsPolicy = terms ? { id: terms.id, versionNumber: terms.versionNumber, policyKey: terms.policyKey, locale: terms.locale, title: terms.title, body: terms.body, contentHash: terms.contentHash } : undefined;
+    return { continuation: { profileRequired, nextPath }, id: row.id, status: row.status, isInitiator, recipientPhoneMasked, initiatorName, ownIneligibilityReason, ownEligible: (await this.eligible(tx, patientId, definition)).includes(ownRole), eligibilityNotConfirmed: row.recipientIneligible, ownRole, service: { publicationId: row.publicationId, title: source.offeringVersion.title, amountRial: source.offeringVersion.amountRial!.toString(), definition, eligibleRoles: await this.eligible(tx, patientId, definition), linkingPolicy: { id: policy.id, versionNumber: policy.versionNumber, policyKey: policy.policyKey, locale: policy.locale, title: policy.title, body: policy.body, contentHash: policy.contentHash }, termsPolicy }, invitationPath: `/assessment/marriage/requests/${row.id}`, educationalId: row.educationalId, smsStatus: deliveries?.status ?? null, createdAt: row.createdAt };
   }
   private async audit(tx: Tx, action: string, subjectId: string, ctx: Context) { await tx.auditEvent.create({ data: { action, subjectType: 'MARRIAGE_SERVICE_REQUEST', subjectId, actorUserId: ctx.actorUserId, actorSessionId: ctx.actorSessionId, requestId: ctx.requestId.slice(0,128), ipAddress: ctx.ipAddress, metadata: {} } }); }
 }

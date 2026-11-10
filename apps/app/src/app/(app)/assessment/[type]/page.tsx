@@ -1,1 +1,1 @@
-export { default } from "@/components/assessments/assessment-wizard";
+export { default } from '@/components/assessments/assessment-wizard';

@@ -6044,6 +6044,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/marriage-requests/settings/{id}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriagePrepaidBillingIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/settings/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriagePrepaymentRefund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/marriage-requests": {
         parameters: {
             query?: never;
@@ -6102,6 +6134,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["patientMarriageRequestAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestDecline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7573,6 +7621,11 @@ export interface components {
              * @description Present for the ASSESSMENT target only
              */
             assessmentPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the MARRIAGE_REQUEST target only
+             */
+            marriagePublicationId?: string | null;
             methods?: components["schemas"]["BillingPaymentMethodDto"][];
             id: string;
             purpose: string;
@@ -8043,6 +8096,11 @@ export interface components {
              * @description Present for the ASSESSMENT target only
              */
             assessmentPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the MARRIAGE_REQUEST target only
+             */
+            marriagePublicationId?: string | null;
             methods?: components["schemas"]["BillingPaymentMethodDto"][];
             id: string;
             purpose: string;
@@ -11567,6 +11625,13 @@ export interface components {
             services: components["schemas"]["PatientServiceDto"][];
             recommendConsultation: boolean;
         };
+        MarriagePrepaymentStatusDto: {
+            /** Format: uuid */
+            intentId: string;
+            /** @enum {string} */
+            status: "PENDING" | "PAID";
+            amountRial: string;
+        };
         MarriageSettingsDto: {
             /** Format: uuid */
             publicationId: string;
@@ -11575,6 +11640,16 @@ export interface components {
             definition: components["schemas"]["MarriageDefinitionDto"];
             eligibleRoles: string[];
             linkingPolicy: components["schemas"]["CoupleLinkPolicyDto"];
+            termsPolicy?: components["schemas"]["CoupleLinkPolicyDto"];
+            prepayment?: components["schemas"]["MarriagePrepaymentStatusDto"] | null;
+        };
+        MarriagePrepaidBillingDto: {
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        MarriageRefundPrepaymentResultDto: {
+            success: boolean;
+            refundedAmountRial: string;
         };
         MarriageContinuationDto: {
             profileRequired: boolean;
@@ -11621,6 +11696,8 @@ export interface components {
             consentPolicyVersionId: string;
             /** @enum {boolean} */
             consentAccepted: true;
+            /** Format: uuid */
+            paidIntentId?: string;
         };
         MarriageRequestAcceptDto: {
             /** Format: uuid */
@@ -17420,7 +17497,7 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
                 patientId?: string;
-                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT";
+                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT" | "MARRIAGE_REQUEST";
                 status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
             };
             header?: {
@@ -32033,6 +32110,63 @@ export interface operations {
             };
         };
     };
+    patientMarriagePrepaidBillingIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriagePrepaidBillingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientMarriagePrepaymentRefund: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRefundPrepaymentResultDto"];
+                };
+            };
+        };
+    };
     patientMarriageRequestsList: {
         parameters: {
             query?: {
@@ -32162,6 +32296,32 @@ export interface operations {
                 "application/json": components["schemas"]["MarriageRequestAcceptDto"];
             };
         };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestDecline: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             201: {
                 headers: {

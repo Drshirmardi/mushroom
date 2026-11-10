@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, ChevronDown, HeartHandshake } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
@@ -21,6 +21,15 @@ function RequestLink({ item, primary = false }: { item: MarriageRequest; primary
       : item.status === 'ACCEPTED' ? 'مشاهده و ادامه تست'
       : 'مشاهده جزئیات';
 
+  const statusTone =
+    item.status === 'PENDING' && !item.isInitiator
+      ? 'bg-primary/10 text-primary'
+      : item.status === 'PENDING'
+        ? 'bg-amber-50 text-amber-800'
+        : item.status === 'ACCEPTED'
+          ? 'bg-emerald-50 text-emerald-800'
+          : 'bg-muted text-muted-foreground';
+
   return (
     <Link
       href={item.invitationPath}
@@ -31,7 +40,9 @@ function RequestLink({ item, primary = false }: { item: MarriageRequest; primary
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="min-w-0 text-sm font-semibold leading-7 text-foreground">{item.service.title}</h3>
-        <span className="text-xs leading-6 text-muted-foreground">{coupleRequestStatus(item)}</span>
+        <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium leading-6 ${statusTone}`}>
+          {coupleRequestStatus(item)}
+        </span>
       </div>
       {item.status === 'PENDING' && !item.isInitiator && (
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
@@ -70,24 +81,27 @@ function CouplesOverview({ showHistory }: { showHistory: boolean }) {
   useEffect(() => { if (showHistory) setHistoryOpen(true); }, [showHistory]);
   const ordered = prioritizeCoupleRequests(resource.data?.items ?? []);
   const { incoming, active } = classifyCoupleRequests(ordered);
+  const showActiveSection = resource.loading || Boolean(resource.error) || incoming.length > 0 || active.length > 0;
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-7">
-      <section aria-label="تست‌ها و دعوت‌های من" className="space-y-3">
-        <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
-        {incoming.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-base font-bold">دعوت جدید داری</h2>
-            {incoming.slice(0, 3).map(item => <RequestLink key={item.id} item={item} primary />)}
-          </div>
-        )}
-        {active.length > 0 && (
-          <div className="space-y-2">
-            <h2 className="text-base font-bold">تست‌ها و دعوت‌های من</h2>
-            {active.slice(0, 3).map(item => <RequestLink key={item.id} item={item} />)}
-          </div>
-        )}
-      </section>
+      {showActiveSection && (
+        <section aria-label="تست‌ها و دعوت‌های من" className="space-y-3">
+          <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
+          {incoming.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-base font-bold">دعوت جدید داری</h2>
+              {incoming.slice(0, 3).map(item => <RequestLink key={item.id} item={item} primary />)}
+            </div>
+          )}
+          {active.length > 0 && (
+            <div className="space-y-2">
+              <h2 className="text-base font-bold">تست‌ها و دعوت‌های من</h2>
+              {active.slice(0, 3).map(item => <RequestLink key={item.id} item={item} />)}
+            </div>
+          )}
+        </section>
+      )}
 
       <section aria-labelledby="couple-test-offers-title" className="space-y-3">
         <h2 id="couple-test-offers-title" className="text-base font-semibold">تست‌ها</h2>
@@ -97,13 +111,13 @@ function CouplesOverview({ showHistory }: { showHistory: boolean }) {
       <details
         open={historyOpen}
         onToggle={event => setHistoryOpen(event.currentTarget.open)}
-        className="rounded-2xl border border-border/70 bg-white px-4 py-2"
+        className="group rounded-2xl border border-border/70 bg-white px-4 py-2"
       >
-        <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm font-medium text-foreground">
-          همه دعوت‌ها و سوابق
-          <ArrowLeft aria-hidden="true" size={16} className="text-muted-foreground" />
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-foreground [&::-webkit-details-marker]:hidden">
+          <span>همه دعوت‌ها و سوابق</span>
+          <ChevronDown aria-hidden="true" size={17} className="text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
-        <div className="space-y-2 pb-3 pt-3">
+        <div className="space-y-2 border-t border-border/60 pb-3 pt-3">
           {resource.data?.total === 0 && <p className="text-sm text-muted-foreground">هنوز دعوتی ثبت نشده.</p>}
           {ordered.map(item => <RequestLink key={item.id} item={item} />)}
           {resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}
@@ -134,7 +148,13 @@ export function CouplesHome() {
   return (
     <ServicePage
       title="تست دو نفره"
-      description={selected ? 'نقش خودت و شماره نفر دوم رو وارد کن.' : 'تستت رو انتخاب کن یا تست‌های قبلیت رو ادامه بده.'}
+      description={
+        selected
+          ? selected.replacesId
+            ? 'شماره موبایل جدید نفر دوم رو وارد کن تا لینک دعوت جایگزین ساخته بشه.'
+            : 'ابتدا هزینهٔ تست رو پرداخت کن و بعد لینک دعوت نفر دوم رو بساز.'
+          : 'تستت رو انتخاب کن یا تست‌های قبلیت رو ادامه بده.'
+      }
       icon={HeartHandshake}
       backHref="/assessment"
       backLabel="همه تست‌ها"

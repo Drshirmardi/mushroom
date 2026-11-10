@@ -4,17 +4,23 @@ import type { AuthenticatedRequest } from '../../../common/auth/access-token.gua
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { CoupleLinkRateGuard } from './couple-link.controller';
-import { MarriageRequestListQueryDto, MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestDto, MarriageRequestPageDto, MarriageSettingsDto } from './marriage-request.dto';
+import { MarriageRequestListQueryDto, MarriageRequestAcceptDto, MarriageRequestCreateDto, MarriageRequestDto, MarriageRequestPageDto, MarriageSettingsDto, MarriagePrepaidBillingDto, MarriageRefundPrepaymentResultDto } from './marriage-request.dto';
 import { MarriageRequestService } from './marriage-request.service';
 import { MarriageSmsService } from './marriage-sms.service';
+import { BillingService } from '../../billing/billing.service';
+import { BillingIntentDto } from '../../billing/billing.dto';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
 @ApiTags('Marriage Services') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.ASSESSMENTS_READ_SELF)
 @UseGuards(CoupleLinkRateGuard) @Controller('patients/me/marriage-requests')
 export class MarriageRequestController {
-  constructor(private readonly requests: MarriageRequestService, private readonly sms: MarriageSmsService) {}
+  constructor(private readonly requests: MarriageRequestService, private readonly sms: MarriageSmsService, private readonly billing: BillingService) {}
   @Header('Cache-Control','private, no-store') @Get('settings/:id') @ApiOperation({ operationId: 'patientMarriageSettings' }) @ApiOkResponse({ type: MarriageSettingsDto })
   settings(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.settings(id,context(r)); }
+  @Header('Cache-Control','private, no-store') @Post('settings/:id/billing-intents') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF, PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientMarriagePrepaidBillingIntent' }) @ApiCreatedResponse({ type: BillingIntentDto })
+  prepaidIntent(@Param('id', uuid()) id: string, @Body() body: MarriagePrepaidBillingDto, @Headers('idempotency-key') key: string | undefined, @Req() r: AuthenticatedRequest) { return this.billing.create(r.auth.userId, 'MARRIAGE_REQUEST', { publicationId: id.toLowerCase(), termsConsentRecordId: body.termsConsentRecordId.toLowerCase() }, key, context(r)); }
+  @Header('Cache-Control','private, no-store') @Post('settings/:id/refund') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF, PERMISSIONS.WALLET_WRITE_SELF) @ApiOperation({ operationId: 'patientMarriagePrepaymentRefund' }) @ApiCreatedResponse({ type: MarriageRefundPrepaymentResultDto })
+  refundPrepayment(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.requests.refundPrepayment(id, context(r)); }
   @Header('Cache-Control','private, no-store') @Get() @ApiOperation({ operationId: 'patientMarriageRequestsList' }) @ApiOkResponse({ type: MarriageRequestPageDto })
   list(@Query() q:MarriageRequestListQueryDto,@Req() r:AuthenticatedRequest) { return this.requests.list(q.page,context(r),q); }
   @Header('Cache-Control','private, no-store') @Post() @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiHeader({ name:'Idempotency-Key',required:true }) @ApiOperation({ operationId:'patientMarriageRequestCreate' }) @ApiCreatedResponse({ type: MarriageRequestDto })
@@ -25,6 +31,8 @@ export class MarriageRequestController {
   review(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.review(id,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/accept') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestAccept' }) @ApiCreatedResponse({ type: MarriageRequestDto })
   accept(@Param('id',uuid()) id:string,@Body() body:MarriageRequestAcceptDto,@Req() r:AuthenticatedRequest) { return this.requests.accept(id,body,context(r)); }
+  @Header('Cache-Control','private, no-store') @Post(':id/decline') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestDecline' }) @ApiCreatedResponse({ type: MarriageRequestDto })
+  decline(@Param('id',uuid()) id:string,@Req() r:AuthenticatedRequest) { return this.requests.decline(id,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/replace') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiHeader({ name:'Idempotency-Key',required:true }) @ApiOperation({ operationId:'patientMarriageRequestReplace' }) @ApiCreatedResponse({ type: MarriageRequestDto })
   replace(@Param('id',uuid()) id:string,@Body() body:MarriageRequestCreateDto,@Headers('idempotency-key') key:string|undefined,@Req() r:AuthenticatedRequest) { return this.requests.replace(id,body,key,context(r)); }
   @Header('Cache-Control','private, no-store') @Post(':id/cancel') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF) @ApiOperation({ operationId:'patientMarriageRequestCancel' }) @ApiCreatedResponse({ type: MarriageRequestDto })

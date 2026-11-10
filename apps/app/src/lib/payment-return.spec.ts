@@ -34,5 +34,6 @@ describe('payment return', () => {
     expect(paymentReturnHref({ ...context('ORDER'), orderId: 'order?x' }, null)).toBe('/store/order-tracking?orderId=order%3Fx');
     expect(paymentReturnHref({ ...context('ASSESSMENT'), assessmentPurchaseId: 'purchase/id' }, null)).toBe('/assessment/purchases/purchase%2Fid');
     expect(paymentReturnHref({ ...context('PROGRAM'), programPurchaseId: 'program/id' }, null)).toBe('/programs/purchases/program%2Fid');
+    expect(paymentReturnHref({ ...context('MARRIAGE_REQUEST'), marriagePublicationId: 'pub-1' }, 'old-invitation')).toBe('/assessment/couples?start=pub-1');
   });
 });

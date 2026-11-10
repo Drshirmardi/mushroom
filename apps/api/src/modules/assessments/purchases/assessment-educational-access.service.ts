@@ -42,7 +42,7 @@ export class AssessmentEducationalAccessService {
       const termsConsent = terms ? await tx.patientConsentRecord.findFirst({ where: { patientId: patient.id, policyVersionId: terms.id, contentHash: terms.contentHash, withdrawnAt: null } }) : null;
       const grant = row.offeringVersion.priceMode === 'FREE'
         ? await tx.assessmentAccessGrant.findUnique({ where: { freeAdminPublicationId_patientId: { freeAdminPublicationId: row.id, patientId: patient.id } }, include: { submission: { select: { id: true, state: true } } } })
-        : await tx.assessmentAccessGrant.findFirst({ where: { patientId: patient.id, clinicId: patient.clinicId, purchase: { adminPublicationId: row.id, intent: { purpose: 'ASSESSMENT', status: 'PAID' } } }, include: { submission: { select: { id: true, state: true } } }, orderBy: { grantedAt: 'desc' } });
+        : await tx.assessmentAccessGrant.findFirst({ where: { patientId: patient.id, clinicId: patient.clinicId, purchase: { adminPublicationId: row.id, intent: { purpose: { in: ['ASSESSMENT', 'MARRIAGE_REQUEST'] }, status: 'PAID' } } }, include: { submission: { select: { id: true, state: true } } }, orderBy: { grantedAt: 'desc' } });
       const [visibility] = await tx.$queryRaw<{ visible: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${row.offeringVersion.assessmentVersionId}::uuid) AS visible`);
       if (!visibility?.visible && !grant) throw missing();
       if(row.offeringVersion.priceMode==='FREE'&&!grant)throw missing();
