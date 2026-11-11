@@ -1,8 +1,0 @@
-# ADR-0027 — Settle one shared payment into two private engine grants and one mutually authorized joint result
-
-- Status: ACCEPTED technical delivery under continuous owner backend implementation authorization,2026-10-17. Actual clinical/legal/provider release gates remain separate.
-- Task: Phase12/F12-PJ-C04; couple-assessment-paid-access-v1. Additive extension of P02/C02/C03; no frozen contract rewritten.
-
-Use the existing ASSESSMENT target with explicit schemaVersion2 coupled purchase/beneficiary evidence and one retained joint-result record. One payer's existing wallet/server-verified gateway receipt atomically issues exactly two independently owned grants. Each uses the existing individual engine; the retained C02 approved pair lookup selects joint education only after both valid completions and mutual consent. This operation is inseparable because taking payment before private answer boundaries and actual joint delivery would supply an incomplete paid service.
-
-Keep tariff, financial, processing, individual ownership and joint-sharing lifecycles distinct. Price replacement preserves an existing unexpired quote; commercial withdrawal can stop a future sale but cannot erase an existing clinically authorized paid benefit. Final joint-sharing withdrawal blocks mutual content/coordination while preserving separately authorized own answers and financial evidence. Global medical withdrawal retains P02's exact owned access boundary. No ordinary successful assessment cancellation/refund; captured-unfulfillable compensation remains existing financial integrity. Neither payment nor account linking is consent to expose a partner's raw response, private identifiers or individual band.

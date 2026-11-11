@@ -1,9 +1,0 @@
----
-description: Disabled legacy three-lane batch workflow retained for reference
-alwaysApply: false
----
-
-# Disabled legacy rule
-
-This rule previously forced batch-oriented execution through `plan/`. It is intentionally outside
-`.cursor/rules/` while the lean continuation protocol is active.
