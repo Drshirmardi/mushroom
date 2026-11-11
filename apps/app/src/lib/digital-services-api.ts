@@ -1,12 +1,12 @@
 import type { components } from "@sabz-zendegi/api-client";
 import { apiClient } from "./api";
-import { patientAuthorization as auth, patientData as data } from "./patient-request";
+import { PATIENT_CATALOG_TTL_MS, patientAuthorization as auth, patientCacheKey, patientCachedData, patientData as data } from "./patient-request";
 
 type Schema = components["schemas"];
-export const listEducationalAssessmentOfferings = (token: string, page = 1, kind: "INDIVIDUAL" | "COUPLES" = "INDIVIDUAL", servicePurpose?: "MARRIAGE") => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind, servicePurpose } } }));
+export const listEducationalAssessmentOfferings = (token: string, page = 1, kind: "INDIVIDUAL" | "COUPLES" = "INDIVIDUAL", servicePurpose?: "MARRIAGE") => patientCachedData(patientCacheKey(token, `educational-assessment-offerings:${page}:${kind}:${servicePurpose ?? ""}`), PATIENT_CATALOG_TTL_MS, () => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind, servicePurpose } } })));
 export const getEducationalAssessmentOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/educational-assessment-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const claimFreeAssessmentAccess = (token: string, body: Schema["AssessmentFreeAccessDto"], key: string) => data(apiClient.POST("/v1/patients/me/educational-assessment-access", { headers: auth(token), params: { header: { 'Idempotency-Key': key } }, body }));
-export const listAssessmentOfferings = (token: string, page = 1, kind?: "INDIVIDUAL" | "COUPLES") => data(apiClient.GET("/v1/patients/me/assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } }));
+export const listAssessmentOfferings = (token: string, page = 1, kind?: "INDIVIDUAL" | "COUPLES") => patientCachedData(patientCacheKey(token, `assessment-offerings:${page}:${kind ?? ""}`), PATIENT_CATALOG_TTL_MS, () => data(apiClient.GET("/v1/patients/me/assessment-offerings", { headers: auth(token), params: { query: { page, pageSize: 20, kind } } })));
 export const getAssessmentOffering = (token: string, publicationId: string) => data(apiClient.GET("/v1/patients/me/assessment-offerings/{publicationId}", { headers: auth(token), params: { path: { publicationId } } }));
 export const acceptAssessmentConsent = (token: string, body: Schema["AssessmentConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/assessment-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
 export const withdrawAssessmentConsent = (token: string, id: string, key: string) => data(apiClient.POST("/v1/patients/me/assessment-consents/{id}/withdrawal", { headers: auth(token), params: { path: { id }, header: { "Idempotency-Key": key } } }));
@@ -15,7 +15,7 @@ export const listAssessmentPurchases = (token: string, page = 1) => data(apiClie
 export const getAssessmentPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/assessment-purchases/{id}", { headers: auth(token), params: { path: { id } } }));
 export const startPaidAssessment = (token: string, id: string) => data(apiClient.POST("/v1/patients/me/assessment-access-grants/{id}/submission", { headers: auth(token), params: { path: { id } } }));
 // These two legacy list contracts describe numeric query parameters as Object; keep the wire values numeric.
-export const listProgramOfferings = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-offerings", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
+export const listProgramOfferings = (token: string, page = 1) => patientCachedData(patientCacheKey(token, `program-offerings:${page}`), PATIENT_CATALOG_TTL_MS, () => data(apiClient.GET("/v1/patients/me/program-offerings", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } })));
 export const getProgramOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const acceptProgramConsent = (token: string, body: Schema["ProgramConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/program-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
 export const createProgramPurchase = (token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/program-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));

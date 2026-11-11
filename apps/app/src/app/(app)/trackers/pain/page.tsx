@@ -5,19 +5,14 @@ import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { PageHeader } from "@/components/shared/page-header";
 import { SuccessScreen } from "@/components/shared/success-screen";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { createHealthObservation, followUpErrorMessage, listHealthObservations, type HealthObservation } from "@/lib/follow-up-api";
 import { toP } from "@/lib/format";
+
+const PainTrendChart = dynamic(() => import("@/components/trackers/pain-trend-chart"), { ssr: false, loading: () => <LoadingState label="در حال دریافت روند درد…" variant="card" /> });
 
 export default function PainTrackerPage() {
   const router = useRouter();
@@ -63,15 +58,7 @@ export default function PainTrackerPage() {
           {refreshing && history && <RefreshIndicator />}{!history && !error && <LoadingState label="در حال دریافت روند درد…" variant="card" />}
           {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
           {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز دردی ثبت نشده است.</p>}
-          {chartData.length > 0 && <ResponsiveContainer width="100%" height={120}>
-            <AreaChart data={chartData}>
-              <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#1b5e3b" stopOpacity={0.3} /><stop offset="95%" stopColor="#1b5e3b" stopOpacity={0} /></linearGradient></defs>
-              <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "Vazirmatn" }} axisLine={false} tickLine={false} />
-              <YAxis domain={[0, 10]} hide />
-              <Tooltip contentStyle={{ fontFamily: "Vazirmatn", fontSize: 12, borderRadius: 12 }} formatter={(v) => [toP(v as number), "درد"]} />
-              <Area type="monotone" dataKey="value" stroke="#1b5e3b" strokeWidth={2.5} fill="url(#pg)" dot={{ fill: "#1b5e3b", r: 3 }} />
-            </AreaChart>
-          </ResponsiveContainer>}
+          {chartData.length > 0 && <PainTrendChart data={chartData} />}
         </div>
         <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.98] transition-transform disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ثبت…"}</> : "ثبت درد امروز"}</button>
       </div>

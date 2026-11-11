@@ -238,6 +238,18 @@
   display: none;
 }
 
+/* Route transition (replaces the motion/react wrapper in (app)/template.tsx). */
+@keyframes app-route-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.app-route-transition {
+  animation: app-route-enter 0.18s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-route-transition { animation: none; }
+}
+
 /* Patient foundations: scoped rollout; existing module palettes remain intact. */
 @font-face {
   font-family: 'Vazirmatn';

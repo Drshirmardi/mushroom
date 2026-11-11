@@ -17,11 +17,17 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { PatientPagination } from '@/components/shared/patient-pagination';
+import { LoadingState } from '@/components/shared/skeletons';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { listMarriageRequests, type MarriageRequest } from '@/lib/marriage-api';
 import { prioritizeCoupleRequests, selectedCoupleTest } from '@/lib/couples-flow';
 import { classifyCoupleRequests, coupleRequestStatus } from '@/lib/couples-overview';
-import { MarriageNew, MarriageOffers } from './marriage-service';
+import dynamic from 'next/dynamic';
+import { MarriageOffers } from './marriage-offers';
+
+const MarriageNew = dynamic(() => import('./marriage-new').then((m) => m.MarriageNew), {
+  loading: () => <LoadingState variant="detail" />,
+});
 
 function RequestLink({ item, primary = false }: { item: MarriageRequest; primary?: boolean }) {
   const label =

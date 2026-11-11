@@ -6,9 +6,11 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY patches ./patches
 COPY apps/${APP}/package.json apps/${APP}/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+  pnpm install --frozen-lockfile --store-dir /pnpm/store --package-import-method=copy
 COPY . .
-RUN rm -rf packages/api-client/dist packages/api-client/tsconfig.tsbuildinfo \
+RUN --mount=type=cache,id=next-${APP},target=/workspace/apps/${APP}/.next/cache \
+  rm -rf packages/api-client/dist packages/api-client/tsconfig.tsbuildinfo \
   && pnpm --filter @sabz-zendegi/api-client build \
   && test -f packages/api-client/dist/index.js \
   && pnpm --filter @sabz/${APP} build

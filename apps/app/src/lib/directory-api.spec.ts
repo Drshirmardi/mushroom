@@ -2,6 +2,7 @@ import { createApiClient } from "@sabz-zendegi/api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DirectoryRequestError, getPatientAvailability, getPatientDoctor, listPatientDoctors } from "./directory-api";
+import { clearPatientRequestCache } from "./patient-request";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api.example.test", fetch: fetchMock }) }));
@@ -9,7 +10,7 @@ vi.mock("@/lib/api", () => ({ apiClient: createApiClient({ baseUrl: "https://api
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 describe("patient directory API", () => {
-  beforeEach(() => fetchMock.mockReset());
+  beforeEach(() => { fetchMock.mockReset(); clearPatientRequestCache(); });
 
   it("uses the generated directory and availability paths with bearer authentication", async () => {
     fetchMock.mockResolvedValueOnce(json({ items: [], page: 1, pageSize: 20, total: 0 })).mockResolvedValueOnce(json({ id: "doctor-1", displayName: "Doctor", specialties: [], offerings: [], languages: [], education: [], certifications: [], clinic: { id: "clinic-1", name: "Clinic", timeZone: "Asia/Tehran" } })).mockResolvedValueOnce(json({ doctorServiceId: "offering-1", timeZone: "Asia/Tehran", fromDate: "2026-09-01", toDate: "2026-09-07", items: [], page: 1, pageSize: 20, total: 0 }));

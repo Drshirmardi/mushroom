@@ -2,8 +2,13 @@
 import { AsyncButton } from "@/components/shared/async-button";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { AnimatePresence } from "motion/react";
-import { NotificationSheet } from "@/components/notifications/notification-sheet";
+
+const NotificationSheet = dynamic(
+  () => import("@/components/notifications/notification-sheet").then((module) => module.NotificationSheet),
+  { ssr: false },
+);
 import { useCallback, useState } from "react";
 import { ArrowLeft, Bell, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, MessageCircle, ShoppingBag, Users, Wallet } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";

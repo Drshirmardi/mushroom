@@ -5,17 +5,13 @@ import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { PageHeader } from "@/components/shared/page-header";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { createHealthObservation, followUpErrorMessage, listHealthObservations, type HealthObservation } from "@/lib/follow-up-api";
 import { toP } from "@/lib/format";
+
+const MoodTrendChart = dynamic(() => import("@/components/trackers/mood-trend-chart"), { ssr: false, loading: () => <LoadingState label="در حال دریافت روند…" variant="card" /> });
 
 const MOODS = [
   { emoji: "😞", label: "خیلی بد", val: 1 },
@@ -70,15 +66,7 @@ export default function MoodTrackerPage() {
           {refreshing && history && <RefreshIndicator />}{!history && !error && <LoadingState label="در حال دریافت روند…" variant="card" />}
           {error && <p role="alert" className="py-3 text-center text-sm text-red-700">{error}</p>}
           {history?.length === 0 && <p className="py-8 text-center text-sm text-muted-foreground">هنوز موردی ثبت نشده است.</p>}
-          {chartData.length > 0 && <ResponsiveContainer width="100%" height={110}>
-            <LineChart data={chartData}>
-              <XAxis dataKey="day" tick={{ fontSize: 10, fontFamily: "Vazirmatn" }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ fontFamily: "Vazirmatn", fontSize: 11, borderRadius: 12 }} />
-              <Line type="monotone" dataKey="mood" stroke="#1b5e3b" strokeWidth={2} dot={false} name="خلق" />
-              <Line type="monotone" dataKey="sleep" stroke="#3b82f6" strokeWidth={2} dot={false} name="خواب" />
-              <Line type="monotone" dataKey="energy" stroke="#f59e0b" strokeWidth={2} dot={false} name="انرژی" />
-            </LineChart>
-          </ResponsiveContainer>}
+          {chartData.length > 0 && <MoodTrendChart data={chartData} />}
         </div>
         <button disabled={saving} onClick={save} className="w-full bg-primary text-white rounded-2xl py-4 font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-60" aria-busy={Boolean(saving)}>{saving ? <><HeartbeatLoader />{"در حال ثبت…"}</> : "ثبت حال امروز"}</button>
       </div>

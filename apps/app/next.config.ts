@@ -9,6 +9,15 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: join(__dirname, "../.."),
   ...(allowedDevOrigins ? { allowedDevOrigins } : {}),
+  experimental: {
+    optimizePackageImports: [
+      "@base-ui/react",
+      "@radix-ui/react-dropdown-menu",
+      "lucide-react",
+      "motion",
+      "recharts",
+    ],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },

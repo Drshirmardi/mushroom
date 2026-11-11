@@ -27,7 +27,13 @@ import { toP } from '@/lib/format';
 import { ResultRecommendations } from '@/components/programs/result-recommendations';
 import { getCurrentMezaj } from '@/lib/assessment-api';
 
-import { ProgramMarkdown } from '@/components/shared/program-markdown';
+import dynamic from 'next/dynamic';
+import { LoadingState } from '@/components/shared/skeletons';
+
+const ProgramMarkdown = dynamic(
+  () => import('@/components/shared/program-markdown').then((m) => m.ProgramMarkdown),
+  { loading: () => <LoadingState variant="detail" /> },
+);
 
 type ProgramContent = components['schemas']['PatientProgramContentDto'];
 

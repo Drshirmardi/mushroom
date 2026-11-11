@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useSyncExternalStore,
 } from "react";
 
@@ -15,6 +16,7 @@ import {
   type AuthSessionSnapshot,
 } from "@/auth/session";
 import { authApiClient, marriageLoginUrl, setAccessTokenProvider } from "@/lib/api";
+import { clearPatientRequestCache } from "@/lib/patient-request";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -60,16 +62,33 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     sessionManager.getSnapshot,
   );
 
+  const accessToken = snapshot.status === "authenticated" ? snapshot.authentication.accessToken : "";
+  const seenToken = useRef<string | null>(null);
+
   useEffect(() => {
     void sessionManager.bootstrap();
   }, []);
+
+  useEffect(() => {
+    if (seenToken.current === null) {
+      seenToken.current = accessToken;
+      return;
+    }
+    if (seenToken.current !== accessToken) {
+      clearPatientRequestCache();
+      seenToken.current = accessToken;
+    }
+  }, [accessToken]);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
     () =>
       snapshot.status === "authenticated"
         ? {
             authentication: snapshot.authentication,
-            logout: () => sessionManager.logout(),
+            logout: () => {
+              clearPatientRequestCache();
+              return sessionManager.logout();
+            },
           }
         : null,
     [snapshot],

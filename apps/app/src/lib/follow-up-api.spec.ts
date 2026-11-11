@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FollowUpRequestError, createHealthObservation, getMezajResult, getPatientArticle, listNotifications, listPatientArticles, readAllNotifications, updateNotificationPreference } from "./follow-up-api";
+import { clearPatientRequestCache } from "./patient-request";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.stubGlobal("fetch", fetchMock);
@@ -7,7 +8,7 @@ vi.mock("@/lib/api", () => ({ apiBaseUrl: "https://api.example.test", sessionFet
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
 describe("follow-up API", () => {
-  beforeEach(() => fetchMock.mockReset());
+  beforeEach(() => { fetchMock.mockReset(); clearPatientRequestCache(); });
   it("uses authenticated persisted health and notification endpoints", async () => {
     fetchMock.mockResolvedValueOnce(json({ id: "observation", metric: "PAIN", value: 4 })).mockResolvedValueOnce(json({ items: [] })).mockResolvedValueOnce(json({ ok: true })).mockResolvedValueOnce(json({ category: "CONTENT", inAppEnabled: false }));
     await createHealthObservation("token", { metric: "PAIN", value: 4, observedAt: "2026-09-05T00:00:00.000Z" });

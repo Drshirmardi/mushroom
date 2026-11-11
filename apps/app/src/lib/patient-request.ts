@@ -20,6 +20,49 @@ export async function patientData<T>(request: Promise<{ data?: T; error?: unknow
 
 export const patientAuthorization = (token: string) => ({ authorization: `Bearer ${token}` });
 
+export const PATIENT_CATALOG_TTL_MS = 15_000;
+
+type CacheRecord = { expiresAt: number; value: unknown };
+
+const cachedValues = new Map<string, CacheRecord>();
+const cachedRequests = new Map<string, Promise<unknown>>();
+let cacheGeneration = 0;
+
+export function patientCacheKey(token: string, resource: string): string {
+  return `${resource}\0${token}`;
+}
+
+export function clearPatientRequestCache(): void {
+  cacheGeneration += 1;
+  cachedValues.clear();
+  cachedRequests.clear();
+}
+
+export function patientCachedData<T>(cacheKey: string, ttlMs: number, factory: () => Promise<T>): Promise<T> {
+  if (ttlMs <= 0) return factory();
+
+  const hit = cachedValues.get(cacheKey);
+  if (hit && hit.expiresAt > Date.now()) return Promise.resolve(hit.value as T);
+
+  const current = cachedRequests.get(cacheKey);
+  if (current) return current as Promise<T>;
+
+  const generation = cacheGeneration;
+  const request = factory().then(
+    (value) => {
+      if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
+      if (generation === cacheGeneration) cachedValues.set(cacheKey, { expiresAt: Date.now() + ttlMs, value });
+      return value;
+    },
+    (error: unknown) => {
+      if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
+      throw error;
+    },
+  );
+  cachedRequests.set(cacheKey, request);
+  return request;
+}
+
 export async function patientEmpty(request: Promise<{ error?: unknown; response: Response }>): Promise<void> {
   try {
     const { response, error } = await withRequestTimeout(request);
