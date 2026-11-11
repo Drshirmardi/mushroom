@@ -2,6 +2,7 @@ import { browserAnalyticsEvent } from '../../../../config/analytics-browser';
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient, apiBaseUrl, sessionFetch } from "./api";
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from "./patient-request";
 
 export type CommerceProduct = components["schemas"]["PatientCommerceProductDto"];
 export type CommerceCart = components["schemas"]["PatientCartDto"];
@@ -35,8 +36,12 @@ async function expectData<T>(request: Promise<{ data?: T; error?: unknown; respo
   }
 }
 
+export function commerceProductsCacheKey(query?: { page?: number; pageSize?: number; query?: string; categoryId?: string }) {
+  return patientCacheKey("public", `commerce-products:${query?.page ?? ""}:${query?.pageSize ?? ""}:${query?.query ?? ""}:${query?.categoryId ?? ""}`);
+}
+
 export const listCommerceProducts = (query?: { page?: number; pageSize?: number; query?: string; categoryId?: string }) =>
-  expectData<components["schemas"]["PatientCommerceProductPageDto"]>(apiClient.GET("/v1/commerce/products", { params: { query } }));
+  patientCachedData(commerceProductsCacheKey(query), PATIENT_CATALOG_TTL_MS, () => expectData<components["schemas"]["PatientCommerceProductPageDto"]>(apiClient.GET("/v1/commerce/products", { params: { query } })));
 
 export const getCommerceProduct = (productId: string) =>
   expectData<CommerceProduct>(apiClient.GET("/v1/commerce/products/{productId}", { params: { path: { productId } } }));

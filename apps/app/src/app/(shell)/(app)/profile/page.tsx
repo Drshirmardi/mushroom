@@ -24,6 +24,7 @@ import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceAddresses, type CommerceAddress } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
 import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type OnboardingStatus, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData, peekPatientCache } from "@/lib/patient-request";
 
 import { getCurrentMezaj } from '@/lib/assessment-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -94,8 +95,33 @@ const AVATAR_SRC: Record<ProfileGender, string> = {
 
 export default function ProfilePage() {
   const router = useRouter(); const { authentication, logout } = useAuthSession();
-  const [profile, setProfile] = useState<SelfProfile | null>(null); const [status, setStatus] = useState<OnboardingStatus | null>(null); const [addresses, setAddresses] = useState<CommerceAddress[] | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [loggingOut, setLoggingOut] = useState(false); const [logoutError, setLogoutError] = useState(false);
-  useEffect(() => { void (async () => { try { const [profileResponse, statusResponse] = await Promise.all([loadSelfProfile(authentication.accessToken), loadOnboardingStatus(authentication.accessToken)]); setProfile(profileResponse); setStatus(statusResponse); } catch (cause) { setError(onboardingErrorMessage(cause, "load")); } finally { setLoading(false); } })(); }, [authentication.accessToken]);
+  const token = authentication.accessToken;
+  const profileKey = patientCacheKey(token, "self-profile");
+  const statusKey = patientCacheKey(token, "onboarding-status");
+  const [profile, setProfile] = useState<SelfProfile | null>(() => peekPatientCache<SelfProfile>(profileKey) ?? null);
+  const [status, setStatus] = useState<OnboardingStatus | null>(() => peekPatientCache<OnboardingStatus>(statusKey) ?? null);
+  const [addresses, setAddresses] = useState<CommerceAddress[] | null>(null);
+  const [loading, setLoading] = useState(() => peekPatientCache(profileKey) == null || peekPatientCache(statusKey) == null);
+  const [error, setError] = useState<string | null>(null); const [loggingOut, setLoggingOut] = useState(false); const [logoutError, setLogoutError] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const [profileResponse, statusResponse] = await Promise.all([
+          patientCachedData(profileKey, PATIENT_CATALOG_TTL_MS, () => loadSelfProfile(token)),
+          patientCachedData(statusKey, PATIENT_CATALOG_TTL_MS, () => loadOnboardingStatus(token)),
+        ]);
+        if (cancelled) return;
+        setProfile(profileResponse);
+        setStatus(statusResponse);
+      } catch (cause) {
+        if (!cancelled) setError(onboardingErrorMessage(cause, "load"));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [profileKey, statusKey, token]);
   useEffect(() => { void getCommerceAddresses(authentication.accessToken).then(setAddresses).catch(() => setAddresses(null)); }, [authentication.accessToken]);
   const defaultAddress = addresses?.find((address) => address.isDefault) ?? addresses?.[0] ?? null;
   const name = profile && [profile.firstName, profile.lastName].filter((value) => typeof value === "string").join(" ");

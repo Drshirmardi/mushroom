@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   ClipboardList,
@@ -35,7 +36,14 @@ const TAB_ITEMS: TabItem[] = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const reducedMotion = useReducedMotion();
+  const storePrefetched = useRef(false);
+  const prefetchStore = () => {
+    if (storePrefetched.current) return;
+    storePrefetched.current = true;
+    void router.prefetch("/store");
+  };
   const cart = useCartStore((s) => s.items);
   const count = cartCount(cart);
   const visible = TAB_ITEMS.filter((item) => !item.hidden);
@@ -55,6 +63,9 @@ export function BottomTabBar() {
             <Link
               key={item.label}
               href={href}
+              prefetch={item.href === "/store" ? false : undefined}
+              onPointerDown={item.href === "/store" ? prefetchStore : undefined}
+              onFocus={item.href === "/store" ? prefetchStore : undefined}
               aria-current={isActive ? "page" : undefined}
               className="patient-shell-nav__item"
             >

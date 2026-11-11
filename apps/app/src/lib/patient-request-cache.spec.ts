@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData } from "./patient-request";
+import { PATIENT_CACHE_LIMIT, PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, peekPatientCache } from "./patient-request";
 
 describe("patient request cache", () => {
   beforeEach(() => {
@@ -76,6 +76,21 @@ describe("patient request cache", () => {
     await expect(pending).resolves.toBe("stale");
 
     await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => Promise.resolve("fresh"))).resolves.toBe("fresh");
+  });
+
+  it("drops the oldest record after the memory limit", async () => {
+    for (let index = 0; index <= PATIENT_CACHE_LIMIT; index += 1) {
+      await patientCachedData(`entry-${index}`, PATIENT_CATALOG_TTL_MS, () => Promise.resolve(index));
+    }
+    expect(peekPatientCache("entry-0")).toBeUndefined();
+    expect(peekPatientCache(`entry-${PATIENT_CACHE_LIMIT}`)).toBe(PATIENT_CACHE_LIMIT);
+  });
+
+  it("reads a fresh value without starting another request", async () => {
+    await patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => Promise.resolve("catalog"));
+    expect(peekPatientCache("articles")).toBe("catalog");
+    vi.setSystemTime(new Date(Date.now() + PATIENT_CATALOG_TTL_MS));
+    expect(peekPatientCache("articles")).toBeUndefined();
   });
 
   it("bypasses the cache when ttl is zero", async () => {

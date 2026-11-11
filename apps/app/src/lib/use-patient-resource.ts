@@ -5,9 +5,11 @@ import { patientErrorMessage } from "./patient-request";
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 
 /** Pass a useCallback loader keyed by session and resource to hide stale private data. */
-export function usePatientResource<T>(load: () => Promise<T>) {
+export function usePatientResource<T>(load: () => Promise<T>, initialData?: T | null) {
   const generation = useRef(0);
-  const [snapshot, setSnapshot] = useState<{ load: typeof load; data: T | null; error: string | null; loading: boolean; refreshing: boolean } | null>(null);
+  const [snapshot, setSnapshot] = useState<{ load: typeof load; data: T | null; error: string | null; loading: boolean; refreshing: boolean } | null>(() =>
+    initialData == null ? null : { load, data: initialData, error: null, loading: false, refreshing: false },
+  );
   const refreshing = useRef(false);
   const reload = useCallback(async (quiet = false) => {
     if (quiet && refreshing.current) return null;

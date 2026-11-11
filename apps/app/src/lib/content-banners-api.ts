@@ -1,17 +1,23 @@
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient, apiBaseUrl } from "./api";
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from "./patient-request";
 
 export type StoreBanner = import("@sabz-zendegi/api-client").components["schemas"]["PublicBannerDto"];
 
+export const storeBannersCacheKey = () => patientCacheKey("public", "store-banners");
+
 export async function listStoreBanners(): Promise<StoreBanner[]> {
   try {
-    const result = await withRequestTimeout(apiClient.GET("/v1/content/banners", { cache: "no-store", signal: AbortSignal.timeout(10000) }));
-    if (result.response.ok && result.data) return result.data.items;
+    return await patientCachedData(storeBannersCacheKey(), PATIENT_CATALOG_TTL_MS, async () => {
+      const result = await withRequestTimeout(apiClient.GET("/v1/content/banners", { cache: "no-store", signal: AbortSignal.timeout(10000) }));
+      if (result.response.ok && result.data) return result.data.items;
+      throw new Error("STORE_BANNERS_UNAVAILABLE");
+    });
   } catch {
     // Banners are optional marketing content; never block the store on them.
+    return [];
   }
-  return [];
 }
 
 export function storeBannerImageUrl(banner: StoreBanner): string | null {

@@ -21,6 +21,7 @@ export async function patientData<T>(request: Promise<{ data?: T; error?: unknow
 export const patientAuthorization = (token: string) => ({ authorization: `Bearer ${token}` });
 
 export const PATIENT_CATALOG_TTL_MS = 15_000;
+export const PATIENT_CACHE_LIMIT = 12;
 
 type CacheRecord = { expiresAt: number; value: unknown };
 
@@ -38,11 +39,28 @@ export function clearPatientRequestCache(): void {
   cachedRequests.clear();
 }
 
+function remember(cacheKey: string, record: CacheRecord) {
+  cachedValues.delete(cacheKey);
+  cachedValues.set(cacheKey, record);
+  while (cachedValues.size > PATIENT_CACHE_LIMIT) {
+    const oldest = cachedValues.keys().next().value;
+    if (oldest === undefined) break;
+    cachedValues.delete(oldest);
+  }
+}
+
+export function peekPatientCache<T>(cacheKey: string): T | undefined {
+  const hit = cachedValues.get(cacheKey);
+  if (!hit || hit.expiresAt <= Date.now()) return undefined;
+  return hit.value as T;
+}
+
 export function patientCachedData<T>(cacheKey: string, ttlMs: number, factory: () => Promise<T>): Promise<T> {
   if (ttlMs <= 0) return factory();
 
-  const hit = cachedValues.get(cacheKey);
-  if (hit && hit.expiresAt > Date.now()) return Promise.resolve(hit.value as T);
+  const fresh = peekPatientCache<T>(cacheKey);
+  if (fresh !== undefined) return Promise.resolve(fresh);
+  cachedValues.delete(cacheKey);
 
   const current = cachedRequests.get(cacheKey);
   if (current) return current as Promise<T>;
@@ -51,7 +69,7 @@ export function patientCachedData<T>(cacheKey: string, ttlMs: number, factory: (
   const request = factory().then(
     (value) => {
       if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
-      if (generation === cacheGeneration) cachedValues.set(cacheKey, { expiresAt: Date.now() + ttlMs, value });
+      if (generation === cacheGeneration) remember(cacheKey, { expiresAt: Date.now() + ttlMs, value });
       return value;
     },
     (error: unknown) => {

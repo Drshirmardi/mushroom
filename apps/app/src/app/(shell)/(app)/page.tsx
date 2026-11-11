@@ -14,6 +14,7 @@ import { ArrowLeft, Bell, BookOpen, CalendarDays, ClipboardList, FileHeart, Hear
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { getPatientJourney } from "@/lib/patient-journey-api";
+import { patientCacheKey, peekPatientCache } from "@/lib/patient-request";
 import { HomeJourney } from "@/components/home/home-journey";
 import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
 import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
@@ -40,7 +41,7 @@ export default function HomePage() {
   const { authentication } = useAuthSession();
   const entry = useOptionalPatientEntry();
   const token = authentication.accessToken;
-  const journey = usePatientResource(useCallback(() => getPatientJourney(token), [token]));
+  const journey = usePatientResource(useCallback(() => getPatientJourney(token), [token]), peekPatientCache(patientCacheKey(token, "journey")));
   const articles = usePatientResource(useCallback(() => listPatientArticles(token), [token]));
   const notifications = usePatientResource(useCallback(() => listNotifications(token), [token]));
   const [notificationsOpen, setNotificationsOpen] = useState(false);

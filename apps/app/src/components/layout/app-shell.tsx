@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ShellSlots } from './shell-slots';
 import { usePathname } from 'next/navigation';
 import { BottomTabBar } from '@/components/layout/bottom-tab-bar';
+import { useAuthSessionSnapshot } from '@/components/auth/session-gate';
 import { GlobalSheet } from '@/components/shared/global-sheet';
 import { useUiStore } from '@/stores/ui';
 
@@ -13,18 +14,21 @@ import { useUiStore } from '@/stores/ui';
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const session = useAuthSessionSnapshot();
   const isHome = pathname === '/';
   const isStorefront = pathname === '/store';
   const isStore = pathname === '/store' || pathname.startsWith('/store/');
   const isProduct = pathname.startsWith('/store/products/');
   const immersive = useUiStore((state) => state.immersive);
-
+  const showTabs = !isProduct && !immersive && (session?.status === 'authenticated' || isStore);
+  const framed = session?.status === 'authenticated' || isStore;
   const [action, setAction] = useState<HTMLElement | null>(null);
   const [overlay, setOverlay] = useState<HTMLElement | null>(null);
   const frame = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
   const footer = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    if (!framed) return;
     const element = footer.current;
     if (!element) return;
     const measure = () =>
@@ -36,7 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     observer.observe(element);
     measure();
     return () => observer.disconnect();
-  }, []);
+  }, [framed]);
   const handleShellWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     if (immersive || event.defaultPrevented || event.ctrlKey || ! event.deltaY) return;
     const scrollEl = content.current;
@@ -45,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (scrollEl.contains(target) || overlay?.contains(target)) return;
     scrollEl.scrollTop += event.deltaY;
   };
+  if (session?.status !== 'authenticated' && !isStore) return children;
   return (
     <ShellSlots.Provider value={{ action, overlay }}>
       <div
@@ -69,7 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               ref={setAction}
               className={`patient-action-slot ${isProduct ? 'patient-product-actions' : ''}`}
             />
-            {!isProduct && !immersive && <BottomTabBar />}
+            {showTabs && <BottomTabBar />}
           </div>
           <div ref={setOverlay} className="patient-shell-overlay" />
           <GlobalSheet />

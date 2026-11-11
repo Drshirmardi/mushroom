@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AnimatePresence } from 'motion/react';
@@ -24,6 +24,7 @@ import {
   getCommerceAddresses,
   getCommerceCart,
   getCommerceWishlist,
+  commerceProductsCacheKey,
   listCommerceProducts,
   updateCommerceWishlist,
   type CommerceAddress,
@@ -37,7 +38,8 @@ import { cartCount, useCartStore } from '@/stores/cart';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useBannerStore } from '@/stores/banners';
 import { PersonalizedProducts } from '@/components/store/personalized-products';
-import { listStoreBanners, storeBannerImageUrl } from '@/lib/content-banners-api';
+import { listStoreBanners, storeBannerImageUrl, storeBannersCacheKey, type StoreBanner } from '@/lib/content-banners-api';
+import { peekPatientCache } from '@/lib/patient-request';
 
 const PRODUCT_GRID_CLASSES = [
   'store-grid',
@@ -67,6 +69,14 @@ const cacheCart = (cart: CommerceCart) =>
   );
 const cacheWishlist = (wishlist: CommerceWishlist) =>
   useWishlistStore.getState().replace(wishlist.items.map((item) => item.sku.id));
+const bannerSlides = (banners: StoreBanner[]) => banners
+  .filter((banner) => storeBannerImageUrl(banner) !== null)
+  .map((banner) => ({
+    id: banner.id,
+    image: storeBannerImageUrl(banner)!,
+    alt: banner.title,
+    href: banner.destinationUrl,
+  }));
 
 export default function StorePage() {
   return (
@@ -102,11 +112,17 @@ function StoreCatalog() {
   const browseKey = `${session?.authentication.user.id ?? 'guest'}:${params.toString()}`;
   const [personalSettled, setPersonalSettled] = useState(false);
   const settlePersonal = useCallback(() => setPersonalSettled(true), []);
-  const [refreshing, setRefreshing] = useState(true);
+  const catalogKey = commerceProductsCacheKey({
+    query: search.trim() || undefined,
+    page,
+    pageSize: CATALOG_PAGE_SIZE,
+    categoryId,
+  });
+  const [refreshing, setRefreshing] = useState(() => peekPatientCache(catalogKey) == null);
   const requestVersion = useRef(0);
   const focusResults = useRef(false);
   const [products, setProducts] = useState<Awaited<ReturnType<typeof listCommerceProducts>> | null>(
-    null,
+    () => peekPatientCache(catalogKey) ?? null,
   );
   const [error, setError] = useState<string | null>(null);
   const [busySku, setBusySku] = useState<string | null>(null);
@@ -114,7 +130,7 @@ function StoreCatalog() {
   const [accountError, setAccountError] = useState<string | null>(null);
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
   const [accountRetry, setAccountRetry] = useState(0);
-  const [bannerLoading, setBannerLoading] = useState(true);
+  const [bannerLoading, setBannerLoading] = useState(() => peekPatientCache<StoreBanner[]>(storeBannersCacheKey()) == null);
   const [bannerError, setBannerError] = useState(false);
   const [bannerRetry, setBannerRetry] = useState(0);
   const cart = useCartStore((state) => state.items);
@@ -166,22 +182,18 @@ function StoreCatalog() {
     results?.focus({ preventScroll: true });
     results?.scrollIntoView({ block: 'start' });
   }, [products]);
-  useEffect(() => {
+  useLayoutEffect(() => {
     let cancelled = false;
-    useBannerStore.getState().setSlides([]);
+    const cached = peekPatientCache<StoreBanner[]>(storeBannersCacheKey());
+    if (cached) {
+      useBannerStore.getState().setSlides(bannerSlides(cached));
+    } else {
+      useBannerStore.getState().setSlides([]);
+    }
     void listStoreBanners()
       .then((banners) => {
         if (cancelled) return;
-        useBannerStore.getState().setSlides(
-          banners
-            .filter((banner) => storeBannerImageUrl(banner) !== null)
-            .map((banner) => ({
-              id: banner.id,
-              image: storeBannerImageUrl(banner)!,
-              alt: banner.title,
-              href: banner.destinationUrl,
-            })),
-        );
+        useBannerStore.getState().setSlides(bannerSlides(banners));
       })
       .catch(() => {
         if (!cancelled) setBannerError(true);

@@ -3,10 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("./api", () => ({ apiClient: { GET: vi.fn(), PUT: vi.fn(), POST: vi.fn() } }));
 
 import { apiClient } from "./api";
+import { clearPatientRequestCache } from "./patient-request";
 import { CommerceRequestError, checkoutCommerceOrder, commerceErrorMessage, createPaymentAttempt, getCommerceReceipt, listCommerceProducts, updateCommerceCart } from "./commerce-catalog-api";
 
 describe("commerce catalog API adapter", () => {
-  afterEach(() => vi.clearAllMocks());
+  afterEach(() => { vi.clearAllMocks(); clearPatientRequestCache(); });
 
   it("loads the public catalog without a bearer token and preserves TOMAN strings", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({ data: { items: [{ id: "11111111-1111-4111-8111-111111111111", title: "محصول", slug: "product", description: null, category: { id: "22222222-2222-4222-8222-222222222222", name: "دسته", slug: "category" }, skus: [{ id: "33333333-3333-4333-8333-333333333333", code: "SKU", title: null, currentPriceToman: "125000", currentTaxToman: "0" }] }], page: 1, pageSize: 24, total: 1 }, response: new Response(null, { status: 200 }) } as never);

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { generateMetadata } from "../app/(public)/store/products/[id]/layout";
+import { generateMetadata } from "../app/(shell)/(public)/store/products/[id]/layout";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
