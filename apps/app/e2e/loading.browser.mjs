@@ -82,7 +82,7 @@ try {
   }
   await page.setViewportSize({ width: 375, height: 812 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  expect(await page.locator('.skeleton').first().evaluate(el => getComputedStyle(el, '::after').animationName)).toBe('none');
+  expect(await page.locator('.loading-state').first().evaluate(el => getComputedStyle(el, '::after').animationName)).toBe('none');
   await page.addStyleTag({ content: 'html {font-size:200% !important}' });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await shot('settings-skeleton-zoom');

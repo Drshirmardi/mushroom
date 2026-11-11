@@ -238,18 +238,6 @@
   display: none;
 }
 
-/* Route transition (replaces the motion/react wrapper in (app)/template.tsx). */
-@keyframes app-route-enter {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.app-route-transition {
-  animation: app-route-enter 0.18s ease-out both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-route-transition { animation: none; }
-}
-
 /* Patient foundations: scoped rollout; existing module palettes remain intact. */
 @font-face {
   font-family: 'Vazirmatn';
@@ -937,20 +925,25 @@
   overflow: clip;
   contain: content;
 }
-.skeleton::after {
+.loading-state {
+  position: relative;
+  overflow: clip;
+}
+.loading-state::after {
   content: '';
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
   translate: -100% 0;
   animation: skeleton-shine 1.4s ease-in-out infinite;
+  pointer-events: none;
 }
 @keyframes skeleton-shine {
   to {
     translate: 100% 0;
   }
 }
-[dir='rtl'] .skeleton::after {
+[dir='rtl'] .loading-state::after {
   animation-name: skeleton-shine-rtl;
 }
 @keyframes skeleton-shine-rtl {
@@ -962,8 +955,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .skeleton::after,
-  [dir='rtl'] .skeleton::after {
+  .loading-state::after,
+  [dir='rtl'] .loading-state::after {
     animation: none;
     opacity: 0;
   }
@@ -5841,7 +5834,7 @@ html[data-keyboard-open='true'] .patient-shell-footer {
     background: CanvasText;
     opacity: 0.15;
   }
-  .skeleton::after {
+  .loading-state::after {
     display: none;
   }
 }
