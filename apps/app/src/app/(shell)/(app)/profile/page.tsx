@@ -1,6 +1,6 @@
 "use client";
 import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
-import { LoadingState } from "@/components/shared/skeletons";
+import { LoadingState, SkeletonBox } from "@/components/shared/skeletons";
 
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -34,7 +34,7 @@ function CurrentMezajCard({token}:{token:string}){
  const band=resource.data?.resultBand;
  const title=typeof band?.title==='string'?band.title:'نتیجهٔ ثبت‌شده';
  const router=useRouter();
- return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<LoadingState label="در حال دریافت نتیجه…" variant="list" />:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
+ return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<div role="status" className="loading-state space-y-2"><span className="sr-only">در حال دریافت نتیجه…</span><SkeletonBox className="h-4 w-2/3" /><SkeletonBox className="h-3 w-1/2" /></div>:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
 }
 
 /**

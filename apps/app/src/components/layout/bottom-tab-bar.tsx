@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import {
   ClipboardList,
@@ -39,11 +39,13 @@ export function BottomTabBar() {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const storePrefetched = useRef(false);
+  const [pending, setPending] = useState<{ from: string; href: string } | null>(null);
   const prefetchStore = () => {
     if (storePrefetched.current) return;
     storePrefetched.current = true;
     void router.prefetch("/store");
   };
+  const pendingHref = pending?.from === pathname ? pending.href : null;
   const cart = useCartStore((s) => s.items);
   const count = cartCount(cart);
   const visible = TAB_ITEMS.filter((item) => !item.hidden);
@@ -55,16 +57,24 @@ export function BottomTabBar() {
           const Icon = item.icon;
           const root = TAB_ROOT_SCREENS[item.tab];
           const href = screenToHref(root) ?? "/";
-          const isActive =
+          const routeActive =
             item.href === "/"
               ? pathname === "/"
               : pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = pendingHref != null ? item.href === pendingHref : routeActive;
+          const arm = () => {
+            if (!routeActive) setPending({ from: pathname, href: item.href });
+          };
           return (
             <Link
               key={item.label}
               href={href}
               prefetch={item.href === "/store" ? false : undefined}
-              onPointerDown={item.href === "/store" ? prefetchStore : undefined}
+              onPointerDown={() => {
+                if (item.href === "/store") prefetchStore();
+                arm();
+              }}
+              onClick={arm}
               onFocus={item.href === "/store" ? prefetchStore : undefined}
               aria-current={isActive ? "page" : undefined}
               className="patient-shell-nav__item"
