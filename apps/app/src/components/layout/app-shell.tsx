@@ -22,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [action, setAction] = useState<HTMLElement | null>(null);
   const [overlay, setOverlay] = useState<HTMLElement | null>(null);
   const frame = useRef<HTMLDivElement>(null);
+  const content = useRef<HTMLDivElement>(null);
   const footer = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = footer.current;
@@ -36,9 +37,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     measure();
     return () => observer.disconnect();
   }, []);
+  const handleShellWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (immersive || event.defaultPrevented || event.ctrlKey || ! event.deltaY) return;
+    const scrollEl = content.current;
+    const target = event.target;
+    if (!scrollEl || !(target instanceof Node)) return;
+    if (scrollEl.contains(target) || overlay?.contains(target)) return;
+    scrollEl.scrollTop += event.deltaY;
+  };
   return (
     <ShellSlots.Provider value={{ action, overlay }}>
       <div
+        onWheel={handleShellWheel}
         className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? 'patient-store-shell' : ''} ${isHome ? 'patient-home-shell' : ''} ${isStorefront ? 'patient-storefront-shell' : ''}`}
       >
         <div
@@ -48,6 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         >
           {/* Screen content */}
           <div
+            ref={content}
             className={`patient-shell-content min-h-0 flex-1 scrollbar-hide ${immersive ? 'overflow-hidden' : 'overflow-y-auto'}`}
           >
             {children}

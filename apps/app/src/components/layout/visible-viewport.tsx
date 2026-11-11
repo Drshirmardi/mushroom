@@ -22,11 +22,20 @@ export function VisibleViewport() {
       const touch = window.matchMedia('(pointer: coarse)').matches;
       const threshold = Math.max(120, baseline * .2);
       const keyboard = focused && !zoomed && (viewport ? baseline - height > threshold && (touch || window.innerHeight - height > threshold) : touch);
-      root.dataset.keyboardOpen = String(keyboard);
+      const nextKeyboard = String(keyboard);
+      if (root.dataset.keyboardOpen !== nextKeyboard) {
+        root.dataset.keyboardOpen = nextKeyboard;
+      }
       // Pinch zoom must retain normal browser panning and layout scale.
       if (!zoomed) {
-        root.style.setProperty('--app-visible-height', `${height}px`);
-        root.style.setProperty('--app-viewport-top', `${keyboard ? viewport?.offsetTop ?? 0 : 0}px`);
+        const nextHeight = `${Math.round(height)}px`;
+        const nextTop = `${Math.round(keyboard ? viewport?.offsetTop ?? 0 : 0)}px`;
+        if (root.style.getPropertyValue('--app-visible-height') !== nextHeight) {
+          root.style.setProperty('--app-visible-height', nextHeight);
+        }
+        if (root.style.getPropertyValue('--app-viewport-top') !== nextTop) {
+          root.style.setProperty('--app-viewport-top', nextTop);
+        }
       }
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };

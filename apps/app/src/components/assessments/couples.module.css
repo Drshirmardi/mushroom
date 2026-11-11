@@ -76,7 +76,7 @@
 .review dt { font-size: 12px; color: var(--patient-muted); margin-bottom: 4px; }
 .review dd { font-size: 14px; overflow-wrap: anywhere; }
 .policy { border: 1px solid var(--patient-divider); border-radius: 14px; padding: 16px; }
-.policyBody { max-height: 220px; overflow-y: auto; white-space: pre-wrap; font-size: 13px; line-height: 2; color: var(--patient-muted); margin-block: 12px 16px; }
+.policyBody { white-space: pre-wrap; font-size: 13px; line-height: 2; color: var(--patient-muted); margin-block: 12px 16px; }
 .consent { display: flex; align-items: flex-start; gap: 10px; padding-block: 10px; font-size: 14px; line-height: 1.9; cursor: pointer; }
 .consent input { accent-color: var(--patient-action); width: 18px; height: 18px; flex-shrink: 0; margin-top: 5px; }
 .success { display: flex; align-items: flex-start; gap: 12px; border-radius: 16px; background: var(--patient-soft); padding: 16px; margin-bottom: 18px; }

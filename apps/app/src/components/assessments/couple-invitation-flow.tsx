@@ -119,8 +119,7 @@ function Consent({
     >
       <h3 className="text-sm font-bold text-foreground">{policy.title}</h3>
       <div
-        className="max-h-44 overflow-y-auto whitespace-pre-wrap rounded-xl bg-muted/40 p-3 text-xs leading-7 text-muted-foreground"
-        tabIndex={0}
+        className="whitespace-pre-wrap rounded-xl bg-muted/40 p-3 text-xs leading-7 text-muted-foreground"
         aria-label={policy.title}
       >
         {policy.body}

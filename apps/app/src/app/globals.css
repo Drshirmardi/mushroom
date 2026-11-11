@@ -1187,6 +1187,7 @@
   justify-content: safe center;
   gap: clamp(8px, 2.5vw, 16px);
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   margin-top: 16px;
   padding: 4px 2px 8px;
   scrollbar-width: none;
@@ -2422,6 +2423,7 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   margin-block: 12px 0;
   padding-block: 4px;
   scrollbar-width: none;
@@ -4557,6 +4559,7 @@ button.home-content-link {
   display: flex;
   gap: 8px;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
   padding-bottom: 8px;
 }
 .service-categories button {
@@ -5630,6 +5633,9 @@ button.home-content-link {
 .patient-shell-content {
   min-width: 0;
   scroll-padding-block: 1rem;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
 }
 .patient-shell-nav {
   width: 100%;
@@ -5662,6 +5668,11 @@ button.home-content-link {
   position: relative;
   z-index: 20;
   min-width: 0;
+  pointer-events: none;
+}
+.patient-action-slot > *,
+.patient-shell-nav__dock {
+  pointer-events: auto;
 }
 .patient-shell-nav {
   border: 0;
@@ -5689,6 +5700,7 @@ button.home-content-link {
 .patient-app-frame[data-nav='false'] .patient-shell-footer:has(.patient-action-slot > *) {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--patient-surface);
+  pointer-events: auto;
 }
 html[data-keyboard-open='true'] .patient-shell-nav {
   display: none;

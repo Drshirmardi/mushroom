@@ -144,6 +144,7 @@ export default function ExpertiseSlider() {
                     flex
                     gap-4
                     overflow-x-auto
+                    overscroll-x-contain
                     pb-2
                     pr-1
                     pl-2
