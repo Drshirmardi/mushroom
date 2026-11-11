@@ -26,7 +26,13 @@ import { listCoupleSessions, listCoupleAssessments } from '@/lib/couples-api';
 import { loadSelfProfile } from '@/lib/onboarding/patient-onboarding';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { toP } from '@/lib/format';
-import styles from '@/components/assessments/couples.module.css';
+
+const primaryBtnClass =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50';
+const secondaryBtnClass =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50';
+const quietBtnClass =
+  'inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-primary transition hover:bg-primary/5 disabled:opacity-50';
 
 const linkStates: Record<string, { title: string; description: string; action: string }> = {
   AWAITING_PARTNER: {
@@ -119,44 +125,57 @@ function CouplesHub() {
   const focusConnections = Boolean(publicationId || (!hasAssessments && (linked || pending)));
 
   return (
-    <main className={styles.page} dir="rtl">
-      <Link href="/assessment" className={styles.back}>
+    <main className="mx-auto max-w-4xl space-y-5 p-4 pb-24" dir="rtl">
+      <Link
+        href="/assessment"
+        className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+      >
         <ArrowRight size={16} aria-hidden="true" />
         همه آزمون‌ها
       </Link>
-      <header className={styles.heading}>
-        <span aria-hidden="true">
-          <HeartHandshake size={28} strokeWidth={1.6} />
+      <header className="flex items-center gap-3.5 rounded-3xl border border-border/80 bg-white p-5 shadow-xs">
+        <span
+          aria-hidden="true"
+          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+        >
+          <HeartHandshake size={26} strokeWidth={1.8} />
         </span>
         <div>
-          <h1>آزمون زوجی</h1>
-          <p>یک مسیر مشترک، با حساب‌ها و پاسخ‌های مستقل</p>
+          <h1 className="text-lg font-bold text-foreground sm:text-xl">آزمون زوجی</h1>
+          <p className="mt-1 text-xs leading-6 text-muted-foreground sm:text-sm">
+            یک مسیر مشترک، با حساب‌ها و پاسخ‌های مستقل
+          </p>
         </div>
       </header>
 
       <section
-        className={styles.overview}
+        className="space-y-4 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 via-white to-white p-5 shadow-xs sm:p-6"
         aria-label={loading ? 'وضعیت همراهی' : undefined}
         aria-labelledby={loading ? undefined : 'couples-next-title'}
         aria-busy={loading}
       >
-        <span className={styles.eyebrow}>
-          <Users size={16} aria-hidden="true" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+          <Users size={15} aria-hidden="true" />
           {hasHistory ? 'قدم بعدی شما' : 'شروع همراهی'}
         </span>
         {loading ? (
           <LoadingState variant="card" />
         ) : (
-          <>
-            <h2 id="couples-next-title">{nextTitle}</h2>
-            <p>{nextDescription}</p>
-          </>
+          <div className="space-y-1.5">
+            <h2 id="couples-next-title" className="text-base font-bold text-foreground sm:text-lg">
+              {nextTitle}
+            </h2>
+            <p className="text-xs leading-7 text-muted-foreground sm:text-sm">{nextDescription}</p>
+          </div>
         )}
-        <div className={styles.overviewActions} hidden={startOpen && !hasHistory && !hasLoadError}>
+        <div
+          className="flex flex-wrap items-center gap-2.5"
+          hidden={startOpen && !hasHistory && !hasLoadError}
+        >
           {!loading && (hasHistory || hasLoadError) ? (
             <Link
               href="#couples-history"
-              className={startOpen ? styles.secondary : styles.primary}
+              className={startOpen ? secondaryBtnClass : primaryBtnClass}
               onClick={() =>
                 setHistoryView(
                   hasLoadError
@@ -181,7 +200,7 @@ function CouplesHub() {
           ) : (
             <button
               type="button"
-              className={styles.primary}
+              className={primaryBtnClass}
               onClick={() => openStart('invite')}
               disabled={busy}
             >
@@ -191,7 +210,7 @@ function CouplesHub() {
           )}
           <button
             type="button"
-            className={styles.secondary}
+            className={secondaryBtnClass}
             onClick={() => openStart('accept')}
             disabled={busy}
           >
@@ -201,7 +220,7 @@ function CouplesHub() {
           {!loading && hasHistory && (
             <button
               type="button"
-              className={styles.quiet}
+              className={quietBtnClass}
               onClick={() => openStart('invite')}
               disabled={busy}
             >
@@ -209,47 +228,76 @@ function CouplesHub() {
             </button>
           )}
         </div>
-        <ol className={styles.steps} aria-label="مسیر کلی ارزیابی زوجی">
-          <li>
-            <Users size={18} aria-hidden="true" />
-            <div>
-              دعوت و اتصال<span>هر نفر با حساب خودش</span>
+        <ol
+          className="grid gap-2.5 pt-2 sm:grid-cols-3"
+          aria-label="مسیر کلی ارزیابی زوجی"
+        >
+          <li className="flex items-start gap-2.5 rounded-2xl border border-border/70 bg-white p-3.5">
+            <Users size={18} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+            <div className="text-xs font-bold text-foreground">
+              دعوت و اتصال
+              <span className="mt-0.5 block font-normal text-muted-foreground">
+                هر نفر با حساب خودش
+              </span>
             </div>
           </li>
-          <li>
-            <ClipboardList size={18} aria-hidden="true" />
-            <div>
-              انتخاب و پاسخ‌گویی<span>با رضایت جداگانه هر دو نفر</span>
+          <li className="flex items-start gap-2.5 rounded-2xl border border-border/70 bg-white p-3.5">
+            <ClipboardList size={18} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
+            <div className="text-xs font-bold text-foreground">
+              انتخاب و پاسخ‌گویی
+              <span className="mt-0.5 block font-normal text-muted-foreground">
+                با رضایت جداگانه هر دو نفر
+              </span>
             </div>
           </li>
-          <li>
-            <HeartHandshake size={18} aria-hidden="true" />
-            <div>
-              نتیجه مشترک<span>پس از تکمیل شرایط هر دو نفر</span>
+          <li className="flex items-start gap-2.5 rounded-2xl border border-border/70 bg-white p-3.5">
+            <HeartHandshake
+              size={18}
+              className="mt-0.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
+            <div className="text-xs font-bold text-foreground">
+              نتیجه مشترک
+              <span className="mt-0.5 block font-normal text-muted-foreground">
+                پس از تکمیل شرایط هر دو نفر
+              </span>
             </div>
           </li>
         </ol>
       </section>
 
       {startOpen && (
-        <section className={styles.workspace} aria-labelledby="couples-start-title">
-          <div className={styles.sectionHeading}>
-            <div>
-              <h2 id="couples-start-title" ref={startHeading} tabIndex={-1}>
-                {mode === 'invite' ? 'دعوت همراهم' : 'پذیرش دعوت همراه'}
-              </h2>
-              <p>هر دو نفر باید حساب کاربری مستقل داشته باشید.</p>
-            </div>
+        <section
+          className="space-y-4 rounded-3xl border border-border/80 bg-white p-5 shadow-xs sm:p-6"
+          aria-labelledby="couples-start-title"
+        >
+          <div>
+            <h2
+              id="couples-start-title"
+              ref={startHeading}
+              tabIndex={-1}
+              className="text-base font-bold text-foreground"
+            >
+              {mode === 'invite' ? 'دعوت همراهم' : 'پذیرش دعوت همراه'}
+            </h2>
+            <p className="mt-1 text-xs leading-6 text-muted-foreground">
+              هر دو نفر باید حساب کاربری مستقل داشته باشید.
+            </p>
           </div>
-          <div className={styles.switch} role="group" aria-label="انتخاب روش همراهی">
+          <div
+            className="grid grid-cols-2 gap-1.5 rounded-2xl bg-muted/60 p-1.5"
+            role="group"
+            aria-label="انتخاب روش همراهی"
+          >
             <button
               type="button"
               aria-pressed={mode === 'invite'}
               aria-controls="couples-invite-panel"
               disabled={busy}
               onClick={() => setMode('invite')}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition aria-pressed:bg-white aria-pressed:text-foreground aria-pressed:shadow-2xs"
             >
-              <UserPlus size={18} aria-hidden="true" />
+              <UserPlus size={16} aria-hidden="true" />
               دعوت می‌سازم
             </button>
             <button
@@ -258,18 +306,21 @@ function CouplesHub() {
               aria-controls="couples-accept-panel"
               disabled={busy}
               onClick={() => setMode('accept')}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition aria-pressed:bg-white aria-pressed:text-foreground aria-pressed:shadow-2xs"
             >
-              <Mail size={18} aria-hidden="true" />
+              <Mail size={16} aria-hidden="true" />
               کد دعوت دارم
             </button>
           </div>
           <div id="couples-invite-panel" hidden={mode !== 'invite'}>
-            <p className="text-sm leading-8">
-              دعوت‌های جدید با انتخاب خدمت و شماره همراه ساخته می‌شوند.{' '}
-              <Link href="/assessment/couples" className={styles.primary}>
+            <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/30 p-4">
+              <p className="text-sm leading-7 text-muted-foreground">
+                دعوت‌های جدید با انتخاب خدمت و شماره همراه ساخته می‌شوند.
+              </p>
+              <Link href="/assessment/couples" className={primaryBtnClass}>
                 انتخاب خدمت و دعوت تلفنی
               </Link>
-            </p>
+            </div>
           </div>
           <div id="couples-accept-panel" hidden={mode !== 'accept'}>
             <CoupleAcceptFlow
@@ -285,31 +336,40 @@ function CouplesHub() {
       {(hasHistory || loading || sessions.error || assessments.error) && (
         <section
           id="couples-history"
-          className={styles.history}
+          className="space-y-4 rounded-3xl border border-border/80 bg-white p-5 shadow-xs sm:p-6"
           aria-labelledby="couples-history-title"
           tabIndex={-1}
         >
-          <div className={styles.sectionHeading}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 id="couples-history-title">پیگیری شما</h2>
-              <p>برای ادامه، دعوت یا ارزیابی موردنظرت را باز کن.</p>
+              <h2 id="couples-history-title" className="text-base font-bold text-foreground">
+                پیگیری شما
+              </h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                برای ادامه، دعوت یا ارزیابی موردنظرت را باز کن.
+              </p>
             </div>
             <button
               type="button"
-              className={styles.quiet}
+              className={quietBtnClass}
               disabled={loading || busy}
               onClick={refresh}
             >
-              <RefreshCw size={16} aria-hidden="true" />
+              <RefreshCw size={15} aria-hidden="true" />
               به‌روزرسانی
             </button>
           </div>
-          <div className={styles.switch} role="group" aria-label="نوع سوابق زوجی">
+          <div
+            className="grid grid-cols-2 gap-1.5 rounded-2xl bg-muted/60 p-1.5"
+            role="group"
+            aria-label="نوع سوابق زوجی"
+          >
             <button
               type="button"
               aria-pressed={view === 'connections'}
               aria-controls="couples-history-panel"
               onClick={() => setHistoryView('connections')}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition aria-pressed:bg-white aria-pressed:text-foreground aria-pressed:shadow-2xs"
             >
               همراهی‌ها {sessions.data ? `(${toP(sessions.data.total)})` : ''}
             </button>
@@ -318,15 +378,16 @@ function CouplesHub() {
               aria-pressed={view === 'assessments'}
               aria-controls="couples-history-panel"
               onClick={() => setHistoryView('assessments')}
+              className="inline-flex min-h-10 items-center justify-center rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground transition aria-pressed:bg-white aria-pressed:text-foreground aria-pressed:shadow-2xs"
             >
               ارزیابی‌ها {assessments.data ? `(${toP(assessments.data.total)})` : ''}
             </button>
           </div>
-          <div id="couples-history-panel">
+          <div id="couples-history-panel" className="space-y-3">
             {view === 'connections' ? (
               <>
                 <PatientResourceState {...sessions} retry={() => void sessions.reload()} />
-                <div className={styles.list}>
+                <div className="grid gap-3">
                   {sessions.data?.items.map((item, index) => {
                     const state = linkStates[item.state] ?? {
                       title: 'بررسی همراهی',
@@ -340,11 +401,17 @@ function CouplesHub() {
                           ? Clock3
                           : Users;
                     return (
-                      <Link key={item.id} href={toLink(item.id)} className={styles.item}>
-                        <Icon size={22} aria-hidden="true" />
-                        <div className={styles.itemBody}>
-                          <div className={styles.itemMeta}>
-                            <span>
+                      <Link
+                        key={item.id}
+                        href={toLink(item.id)}
+                        className="group flex items-start gap-3.5 rounded-2xl border border-border/80 bg-background/50 p-4 transition hover:border-primary/40 hover:bg-primary/5"
+                      >
+                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <Icon size={20} aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                            <span className="font-bold text-foreground">
                               همراهی {toP((page - 1) * (sessions.data?.pageSize ?? 20) + index + 1)}
                             </span>
                             <span>
@@ -353,11 +420,13 @@ function CouplesHub() {
                               })}
                             </span>
                           </div>
-                          <h3>{state.title}</h3>
-                          <p>{state.description}</p>
-                          <span className={styles.itemAction}>
+                          <h3 className="text-sm font-bold text-foreground">{state.title}</h3>
+                          <p className="text-xs leading-6 text-muted-foreground">
+                            {state.description}
+                          </p>
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
                             {state.action}
-                            <ArrowLeft size={16} aria-hidden="true" />
+                            <ArrowLeft size={15} aria-hidden="true" />
                           </span>
                         </div>
                       </Link>
@@ -365,20 +434,20 @@ function CouplesHub() {
                   })}
                 </div>
                 {sessions.data?.total === 0 && (
-                  <div className={styles.empty}>
-                    <h3>هنوز همراهی ثبت نشده</h3>
-                    <p>
+                  <div className="space-y-2 rounded-2xl border border-dashed border-border p-5 text-center">
+                    <h3 className="text-sm font-bold text-foreground">هنوز همراهی ثبت نشده</h3>
+                    <p className="text-xs leading-6 text-muted-foreground">
                       دعوت بساز یا کدی را که از همراهت گرفته‌ای وارد کن. برای شروع، یک دعوت کافی
                       است.
                     </p>
                     <button
                       type="button"
-                      className={styles.quiet}
+                      className={quietBtnClass}
                       onClick={() => openStart('invite')}
                       disabled={busy}
                     >
                       شروع همراهی
-                      <ArrowLeft size={16} aria-hidden="true" />
+                      <ArrowLeft size={15} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -389,7 +458,7 @@ function CouplesHub() {
             ) : (
               <>
                 <PatientResourceState {...assessments} retry={() => void assessments.reload()} />
-                <div className={styles.list}>
+                <div className="grid gap-3">
                   {assessments.data?.items.map((item) => {
                     const withdrawn = Boolean(item.ownConsent.withdrawnAt);
                     const ownAccepted = Boolean(item.ownConsent.acceptedAt && !withdrawn);
@@ -411,20 +480,24 @@ function CouplesHub() {
                       <Link
                         key={item.id}
                         href={`/assessment/couples/${encodeURIComponent(item.id)}`}
-                        className={styles.item}
+                        className="group flex items-start gap-3.5 rounded-2xl border border-border/80 bg-background/50 p-4 transition hover:border-primary/40 hover:bg-primary/5"
                       >
-                        <ClipboardList size={22} aria-hidden="true" />
-                        <div className={styles.itemBody}>
-                          <div className={styles.itemMeta}>
-                            <span className={styles.badge}>{title}</span>
+                        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                          <ClipboardList size={20} aria-hidden="true" />
+                        </span>
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div>
+                            <span className="inline-flex rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                              {title}
+                            </span>
                           </div>
-                          <h3>{item.title}</h3>
-                          <p>{description}</p>
-                          <span className={styles.itemAction}>
+                          <h3 className="text-sm font-bold text-foreground">{item.title}</h3>
+                          <p className="text-xs leading-6 text-muted-foreground">{description}</p>
+                          <span className="inline-flex items-center gap-1 text-xs font-bold text-primary">
                             {!ownAccepted && !withdrawn
                               ? 'بررسی شرایط ارزیابی'
                               : 'باز کردن ارزیابی'}
-                            <ArrowLeft size={16} aria-hidden="true" />
+                            <ArrowLeft size={15} aria-hidden="true" />
                           </span>
                         </div>
                       </Link>
@@ -432,16 +505,20 @@ function CouplesHub() {
                   })}
                 </div>
                 {assessments.data?.total === 0 && (
-                  <div className={styles.empty}>
-                    <h3>هنوز آزمون مشترکی انتخاب نشده</h3>
-                    <p>پس از پذیرفته‌شدن دعوت، از بخش همراهی‌ها آزمونتان را انتخاب کنید.</p>
+                  <div className="space-y-2 rounded-2xl border border-dashed border-border p-5 text-center">
+                    <h3 className="text-sm font-bold text-foreground">
+                      هنوز آزمون مشترکی انتخاب نشده
+                    </h3>
+                    <p className="text-xs leading-6 text-muted-foreground">
+                      پس از پذیرفته‌شدن دعوت، از بخش همراهی‌ها آزمونتان را انتخاب کنید.
+                    </p>
                     <button
                       type="button"
-                      className={styles.quiet}
+                      className={quietBtnClass}
                       onClick={() => setHistoryView('connections')}
                     >
                       دیدن همراهی‌ها
-                      <ArrowLeft size={16} aria-hidden="true" />
+                      <ArrowLeft size={15} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -460,18 +537,20 @@ function CouplesHub() {
 
       <EducationalCoupleHistory token={token} />
       <details
-        className={styles.help}
+        className="rounded-3xl border border-border/80 bg-white p-5 shadow-xs"
         onToggle={(event) => setIdentityOpen(event.currentTarget.open)}
       >
-        <summary>شناسه من برای دعوت کجاست؟</summary>
-        <p>
+        <summary className="cursor-pointer text-sm font-bold text-foreground">
+          شناسه من برای دعوت کجاست؟
+        </summary>
+        <p className="mt-2 text-xs leading-6 text-muted-foreground">
           اگر همراهت می‌خواهد دعوتت کند، شناسه بیمار خودت و شماره موبایلی که با آن ثبت‌نام کرده‌ای
           را فقط برای او بفرست.
         </p>
         {identityOpen && <InvitationIdentity token={token} />}
       </details>
-      <aside className={styles.privacy}>
-        <ShieldCheck size={20} aria-hidden="true" />
+      <aside className="flex items-start gap-3 rounded-2xl border border-border/80 bg-muted/40 p-4 text-xs leading-6 text-muted-foreground">
+        <ShieldCheck size={20} className="mt-0.5 shrink-0 text-primary" aria-hidden="true" />
         <p>
           پاسخ‌ها و نتیجه فردی‌ات خصوصی می‌مانند. اتصال حساب‌ها اجازه دیدن آن‌ها را به همراه
           نمی‌دهد؛ نتیجه مشترک به رضایت جداگانه هر دو نفر نیاز دارد.
@@ -484,7 +563,7 @@ function CouplesHub() {
 function InvitationIdentity({ token }: { token: string }) {
   const profile = usePatientResource(useCallback(() => loadSelfProfile(token), [token]));
   return (
-    <div className={styles.flow}>
+    <div className="mt-3 space-y-3">
       <PatientResourceState {...profile} retry={() => void profile.reload()} />
       {profile.data && (
         <CopyValue value={profile.data.patientId} label="شناسه بیمار من" id="couples-own-id" />

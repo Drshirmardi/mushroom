@@ -163,89 +163,94 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
           {!replacesId && data.eligibleRoles.length > 0 && (
             <ol
               aria-label="مراحل شروع تست دو نفره"
-              className="grid grid-cols-2 gap-2 rounded-2xl border border-border/70 bg-white p-2 text-xs"
+              className="grid grid-cols-1 gap-2 rounded-2xl border border-border/80 bg-white p-2.5 text-xs shadow-2xs sm:grid-cols-2"
             >
               <li
                 aria-current={!isPrepaid ? 'step' : undefined}
                 className={[
-                  'flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium transition-colors',
+                  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-semibold leading-6 transition-colors',
                   !isPrepaid
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
                     : 'bg-emerald-50 text-emerald-800',
                 ].join(' ')}
               >
                 <span
                   className={[
-                    'flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold',
+                    'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold',
                     !isPrepaid ? 'bg-primary text-white' : 'bg-emerald-600 text-white',
                   ].join(' ')}
                 >
-                  {isPrepaid ? <Check size={12} aria-hidden="true" /> : '۱'}
+                  {isPrepaid ? <Check size={14} aria-hidden="true" /> : '۱'}
                 </span>
-                <span className="truncate">۱. پرداخت هزینه تست</span>
+                <span className="min-w-0">۱. پرداخت هزینه تست</span>
               </li>
               <li
                 aria-current={isPrepaid ? 'step' : undefined}
                 className={[
-                  'flex items-center gap-2 rounded-xl px-3 py-2.5 font-medium transition-colors',
+                  'flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 font-semibold leading-6 transition-colors',
                   isPrepaid
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-muted/30 text-muted-foreground',
+                    ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+                    : 'bg-muted/40 text-muted-foreground',
                 ].join(' ')}
               >
                 <span
                   className={[
-                    'flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold',
+                    'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold',
                     isPrepaid ? 'bg-primary text-white' : 'bg-border text-muted-foreground',
                   ].join(' ')}
                 >
                   ۲
                 </span>
-                <span className="truncate">۲. ساخت لینک دعوت</span>
+                <span className="min-w-0">۲. ساخت لینک دعوت نفر دوم</span>
               </li>
             </ol>
           )}
 
-          <div className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+          <div className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <p className="text-xs text-muted-foreground">هزینهٔ کل دو نفر</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">
+                <p className="text-xs font-medium text-muted-foreground">هزینهٔ کل دو نفر</p>
+                <p className="mt-1 text-lg font-bold text-foreground sm:text-xl">
                   {formatRial(BigInt(data.amountRial))} تومان
                 </p>
               </div>
-              {isPrepaid && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800">
+              {isPrepaid ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 ring-1 ring-emerald-200/80">
                   <CheckCircle2 size={15} aria-hidden="true" />
                   پرداخت‌شده
                 </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                  بازگشت وجه در صورت لغو دعوت
+                </span>
               )}
             </div>
-            <p className="mt-2 text-xs leading-6 text-muted-foreground">
+            <p className="mt-2.5 text-xs leading-6 text-muted-foreground sm:text-sm">
               {isPrepaid
                 ? 'هزینهٔ این تست توسط شما پرداخت شده است. پس از ورود نفر دوم و تأیید شرایط، هر نفر جداگانه به سوالات پاسخ می‌دهد.'
                 : 'هر نفر جداگانه پاسخ می‌دهد. پرداخت هزینه پیش از ساخت دعوت و دریافت لینک انجام می‌شود.'}
             </p>
-            <details className="group mt-3 border-t border-border/60 pt-2">
-              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-sm font-medium text-primary [&::-webkit-details-marker]:hidden">
+            <details className="group mt-3.5 border-t border-border/60 pt-2.5">
+              <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between gap-2 text-xs font-semibold text-primary sm:text-sm [&::-webkit-details-marker]:hidden">
                 شرایط شرکت در این تست
                 <ChevronDown aria-hidden="true" size={17} className="transition-transform group-open:rotate-180" />
               </summary>
-              <div className="space-y-1 pb-2 text-sm leading-7 text-muted-foreground">
+              <div className="mt-2 grid gap-2 pb-1 text-xs leading-6 text-muted-foreground sm:grid-cols-2 sm:text-sm">
                 {data.definition.roles.map(item => (
-                  <p key={item.id}>
-                    {item.title}: حداقل {item.minimumAgeYears.toLocaleString('fa-IR')} سال؛
-                    {' '}{item.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}
-                  </p>
+                  <div key={item.id} className="rounded-xl bg-muted/35 px-3 py-2">
+                    <span className="font-semibold text-foreground">{item.title}:</span>{' '}
+                    حداقل {item.minimumAgeYears.toLocaleString('fa-IR')} سال ·{' '}
+                    {item.genders.map(gender => gender === 'MALE' ? 'آقا' : 'خانم').join(' یا ')}
+                  </div>
                 ))}
               </div>
             </details>
           </div>
 
           {data.eligibleRoles.length === 0 ? (
-            <section role="status" className="rounded-2xl border border-border bg-white p-4 sm:p-5">
-              <h2 className="text-base font-semibold">ابتدا مشخصاتت را بررسی کن</h2>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
+            <section role="status" className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5">
+              <h2 className="text-base font-bold text-amber-950">ابتدا مشخصاتت را بررسی کن</h2>
+              <p className="mt-2 text-sm leading-7 text-amber-900">
                 برای انتخاب نقش در این تست، اطلاعات حساب و شرایط شرکت باید بررسی شود.
               </p>
               <Link
@@ -257,9 +262,9 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
             </section>
           ) : !isPrepaid ? (
             isPendingPayment ? (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4 sm:p-5 space-y-3">
-                <p className="text-sm font-semibold text-amber-950">پرداخت در انتظار تکمیل</p>
-                <p className="text-xs leading-6 text-amber-900">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5 space-y-3">
+                <p className="text-sm font-bold text-amber-950">پرداخت در انتظار تکمیل</p>
+                <p className="text-xs leading-6 text-amber-900 sm:text-sm">
                   یک درخواست پرداخت در انتظار برای این تست دارید. پس از تکمیل پرداخت، بلافاصله می‌توانید لینک دعوت نفر دوم را بسازید.
                 </p>
                 <button
@@ -267,14 +272,17 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   className={button}
                   onClick={() => router.push(`/profile/wallet/pay?intentId=${data.prepayment!.intentId}`)}
                 >
-                  ادامه پرداخت ({formatRial(BigInt(data.prepayment!.amountRial))} تومان)
+                  <span>ادامه پرداخت</span>
+                  <span className="rounded-lg bg-white/20 px-2 py-0.5 text-xs font-bold">
+                    {formatRial(BigInt(data.prepayment!.amountRial))} تومان
+                  </span>
                 </button>
               </div>
             ) : (
-              <div className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5 space-y-4">
+              <div className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5 space-y-4">
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">مرحله اول: پرداخت هزینه تست</h2>
-                  <p className="mt-1 text-sm leading-7 text-muted-foreground">
+                  <h2 className="text-base font-bold text-foreground">مرحله اول: پرداخت هزینه تست</h2>
+                  <p className="mt-1.5 text-sm leading-7 text-muted-foreground">
                     هزینهٔ تست دو نفره ابتدا توسط شما پرداخت می‌شود. پس از پرداخت، مشخصات نفر دوم را وارد کرده و لینک دعوت اختصاصی دریافت می‌کنید. در صورت لغو یا رد دعوت پیش از پذیرش، کل مبلغ به کیف پول شما بازگردانده می‌شود.
                   </p>
                 </div>
@@ -290,7 +298,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 )}
                 <button
                   type="button"
-                  className={button}
+                  className={button + ' flex-wrap'}
                   disabled={busy || prepayBusy || (Boolean(data.termsPolicy) && !termsAccepted)}
                   onClick={() => void handlePrepay()}
                   aria-busy={Boolean(prepayBusy)}
@@ -298,7 +306,12 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   {prepayBusy ? (
                     <><HeartbeatLoader />در حال انتقال به صفحه پرداخت…</>
                   ) : (
-                    `پرداخت و ادامه به ساخت دعوت (${formatRial(BigInt(data.amountRial))} تومان)`
+                    <>
+                      <span>پرداخت و ادامه به ساخت دعوت</span>
+                      <span className="rounded-lg bg-white/20 px-2.5 py-0.5 text-xs font-bold">
+                        {formatRial(BigInt(data.amountRial))} تومان
+                      </span>
+                    </>
                   )}
                 </button>
                 {error && (
@@ -312,13 +325,13 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
             <>
               {replacesId ? (
                 <div className="rounded-2xl border border-primary/25 bg-primary/5 p-4 sm:p-5 space-y-2">
-                  <p className="text-sm font-semibold text-foreground">تغییر شماره موبایل نفر دوم</p>
-                  <p className="text-xs leading-6 text-muted-foreground">
+                  <p className="text-sm font-bold text-foreground">تغییر شماره موبایل نفر دوم</p>
+                  <p className="text-xs leading-6 text-muted-foreground sm:text-sm">
                     هزینهٔ این تست قبلاً پرداخت شده و نیازی به پرداخت مجدد نیست. با ثبت شمارهٔ جدید، لینک دعوت قبلی غیرفعال شده و لینک جدید ساخته می‌شود.
                   </p>
                   <Link
                     href={marriageHref('/assessment/marriage/requests/' + encodeURIComponent(replacesId))}
-                    className="inline-flex min-h-9 items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+                    className="inline-flex min-h-9 items-center gap-1.5 text-xs font-bold text-primary hover:underline sm:text-sm"
                   >
                     بازگشت به دعوت فعلی
                     <ArrowLeft size={14} aria-hidden="true" />
@@ -328,8 +341,8 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 sm:p-5 space-y-2">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-emerald-950">هزینه تست پرداخت شده است</p>
-                      <p className="mt-1 text-xs leading-6 text-emerald-800">
+                      <p className="text-sm font-bold text-emerald-950">هزینه تست پرداخت شده است</p>
+                      <p className="mt-1 text-xs leading-6 text-emerald-800 sm:text-sm">
                         اکنون نقش خود را انتخاب کرده و شماره موبایل نفر دوم را وارد کنید تا لینک دعوت اختصاصی ساخته شود.
                       </p>
                     </div>
@@ -337,7 +350,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                       type="button"
                       disabled={refundBusy || busy}
                       onClick={() => setConfirmRefund(true)}
-                      className="shrink-0 rounded-lg border border-emerald-300 bg-white/80 px-3 py-1.5 text-xs font-medium text-emerald-900 transition-colors hover:bg-white disabled:opacity-50"
+                      className="shrink-0 rounded-xl border border-emerald-300 bg-white px-3 py-2 text-xs font-semibold text-emerald-900 shadow-2xs transition-colors hover:bg-emerald-50 disabled:opacity-50"
                     >
                       انصراف و استرداد به کیف پول
                     </button>
@@ -347,9 +360,9 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
 
               <form
                 onSubmit={submit}
-                className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5"
+                className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5"
               >
-                <h2 className="text-base font-semibold text-foreground">
+                <h2 className="text-base font-bold text-foreground">
                   {replacesId ? 'مشخصات دعوت جدید' : 'مرحله دوم: دعوت نفر دوم'}
                 </h2>
                 <p className="mt-1 text-sm leading-7 text-muted-foreground">
@@ -357,22 +370,54 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 </p>
 
                 <fieldset disabled={busy || refundBusy} className="mt-5 space-y-4">
-                  <label className="block space-y-2 text-sm font-medium text-foreground">
-                    <span>نقش من</span>
-                    <select
-                      required
-                      value={ownRole}
-                      onChange={event => setRole(event.target.value)}
-                      className="block min-h-12 w-full rounded-xl border border-border bg-white px-3 py-2 text-base font-normal text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  <div className="space-y-2">
+                    <span className="block text-sm font-semibold text-foreground">نقش من</span>
+                    <div
+                      role="radiogroup"
+                      aria-label="نقش من"
+                      className="grid gap-2.5 sm:grid-cols-2"
                     >
-                      <option value="">انتخاب نقش</option>
                       {data.definition.roles
                         .filter(item => data.eligibleRoles.includes(item.id))
-                        .map(item => <option key={item.id} value={item.id}>{item.title}</option>)}
-                    </select>
-                  </label>
+                        .map(item => {
+                          const isSelected = ownRole === item.id;
+                          return (
+                            <label
+                              key={item.id}
+                              className={[
+                                'flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition-all',
+                                isSelected
+                                  ? 'border-primary bg-primary/6 ring-1 ring-primary/25'
+                                  : 'border-border/80 bg-white hover:border-primary/40',
+                              ].join(' ')}
+                            >
+                              <input
+                                type="radio"
+                                name="initiatorRole"
+                                required
+                                value={item.id}
+                                checked={isSelected}
+                                onChange={event => setRole(event.target.value)}
+                                className="mt-1 size-4 shrink-0 accent-primary"
+                              />
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-bold text-foreground">
+                                  {item.title}
+                                </span>
+                                <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                                  حداقل {item.minimumAgeYears.toLocaleString('fa-IR')} سال ·{' '}
+                                  {item.genders
+                                    .map(gender => (gender === 'MALE' ? 'آقا' : 'خانم'))
+                                    .join(' یا ')}
+                                </span>
+                              </span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                  </div>
 
-                  <label className="block space-y-2 text-sm font-medium text-foreground">
+                  <label className="block space-y-2 text-sm font-semibold text-foreground">
                     <span>شماره موبایل نفر دوم</span>
                     <input
                       ref={phoneInput}
@@ -387,7 +432,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                       aria-invalid={Boolean(phoneError)}
                       aria-describedby={phoneError ? 'marriage-phone-error' : 'marriage-phone-help'}
                       onChange={event => { setPhone(event.target.value); setPhoneError(null); }}
-                      className="block min-h-12 w-full rounded-xl border border-border bg-white px-3 py-2 text-left text-base font-normal text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:border-red-500"
+                      className="block min-h-12 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-left text-base font-normal text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary aria-[invalid=true]:border-red-500"
                     />
                   </label>
 
@@ -610,68 +655,117 @@ export function MarriageRequestView({ id }: { id: string }) {
 
         {data && (
           <>
-            <section aria-live="polite" className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+            {data.status !== 'CANCELLED' && data.status !== 'REPLACED' && (
+              <ol
+                aria-label="مراحل انجام تست دو نفره"
+                className="grid grid-cols-2 gap-2 rounded-2xl border border-border/80 bg-white p-2.5 text-xs shadow-2xs sm:grid-cols-4"
+              >
+                {[
+                  { label: '۱. ارسال دعوت', done: true, current: false },
+                  {
+                    label: '۲. پذیرش همراه',
+                    done: data.status === 'ACCEPTED',
+                    current: data.status === 'PENDING',
+                  },
+                  {
+                    label: '۳. پاسخ‌گویی دو نفر',
+                    done: false,
+                    current: data.status === 'ACCEPTED',
+                  },
+                  { label: '۴. نتیجه مشترک', done: false, current: false },
+                ].map(step => (
+                  <li
+                    key={step.label}
+                    aria-current={step.current ? 'step' : undefined}
+                    className={[
+                      'flex items-center gap-2 rounded-xl px-2.5 py-2 font-semibold leading-5',
+                      step.current
+                        ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+                        : step.done
+                          ? 'bg-emerald-50 text-emerald-800'
+                          : 'bg-muted/40 text-muted-foreground',
+                    ].join(' ')}
+                  >
+                    <span
+                      className={[
+                        'flex size-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold',
+                        step.current
+                          ? 'bg-primary text-white'
+                          : step.done
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-border text-muted-foreground',
+                      ].join(' ')}
+                    >
+                      {step.done ? <Check size={12} aria-hidden="true" /> : '•'}
+                    </span>
+                    <span className="min-w-0">{step.label}</span>
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            <section aria-live="polite" className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span
                   className={[
                     'inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold',
                     data.status === 'ACCEPTED'
-                      ? 'bg-emerald-50 text-emerald-800'
+                      ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80'
                       : data.status === 'PENDING'
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
                         : 'bg-muted text-muted-foreground',
                   ].join(' ')}
                 >
                   {statuses[data.status] ?? 'وضعیت دعوت'}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="rounded-full bg-muted/60 px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
                   {data.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'}
                 </span>
               </div>
-              <h2 className="mt-3 text-lg font-semibold leading-8 text-foreground">{guidance?.title}</h2>
+              <h2 className="mt-3 text-lg font-bold leading-8 text-foreground">{guidance?.title}</h2>
               <p className="mt-1 text-sm leading-7 text-muted-foreground">{guidance?.description}</p>
               {data.status === 'CANCELLED' && (
-                <p className="mt-2 rounded-xl bg-muted/40 p-3 text-xs leading-6 text-muted-foreground">
+                <p className="mt-3 rounded-xl bg-muted/40 p-3 text-xs leading-6 text-muted-foreground">
                   در صورت پرداخت قبلی، هزینهٔ این دعوت به کیف پول دعوت‌کننده بازگردانده شده است.
                 </p>
               )}
 
-              <dl className="mt-4 grid gap-3 border-t border-border/70 pt-4 text-sm sm:grid-cols-2">
+              <dl className="mt-4 grid gap-2.5 border-t border-border/70 pt-4 text-sm sm:grid-cols-2">
                 {data.isInitiator && data.recipientPhoneMasked && (
-                  <div className="min-w-0">
+                  <div className="min-w-0 rounded-xl bg-muted/25 px-3.5 py-2.5">
                     <dt className="text-xs text-muted-foreground">شماره نفر دوم</dt>
-                    <dd className="mt-1 font-medium"><bdi dir="ltr">{data.recipientPhoneMasked}</bdi></dd>
+                    <dd className="mt-1 font-bold text-foreground"><bdi dir="ltr">{data.recipientPhoneMasked}</bdi></dd>
                   </div>
                 )}
                 {!data.isInitiator && data.initiatorName && (
-                  <div className="min-w-0">
+                  <div className="min-w-0 rounded-xl bg-muted/25 px-3.5 py-2.5">
                     <dt className="text-xs text-muted-foreground">دعوت‌کننده</dt>
-                    <dd className="mt-1 font-medium">{data.initiatorName}</dd>
+                    <dd className="mt-1 font-bold text-foreground">{data.initiatorName}</dd>
                   </div>
                 )}
-                <div>
+                <div className="rounded-xl bg-muted/25 px-3.5 py-2.5">
                   <dt className="text-xs text-muted-foreground">نقش شما</dt>
-                  <dd className="mt-1 font-medium">
+                  <dd className="mt-1 font-bold text-foreground">
                     {data.service.definition.roles.find(role => role.id === data.ownRole)?.title ?? 'در حال بررسی'}
                   </dd>
                 </div>
-                <div>
+                <div className="rounded-xl bg-muted/25 px-3.5 py-2.5">
                   <dt className="text-xs text-muted-foreground">هزینهٔ کل دو نفر</dt>
-                  <dd className="mt-1 font-medium">
+                  <dd className="mt-1 font-bold text-foreground">
                     {formatRial(BigInt(data.service.amountRial))} تومان
                     {data.status !== 'CANCELLED' && (
-                      <span className="mr-1.5 text-xs font-normal text-emerald-700">(پرداخت‌شده)</span>
+                      <span className="mr-1.5 text-xs font-semibold text-emerald-700">(پرداخت‌شده)</span>
                     )}
                   </dd>
                 </div>
               </dl>
 
-              <details className="group mt-3 border-t border-border/60 pt-2">
-                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-sm text-muted-foreground [&::-webkit-details-marker]:hidden">
+              <details className="group mt-3.5 border-t border-border/60 pt-2">
+                <summary className="flex min-h-10 cursor-pointer list-none items-center justify-between text-xs font-semibold text-muted-foreground sm:text-sm [&::-webkit-details-marker]:hidden">
                   شرایط و جزئیات دعوت
                   <ChevronDown aria-hidden="true" size={16} className="transition-transform group-open:rotate-180" />
                 </summary>
-                <div className="space-y-1 pb-1 text-xs leading-6 text-muted-foreground">
+                <div className="space-y-1.5 pb-1 pt-1 text-xs leading-6 text-muted-foreground">
                   <p>
                     زمان دعوت: {new Date(data.createdAt).toLocaleString('fa-IR', {
                       dateStyle: 'medium',
@@ -690,14 +784,14 @@ export function MarriageRequestView({ id }: { id: string }) {
             </section>
 
             {data.eligibilityNotConfirmed && (
-              <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm leading-7 text-amber-900">
+              <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">
                 شرایط شرکت در این تست هنوز تأیید نشده است.
               </p>
             )}
 
             {(!data.ownEligible || data.continuation?.profileRequired) && (
-              <section className="rounded-2xl border border-border bg-white p-4 sm:p-5">
-                <p className="text-sm leading-7">
+              <section className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 sm:p-5">
+                <p className="text-sm font-medium leading-7 text-amber-950">
                   {ineligibility[data.ownIneligibilityReason ?? ''] ??
                     'برای ادامه، مشخصات و شرایط نقش خودت را بررسی کن.'}
                 </p>
@@ -720,18 +814,18 @@ export function MarriageRequestView({ id }: { id: string }) {
             )}
 
             {data.status === 'PENDING' && data.isInitiator && (
-              <section className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+              <section className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
                 <label className="block space-y-2 text-sm">
-                  <span className="font-medium text-foreground">لینک اختصاصی دعوت</span>
+                  <span className="font-bold text-foreground">لینک اختصاصی دعوت نفر دوم</span>
                   <input
                     dir="ltr"
                     readOnly
                     value={origin ? new URL(data.invitationPath, origin).toString() : data.invitationPath}
                     onFocus={event => event.currentTarget.select()}
-                    className="block min-h-12 w-full rounded-xl border border-border bg-muted/20 px-3 text-left text-sm text-foreground"
+                    className="block min-h-12 w-full rounded-xl border border-border bg-muted/30 px-3.5 text-left text-xs font-medium text-foreground sm:text-sm"
                   />
                 </label>
-                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
                   <button type="button" className={button} disabled={busy} onClick={copyInvitation}>
                     {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
                     {copied ? 'لینک دعوت کپی شد' : 'کپی لینک دعوت'}
@@ -760,7 +854,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                 {canShare && (
                   <button
                     type="button"
-                    className={secondary + ' mt-2'}
+                    className={secondary + ' mt-2.5'}
                     disabled={busy || data.smsStatus === 'QUEUED' || data.smsStatus === 'SENDING'}
                     onClick={() => void run(async () => {
                       const key = smsKey.current ??= crypto.randomUUID();
@@ -773,21 +867,21 @@ export function MarriageRequestView({ id }: { id: string }) {
                   </button>
                 )}
                 {notice && (
-                  <p role="status" className="mt-3 rounded-xl bg-primary/5 px-3 py-2 text-xs font-medium leading-6 text-primary">
+                  <p role="status" className="mt-3 rounded-xl bg-primary/8 px-3.5 py-2.5 text-xs font-semibold leading-6 text-primary">
                     {notice}
                   </p>
                 )}
                 {data.smsStatus && (
-                  <p role="status" className="mt-3 text-xs leading-6 text-muted-foreground">
+                  <p role="status" className="mt-3 rounded-xl bg-muted/40 px-3.5 py-2 text-xs leading-6 text-muted-foreground">
                     {smsStatuses[data.smsStatus] ?? 'وضعیت ارسال پیامک مشخص نیست.'}
                   </p>
                 )}
-                <details className="mt-4 border-t border-border/70 pt-2">
-                  <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm text-muted-foreground">
+                <details className="group mt-4 border-t border-border/70 pt-2">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-xs font-semibold text-muted-foreground sm:text-sm [&::-webkit-details-marker]:hidden">
                     تغییر شماره یا لغو دعوت
-                    <ChevronDown aria-hidden="true" size={16} />
+                    <ChevronDown aria-hidden="true" size={16} className="transition-transform group-open:rotate-180" />
                   </summary>
-                  <div className="space-y-2 pb-1 pt-2">
+                  <div className="space-y-2.5 pb-1 pt-2.5">
                     <Link
                       aria-disabled={busy}
                       onClick={event => { if (lock.current) event.preventDefault(); }}
@@ -799,7 +893,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                     >
                       تغییر شماره نفر دوم (لینک قبلی غیرفعال می‌شود)
                     </Link>
-                    <button type="button" className={secondary} disabled={busy} onClick={() => setConfirmCancel(true)}>
+                    <button type="button" className={secondary + ' text-red-700 hover:bg-red-50/60'} disabled={busy} onClick={() => setConfirmCancel(true)}>
                       لغو این دعوت و بازگشت وجه به کیف پول
                     </button>
                   </div>
@@ -809,9 +903,10 @@ export function MarriageRequestView({ id }: { id: string }) {
 
             {data.status === 'PENDING' && !data.isInitiator &&
               data.ownEligible && !data.continuation?.profileRequired && (
-                <section className="space-y-4">
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-xs leading-6 text-emerald-900">
-                    هزینه این تست توسط دعوت‌کننده پرداخت شده است و شما نیازی به پرداخت ندارید.
+                <section className="space-y-4 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
+                  <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 text-xs font-medium leading-6 text-emerald-900 sm:text-sm">
+                    <CheckCircle2 size={18} className="shrink-0 text-emerald-700" aria-hidden="true" />
+                    <span>هزینه این تست توسط دعوت‌کننده پرداخت شده است و شما نیازی به پرداخت ندارید.</span>
                   </div>
                   <PolicyAcceptance
                     variant="compact"
@@ -821,7 +916,7 @@ export function MarriageRequestView({ id }: { id: string }) {
                     disabled={busy}
                     label="نقش خودم و شرایط اتصال برای همین خدمت را می‌پذیرم."
                   />
-                  <div className="space-y-2">
+                  <div className="grid gap-2.5 sm:grid-cols-2">
                     <button
                       type="button"
                       className={button}
@@ -961,34 +1056,46 @@ export function MarriageOffers({ hideHistoryLink = false }: { hideHistoryLink?: 
       <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
 
       {resource.data && available.length === 0 && (
-        <p className="rounded-2xl border border-border bg-white p-5 text-sm leading-7 text-muted-foreground">
+        <p className="rounded-2xl border border-dashed border-border bg-white p-6 text-center text-sm leading-7 text-muted-foreground">
           فعلاً تست جدیدی برای شروع در دسترس نیست.
         </p>
       )}
 
-      {available.map(item => (
+      <div className="grid gap-3.5">
+        {available.map(item => (
           <Link
             key={item.id}
             href={coupleStartHref(item.id)}
-            className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
+            className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-all hover:border-primary/50 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
           >
-            <h2 className="text-base font-semibold leading-8 text-foreground">{item.title}</h2>
-            <p className="mt-1 text-sm leading-7 text-muted-foreground">
-              هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شماره موبایل نفر دوم رو لازم داری.
-            </p>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-4">
-              <span className="text-sm font-semibold text-foreground">
+            <div className="flex items-start gap-3.5">
+              <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <HeartHandshake aria-hidden="true" size={22} />
+              </span>
+              <div className="min-w-0 flex-1 space-y-1">
+                <span className="inline-flex items-center rounded-full bg-primary/8 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
+                  دو نفره · دعوت با شماره موبایل
+                </span>
+                <h2 className="text-base font-bold leading-8 text-foreground">{item.title}</h2>
+                <p className="text-xs leading-6 text-muted-foreground sm:text-sm">
+                  هر نفر جداگانه پاسخ می‌دهد؛ برای دعوت فقط شماره موبایل نفر دوم رو لازم داری.
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3.5">
+              <span className="text-sm font-bold text-foreground">
                 {item.priceMode === 'FREE'
                   ? 'رایگان'
                   : formatRial(BigInt(item.amountRial ?? '0')) + ' تومان برای هر دو نفر'}
               </span>
-              <span className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
+              <span className="inline-flex min-h-10 items-center gap-1.5 rounded-xl bg-primary/10 px-3.5 py-1.5 text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-white sm:text-sm">
                 انتخاب و ادامه
-                <ArrowLeft aria-hidden="true" size={18} />
+                <ArrowLeft aria-hidden="true" size={16} />
               </span>
             </div>
           </Link>
         ))}
+      </div>
 
       {!hideHistoryLink && (
         <Link

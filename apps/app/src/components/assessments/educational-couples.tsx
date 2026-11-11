@@ -6,7 +6,7 @@ import { marriageHref } from '@/lib/marriage-context';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronDown, Clock, RefreshCw, Sparkles, Users } from 'lucide-react';
 import type { components } from '@sabz-zendegi/api-client';
 import { ServiceSection } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
@@ -19,9 +19,9 @@ import { finishOperation, useOperationKey } from '@/lib/use-operation-key';
 import { patientErrorMessage } from '@/lib/patient-request';
 import { formatRial } from '@/lib/wallet-money';
 
-const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-40';
-const primary = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-40';
-const dangerButton = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-40';
+const button = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-border bg-white px-4 py-3 text-center text-sm font-medium text-foreground shadow-2xs transition-colors hover:bg-muted/40 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const primary = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary px-4 py-3 text-center text-sm font-semibold text-white shadow-2xs transition-colors hover:bg-primary/90 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const dangerButton = 'flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600';
 
 export function EducationalCoupleHistory({ token, linkId }: { token: string; linkId?: string }) {
   const [page, setPage] = useState(1);
@@ -30,29 +30,42 @@ export function EducationalCoupleHistory({ token, linkId }: { token: string; lin
   return (
     <ServiceSection title="تست‌های دو نفره من">
       <PatientResourceState {...resource} retry={() => void resource.reload()} />
-      <div className="space-y-3">
-        {resource.data?.items.map(item => (
-          <Link
-            key={item.id}
-            href={marriageHref(`/assessment/couples/educational/${item.id}`)}
-            className="group block rounded-2xl border border-border/80 bg-white p-4 transition-colors hover:border-primary/50 sm:p-5"
-          >
-            <h3 className="text-base font-semibold leading-7 text-foreground">{item.title}</h3>
-            <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              {item.jointResultAvailable
-                ? 'نتیجهٔ هر دو نفر آماده است'
-                : item.ownAccessGrantId
-                  ? 'دسترسی پاسخ‌گویی شما آماده است'
-                  : item.mutualConsentComplete
-                    ? 'رضایت هر دو نفر ثبت شده است'
-                    : 'در انتظار رضایت مستقل هر دو نفر'}
-            </p>
-            <span className="mt-3 inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-primary">
-              ادامهٔ تست دو نفره
-              <ArrowLeft size={16} aria-hidden="true" />
-            </span>
-          </Link>
-        ))}
+      <div className="grid gap-3">
+        {resource.data?.items.map(item => {
+          const statusLabel = item.jointResultAvailable
+            ? 'نتیجهٔ هر دو نفر آماده است'
+            : item.ownAccessGrantId
+              ? 'دسترسی پاسخ‌گویی شما آماده است'
+              : item.mutualConsentComplete
+                ? 'رضایت هر دو نفر ثبت شده است'
+                : 'در انتظار رضایت مستقل هر دو نفر';
+          const statusClass = item.jointResultAvailable
+            ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80'
+            : item.ownAccessGrantId
+              ? 'bg-primary/10 text-primary ring-1 ring-primary/20'
+              : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200/80';
+          return (
+            <Link
+              key={item.id}
+              href={marriageHref(`/assessment/couples/educational/${item.id}`)}
+              className="group block rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-all hover:border-primary/50 hover:shadow-sm sm:p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">{item.title}</h3>
+                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusClass}`}>
+                  {statusLabel}
+                </span>
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-3">
+                <span className="text-xs text-muted-foreground">تست آموزشی دو نفره</span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary transition-transform group-hover:-translate-x-0.5 sm:text-sm">
+                  ادامهٔ تست دو نفره
+                  <ArrowLeft size={16} aria-hidden="true" />
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
       {resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}
     </ServiceSection>
@@ -69,13 +82,15 @@ export function EducationalCoupleOffers({ token, userId, linkId }: { token: stri
       <EducationalCoupleHistory token={token} linkId={linkId} />
       <ServiceSection title="انتخاب تست دو نفره" description="هر نفر از حساب خودش رضایت می‌دهد و پاسخ‌های خودش را ثبت می‌کند.">
         <PatientResourceState {...resource} retry={() => void resource.reload()} />
-        <div className="space-y-3">
+        <div className="grid gap-3">
           {resource.data?.items.map(item => (
-            <article key={item.id} className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
-              <h3 className="text-base font-semibold leading-7 text-foreground">{item.title}</h3>
-              <strong className="block text-sm font-semibold text-primary">
-                {item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان برای هر دو نفر`}
-              </strong>
+            <article key={item.id} className="space-y-3.5 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h3 className="text-base font-bold leading-7 text-foreground">{item.title}</h3>
+                <strong className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                  {item.priceMode === 'FREE' ? 'رایگان' : `${formatRial(BigInt(item.amountRial ?? '0'))} تومان برای هر دو نفر`}
+                </strong>
+              </div>
               <AsyncButton
                 type="button"
                 disabled={busy}
@@ -96,11 +111,12 @@ export function EducationalCoupleOffers({ token, userId, linkId }: { token: stri
                 }}
               >
                 انتخاب این تست برای دو نفر
+                <ArrowLeft size={16} aria-hidden="true" />
               </AsyncButton>
             </article>
           ))}
         </div>
-        {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+        {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {resource.data && <PatientPagination page={page} total={resource.data.total} onChange={setPage} />}
       </ServiceSection>
     </>
@@ -252,37 +268,50 @@ function Participation({
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4">
-      <section className="rounded-2xl border border-border/80 bg-white p-4 sm:p-5">
+      <section className="rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5">
         {!embedded ? (
-          <>
-            <h2 className="text-base font-semibold leading-8 text-foreground">{data.title}</h2>
-            <p className="mt-1 text-sm font-semibold text-foreground">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h2 className="text-base font-bold leading-8 text-foreground sm:text-lg">{data.title}</h2>
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
               {data.priceMode === 'FREE'
                 ? 'رایگان'
                 : formatRial(BigInt(data.amountRial)) + ' تومان برای هر دو نفر'}
-            </p>
-          </>
+            </span>
+          </div>
         ) : (
-          <h3 className="text-sm font-semibold leading-7 text-foreground">وضعیت رضایت و آمادگی شرکت‌کنندگان</h3>
+          <div className="flex items-center gap-2">
+            <Users size={18} className="text-primary" aria-hidden="true" />
+            <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
+              وضعیت رضایت و آمادگی شرکت‌کنندگان
+            </h3>
+          </div>
         )}
-        <div className={embedded ? 'mt-3 space-y-2.5' : 'mt-4 space-y-2.5 border-t border-border/70 pt-4'}>
+        <div
+          className={
+            embedded
+              ? 'mt-3.5 grid gap-2.5 sm:grid-cols-2'
+              : 'mt-4 grid gap-2.5 border-t border-border/70 pt-4 sm:grid-cols-2'
+          }
+        >
           {data.participants.map(participant => {
             const isAccepted = participant.consentState === 'ACCEPTED';
             const isWithdrawn = participant.consentState === 'WITHDRAWN';
             return (
               <div
                 key={participant.slot}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/25 px-3 py-2.5 text-sm"
+                className="flex items-center justify-between gap-2 rounded-xl border border-border/60 bg-muted/20 px-3.5 py-3 text-sm"
               >
-                <span className="font-medium text-foreground">{participant.isSelf ? 'شما' : 'نفر دوم'}</span>
+                <span className="font-bold text-foreground">
+                  {participant.isSelf ? 'شما' : 'نفر دوم'}
+                </span>
                 <span
                   className={[
-                    'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium',
+                    'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold',
                     isAccepted
-                      ? 'bg-emerald-50 text-emerald-800'
+                      ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80'
                       : isWithdrawn
-                        ? 'bg-red-50 text-red-700'
-                        : 'bg-amber-50 text-amber-800',
+                        ? 'bg-red-50 text-red-700 ring-1 ring-red-200/80'
+                        : 'bg-amber-50 text-amber-800 ring-1 ring-amber-200/80',
                   ].join(' ')}
                 >
                   {isAccepted ? (
@@ -300,13 +329,15 @@ function Participation({
             );
           })}
         </div>
-        <p role="status" className="mt-4 rounded-xl bg-primary/5 p-3 text-sm leading-7 text-foreground">
-          {nextStep}
+        <p role="status" className="mt-4 flex items-start gap-2 rounded-xl bg-primary/6 p-3.5 text-xs font-medium leading-6 text-foreground sm:text-sm">
+          <Sparkles size={17} className="mt-1 shrink-0 text-primary" aria-hidden="true" />
+          <span>{nextStep}</span>
         </p>
       </section>
 
       {!alreadyAccepted && own?.consentState !== 'WITHDRAWN' && (
-        <section className="space-y-3" aria-label="رضایت مستقل من">
+        <section className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5" aria-label="رضایت مستقل من">
+          <h4 className="text-sm font-bold text-foreground">تأیید شرایط مشارکت و محرمانگی</h4>
           <PolicyAcceptance
             variant="compact"
             policy={data.processingPolicy}
@@ -366,11 +397,11 @@ function Participation({
           ادامهٔ پرداخت
         </Link>
       ) : data.paymentPending ? (
-        <p role="status" className="text-sm leading-7 text-muted-foreground">
+        <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm leading-7 text-amber-900">
           پرداخت این تست در حال پیگیری است؛ پس از تأیید، دسترسی هر دو نفر باز می‌شود.
         </p>
       ) : !data.newAccessAvailable ? (
-        <p role="status" className="text-sm leading-7 text-muted-foreground">
+        <p role="status" className="rounded-xl border border-border/80 bg-white p-3.5 text-sm leading-7 text-muted-foreground">
           نسخهٔ تازه را از صفحهٔ تست‌های دو نفره انتخاب کن.
         </p>
       ) : data.mutualConsentComplete ? (
@@ -379,11 +410,17 @@ function Participation({
             شروع تست رایگان من
           </AsyncButton>
         ) : prepaidMarriage ? (
-          <p role="status" className="rounded-xl border border-border/70 bg-white p-3 text-sm leading-7 text-muted-foreground">
-            هزینهٔ این تست قبلاً پرداخت شده است؛ برای دریافت لینک شروع آزمون، دکمهٔ «به‌روزرسانی وضعیت» را بزنید.
-          </p>
+          <div role="status" className="space-y-3 rounded-2xl border border-primary/25 bg-primary/5 p-4 text-sm leading-7 text-foreground">
+            <p>
+              هزینهٔ این تست قبلاً پرداخت شده است؛ برای دریافت لینک شروع آزمون، دکمهٔ «به‌روزرسانی وضعیت» را بزنید.
+            </p>
+            <AsyncButton className={primary} disabled={busy} onClick={() => refresh()}>
+              <RefreshCw size={16} aria-hidden="true" />
+              بررسی و دریافت لینک شروع آزمون
+            </AsyncButton>
+          </div>
         ) : (
-          <section className="space-y-3" aria-label="پرداخت تست">
+          <section className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5" aria-label="پرداخت تست">
             {data.termsPolicy && (
               <PolicyAcceptance
                 variant="compact"
@@ -401,15 +438,16 @@ function Participation({
       ) : null)}
 
       {(alreadyAccepted || data.ownProcessingConsentRecordId) && (
-        <details className="rounded-2xl border border-border/80 bg-white px-4 py-2">
-          <summary className="flex min-h-11 cursor-pointer items-center justify-between text-sm text-muted-foreground">
-            مدیریت رضایت‌های ثبت‌شده
+        <details className="group rounded-2xl border border-border/80 bg-white px-4 py-2 shadow-2xs">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-xs font-semibold text-muted-foreground sm:text-sm [&::-webkit-details-marker]:hidden">
+            <span>مدیریت رضایت‌های ثبت‌شده</span>
+            <ChevronDown size={16} aria-hidden="true" className="transition-transform group-open:rotate-180" />
           </summary>
-          <div className="space-y-2 border-t border-border/70 py-3">
+          <div className="space-y-2.5 border-t border-border/70 py-3">
             {alreadyAccepted && (
               <button
                 type="button"
-                className={button}
+                className={button + ' text-red-700 hover:bg-red-50/50'}
                 disabled={busy}
                 onClick={() => setConfirmWithdraw('sharing')}
               >
@@ -419,7 +457,7 @@ function Participation({
             {data.ownProcessingConsentRecordId && (
               <button
                 type="button"
-                className={button}
+                className={button + ' text-red-700 hover:bg-red-50/50'}
                 disabled={busy}
                 onClick={() => setConfirmWithdraw('processing')}
               >
@@ -436,6 +474,7 @@ function Participation({
         </p>
       )}
       <AsyncButton className={button} disabled={busy} onClick={() => refresh()}>
+        <RefreshCw size={16} aria-hidden="true" />
         به‌روزرسانی وضعیت
       </AsyncButton>
 

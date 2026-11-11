@@ -1,5 +1,6 @@
 'use client';
 import { AsyncButton } from '@/components/shared/async-button';
+import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -38,7 +39,7 @@ export default function EducationalOfferingPage() {
       backHref="/assessment"
       backLabel="ارزیابی‌ها"
     >
-      <div className="service-detail space-y-4">
+      <div className="space-y-4">
         <PatientResourceState variant="detail" {...resource} retry={() => void resource.reload()} />
         {resource.data && (
           <FreeAccess
@@ -69,6 +70,7 @@ function FreeAccess({
   const [accepted, setAccepted] = useState(false),
     [termsAccepted, setTermsAccepted] = useState(false),
     [busy, setBusy] = useState(false),
+    [confirmWithdraw, setConfirmWithdraw] = useState(false),
     [error, setError] = useState('');
   const key = useOperationKey(`${userId}:educational-assessment:${offering.id}`);
   const [repurchasing, setRepurchasing] = useState(false);
@@ -149,14 +151,7 @@ function FreeAccess({
     }
   };
   const withdraw = async () => {
-    if (
-      lock.current ||
-      !offering.processingConsentId ||
-      !window.confirm(
-        'رضایت پردازش پس گرفته شود؟ ادامهٔ آزمون و دسترسی به نتیجه متوقف می‌شود؛ سوابق حذف نمی‌شوند.',
-      )
-    )
-      return;
+    if (lock.current || !offering.processingConsentId) return;
     lock.current = true;
     setBusy(true);
     setError('');
@@ -166,6 +161,7 @@ function FreeAccess({
         offering.processingConsentId,
         await key({ action: 'withdraw', id: offering.processingConsentId }),
       );
+      setConfirmWithdraw(false);
       reload();
     } catch (reason) {
       setError(patientErrorMessage(reason));
@@ -176,14 +172,18 @@ function FreeAccess({
   };
   return (
     <>
-      <section className="service-card">
-        <h2>{offering.title}</h2>
-        <strong className="service-price">
-          {offering.priceMode === 'FREE'
-            ? 'رایگان'
-            : `${formatRial(BigInt(offering.amountRial ?? '0'))} تومان`}
-        </strong>
-        <p>ویژهٔ افراد ۱۸ سال و بالاتر؛ نتیجهٔ آموزشی جایگزین بررسی پزشک نیست.</p>
+      <section className="space-y-3 rounded-3xl border border-border/80 bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 className="text-lg font-bold text-foreground sm:text-xl">{offering.title}</h2>
+          <strong className="inline-flex rounded-full bg-primary/10 px-3.5 py-1 text-sm font-extrabold text-primary">
+            {offering.priceMode === 'FREE'
+              ? 'رایگان'
+              : `${formatRial(BigInt(offering.amountRial ?? '0'))} تومان`}
+          </strong>
+        </div>
+        <p className="text-xs leading-6 text-muted-foreground sm:text-sm">
+          ویژهٔ افراد ۱۸ سال و بالاتر؛ نتیجهٔ آموزشی جایگزین بررسی پزشک نیست.
+        </p>
       </section>
       {offering.processingPolicy &&
         (ownedGrantId ? (
@@ -212,14 +212,20 @@ function FreeAccess({
           />
         ))}
       {!available && (
-        <p role="status" className="rounded-xl bg-amber-50 p-4 text-sm text-amber-900">
+        <p
+          role="status"
+          className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900"
+        >
           {offering.blockers.includes('ADULT_BIRTH_DATE_REQUIRED')
             ? 'برای این ارزیابی، تاریخ تولد ثبت‌شده باید سن ۱۸ سال یا بالاتر را تأیید کند.'
             : 'شروع این عرضه در وضعیت فعلی در دسترس نیست.'}
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p
+          role="alert"
+          className="rounded-2xl border border-red-200 bg-red-50 p-3.5 text-sm leading-7 text-red-700"
+        >
           {error}
         </p>
       )}
@@ -231,7 +237,7 @@ function FreeAccess({
           (!ownedGrantId && (!accepted || (offering.priceMode === 'PAID' && !termsAccepted)))
         }
         onClick={() => void start()}
-        className="w-full rounded-2xl bg-primary p-4 font-bold text-white disabled:opacity-40"
+        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
         aria-busy={Boolean(busy)}
       >
         {busy ? (
@@ -249,7 +255,8 @@ function FreeAccess({
       </button>
       {offering.pendingIntentId && (
         <button
-          className="w-full rounded-xl border border-border p-3 text-primary"
+          type="button"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-primary transition hover:border-primary/40 hover:bg-primary/5"
           onClick={() => router.push(`/profile/wallet/pay?intentId=${offering.pendingIntentId}`)}
         >
           ادامهٔ پرداخت قبلی
@@ -257,8 +264,9 @@ function FreeAccess({
       )}
       {offering.publicPurchaseAvailable && offering.accessGrantId && !repurchasing && (
         <button
+          type="button"
           disabled={busy}
-          className="w-full rounded-xl border border-border p-3 text-primary"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-primary transition hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
           onClick={() => {
             setAccepted(false);
             setTermsAccepted(false);
@@ -270,22 +278,54 @@ function FreeAccess({
       )}
       {repurchasing && (
         <button
+          type="button"
           disabled={busy}
-          className="w-full p-3 text-primary"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground transition hover:bg-muted/50 disabled:opacity-50"
           onClick={() => setRepurchasing(false)}
         >
           بازگشت به نتیجهٔ قبلی
         </button>
       )}
       {offering.processingConsentId && (
-        <AsyncButton
+        <button
           type="button"
           disabled={busy}
-          onClick={() => withdraw()}
-          className="w-full rounded-xl border border-border p-3 text-sm text-red-700 disabled:opacity-40"
+          onClick={() => setConfirmWithdraw(true)}
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40"
         >
           پس‌گرفتن رضایت پردازش
-        </AsyncButton>
+        </button>
+      )}
+      {confirmWithdraw && (
+        <BottomSheet
+          title="پس‌گرفتن رضایت پردازش"
+          onClose={() => {
+            if (!busy) setConfirmWithdraw(false);
+          }}
+        >
+          <div className="space-y-3">
+            <p className="text-sm leading-7 text-muted-foreground">
+              رضایت پردازش پس گرفته شود؟ ادامهٔ آزمون و دسترسی به نتیجه متوقف می‌شود؛ سوابق حذف
+              نمی‌شوند.
+            </p>
+            <AsyncButton
+              type="button"
+              disabled={busy}
+              onClick={() => withdraw()}
+              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
+            >
+              تأیید و پس‌گرفتن رضایت
+            </AsyncButton>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => setConfirmWithdraw(false)}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground"
+            >
+              انصراف
+            </button>
+          </div>
+        </BottomSheet>
       )}
     </>
   );
@@ -299,9 +339,14 @@ function HistoricalPolicy({
   accepted: boolean;
 }) {
   return (
-    <section className="min-w-0 space-y-3 rounded-2xl border border-border bg-white p-4">
-      <h2 className="text-sm font-bold">{policy.title}</h2>
-      <p className="text-sm font-semibold">
+    <section className="min-w-0 space-y-3 rounded-2xl border border-border/80 bg-white p-5 shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-sm font-bold text-foreground">{policy.title}</h2>
+        <span className="inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+          {accepted ? 'رضایت ثبت‌شده' : 'بدون رضایت ثبت‌شده'}
+        </span>
+      </div>
+      <p className="text-xs font-medium text-muted-foreground">
         {accepted
           ? 'رضایت این شرایط قبلاً ثبت شده است.'
           : 'رضایت ثبت‌شده‌ای برای این شرایط نمایش داده نمی‌شود.'}

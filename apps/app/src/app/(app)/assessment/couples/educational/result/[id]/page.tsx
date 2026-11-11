@@ -4,22 +4,26 @@ import { PatientRequestError } from '@/lib/patient-request';
 import { currentInvitationContext } from '@/lib/marriage-context';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Users } from 'lucide-react';
+import { HeartHandshake, Sparkles, Users } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { MizajResult } from '@/components/assessments/mizaj-result';
 import { getEducationalCoupleResult } from '@/lib/couples-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
+
 export default function EducationalCoupleResultPage() {
-  const { id } = useParams<{ id: string }>(),
-    { authentication } = useAuthSession();
+  const { id } = useParams<{ id: string }>();
+  const { authentication } = useAuthSession();
   const scope = `${id}:${authentication.user.id}`;
   const [backHref, setBackHref] = useState('/assessment/couples/educational/' + id);
+  const [activeTab, setActiveTab] = useState<'all' | 'self' | 'partner'>('all');
+
   useEffect(() => {
     const request = currentInvitationContext();
     if (request) setBackHref('/assessment/marriage/requests/' + request);
   }, [id]);
+
   const loader = useMemo(
     () =>
       participationLoader(async (token: string) => {
@@ -36,6 +40,7 @@ export default function EducationalCoupleResultPage() {
       }),
     [scope],
   );
+
   const resource = usePatientResource(
     useCallback(
       () => loader.load(authentication.accessToken),
@@ -45,6 +50,7 @@ export default function EducationalCoupleResultPage() {
   const denied = resource.data?.allowed === false;
   const result = resource.data?.allowed ? resource.data.result : null;
   const reload = resource.refresh;
+
   useEffect(() => {
     const update = () => {
       if (!denied && navigator.onLine && document.visibilityState === 'visible') void reload();
@@ -56,6 +62,14 @@ export default function EducationalCoupleResultPage() {
       document.removeEventListener('visibilitychange', update);
     };
   }, [reload, denied]);
+
+  const visibleResults = useMemo(() => {
+    if (!result) return [];
+    if (activeTab === 'self') return result.results.filter((item) => item.isSelf);
+    if (activeTab === 'partner') return result.results.filter((item) => !item.isSelf);
+    return result.results;
+  }, [result, activeTab]);
+
   return (
     <ServicePage
       title="نتیجه تست دو نفره"
@@ -76,14 +90,75 @@ export default function EducationalCoupleResultPage() {
         )}
         {result && (
           <>
+            {result.jointText && (
+              <section className="space-y-3 rounded-3xl border border-primary/25 bg-gradient-to-l from-primary/8 via-primary/4 to-white p-5 shadow-2xs sm:p-6">
+                <div className="flex items-center gap-2.5">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary/12 text-primary">
+                    <HeartHandshake size={20} aria-hidden="true" />
+                  </span>
+                  <div>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                      <Sparkles size={13} aria-hidden="true" />
+                      جمع‌بندی مشترک زوجین
+                    </span>
+                    <h2 className="text-base font-bold text-foreground sm:text-lg">
+                      توضیح مشترک این ترکیب
+                    </h2>
+                  </div>
+                </div>
+                <p className="whitespace-pre-wrap text-sm leading-8 text-foreground/90">
+                  {result.jointText}
+                </p>
+              </section>
+            )}
+
+            {result.results.length > 1 && (
+              <div
+                role="group"
+                aria-label="فیلتر نمایش نتیجه"
+                className="grid grid-cols-3 gap-1.5 rounded-2xl border border-border/70 bg-muted/60 p-1.5 lg:hidden"
+              >
+                {[
+                  { id: 'all' as const, label: 'هر دو نفر' },
+                  { id: 'self' as const, label: 'نتیجهٔ شما' },
+                  { id: 'partner' as const, label: 'نفر دوم' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    aria-pressed={activeTab === tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="min-h-10 rounded-xl px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-all aria-pressed:bg-white aria-pressed:font-bold aria-pressed:text-foreground aria-pressed:shadow-xs"
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="grid gap-5 lg:grid-cols-2">
-              {result.results.map((item) => (
-                <section key={item.slot} className="min-w-0 space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-base font-bold text-foreground">
+              {visibleResults.map((item) => (
+                <section
+                  key={item.slot}
+                  className={[
+                    'min-w-0 space-y-3',
+                    activeTab !== 'all' ? 'lg:col-span-2' : '',
+                  ].join(' ')}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border/70 bg-white px-4 py-2.5 shadow-2xs">
+                    <h2 className="text-sm font-bold text-foreground sm:text-base">
                       {item.isSelf ? 'نتیجهٔ شما' : 'نتیجهٔ نفر دوم'}
                       {item.roleTitle ? ` · ${item.roleTitle}` : ''}
                     </h2>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        item.isSelf
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-emerald-50 text-emerald-800'
+                      }`}
+                    >
+                      {item.isSelf ? 'حساب شما' : 'حساب همراه'}
+                    </span>
                   </div>
                   {item.resultSnapshot.algorithmId === 'DIMENSION_TIEBREAK' ? (
                     <MizajResult
@@ -91,7 +166,7 @@ export default function EducationalCoupleResultPage() {
                       subjectLabel={item.isSelf ? 'شما' : 'نفر دوم'}
                     />
                   ) : (
-                    <p className="rounded-2xl border border-border/80 bg-white p-4 text-sm leading-7 text-foreground">
+                    <p className="rounded-2xl border border-border/80 bg-white p-4 text-sm leading-7 text-foreground shadow-2xs">
                       {String(
                         (item.resultSnapshot.resultBand as { title?: string } | null)?.title ??
                           'نتیجهٔ قطعی ثبت نشده است',
@@ -101,14 +176,6 @@ export default function EducationalCoupleResultPage() {
                 </section>
               ))}
             </div>
-            {result.jointText && (
-              <section className="rounded-3xl border border-primary/20 bg-white p-5 sm:p-6 space-y-2">
-                <h2 className="text-base font-bold text-foreground">توضیح مشترک این ترکیب</h2>
-                <p className="whitespace-pre-wrap text-sm leading-8 text-muted-foreground">
-                  {result.jointText}
-                </p>
-              </section>
-            )}
           </>
         )}
       </div>

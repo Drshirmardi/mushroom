@@ -24,8 +24,18 @@ import {
   type AssessmentQuestionnaire,
 } from '@/lib/assessment-api';
 import { startPaidAssessment } from '@/lib/digital-services-api';
-import styles from './assessment-wizard.module.css';
 import { toP } from '@/lib/format';
+
+const primaryBtnClass =
+  'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60';
+const secondaryBtnClass =
+  'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60';
+const optionBtnClass =
+  'group flex min-h-14 w-full items-center gap-3.5 rounded-2xl border border-border bg-white px-4 py-3.5 text-start text-foreground shadow-2xs transition hover:border-primary/40 hover:bg-primary/5 aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:ring-1 aria-pressed:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60';
+const letterBadgeClass =
+  'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted text-xs font-bold text-foreground transition group-aria-pressed:bg-primary group-aria-pressed:text-white';
+const inputFieldClass =
+  'w-full rounded-2xl border border-border bg-white p-3.5 text-base leading-7 text-foreground shadow-2xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 aria-[invalid=true]:border-red-300 aria-[invalid=true]:bg-red-50/40';
 
 type ExitDestination = string | { traverse: () => void };
 type JsonObject = Record<string, unknown>;
@@ -389,36 +399,36 @@ function AssessmentAttempt({
     );
   if (!assessment || !submission || items.length === 0 || !current)
     return (
-      <div>
+      <div className="space-y-4">
         {!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}
-        <p
-          role="alert"
-          className="m-4 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"
-        >
-          {error ?? 'ساختار این ارزیابی قابل نمایش نیست.'}
-        </p>
-        <button
-          type="button"
-          className={styles.primary}
-          onClick={() => {
-            setAssessment(null);
-            setSubmission(null);
-            setAnswers({});
-            setError(null);
-            setConflict(false);
-            setSubmitCommand(null);
-            setStep(0);
-            setReload((value) => value + 1);
-          }}
-        >
-          تلاش دوباره
-        </button>
+        <div className="mx-auto max-w-2xl space-y-4 p-4">
+          <p
+            role="alert"
+            className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm leading-7 text-red-700"
+          >
+            {error ?? 'ساختار این ارزیابی قابل نمایش نیست.'}
+          </p>
+          <button
+            type="button"
+            className={primaryBtnClass}
+            onClick={() => {
+              setAssessment(null);
+              setSubmission(null);
+              setAnswers({});
+              setError(null);
+              setConflict(false);
+              setSubmitCommand(null);
+              setStep(0);
+              setReload((value) => value + 1);
+            }}
+          >
+            تلاش دوباره
+          </button>
+        </div>
       </div>
     );
 
   const reloadSaved = () => {
-    if (!window.confirm('پاسخ‌های ذخیره‌نشده کنار گذاشته و آخرین وضعیت از سرور دریافت شود؟'))
-      return;
     setAssessment(null);
     setSubmission(null);
     setAnswers({});
@@ -430,7 +440,10 @@ function AssessmentAttempt({
   };
   const Container = entry ? 'div' : 'main';
   return (
-    <Container className={styles.wizard} data-entry={!!entry}>
+    <Container
+      className="min-h-dvh bg-background pb-28 data-[entry=true]:min-h-0 data-[entry=true]:bg-transparent data-[entry=true]:pb-0"
+      data-entry={!!entry}
+    >
       {!entry && (
         <PageHeader
           title={assessment.title}
@@ -450,9 +463,14 @@ function AssessmentAttempt({
           }}
         />
       )}
-      <div ref={questionArea} className={styles.body} aria-busy={busy}>
-        <div className={styles.progress}>
-          <div className={styles.counter}>
+      <div
+        ref={questionArea}
+        data-entry={!!entry}
+        className="mx-auto max-w-2xl space-y-4 p-4 data-[entry=true]:p-0"
+        aria-busy={busy}
+      >
+        <div className="space-y-2.5 rounded-2xl border border-border/80 bg-white p-4 shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-muted-foreground">
             <span>
               {adaptive && step >= 11 ? (
                 'سؤال تکمیلی برای روشن‌شدن نتیجه'
@@ -462,29 +480,41 @@ function AssessmentAttempt({
                 </>
               )}
             </span>
-            {!entry && <span>تلاش {toP(submission.attemptNumber)}</span>}
+            {!entry && (
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-bold text-foreground">
+                تلاش {toP(submission.attemptNumber)}
+              </span>
+            )}
           </div>
           <progress
             aria-label="پیشرفت پاسخ‌گویی"
+            className="h-2.5 w-full overflow-hidden rounded-full bg-muted accent-primary [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary"
             max={adaptive ? 11 : items.length}
             value={Math.min(step + 1, adaptive ? 11 : items.length)}
           />
         </div>
-        <h2 id="assessment-question" ref={entryQuestion} tabIndex={-1} className={styles.question}>
+        <h2
+          id="assessment-question"
+          ref={entryQuestion}
+          tabIndex={-1}
+          className="m-0 rounded-2xl border border-border/80 bg-white p-5 text-base font-bold leading-8 text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-lg"
+        >
           {current.text}
         </h2>
         {current.type === 'MULTIPLE_CHOICE' && (
-          <p className={styles.hint}>می‌توانید بیش از یک گزینه را انتخاب کنید.</p>
+          <p className="m-0 text-xs font-medium text-muted-foreground">
+            می‌توانید بیش از یک گزینه را انتخاب کنید.
+          </p>
         )}
         {current.type === 'NUMBER' && (
-          <p id="assessment-number-hint" className={styles.hint}>
+          <p id="assessment-number-hint" className="m-0 text-xs font-medium text-muted-foreground">
             {typeof current.min === 'number' ? `حداقل: ${toP(current.min)}` : ''}
             {typeof current.min === 'number' && typeof current.max === 'number' ? '؛ ' : ''}
             {typeof current.max === 'number' ? `حداکثر: ${toP(current.max)}` : ''}
           </p>
         )}
         <fieldset
-          className={styles.answers}
+          className="m-0 min-w-0 border-0 p-0"
           aria-labelledby="assessment-question"
           aria-describedby={error ? 'assessment-answer-error' : undefined}
           disabled={busy || conflict || submitCommand !== null}
@@ -517,13 +547,28 @@ function AssessmentAttempt({
           />
         </fieldset>
         {error && (
-          <p id="assessment-answer-error" role="alert" className={styles.error}>
+          <p
+            id="assessment-answer-error"
+            role="alert"
+            className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-sm leading-7 text-red-700"
+          >
             {error}
           </p>
         )}
-        <div className={styles.actions}>
+        {conflict && (
+          <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="leading-7">
+              نسخهٔ ذخیره‌شدهٔ این ارزیابی در سرور تغییر کرده است. برای ادامه، آخرین وضعیت ذخیره‌شده
+              را بارگذاری کنید.
+            </p>
+            <button type="button" className={secondaryBtnClass} onClick={reloadSaved}>
+              دریافت آخرین وضعیت از سرور
+            </button>
+          </div>
+        )}
+        <div className="sticky bottom-0 z-10 -mx-4 mt-4 grid gap-2.5 border-t border-border/80 bg-background/95 px-4 py-3 backdrop-blur-xs sm:mx-0 sm:rounded-2xl sm:border sm:bg-white sm:p-4 sm:shadow-xs">
           <button
-            className={styles.primary}
+            className={primaryBtnClass}
             disabled={busy || conflict}
             onClick={() => void continueFlow()}
             aria-busy={Boolean(busy)}
@@ -543,24 +588,26 @@ function AssessmentAttempt({
               'ذخیره و ادامه'
             )}
           </button>
-          {step > 0 && (
-            <button
-              className={styles.secondary}
-              disabled={busy || conflict || submitCommand !== null}
-              onClick={() => setStep((value) => value - 1)}
-            >
-              سؤال قبل
-            </button>
-          )}
-          {!entry && (
-            <AsyncButton
-              className={styles.secondary}
-              disabled={busy || conflict || submitCommand !== null}
-              onClick={() => saveAndExit()}
-            >
-              ذخیره و خروج
-            </AsyncButton>
-          )}
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {step > 0 && (
+              <button
+                className={secondaryBtnClass}
+                disabled={busy || conflict || submitCommand !== null}
+                onClick={() => setStep((value) => value - 1)}
+              >
+                سؤال قبل
+              </button>
+            )}
+            {!entry && (
+              <AsyncButton
+                className={secondaryBtnClass}
+                disabled={busy || conflict || submitCommand !== null}
+                onClick={() => saveAndExit()}
+              >
+                ذخیره و خروج
+              </AsyncButton>
+            )}
+          </div>
         </div>
       </div>
       {exitTo && (
@@ -570,27 +617,32 @@ function AssessmentAttempt({
             if (!operation.current) setExitTo(null);
           }}
         >
-          <p className="text-sm leading-8">
-            انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.
-          </p>
-          <AsyncButton
-            className={styles.primary}
-            disabled={busy || conflict || !!submitCommand}
-            onClick={() => saveAndExit(exitTo)}
-          >
-            ذخیره و خروج
-          </AsyncButton>
-          <button className={styles.secondary} disabled={busy} onClick={() => leave(exitTo)}>
-            خروج بدون ذخیره
-          </button>
-          <button className={styles.secondary} disabled={busy} onClick={() => setExitTo(null)}>
-            ماندن در آزمون
-          </button>
-          {error && (
-            <p role="alert" className={styles.error}>
-              {error}
+          <div className="space-y-3">
+            <p className="text-sm leading-8 text-muted-foreground">
+              انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.
             </p>
-          )}
+            <AsyncButton
+              className={primaryBtnClass}
+              disabled={busy || conflict || !!submitCommand}
+              onClick={() => saveAndExit(exitTo)}
+            >
+              ذخیره و خروج
+            </AsyncButton>
+            <button className={secondaryBtnClass} disabled={busy} onClick={() => leave(exitTo)}>
+              خروج بدون ذخیره
+            </button>
+            <button className={secondaryBtnClass} disabled={busy} onClick={() => setExitTo(null)}>
+              ماندن در آزمون
+            </button>
+            {error && (
+              <p
+                role="alert"
+                className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-sm leading-7 text-red-700"
+              >
+                {error}
+              </p>
+            )}
+          </div>
         </BottomSheet>
       )}
     </Container>
@@ -613,21 +665,25 @@ function AnswerInput({
     : [];
   if (question.type === 'SINGLE_CHOICE')
     return (
-      <div className={styles.options}>
+      <div className="grid gap-2.5">
         {options.map((option, index) => (
           <button
             key={String(option.id)}
+            type="button"
             aria-pressed={value === option.id}
             onClick={() => onChange(option.id)}
-            className={styles.option}
+            className={optionBtnClass}
           >
-            <span className={styles.letter}>
+            <span className={letterBadgeClass}>
               {['الف', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ی'][index] ?? toP(index + 1)}
             </span>
-            <span className={styles.optionText}>
+            <span className="min-w-0 flex-1 text-sm font-medium leading-7">
               {String(option.label ?? option.title ?? 'گزینه')}
             </span>
-            <span className={styles.mark} aria-hidden="true">
+            <span
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-primary"
+              aria-hidden="true"
+            >
               {value === option.id && <Check size={18} />}
             </span>
           </button>
@@ -637,27 +693,31 @@ function AnswerInput({
   if (question.type === 'MULTIPLE_CHOICE') {
     const selected = Array.isArray(value) ? value : [];
     return (
-      <div className={styles.options}>
+      <div className="grid gap-2.5">
         {options.map((option, index) => {
           const active = selected.includes(option.id);
           return (
             <button
               key={String(option.id)}
+              type="button"
               aria-pressed={active}
               onClick={() =>
                 onChange(
                   active ? selected.filter((id) => id !== option.id) : [...selected, option.id],
                 )
               }
-              className={styles.option}
+              className={optionBtnClass}
             >
-              <span className={styles.letter}>
+              <span className={letterBadgeClass}>
                 {['الف', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ی'][index] ?? toP(index + 1)}
               </span>
-              <span className={styles.optionText}>
+              <span className="min-w-0 flex-1 text-sm font-medium leading-7">
                 {String(option.label ?? option.title ?? 'گزینه')}
               </span>
-              <span className={styles.mark} aria-hidden="true">
+              <span
+                className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-primary"
+                aria-hidden="true"
+              >
                 {active && <Check size={18} />}
               </span>
             </button>
@@ -668,20 +728,24 @@ function AnswerInput({
   }
   if (question.type === 'BOOLEAN')
     return (
-      <div className={styles.boolean}>
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {[
           [true, 'بله'],
           [false, 'خیر'],
         ].map(([answer, label], index) => (
           <button
             key={String(answer)}
+            type="button"
             aria-pressed={value === answer}
             onClick={() => onChange(answer)}
-            className={styles.option}
+            className={optionBtnClass}
           >
-            <span className={styles.letter}>{index === 0 ? 'الف' : 'ب'}</span>
-            <span className={styles.optionText}>{String(label)}</span>
-            <span className={styles.mark} aria-hidden="true">
+            <span className={letterBadgeClass}>{index === 0 ? 'الف' : 'ب'}</span>
+            <span className="min-w-0 flex-1 text-sm font-medium leading-7">{String(label)}</span>
+            <span
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-primary"
+              aria-hidden="true"
+            >
               {value === answer && <Check size={18} />}
             </span>
           </button>
@@ -702,7 +766,7 @@ function AnswerInput({
         onChange={(event) =>
           onChange(event.target.value === '' ? undefined : Number(event.target.value))
         }
-        className={styles.input}
+        className={inputFieldClass}
       />
     );
   return (
@@ -712,7 +776,7 @@ function AnswerInput({
       value={typeof value === 'string' ? value : ''}
       onChange={(event) => onChange(event.target.value)}
       rows={5}
-      className={styles.input}
+      className={inputFieldClass}
     />
   );
 }
