@@ -62,6 +62,10 @@
 .landing-auth-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 90%, black); transform: translateY(-1px); }
 .landing-auth-footnote { display: flex; gap: 8px; align-items: center; justify-content: center; color: var(--auth-muted); font-size: 14px; margin: 24px 0 0; }
 .landing-phone-form .landing-auth-primary, .landing-phone-form .landing-auth-footnote { margin: 0; }
+.landing-auth-switch { align-self: center; min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: var(--auth-green); font-size: 14px; font-weight: 500; }
+.landing-auth-switch:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 4px; }
+.landing-password-toggle { flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center; margin-inline-end: 2px; border: 0; border-radius: 50%; background: transparent; color: var(--auth-muted); }
+.landing-password-toggle:hover { background: var(--secondary); color: var(--foreground); }
 .landing-otp-scene { position: relative; height: 260px; direction: ltr; overflow: hidden; }
 .landing-otp-rotor { position: absolute; inset: 0; pointer-events: none; }
 .landing-otp-digit {

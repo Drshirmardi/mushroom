@@ -7,6 +7,7 @@ import { isRtlLocale } from "@/i18n/routing";
 import { LocaleSwitcher } from "@/components/landing/LocaleSwitcher";
 import { postAuthenticationUrl } from "@/auth/auth-navigation";
 import { LandingOtpForm } from "./LandingOtpForm";
+import { LandingPasswordForm } from "./LandingPasswordForm";
 import "./landing-auth.css";
 
 export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -16,6 +17,7 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
     const drag = useRef<{ startY: number; moved: boolean } | null>(null);
     const [offset, setOffset] = useState(0);
     const [closing, setClosing] = useState(false);
+    const [method, setMethod] = useState<"otp" | "password">("otp");
     const close = () => setClosing(true);
     const completeLogin = useCallback((roles: string[]) => {
         window.location.assign(postAuthenticationUrl(roles, new URLSearchParams(window.location.search).get("next")));
@@ -27,6 +29,7 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
             onClose();
             setClosing(false);
             setOffset(0);
+            setMethod("otp");
             drag.current = null;
         },
             window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
@@ -89,7 +92,9 @@ export function LandingLoginDialog({ open, onClose }: { open: boolean; onClose: 
                     onClick={event => { if (event.detail === 0) close(); }}><span /></button>
                 <button className="landing-auth-close" type="button" aria-label={t("close")} onClick={close}><X size={20} /></button>
                 <div className="landing-auth-language"><LocaleSwitcher /></div>
-                <LandingOtpForm active={open} onAuthenticated={completeLogin} />
+                {method === "password"
+                    ? <LandingPasswordForm active={open} onAuthenticated={completeLogin} onUseOtp={() => setMethod("otp")} />
+                    : <LandingOtpForm active={open} onAuthenticated={completeLogin} onUsePassword={() => setMethod("password")} />}
             </div>
         </div>
     </dialog>;

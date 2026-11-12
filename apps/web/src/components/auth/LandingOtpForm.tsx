@@ -10,9 +10,10 @@ import { AuthErrorAlert } from "./AuthErrorAlert";
 
 const CODE_LENGTH = 6;
 
-export function LandingOtpForm({ active, onAuthenticated }: {
+export function LandingOtpForm({ active, onAuthenticated, onUsePassword }: {
     active: boolean;
     onAuthenticated: (roles: string[]) => void;
+    onUsePassword?: () => void;
 }) {
     const t = useTranslations("Auth");
     const common = useTranslations("Common");
@@ -146,6 +147,7 @@ export function LandingOtpForm({ active, onAuthenticated }: {
                 {busy ? <><LoaderCircle className="animate-spin" size={18} /> {t("sending")}</> : <>{t("send")} <ArrowLeft className={isRtlLocale(locale) ? "" : "rotate-180"} size={18} /></>}
             </button>
             <p className="landing-auth-footnote"><ShieldCheck size={16} aria-hidden="true" /> {t("secure")}</p>
+            {onUsePassword && <button className="landing-auth-switch" type="button" onClick={onUsePassword}>{t("passwordLogin")}</button>}
             {locale !== "fa" && <p className="app-language-note">{common("appNotice")}</p>}
         </form> : <>
             <div className="landing-otp-scene">

@@ -237,6 +237,15 @@
     "cooldown": "Resend available in {seconds}s",
     "resend": "Send a new code",
     "edit": "Edit mobile number",
+    "passwordLogin": "Sign in with password",
+    "passwordTitle": "Sign in with password",
+    "passwordPrompt": "Enter the mobile number and password for your account.",
+    "passwordLabel": "Password",
+    "passwordSubmit": "Sign in",
+    "signingIn": "Signing in…",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "otpLogin": "Sign in with a one-time code",
     "errors": {
       "INVALID_PHONE_NUMBER": "Enter an Iranian mobile number starting with 0, e.g. 09123456789.",
       "OTP_EXPIRED": "This code has expired. Request a new code.",
@@ -246,7 +255,11 @@
       "OTP_RESEND_COOLDOWN": "Please wait before requesting another code.",
       "NETWORK_ERROR": "Could not connect. Check your internet connection and try again.",
       "UNAVAILABLE": "The service is temporarily unavailable. Please try again shortly.",
-      "GENERIC": "Something went wrong. Please try again."
+      "GENERIC": "Something went wrong. Please try again.",
+      "INVALID_CREDENTIALS": "The mobile number or password is incorrect.",
+      "LOGIN_RATE_LIMITED": "Too many attempts. Please try again shortly.",
+      "TOO_MANY_REQUESTS": "Too many requests. Please try again shortly.",
+      "PASSWORD_REQUIRED": "Enter your password."
     }
   }
 }

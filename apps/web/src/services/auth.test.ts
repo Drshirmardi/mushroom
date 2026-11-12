@@ -85,6 +85,7 @@ describe("web auth service", () => {
             rateLimitedService.login({ phone: "+989121234567", password: "wrong", remember: false }),
         ).resolves.toEqual({
             ok: false,
+            code: "LOGIN_RATE_LIMITED",
             message: "تعداد تلاش‌ها بیش از حد مجاز است؛ کمی بعد دوباره امتحان کنید.",
         });
 
@@ -123,7 +124,7 @@ describe("web auth service", () => {
                 phone: "+989121234567",
                 password: "safe-password-long",
                 remember: false,
-            })).resolves.toEqual({ ok: false, message });
+            })).resolves.toEqual({ ok: false, code, message });
         }
     });
 

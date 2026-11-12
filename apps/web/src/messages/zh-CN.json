@@ -237,6 +237,15 @@
     "cooldown": "{seconds} 秒后可重新发送",
     "resend": "重新发送验证码",
     "edit": "修改手机号码",
+    "passwordLogin": "使用密码登录",
+    "passwordTitle": "使用密码登录",
+    "passwordPrompt": "请输入账户的手机号码和密码。",
+    "passwordLabel": "密码",
+    "passwordSubmit": "登录",
+    "signingIn": "正在登录…",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "otpLogin": "使用验证码登录",
     "errors": {
       "INVALID_PHONE_NUMBER": "请输入以 0 开头的伊朗手机号码，例如 09123456789。",
       "OTP_EXPIRED": "验证码已过期，请重新获取。",
@@ -246,7 +255,11 @@
       "OTP_RESEND_COOLDOWN": "请稍等片刻后再获取验证码。",
       "NETWORK_ERROR": "无法连接服务，请检查网络后重试。",
       "UNAVAILABLE": "服务暂时不可用，请稍后再试。",
-      "GENERIC": "操作未能完成，请重试。"
+      "GENERIC": "操作未能完成，请重试。",
+      "INVALID_CREDENTIALS": "手机号码或密码不正确。",
+      "LOGIN_RATE_LIMITED": "尝试次数过多，请稍后再试。",
+      "TOO_MANY_REQUESTS": "请求过于频繁，请稍后再试。",
+      "PASSWORD_REQUIRED": "请输入密码。"
     }
   }
 }

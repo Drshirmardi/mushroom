@@ -65,12 +65,12 @@ export function createAuthService(client: ApiClient) {
                 });
 
                 if (!data) {
-                    return { ok: false, message: errorMessage(error) };
+                    return { ok: false, code: error?.code ?? "GENERIC", message: errorMessage(error) };
                 }
 
                 return { ok: true, roles: data.user.roles };
             } catch {
-                return { ok: false, message: errorMessage(undefined) };
+                return { ok: false, code: "NETWORK_ERROR", message: errorMessage(undefined) };
             }
         },
 
