@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { Prisma, type MarriageServiceRequest } from '../../../generated/prisma/client';
 import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
@@ -21,6 +21,7 @@ const command = (key?: string) => { if (!key || !/^[\x21-\x7e]{1,200}$/u.test(ke
 
 @Injectable()
 export class MarriageRequestService {
+  private readonly logger = new Logger(MarriageRequestService.name);
   constructor(
     private readonly prisma: PrismaService,
     private readonly authority: GuidanceAuthorityService,
@@ -165,14 +166,29 @@ export class MarriageRequestService {
       const patient = await this.patient(tx, ctx);
       const verified = await this.verified(tx, patient.user.phone, ctx);
       const recipient = verified ? [{ recipientPatientId: patient.id }, { recipientPatientId: null, recipientHash: { in: this.crypto.phoneFingerprints(patient.user.phone) } }] : [];
+      const visible = filters.direction === 'SENT'
+        ? [{ initiatorPatientId: patient.id }]
+        : filters.direction === 'RECEIVED'
+          ? recipient
+          : [{ initiatorPatientId: patient.id }, ...recipient];
+      if (visible.length === 0) {
+        await this.audit(tx, 'MARRIAGE_REQUEST_LIST_READ', patient.id, ctx);
+        return { items: [], total: 0, page, pageSize: 20 };
+      }
       const where: Prisma.MarriageServiceRequestWhereInput = {
         clinicId: patient.clinicId,
         ...(filters.status ? { status: filters.status } : {}),
-        OR: filters.direction === 'SENT' ? [{ initiatorPatientId: patient.id }] : filters.direction === 'RECEIVED' ? recipient : [{ initiatorPatientId: patient.id }, ...recipient],
+        OR: visible,
       };
       const [rows, total] = await Promise.all([tx.marriageServiceRequest.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], skip: (page - 1) * 20, take: 20 }), tx.marriageServiceRequest.count({ where })]);
       const items = [];
-      for (const row of rows) items.push(await this.project(tx, row, patient.id, ctx));
+      for (const row of rows) {
+        try {
+          items.push(await this.project(tx, row, patient.id, ctx));
+        } catch (error) {
+          this.logger.warn(`Skipped unreadable marriage request ${row.id}: ${error instanceof Error ? error.name : 'unknown'}`);
+        }
+      }
       await this.audit(tx, 'MARRIAGE_REQUEST_LIST_READ', patient.id, ctx);
       return { items, total, page, pageSize: 20 };
     });
