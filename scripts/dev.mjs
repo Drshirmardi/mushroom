@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import net from 'net';
 import { parseEnv } from 'node:util';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -99,6 +100,42 @@ const port = (raw, fallback) => {
     throw new Error('Development ports must be integers between 1 and 65535.');
   return value;
 };
+
+function isPortInUse(port) {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    let resolved = false;
+    const onResult = (value) => {
+      if (resolved) return;
+      resolved = true;
+      socket.destroy();
+      resolve(value);
+    };
+    socket.setTimeout(500);
+    socket.once('connect', () => onResult(true));
+    socket.once('error', () => onResult(false));
+    socket.once('timeout', () => onResult(false));
+    socket.connect(port, '127.0.0.1');
+  });
+}
+
+const composeDb = (...args) =>
+  run(
+    'docker',
+    [
+      'compose',
+      '--project-name',
+      `mushroom-chat-${instance}`,
+      '--project-directory',
+      root,
+      '--file',
+      resolve(root, 'deploy/ejabberd/compose.local.yaml'),
+      '--file',
+      resolve(root, 'deploy/ejabberd/compose.main-db.local.yaml'),
+      ...args,
+    ],
+    composeEnvironment,
+  );
 
 function claim() {
   mkdirSync(state, { recursive: true, mode: 0o700 });
@@ -240,7 +277,12 @@ try {
   };
   composeStarted = true;
   // A stopped project keeps its volumes and credentials; never reset SQL on startup.
-  await compose('up', '--detach', '--build', '--wait', '--wait-timeout', '120');
+  const mainDbPort = 5432;
+  if (await isPortInUse(mainDbPort)) {
+    await compose('up', '--detach', '--build', '--wait', '--wait-timeout', '120');
+  } else {
+    await composeDb('up', '--detach', '--build', '--wait', '--wait-timeout', '120');
+  }
   if (stopping) throw new Error('Development startup cancelled.');
   const environment = {
     ...process.env,
