@@ -168,18 +168,24 @@ html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(35px, 3.3vw, 48px); line-hei
 /* Keep the doctor in the first mobile view, beside the headline rather than below the entire picker. */
 @media (max-width: 767px) {
     .site-mobile-menu { display: none; }
-    .landing-hero { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); column-gap: 16px; row-gap: 18px; }
+    .landing-hero { position: relative; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); column-gap: 16px; row-gap: 18px; }
     .hero-copy { display: contents; }
     .hero-copy > .section-kicker { grid-column: 1 / -1; grid-row: 1; margin: 0; }
-    .hero-copy > h1 { grid-column: 1; grid-row: 2; align-self: center; font-size: clamp(23px, 5.5vw, 35px); line-height: 1.65; letter-spacing: -.03em; }
-    .hero-visual { grid-column: 2; grid-row: 2; width: 100%; margin: 0; padding: 0; }
-    .hero-photo { aspect-ratio: .77; border: 0; border-radius: 0; }
-    .hero-photo img { object-position: 48% top; --portrait-fade-start: 88%; }
+    .hero-copy > h1 { position: relative; z-index: 1; grid-column: 1; grid-row: 2; align-self: center; font-size: clamp(23px, 5.5vw, 35px); line-height: 1.65; letter-spacing: -.03em; }
+    /* Portrait knobs: width sets the size, aspect-ratio sets the height, and the mask stops set where he fades behind the text. */
+    .hero-visual { position: absolute; z-index: 0; inset-inline-end: 0; top: 40px; width: min(280px, 62vw); margin: 0; padding: 0; pointer-events: none; }
+    .hero-photo { aspect-ratio: .66; border: 0; border-radius: 0; }
+    .hero-photo img {
+        object-position: 36% top;
+        -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, .4) 34%, rgba(0, 0, 0, .1) 48%, transparent 64%);
+        mask-image: linear-gradient(to bottom, #000 0%, #000 22%, rgba(0, 0, 0, .4) 34%, rgba(0, 0, 0, .1) 48%, transparent 64%);
+    }
+    .hero-visual-halo { width: 108%; height: 48%; top: -1%; inset-inline-start: -4%; }
     .hero-visual-halo::before { display: none; }
     .hero-visual figcaption, .hero-experience, .hero-quote { display: none; }
-    .hero-copy > .hero-intro { grid-column: 1 / -1; grid-row: 3; margin: 2px 0 6px; }
-    .hero-path-card { grid-column: 1 / -1; grid-row: 4; }
-    .hero-scroll { grid-row: 5; }
+    .hero-copy > .hero-intro { position: relative; z-index: 1; grid-column: 1 / -1; grid-row: 3; margin: 2px 0 6px; color: var(--ink-blue); text-shadow: 0 0 10px var(--ice-25), 0 0 2px var(--ice-25); }
+    .hero-path-card { position: relative; z-index: 1; grid-column: 1 / -1; grid-row: 4; }
+    .hero-scroll { position: relative; z-index: 1; grid-row: 5; }
     html[lang="en"] .hero-copy h1 { font-size: clamp(20px, 5.3vw, 35px); line-height: 1.25; }
     html[lang="zh-CN"] .hero-copy h1 { font-size: clamp(22px, 5.5vw, 34px); line-height: 1.65; }
 }
