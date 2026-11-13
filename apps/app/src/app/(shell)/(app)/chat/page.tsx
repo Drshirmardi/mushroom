@@ -5,7 +5,8 @@ import { LoadingState } from "@/components/shared/skeletons";
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, MessageCircle, CalendarDays, ChevronLeft, ChevronDown, Send, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MessageCircle, CalendarDays, ChevronDown, Send, CheckCircle2 } from "lucide-react";
+import { StoreIcon } from "@/components/store/store-icon";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { connectChat, loadChat, loadOlderChat, reconcileChatMessages, chatAccessLabel, type ChatAccess, type ChatConnection, type ChatMessage } from "@/lib/chat-api";
 
@@ -192,9 +193,9 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const closedAt = chat?.conversation.closedAt ?? access?.closedAt ?? null;
   const isClosed = closedAt !== null;
 
-  return <div ref={room} className="patient-chat-room group relative z-30 mx-auto flex h-full max-w-[720px] flex-col overflow-hidden bg-[#f6fafc]">
+  return <div ref={room} className="patient-chat-room group relative z-30 mx-auto flex h-full max-w-[720px] flex-col overflow-hidden bg-white">
     <header className="flex flex-shrink-0 items-center gap-2 border-b border-border bg-white px-3 py-2">
-      <button type="button" aria-label="بازگشت" onClick={() => router.back()} className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><ChevronLeft size={20} aria-hidden="true" /></button>
+      <button type="button" aria-label="بازگشت" onClick={() => router.back()} className="flex h-10 w-10 flex-shrink-0 items-center justify-center border-0 bg-transparent p-0 text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"><StoreIcon name="arrowRight" size={20} /></button>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-bold text-foreground">گفتگوی مشاوره</p>
         <p role="status" className="flex items-center gap-1.5 truncate text-[11px] text-muted-foreground">{connection === "loading" || connection === "reconnecting" ? <HeartbeatLoader /> : <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${dotTone}`} aria-hidden="true" />}{stateLabel}</p>
@@ -232,7 +233,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     </div>
     {isClosed ? (
       <section role="status" aria-live="polite" aria-atomic="true" className="max-h-[60%] min-h-0 flex-shrink-0 overflow-y-auto overscroll-contain border-t border-border bg-white px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] group-data-[keyboard=open]:pb-3">
-        <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-[#f6fafc] p-3.5">
+        <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-[var(--dp-surface-back)] p-3.5">
           <div className="flex items-start gap-3">
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200" aria-hidden="true"><CheckCircle2 size={18} /></span>
             <div className="min-w-0 text-start">

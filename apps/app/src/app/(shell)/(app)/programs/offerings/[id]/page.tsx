@@ -46,7 +46,7 @@ export default function ProgramOfferingPage() {
   );
 
   return (
-    <main dir="rtl" className="flex min-h-full w-full flex-col bg-[#f8fafc] text-foreground">
+    <main dir="rtl" className="flex min-h-full w-full flex-col bg-white text-foreground">
       {/* Navigation */}
       <nav
         aria-label="مسیر صفحه"
@@ -319,7 +319,7 @@ function Purchase({
       </div>
 
       {/* Sticky purchase bar */}
-      <footer className="sticky bottom-0 z-20 mt-auto border-t border-border/70 bg-white/95 px-5 py-3 shadow-[0_-8px_30px_-20px_rgba(15,23,42,0.2)] backdrop-blur-xl">
+      <footer className="sticky bottom-0 z-20 mt-auto border-t border-border/70 bg-white/95 px-5 py-3 shadow-[0_-8px_30px_-20px_color-mix(in srgb, var(--dp-text-high) 20%, transparent)] backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] text-muted-foreground">مبلغ قابل پرداخت</p>

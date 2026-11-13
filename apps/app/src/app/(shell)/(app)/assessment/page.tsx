@@ -240,6 +240,7 @@ function AssessmentHub() {
             section={section}
             invitationId={invitation?.id}
             draftId={draft?.id}
+            incoming={invitations}
           />
         ) : (
           <NewAssessments token={token} />
@@ -492,27 +493,18 @@ function MyAssessments({
   section,
   invitationId,
   draftId,
+  incoming,
 }: {
   token: string;
   section: string;
   invitationId?: string;
   draftId?: string;
+  incoming: ReturnType<typeof usePatientResource<Awaited<ReturnType<typeof listMarriageRequests>>>>;
 }) {
   const [requestPage, setRequestPage] = useState(1);
   const [historyPage, setHistoryPage] = useState(1);
   const [purchasePage, setPurchasePage] = useState(1);
-
-  const requests = usePatientResource(
-    useCallback(
-      () =>
-        listMarriageRequests(
-          token,
-          requestPage,
-          section === 'incoming' ? { status: 'PENDING', direction: 'RECEIVED' } : {},
-        ),
-      [token, requestPage, section],
-    ),
-  );
+  const reuseIncoming = section === 'incoming' && requestPage === 1;
   const history = usePatientResource(
     useCallback(
       () =>
@@ -527,7 +519,7 @@ function MyAssessments({
   const purchases = usePatientResource(
     useCallback(() => listAssessmentPurchases(token, purchasePage), [token, purchasePage]),
   );
-
+  const lists = (requests: typeof incoming, showRequestState: boolean) => {
   const statuses: Record<string, string> = {
     PENDING: 'منتظر پاسخ همراه',
     ACCEPTED: 'دعوت پذیرفته شده',
@@ -555,12 +547,14 @@ function MyAssessments({
       key="invitations"
       label="دعوت‌ها"
       title={
-        requests.loading || requests.error || requestItems.length > 0
+        (showRequestState && (requests.loading || requests.error)) || requestItems.length > 0
           ? 'دعوت‌های دو نفره'
           : undefined
       }
     >
-      <AssessmentResourceState {...requests} retry={() => void requests.reload()} />
+      {showRequestState && (
+        <AssessmentResourceState {...requests} retry={() => void requests.reload()} />
+      )}
       {requestItems.map((item) => (
         <Link
           className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
@@ -758,4 +752,41 @@ function MyAssessments({
       </details>
     </div>
   );
+  };
+  if (reuseIncoming) return lists(incoming, false);
+  return (
+    <MarriageRequestPage
+      token={token}
+      section={section}
+      requestPage={requestPage}
+      render={(requests) => lists(requests, true)}
+    />
+  );
+}
+
+function MarriageRequestPage({
+  token,
+  section,
+  requestPage,
+  render,
+}: {
+  token: string;
+  section: string;
+  requestPage: number;
+  render: (
+    requests: ReturnType<typeof usePatientResource<Awaited<ReturnType<typeof listMarriageRequests>>>>,
+  ) => ReactNode;
+}) {
+  const requests = usePatientResource(
+    useCallback(
+      () =>
+        listMarriageRequests(
+          token,
+          requestPage,
+          section === 'incoming' ? { status: 'PENDING', direction: 'RECEIVED' } : {},
+        ),
+      [token, requestPage, section],
+    ),
+  );
+  return render(requests);
 }

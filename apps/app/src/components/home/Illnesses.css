@@ -1,5 +1,5 @@
 .illnesses {
-    background: #fff;
+    background: var(--dp-surface-elevated);
     border-radius: 12px;
     padding: 20px 16px;
 }
@@ -15,7 +15,7 @@
     width: 11px;
     height: 11px;
     border-radius: 50%;
-    background: linear-gradient(180deg, #fed9ff, #c853ff);
+    background: linear-gradient(180deg, var(--dp-brand-tint), var(--dp-brand));
 }
 
 .illnesses__header h3 {
@@ -26,7 +26,7 @@
 
 .illnesses__header p {
     margin: 4px 0 0;
-    color: #8b8b8b;
+    color: var(--dp-text-low);
     font-size: 12px;
 }
 
@@ -47,7 +47,7 @@
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: #031a32;
+    color: var(--dp-text-high);
 }
 
 .illness__icon {

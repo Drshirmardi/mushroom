@@ -137,7 +137,7 @@
 
 .page:global(.store-product-page),
 .page:has([data-product-loading]) {
-  background: #fff;
+  background: var(--dp-surface-elevated);
 }
 .page:has([data-product-loading]) {
   display: flex;
@@ -163,9 +163,9 @@
   flex-shrink: 0;
   width: 44px;
   min-height: 44px;
-  border-radius: 50%;
-  border: 1px solid var(--patient-divider);
-  background: #fff;
+  border-radius: 0;
+  border: 0;
+  background: transparent;
 }
 
 .actions:has([data-product-price-loading]) {
@@ -185,19 +185,19 @@
   padding: 0;
 
   border-radius: 16px;
-  border: 1px solid rgb(255 255 255 / 90%);
+  border: 1px solid color-mix(in srgb, var(--dp-surface-elevated) 90%, transparent);
 
-  background: rgb(255 255 255 / 62%);
-  color: #087c91;
+  background: color-mix(in srgb, var(--dp-surface-elevated) 62%, transparent);
+  color: var(--dp-brand);
 
   box-shadow:
-    inset 0 1px 0 white,
-    0 16px 40px -28px rgb(30 103 155 / 36%);
+    inset 0 1px 0 var(--dp-surface-elevated),
+    0 16px 40px -28px color-mix(in srgb, var(--dp-brand) 36%, transparent);
 }
 
 .page :global(.store-page-header) .cartLink:hover {
-  background: rgb(255 255 255 / 75%);
-  color: #087c91;
+  background: color-mix(in srgb, var(--dp-surface-elevated) 75%, transparent);
+  color: var(--dp-brand);
 }
 
 /* Same cart-count badge as storefront */
@@ -212,8 +212,8 @@
   padding: 0 4px;
 
   border-radius: 999px;
-  background: #e11d48;
-  color: white;
+  background: var(--dp-error);
+  color: var(--dp-surface-elevated);
 
   font-size: 10px;
   line-height: 1;
@@ -223,7 +223,7 @@
 
 /* Currency markup stays shared, but PDP's displayed unit price has its own scale. */
 .page :global([data-product-unit-price] .store-price) {
-  color: #087c91;
+  color: var(--dp-brand);
   font-family: var(--font-iranyekanx);
   font-size: clamp(1.125rem, 4cqi, 1.375rem);
   font-weight: 500;

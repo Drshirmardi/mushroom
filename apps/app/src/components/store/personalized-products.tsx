@@ -4,7 +4,8 @@ import { StoreGridLoading } from './store-loading';
 
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { Leaf } from 'lucide-react';
+import { StoreIcon } from './store-icon';
+import { StoreProductCarousel } from './store-collection';
 import {
   getCommerceRecommendations,
   type CommerceProduct,
@@ -19,14 +20,12 @@ export function PersonalizedProducts({
   fallback,
   browseKey,
   onSettled,
-  gridClassName = 'store-grid',
 }: {
   accessToken?: string;
   browseKey: string;
   onSettled: () => void;
   fallback: ReactNode;
   renderProduct: (product: CommerceProduct) => ReactNode;
-  gridClassName?: string;
 }) {
   const [data, setData] = useState<CommerceRecommendations | null>(null);
   const [error, setError] = useState(false);
@@ -73,7 +72,7 @@ export function PersonalizedProducts({
       <>
         <section className="store-personal" aria-label="محصولات مرتبط با مزاج شما">
           <div className="store-personal__intro">
-            <Leaf size={18} aria-hidden="true" />
+            <StoreIcon name="checkCircle" size={18} />
             <p>
               بر اساس نتیجهٔ ارزیابی شما
               {data.primary && data.secondary
@@ -82,11 +81,9 @@ export function PersonalizedProducts({
             </p>
             <Link href="/mezaj">مشاهدهٔ نتیجه</Link>
           </div>
-          <h2 id="store-personal-products">محصولات مرتبط با شما</h2>
-
-          <div className={gridClassName}>
+          <StoreProductCarousel title="محصولات مرتبط با شما" id="store-personal-products">
             {(expanded ? data.items : data.items.slice(0, 4)).map(renderProduct)}
-          </div>
+          </StoreProductCarousel>
 
           {data.items.length > 4 && (
             <button
@@ -113,13 +110,22 @@ export function PersonalizedProducts({
         className="store-personal-hint store-personal-hint--compact"
         aria-label="پیشنهادهای مخصوص شما"
       >
-        <Leaf size={19} aria-hidden="true" />
-        <p>
-          {missing
-            ? 'برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن.'
-            : 'برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد.'}
-        </p>
-        {missing && <Link href="/assessment">شروع ارزیابی</Link>}
+        <span className="store-personal-hint__icon">
+          <StoreIcon name="checklist" size={24} />
+        </span>
+        <div className="store-personal-hint__copy">
+          <p>
+            {missing
+              ? 'برای دیدن محصولات مرتبط با مزاجت، ارزیابی‌ات را کامل کن.'
+              : 'برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد.'}
+          </p>
+        </div>
+        {missing && (
+          <Link href="/assessment">
+            <span>شروع ارزیابی</span>
+            <StoreIcon name="arrowLeft" size={16} />
+          </Link>
+        )}
       </aside>
       {fallback}
     </>

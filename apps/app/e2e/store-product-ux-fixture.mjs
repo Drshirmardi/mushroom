@@ -8,7 +8,7 @@ export async function installStoreProductFixture(page) {
     content: { brand: 'برند آزمایشی', manufacturer: 'تولیدکننده آزمایشی', shortDescription: 'معرفی کوتاه واقعی محصول',
       ...Object.fromEntries(['description', 'ingredients', 'usageInstructions', 'warnings', 'contraindications'].map(key => [key, `متن آزمایشی ${key}؛ ${(state.long ? 'توضیح فارسی بلند برای بررسی پیمایش و خوانایی. '.repeat(30) : 'اطلاعات کوتاه و روشن.')}`])) } });
   const cart = () => ({ items: product().skus.filter(s => state.quantities[s.id]).map(s => ({ id: `item-${s.id}`, quantity: state.quantities[s.id], sku: s, product: product() })) });
-  const picture = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#e7f1f7"/><rect x="220" y="120" width="160" height="360" rx="32" fill="#176b9a"/></svg>';
+  const picture = '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="600" height="600" fill="#DEEDFF"/><rect x="220" y="120" width="160" height="360" rx="32" fill="#1159FC"/></svg>';
   await page.route('**/v1/**', async route => {
     const request = route.request(), url = new URL(request.url()), path = url.pathname;
     const headers = { 'access-control-allow-origin': request.headers().origin || '*', 'access-control-allow-credentials': 'true', 'access-control-allow-methods': 'GET,POST,PUT,OPTIONS', 'access-control-allow-headers': 'authorization,content-type,idempotency-key' };

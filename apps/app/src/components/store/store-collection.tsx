@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Children, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type TransitionEvent } from "react";
+import { StoreIcon } from "./store-icon";
 import { Button } from "../ui/button";
 
 /** A collection is derived from catalog data, never an implied promotion. */
@@ -112,13 +112,142 @@ export function StoreCollection({ title, id, onViewAll, railClassName, header, c
       {(edges.previous || edges.next) && <>
         <Button variant="ghost" className="store-collection__arrow store-collection__arrow--previous"
           aria-label={`محصولات قبلیِ ${title}`} aria-controls={`${id}-rail`} disabled={!edges.previous} onClick={() => move(false)}>
-          <ChevronRight size={22} aria-hidden="true" />
+          <StoreIcon name="arrow2Right" size={22} />
         </Button>
         <Button variant="ghost" className="store-collection__arrow store-collection__arrow--next"
           aria-label={`محصولات بعدیِ ${title}`} aria-controls={`${id}-rail`} disabled={!edges.next} onClick={() => move(true)}>
-          <ChevronLeft size={22} aria-hidden="true" />
+          <StoreIcon name="arrow2Left" size={22} />
         </Button>
       </>}
+    </div>
+  </section>;
+}
+
+/** Digipay-style product carousel: a centered active card, scaled side cards, and a looping track. */
+export function StoreProductCarousel({ title, id, children }: {
+  title: string;
+  id: string;
+  children: ReactNode;
+}) {
+  const slides = Children.toArray(children);
+  const viewport = useRef<HTMLDivElement>(null);
+  const pointer = useRef<{ x: number; id: number; moved: boolean } | null>(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const [physicalIndex, setPhysicalIndex] = useState(slides.length > 1 ? 1 : 0);
+  const [animate, setAnimate] = useState(false);
+  const suppressClick = useRef(false);
+  const count = slides.length;
+  const hasLoop = count > 1;
+  const trackSlides = hasLoop
+    ? [slides[count - 1], ...slides, slides[0]]
+    : slides;
+  const activeIndex = hasLoop ? (physicalIndex - 1 + count) % count : 0;
+
+  useEffect(() => {
+    const element = viewport.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => setViewportWidth(element.clientWidth));
+    observer.observe(element);
+    setViewportWidth(element.clientWidth);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setPhysicalIndex(hasLoop ? 1 : 0);
+    setAnimate(false);
+  }, [count, hasLoop]);
+
+  const goToPhysical = (next: number) => {
+    if (!hasLoop || next === physicalIndex) return;
+    setAnimate(true);
+    setPhysicalIndex(next);
+  };
+  const move = (direction: -1 | 1) => goToPhysical(physicalIndex + direction);
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft") { event.preventDefault(); move(1); }
+    if (event.key === "ArrowRight") { event.preventDefault(); move(-1); }
+  };
+  const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    pointer.current = { x: event.clientX, id: event.pointerId, moved: false };
+  };
+  const onPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = pointer.current;
+    if (!start || start.id !== event.pointerId) return;
+    pointer.current = null;
+    const distance = event.clientX - start.x;
+    if (Math.abs(distance) < 36) return;
+    suppressClick.current = true;
+    window.setTimeout(() => { suppressClick.current = false; }, 0);
+    start.moved = true;
+    move(distance < 0 ? 1 : -1);
+  };
+  const onClickCapture = (event: ReactMouseEvent<HTMLDivElement>) => {
+    if (!suppressClick.current) return;
+    suppressClick.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  const onTrackTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget || event.propertyName !== "transform" || !hasLoop) return;
+    if (physicalIndex === 0 || physicalIndex === count + 1) {
+      setAnimate(false);
+      setPhysicalIndex(physicalIndex === 0 ? count : 1);
+      requestAnimationFrame(() => setAnimate(true));
+    }
+  };
+  const offset = physicalIndex * 160 - (viewportWidth - 150) / 2;
+
+  return <section className="store-collection" aria-labelledby={id}>
+    <header className="store-collection__header"><h2 id={id}>{title}</h2></header>
+    <div className="store-personal-carousel" aria-roledescription="carousel" aria-label={title}>
+      <div
+        ref={viewport}
+        className="store-personal-carousel__viewport"
+        tabIndex={0}
+        role="group"
+        aria-label="برای جابه‌جایی کارت‌ها بکشید یا از کلیدهای جهت استفاده کنید"
+        onKeyDown={onKeyDown}
+        onPointerDown={onPointerDown}
+        onPointerUp={onPointerUp}
+        onPointerCancel={() => { pointer.current = null; }}
+        onClickCapture={onClickCapture}
+      >
+        <div
+          className={`store-personal-carousel__track${animate ? " is-animating" : ""}`}
+          style={{ transform: `translate3d(${offset}px, 0, 0)` }}
+          onTransitionEnd={onTrackTransitionEnd}
+        >
+          {trackSlides.map((slide, index) => {
+            const realIndex = hasLoop ? (index - 1 + count) % count : index;
+            const isActive = index === physicalIndex;
+            const isClone = hasLoop && (index === 0 || index === trackSlides.length - 1);
+            return <div
+              className={`store-personal-carousel__slide${isActive ? " is-active" : ""}`}
+              key={`${index}-${realIndex}`}
+              role="group"
+              aria-roledescription="اسلاید"
+              aria-label={`${realIndex + 1} از ${count}`}
+              aria-hidden={isClone || undefined}
+              inert={isClone || undefined}
+            >{slide}</div>;
+          })}
+        </div>
+      </div>
+      {count > 1 && <div className="store-personal-carousel__dots" role="group" aria-label="انتخاب محصول">
+        {slides.map((_, index) => <button
+          key={index}
+          type="button"
+          className={`store-personal-carousel__dot${activeIndex === index ? " is-active" : ""}`}
+          aria-label={`نمایش محصول ${index + 1}`}
+          aria-current={activeIndex === index ? "true" : undefined}
+          onClick={() => {
+            if (activeIndex === count - 1 && index === 0) goToPhysical(count + 1);
+            else if (activeIndex === 0 && index === count - 1) goToPhysical(0);
+            else goToPhysical(index + 1);
+          }}
+        />)}
+      </div>}
     </div>
   </section>;
 }

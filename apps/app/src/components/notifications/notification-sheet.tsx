@@ -17,6 +17,7 @@ export function NotificationSheet({ onClose, onUpdated }: NotificationSheetProps
       dismissible
       showHandle
       showCloseButton
+      className="max-w-[552px]"
       onClose={onClose}
     >
       <NotificationCenter embedded onUpdated={onUpdated} />

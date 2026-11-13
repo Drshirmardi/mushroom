@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "motion/react";
-import { MapPin, Package, Plus, Truck } from "lucide-react";
+import { StoreIcon } from "@/components/store/store-icon";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { StoreState, ProductPrice } from "@/components/store/store-ui";
 import { PageHeader } from "@/components/shared/page-header";
@@ -96,21 +96,21 @@ export default function CheckoutPage() {
     } catch (cause) { setError(commerceErrorMessage(cause)); }
     finally { setSaving(false); }
   };
-  return <main className={`store-page store-checkout ${styles.page}`}><div className={styles.header}><PageHeader title="تکمیل خرید" onBack={() => router.back()} /></div>
+  return <main className={`store-page store-checkout ${styles.page}`}><div className={styles.header}><PageHeader title="تکمیل خرید" onBack={() => router.back()} backIcon={<StoreIcon name="arrowRight" size={20} className="text-foreground" />} /></div>
     {loading && <StoreState title="در حال آماده‌سازی سفارش…" pending variant="form" />}
     {error && <StoreState title="اطلاعات سفارش کامل نشد" description={error} error action="دریافت دوباره" onAction={() => void load()} />}
-    {!loading && !items.length && !error && <div className="store-empty"><Package size={42} strokeWidth={1.5} aria-hidden="true" /><h2>سبد خریدتان خالی است</h2><p>برای ثبت سفارش، ابتدا یک محصول انتخاب کنید.</p><Link href="/store" className="patient-button">مشاهدهٔ محصولات</Link></div>}
+    {!loading && !items.length && !error && <div className="store-empty"><StoreIcon name="deliveryBox" size={42} /><h2>سبد خریدتان خالی است</h2><p>برای ثبت سفارش، ابتدا یک محصول انتخاب کنید.</p><Link href="/store" className="patient-button">مشاهدهٔ محصولات</Link></div>}
     {!loading && items.length > 0 && <div className="store-checkout__layout">
       <div className="store-checkout__steps">
-        <section className="store-checkout__section" aria-labelledby="shipping-heading"><h2 id="shipping-heading"><Truck size={18} aria-hidden="true" />روش دریافت</h2>
+        <section className="store-checkout__section" aria-labelledby="shipping-heading"><h2 id="shipping-heading"><StoreIcon name="deliveryBox" size={18} />روش دریافت</h2>
           {!options.length && <p role="status">روش دریافت فعالی پیدا نشد. دوباره اطلاعات را دریافت کنید.</p>}
           {options.map(item => <label key={item.method} className={`store-choice ${method === item.method ? "store-choice--selected" : ""}`}><input type="radio" name="shipping" disabled={saving} checked={method === item.method} onChange={() => setMethod(item.method)} /><span>{item.method === "PICKUP" ? "دریافت حضوری" : "ارسال با پیک"}</span><span className="font-iransans-fanum">{BigInt(item.amountToman) === BigInt(0) ? "بدون هزینهٔ ارسال" : `${formatPrice(BigInt(item.amountToman))} تومان`}</span></label>)}
           {method === "PICKUP" && <p className="store-help">سفارش را پس از آماده‌شدن، به‌صورت حضوری دریافت می‌کنید. وضعیت آماده‌سازی در «سفارش‌های من» نمایش داده می‌شود.</p>}
         </section>
-        {method === "COURIER" && <section className="store-checkout__section" aria-labelledby="address-heading"><h2 id="address-heading"><MapPin size={18} aria-hidden="true" />آدرس تحویل</h2>
+        {method === "COURIER" && <section className="store-checkout__section" aria-labelledby="address-heading"><h2 id="address-heading"><StoreIcon name="location" size={18} />آدرس تحویل</h2>
           {!addresses.length && <p className="store-help">برای ارسال با پیک، یک آدرس اضافه کنید.</p>}
           {addresses.map(item => <label key={item.id} className={`store-choice store-choice--address ${item.id === addressId ? "store-choice--selected" : ""}`}><input type="radio" name="address" disabled={saving} checked={addressId === item.id} onChange={() => { setAddressId(item.id); storeDelivery(authentication.user.id, item.id); }} /><span><strong>{item.label} · {item.recipientName}</strong><span>{item.province}، {item.city}، {item.line1}</span></span></label>)}
-          <Button variant="ghost" disabled={saving} onClick={() => setShowAddressForm(true)}><Plus size={17} aria-hidden="true" />افزودن آدرس</Button>
+          <Button variant="ghost" disabled={saving} onClick={() => setShowAddressForm(true)}><StoreIcon name="plus" size={17} />افزودن آدرس</Button>
         </section>}
         <section className="store-checkout__section" aria-labelledby="review-heading"><header className="store-collection__header"><h2 id="review-heading">کالاهای سفارش</h2><Link href="/store/cart">ویرایش سبد</Link></header>
           {items.map(item => <Link key={item.skuId} href={`/store/products/${encodeURIComponent(item.productId)}?sku=${encodeURIComponent(item.skuId)}`} className="store-checkout__item"><ProductImage src={item.imageUrl ?? null} alt="" width={64} height={64} /><span><strong>{item.name}</strong>{item.variantTitle && <span>{item.variantTitle}</span>}<span>{toP(item.qty)} عدد</span></span><ProductPrice amount={BigInt(item.price) * BigInt(item.qty)} /></Link>)}

@@ -3,43 +3,44 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
-import {
-  ClipboardList,
-  Heart,
-  Home,
-  ShoppingBag,
-  User,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { toP } from "@/lib/format";
 import { screenToHref, TAB_ROOT_SCREENS } from "@/lib/navigation";
 import { cartCount, useCartStore } from "@/stores/cart";
 import type { TabId } from "@/lib/types";
 
+type Glyph = "home" | "bag" | "person";
+
 type TabItem = {
   tab: TabId;
   label: string;
-  icon: LucideIcon;
+  glyph: Glyph;
   href: string;
   /** Hidden from the dock until its screen is re-enabled; routes stay intact. */
   hidden?: boolean;
 };
 
 const TAB_ITEMS: TabItem[] = [
-  { tab: "home", label: "خانه", icon: Home, href: "/" },
-  { tab: "assessment", label: "ارزیابی", icon: ClipboardList, href: "/assessment", hidden: true },
-  { tab: "treatment", label: "درمان من", icon: Heart, href: "/treatment", hidden: true },
-  { tab: "storemain", label: "فروشگاه", icon: ShoppingBag, href: "/store" },
-  { tab: "profile", label: "پروفایل", icon: User, href: "/profile" },
+  { tab: "home", label: "خانه", glyph: "home", href: "/" },
+  { tab: "assessment", label: "ارزیابی", glyph: "home", href: "/assessment", hidden: true },
+  { tab: "treatment", label: "درمان من", glyph: "home", href: "/treatment", hidden: true },
+  { tab: "storemain", label: "فروشگاه", glyph: "bag", href: "/store" },
+  { tab: "profile", label: "پروفایل", glyph: "person", href: "/profile" },
 ];
+
+function NavGlyph({ name, active }: { name: Glyph; active: boolean }) {
+  return (
+    <span className="patient-shell-nav__glyph" aria-hidden="true">
+      <i className={`icon-${name}-${active ? "bold" : "linear"}`} />
+    </span>
+  );
+}
 
 export function BottomTabBar() {
   const pathname = usePathname();
   const router = useRouter();
-  const reducedMotion = useReducedMotion();
   const storePrefetched = useRef(false);
   const [pending, setPending] = useState<{ from: string; href: string } | null>(null);
+  if (pending && pending.from !== pathname) setPending(null);
   const prefetchStore = () => {
     if (storePrefetched.current) return;
     storePrefetched.current = true;
@@ -54,7 +55,6 @@ export function BottomTabBar() {
     <nav aria-label="ناوبری اصلی" className="patient-shell-nav relative shrink-0 z-20">
       <div className="patient-shell-nav__dock">
         {visible.map((item) => {
-          const Icon = item.icon;
           const root = TAB_ROOT_SCREENS[item.tab];
           const href = screenToHref(root) ?? "/";
           const routeActive =
@@ -79,21 +79,10 @@ export function BottomTabBar() {
               aria-current={isActive ? "page" : undefined}
               className="patient-shell-nav__item"
             >
-              {isActive &&
-                (reducedMotion ? (
-                  <span className="patient-shell-nav__pill" aria-hidden="true" />
-                ) : (
-                  <motion.span
-                    layoutId="nav-pill"
-                    className="patient-shell-nav__pill"
-                    aria-hidden="true"
-                    transition={{ type: "spring", stiffness: 500, damping: 42 }}
-                  />
-                ))}
               {item.tab === "storemain" && count > 0 && (
                 <span className="patient-shell-nav__badge">{toP(count)}</span>
               )}
-              <Icon aria-hidden="true" size={22} strokeWidth={isActive ? 2.2 : 1.8} />
+              <NavGlyph name={item.glyph} active={isActive} />
               <span className="patient-shell-nav__label">{item.label}</span>
             </Link>
           );

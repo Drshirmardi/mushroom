@@ -18,6 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isHome = pathname === '/';
   const isStorefront = pathname === '/store';
   const isStore = pathname === '/store' || pathname.startsWith('/store/');
+  const isProfile = pathname === '/profile' || pathname.startsWith('/profile/');
   const isProduct = pathname.startsWith('/store/products/');
   const immersive = useUiStore((state) => state.immersive);
   const showTabs = !isProduct && !immersive && (session?.status === 'authenticated' || isStore);
@@ -54,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <ShellSlots.Provider value={{ action, overlay }}>
       <div
         onWheel={handleShellWheel}
-        className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? 'patient-store-shell' : ''} ${isHome ? 'patient-home-shell' : ''} ${isStorefront ? 'patient-storefront-shell' : ''}`}
+        className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? 'patient-store-shell' : ''} ${isHome ? 'patient-home-shell' : ''} ${isStorefront ? 'patient-storefront-shell' : ''} ${isProfile ? 'patient-profile-shell' : ''}`}
       >
         <div
           ref={frame}

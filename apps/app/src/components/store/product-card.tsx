@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Check, Heart } from 'lucide-react';
+import { StoreIcon } from './store-icon';
 
 import { Button } from '../ui/button';
 import type { CommerceProduct } from '../../lib/commerce-catalog-api';
+import { formatPrice, toP } from '../../lib/format';
 import { productImageUrl } from '../../lib/product-image';
 import { ProductImage } from './product-image';
-import { ProductPrice } from './store-ui';
+import { TomanIcon } from './toman-icon';
 
 type Props = {
   product: CommerceProduct;
@@ -19,6 +20,34 @@ type Props = {
   showFavorite?: boolean;
 };
 
+type InstallmentOffer = { count: number; amountToman: string };
+type PriceOffer = { previous: bigint; percent: number };
+
+/** Present only after the catalog API sends both installment fields. */
+function installmentOffer(product: CommerceProduct): InstallmentOffer | null {
+  const source = product as CommerceProduct & {
+    installmentCount?: unknown;
+    installmentAmountToman?: unknown;
+  };
+  const count = source.installmentCount;
+  const amount = source.installmentAmountToman;
+  if (typeof count !== 'number' || !Number.isInteger(count) || count < 2 || count > 36) return null;
+  if (typeof amount !== 'string' || !/^\d+$/.test(amount) || amount === '0') return null;
+  return { count, amountToman: amount };
+}
+
+/** Present only when a previous price higher than the current one is on the SKU. */
+function priceOffer(sku: CommerceProduct['skus'][number]): PriceOffer | null {
+  const previousText = (sku as { compareAtPriceToman?: unknown }).compareAtPriceToman;
+  if (typeof previousText !== 'string' || !/^\d+$/.test(previousText)) return null;
+  const previous = BigInt(previousText);
+  const current = BigInt(sku.currentPriceToman);
+  if (previous <= current) return null;
+  const percent = Number(((previous - current) * 100n) / previous);
+  if (percent < 1) return null;
+  return { previous, percent };
+}
+
 export function ProductCard({
   product,
   skuOverride,
@@ -29,176 +58,94 @@ export function ProductCard({
   showFavorite = true,
 }: Props) {
   const sku = skuOverride ?? product.skus[0];
-
   if (!sku) return null;
 
-  const href = `/store/products/${encodeURIComponent(
-    product.id,
-  )}?sku=${encodeURIComponent(sku.id)}`;
-
-  const categoryHref = product.category
-    ? `/store?view=all&category=${encodeURIComponent(product.category.id)}`
-    : null;
+  const href = `/store/products/${encodeURIComponent(product.id)}?sku=${encodeURIComponent(sku.id)}`;
+  const variant = sku.title?.trim();
+  const name = variant && !product.title.includes(variant) ? `${product.title} - ${variant}` : product.title;
+  const merchant = product.brand?.trim() || product.category?.name || '';
+  const installment = installmentOffer(product);
+  const offer = priceOffer(sku);
 
   return (
     <article
       data-product-id={product.id}
       aria-busy={busy || undefined}
-      className="
-        store-product
-        @container/card
-        group
-        relative flex h-full min-w-0 flex-col
-        overflow-hidden rounded-xl border border-slate-200
-        bg-white
-        transition-colors duration-200
-        hover:border-slate-300
-        motion-reduce:transition-none
-      "
+      className="store-product"
     >
-      {/* Product image */}
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-white">
-        <Link
-          href={href}
-          aria-label={`مشاهدهٔ ${product.title}`}
-          className="absolute inset-0 flex items-center justify-center p-0"
-        >
+      <div className="store-product__media">
+        <Link href={href} aria-label={`مشاهدهٔ ${product.title}`} className="store-product__media-link">
           <ProductImage
             src={productImageUrl(product)}
             alt=""
             width={320}
             height={320}
-            className="store-product__image block h-full w-full object-cover object-center"
+            className="store-product__image"
           />
         </Link>
 
-        {/* Wishlist */}
+        {installment && (
+          <div className="store-product__installment">
+            <div className="store-product__installment-count">
+              <bdi dir="ltr">{toP(installment.count)}</bdi>
+              <small>قسط</small>
+            </div>
+            <div className="store-product__installment-amount">
+              <bdi dir="ltr">{formatPrice(BigInt(installment.amountToman))}</bdi>
+              <small>تومانی</small>
+            </div>
+          </div>
+        )}
+
         {showFavorite && (
           <Button
             variant="ghost"
-            className="
-              store-product__favorite
-              absolute end-2 top-2 z-10
-              flex h-11 w-11 items-center justify-center
-              rounded-xl
-              border border-slate-200/80
-              bg-white/95
-              text-slate-500
-              aria-pressed:text-rose-600
-              focus-visible:outline-2
-              focus-visible:outline-rose-600
-            "
+            className="store-product__favorite"
             disabled={busy}
             aria-label={`${saved ? 'حذف از' : 'افزودن به'} علاقه‌مندی‌ها: ${product.title}`}
             aria-pressed={saved}
             onClick={() => onFavorite(sku.id)}
           >
-            <Heart
-              aria-hidden="true"
-              size={19}
-              strokeWidth={1.8}
-              fill={saved ? 'currentColor' : 'none'}
-            />
+            <StoreIcon name={saved ? 'heartBold' : 'heart'} size={18} />
           </Button>
         )}
 
-        {/* Cart status */}
         {inCart && (
-          <span
-            className="
-              absolute bottom-2 start-2 z-10
-              inline-flex max-w-[calc(100%-1rem)]
-              items-center gap-1
-              rounded-lg
-              bg-emerald-50/95
-              px-2 py-1
-              text-[10px] font-medium
-              text-emerald-800
-            "
-          >
-            <Check aria-hidden="true" size={12} />
+          <span className="store-product__incart">
+            <StoreIcon name="check" size={12} />
             در سبد
           </span>
         )}
       </div>
 
-      {/* Product information */}
-      <div
-        className="
-          flex min-w-0 flex-1 flex-col
-          gap-1.5
-          p-2.5
-          @min-[210px]/card:p-3
-        "
-      >
-        {/* Product title */}
-        <Link
-          href={href}
-          className="
-            block min-w-0
-            rounded-sm
-            text-slate-800
-            hover:text-sky-700
-            focus-visible:outline-2
-            focus-visible:outline-sky-600
-          "
-        >
-          <h2
-            className="
-              line-clamp-2 min-h-[3.4em]
-              text-[12px] leading-[1.7] font-medium
-              [overflow-wrap:anywhere]
-              @min-[210px]/card:text-[13px]
-              @min-[260px]/card:text-sm
-            "
-          >
-            {product.title}
-          </h2>
-        </Link>
-
-        {/* Category */}
-        {product.category?.name && categoryHref && (
-          <Link
-            href={categoryHref}
-            className="
-              block w-fit max-w-full
-              truncate
-              text-[11px] leading-5
-              text-slate-500
-              hover:text-sky-700
-              focus-visible:outline-2
-              focus-visible:outline-sky-600
-            "
-          >
-            {product.category.name}
-          </Link>
-        )}
-
-        {/* Selected SKU */}
-        {sku.title && (
-          <p
-            title={sku.title}
-            className="
-              min-w-0 truncate
-              text-[11px] leading-5
-              text-slate-500
-              @min-[210px]/card:text-xs
-            "
-          >
-            {sku.title}
+      <div className="store-product__body">
+        {merchant && (
+          <p className="store-product__merchant">
+            <StoreIcon name="store" size={16} />
+            <span>{merchant}</span>
           </p>
         )}
 
-        {/* Price */}
-        <div
-          className="
-            mt-auto flex min-w-0
-            flex-col justify-end
-            border-t border-slate-100
-            pt-2.5
-          "
-        >
-          <ProductPrice amount={BigInt(sku.currentPriceToman)} />
+        <Link href={href} className="store-product__title">
+          <h2>{name}</h2>
+        </Link>
+
+        <div className="store-product__pricebox">
+          {offer && (
+            <div className="store-product__price-was">
+              <span className="store-product__off">
+                <bdi dir="ltr">{toP(offer.percent)} %</bdi>
+              </span>
+              <del>
+                <bdi dir="ltr">{formatPrice(offer.previous)}</bdi>
+              </del>
+            </div>
+          )}
+          <p className="store-product__price-now">
+            <bdi dir="ltr">{formatPrice(BigInt(sku.currentPriceToman))}</bdi>
+            <TomanIcon />
+            <span className="sr-only">تومان</span>
+          </p>
         </div>
       </div>
     </article>

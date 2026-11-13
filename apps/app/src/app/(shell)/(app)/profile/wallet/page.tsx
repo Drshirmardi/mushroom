@@ -104,11 +104,11 @@ export default function WalletPage() {
 
         {summary && (
           <>
-            <section aria-label="موجودی کیف پول" className="relative isolate overflow-hidden rounded-[28px] border border-white/15 bg-[linear-gradient(125deg,#103b63_10%,#125c78_70%,#187b85)] p-5 text-white shadow-[0_16px_36px_-20px_rgba(16,59,99,0.65)] sm:p-6">
+            <section aria-label="موجودی کیف پول" className="relative isolate overflow-hidden rounded-[28px] border border-white/15 bg-[linear-gradient(125deg,#103b63_10%,#125c78_70%,var(--dp-brand))] p-5 text-white shadow-[0_16px_36px_-20px_color-mix(in srgb, var(--dp-text-high) 65%, transparent)] sm:p-6">
               <div aria-hidden="true" className="pointer-events-none absolute -left-16 -top-28 -z-10 h-72 w-72 rounded-full border-[32px] border-white/[0.04]" />
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/10 shadow-[inset_0_1px_0_color-mix(in srgb, var(--dp-surface-elevated) 12%, transparent)]">
                     <Wallet size={26} strokeWidth={1.6} aria-hidden="true" />
                   </span>
                   <div><p className="text-sm font-medium">کیف پول شما</p><p className="mt-1 text-[11px] text-white/75"> قابل استفاده</p></div>
@@ -128,7 +128,7 @@ export default function WalletPage() {
                 <button
                   type="button"
                   onClick={() => setTopupOpen(true)}
-                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-medium text-[#103b63] transition-colors hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-medium text-[var(--dp-brand)] transition-colors hover:bg-cyan-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
                 >
                   <Plus size={18} strokeWidth={1.8} aria-hidden="true" />افزایش موجودی
                 </button>

@@ -4,7 +4,6 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } f
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { AnimatePresence } from 'motion/react';
-import { Heart, ChevronDown, MapPin, Search, ShoppingCart, X } from 'lucide-react';
 import { useOptionalAuthSession } from '@/components/auth/session-gate';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +11,7 @@ import { ProductCard } from '@/components/store/product-card';
 import { AddressSheet } from '@/components/store/address-sheet';
 import { StoreHeroSlider } from '@/components/store/store-hero-slider';
 import { StoreShortcuts } from '@/components/store/store-shortcuts';
+import { StoreIcon } from '@/components/store/store-icon';
 import styles from '@/components/store/store-home.module.css';
 import { useStoreBrowse } from '@/lib/store-browse';
 import { StoreGridLoading, StorePageLoading } from '@/components/store/store-loading';
@@ -38,6 +38,7 @@ import { cartCount, useCartStore } from '@/stores/cart';
 import { useWishlistStore } from '@/stores/wishlist';
 import { useBannerStore } from '@/stores/banners';
 import { PersonalizedProducts } from '@/components/store/personalized-products';
+import { StoreCollection } from '@/components/store/store-collection';
 import { listStoreBanners, storeBannerImageUrl, storeBannersCacheKey, type StoreBanner } from '@/lib/content-banners-api';
 import { peekPatientCache } from '@/lib/patient-request';
 
@@ -130,7 +131,7 @@ function StoreCatalog() {
   const [accountError, setAccountError] = useState<string | null>(null);
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
   const [accountRetry, setAccountRetry] = useState(0);
-  const [bannerLoading, setBannerLoading] = useState(() => peekPatientCache<StoreBanner[]>(storeBannersCacheKey()) == null);
+  const [bannerLoading, setBannerLoading] = useState(true);
   const [bannerError, setBannerError] = useState(false);
   const [bannerRetry, setBannerRetry] = useState(0);
   const cart = useCartStore((state) => state.items);
@@ -184,6 +185,8 @@ function StoreCatalog() {
   }, [products]);
   useLayoutEffect(() => {
     let cancelled = false;
+    setBannerLoading(true);
+    setBannerError(false);
     const cached = peekPatientCache<StoreBanner[]>(storeBannersCacheKey());
     if (cached) {
       useBannerStore.getState().setSlides(bannerSlides(cached));
@@ -324,19 +327,11 @@ function StoreCatalog() {
         </div>
         <div className="store-actions">
           <Link
-            href="/store/wishlist"
-            className="patient-button patient-button--ghost store-icon-button"
-            aria-label="علاقه‌مندی‌ها"
-          >
-            <Heart aria-hidden="true" size={22} />
-            {wishlist.length > 0 && <span className="store-badge">{toP(wishlist.length)}</span>}
-          </Link>
-          <Link
             href="/store/cart"
             className="patient-button patient-button--ghost store-icon-button"
             aria-label={`سبد خرید، ${toP(count)} کالا`}
           >
-            <ShoppingCart aria-hidden="true" size={23} strokeWidth={1.75} />
+            <StoreIcon name="shoppingBag" size={24} />
             {count > 0 && <span className="store-badge store-badge--danger">{toP(count)}</span>}
           </Link>
         </div>
@@ -347,7 +342,7 @@ function StoreCatalog() {
         </label>
         <div className="store-search" role="search" aria-label="جست‌وجوی محصولات فروشگاه">
           <span className="store-search__icon">
-            <Search aria-hidden="true" size={20} />
+            <StoreIcon name="search" size={20} />
           </span>
           <Input
             id="store-search"
@@ -370,7 +365,7 @@ function StoreCatalog() {
                 clearSearch();
               }}
             >
-              <X aria-hidden="true" size={18} />
+              <StoreIcon name="close" size={18} />
             </Button>
           ) : (
             <span className="store-search__clear-space" aria-hidden="true" />
@@ -388,13 +383,13 @@ function StoreCatalog() {
               : 'افزودن آدرس تحویل'
           }
         >
-          <MapPin aria-hidden="true" size={16} />
+          <StoreIcon name="location" size={16} />
           <span className="store-delivery__text">
             {delivery
               ? `تحویل به ${delivery.province}، ${delivery.city}، ${delivery.line1}`
               : 'افزودن آدرس تحویل'}
           </span>
-          <ChevronDown aria-hidden="true" size={16} />
+          <StoreIcon name="arrowDown" size={16} />
         </button>
       </div>
       {(accountError || deliveryError) && (
@@ -420,7 +415,7 @@ function StoreCatalog() {
           <span>نمایش یک دستهٔ محصول</span>
           <Button variant="ghost" onClick={() => updateCatalog({ category: null, page: null })}>
             همهٔ دسته‌ها
-            <X size={15} aria-hidden="true" />
+            <StoreIcon name="close" size={15} />
           </Button>
         </div>
       )}
@@ -441,7 +436,7 @@ function StoreCatalog() {
       )}
       {products && shown.length === 0 && (
         <div className="store-state">
-          <Search aria-hidden="true" size={28} />
+          <StoreIcon name="search" size={28} />
           <h2>{search.trim() ? 'محصولی یافت نشد' : 'هنوز محصولی در این صفحه نیست'}</h2>
           <p>
             {search.trim()
@@ -460,8 +455,11 @@ function StoreCatalog() {
           )}
         </div>
       )}
-      {!isFiltering && !bannerLoading && !bannerError && (
-        <StoreHeroSlider onShopNow={() => updateCatalog({ view: 'all', page: null })} />
+      {!isFiltering && !bannerError && (
+        <StoreHeroSlider
+          loading={bannerLoading}
+          onShopNow={() => updateCatalog({ view: 'all', page: null })}
+        />
       )}
       <div
         id={isFiltering ? 'store-products' : 'store-content'}
@@ -476,26 +474,17 @@ function StoreCatalog() {
             accessToken={session?.authentication.accessToken}
             renderProduct={renderProduct}
             browseKey={browseKey}
-            gridClassName={PRODUCT_GRID_CLASSES}
             onSettled={settlePersonal}
             fallback={
               products ? (
                 <>
-                  <section id="store-products" className="store-collection">
-                    <header className="store-collection__header">
-                      <h2>محصولات فروشگاه</h2>
-                      <Button
-                        variant="ghost"
-                        onClick={() => updateCatalog({ view: 'all', page: null })}
-                      >
-                        مشاهده همه
-                      </Button>
-                    </header>
-
-                    <div className={PRODUCT_GRID_CLASSES}>
-                      {shown.slice(0, 8).map(renderProduct)}
-                    </div>
-                  </section>
+                  <StoreCollection
+                    title="محصولات فروشگاه"
+                    id="store-products"
+                    onViewAll={() => updateCatalog({ view: 'all', page: null })}
+                  >
+                    {shown.slice(0, 8).map(renderProduct)}
+                  </StoreCollection>
                 </>
               ) : !error ? (
                 <StoreGridLoading />

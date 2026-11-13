@@ -58,7 +58,7 @@ src/
 4. **دیتای mock**: هر دامنه یک فایل در `lib/data/` با تایپ مربوطه در `lib/types.ts`.
 5. **اعداد و قیمت**: همیشه با `toP()` / `formatPrice()` از `lib/format.ts`.
 6. **کامپوننت shadcn جدید**: `npx shadcn@latest add <component>` — داخل `src/components/ui` قرار می‌گیرد.
-7. **استایل**: کلاس‌های Tailwind inline + متغیرهای تم در `globals.css` (پالت سبز `--primary: #1b5e3b`).
+7. **استایل**: کلاس‌های Tailwind inline + متغیرهای تم در `globals.css` (پالت DigiPay روشن با آبی برند `#1159FC`).
 
 ## نکته درباره Figma Make
 

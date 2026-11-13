@@ -2,8 +2,8 @@
 import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
 import { ShellAction } from '@/components/layout/shell-slots';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AnimatePresence, MotionConfig } from 'motion/react';
 
 import { useAuthSession } from '@/components/auth/session-gate';
@@ -26,7 +26,10 @@ import { productImageUrl } from '@/lib/product-image';
 import { useRecentStore } from '@/stores/recently-viewed';
 import { RecentCard } from '@/components/store/recent-card';
 import { StoreCollection } from '@/components/store/store-collection';
-import { ShoppingBag } from 'lucide-react';
+import { StoreIcon } from '@/components/store/store-icon';
+import { WishlistPanel } from '@/components/store/wishlist-panel';
+import { getCommerceWishlist } from '@/lib/commerce-catalog-api';
+import { useWishlistStore } from '@/stores/wishlist';
 
 const cache = (cart: CommerceCart) =>
   useCartStore.getState().replace(
@@ -44,10 +47,21 @@ const cache = (cart: CommerceCart) =>
   );
 
 export default function CartPage() {
+  return (
+    <Suspense fallback={<StoreState title="در حال دریافت سبد خرید…" pending />}>
+      <CartScreen />
+    </Suspense>
+  );
+}
+
+function CartScreen() {
   const { authentication } = useAuthSession();
   const router = useRouter();
+  const search = useSearchParams();
+  const savedTab = search.get('tab') === 'saved';
   const navigateScreen = useScreenNavigation();
   const items = useCartStore((state) => state.items);
+  const savedCount = useWishlistStore((state) => state.ids.length);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -150,13 +164,65 @@ export default function CartPage() {
     }
     setEmptyVisible(true);
   }, [loading, error, items.length]);
+  useEffect(() => {
+    void getCommerceWishlist(authentication.accessToken)
+      .then((list) => useWishlistStore.getState().replace(list.items.map((item) => item.sku.id)))
+      .catch(() => undefined);
+  }, [authentication.accessToken]);
   const tax = cartTax(items);
   const total = cartTotal(items) + tax;
+  const selectTab = (next: 'cart' | 'saved') => {
+    router.replace(next === 'saved' ? '/store/cart?tab=saved' : '/store/cart');
+  };
   return (
     <main className={`store-page ${styles.page}`}>
       <div className={styles.header}>
-        <PageHeader title="سبد خرید" onBack={() => router.back()} />
+        <PageHeader title={savedTab ? 'علاقه‌مندی‌ها' : 'سبد خرید'} onBack={() => router.back()} backIcon={<StoreIcon name="arrowRight" size={20} className="text-foreground" />} />
       </div>
+      <div
+        className="mb-4 grid grid-cols-2 gap-1.5 rounded-2xl border border-border/70 bg-muted/60 p-1.5"
+        role="tablist"
+        aria-label="سبد و علاقه‌مندی"
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+          event.preventDefault();
+          const next = savedTab ? 'cart' : 'saved';
+          selectTab(next);
+          event.currentTarget.querySelector<HTMLButtonElement>(`#${next}-tab`)?.focus();
+        }}
+      >
+        <button
+          id="cart-tab"
+          type="button"
+          role="tab"
+          aria-selected={!savedTab}
+          aria-controls="cart-panel"
+          onClick={() => selectTab('cart')}
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          سبد خرید
+          <span className="tabular-nums">{toP(cartCount(items))}</span>
+        </button>
+        <button
+          id="saved-tab"
+          type="button"
+          role="tab"
+          aria-selected={savedTab}
+          aria-controls="saved-panel"
+          onClick={() => selectTab('saved')}
+          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          <StoreIcon name="heart" size={16} />
+          علاقه‌مندی‌ها
+          <span className="tabular-nums">{toP(savedCount)}</span>
+        </button>
+      </div>
+      {savedTab ? (
+        <div id="saved-panel" role="tabpanel" aria-labelledby="saved-tab">
+          <WishlistPanel />
+        </div>
+      ) : (
+        <div id="cart-panel" role="tabpanel" aria-labelledby="cart-tab">
       {refreshing && <RefreshIndicator />}
       {loading && <StoreState title="در حال دریافت سبد خرید…" pending />}
       {error && (
@@ -170,7 +236,7 @@ export default function CartPage() {
       )}
       {!loading && !error && emptyVisible && (
         <div className="store-empty">
-          <ShoppingBag size={44} strokeWidth={1.25} className="text-primary" aria-hidden="true" />
+          <StoreIcon name="shoppingBag" size={44} className="text-primary" />
           <h2>سبد خرید شما خالی است!</h2>
           <p>اگر به فروشگاه سر بزنید، دست‌پر برمی‌گردید.</p>
           <Button
@@ -220,6 +286,8 @@ export default function CartPage() {
             </div>
           </div>
         </ShellAction>
+      )}
+        </div>
       )}
       {/* {recent.length > 0 && (
         <>

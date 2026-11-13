@@ -1,15 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Award,
-  Barcode,
-  ClipboardList,
-  Factory,
-  FlaskConical,
-  Leaf,
-  TriangleAlert,
-} from 'lucide-react';
+import { StoreIcon, type StoreIconName } from './store-icon';
 import type { CommerceProduct } from '../../lib/commerce-catalog-api';
 
 const text = (value: string | null | undefined): string | null =>
@@ -33,7 +25,7 @@ function SectionBody({ id, value }: { id: string; value: string }) {
       {collapsible && (
         <button
           type="button"
-          className="mt-2 inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-medium text-[#087c91] transition-colors hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#087c91]"
+          className="mt-2 inline-flex min-h-11 items-center rounded-xl px-3 text-xs font-medium text-[var(--dp-brand)] transition-colors hover:bg-teal-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--dp-brand)]"
           aria-expanded={open}
           aria-controls={paragraphId}
           onClick={() => setOpen((current) => !current)}
@@ -67,63 +59,56 @@ export function ProductContentSections({
   const contraindications = text(content?.contraindications);
   const skuCode = text(selectedSkuCode) ?? text(product.skus[0]?.code);
 
-  const specs = [
-    brand ? { key: 'brand', label: 'برند', value: brand, ltr: false, icon: Award } : null,
-    manufacturer
-      ? { key: 'manufacturer', label: 'تولیدکننده', value: manufacturer, ltr: false, icon: Factory }
-      : null,
-    skuCode ? { key: 'sku', label: 'کد کالا', value: skuCode, ltr: true, icon: Barcode } : null,
-  ].filter(
-    (
-      spec,
-    ): spec is { key: string; label: string; value: string; ltr: boolean; icon: typeof Award } =>
-      spec !== null,
-  );
+  const specs: { key: string; label: string; value: string; ltr: boolean; icon: StoreIconName }[] = [
+    ...(brand ? [{ key: 'brand', label: 'برند', value: brand, ltr: false, icon: 'star' as const }] : []),
+    ...(manufacturer
+      ? [{ key: 'manufacturer', label: 'تولیدکننده', value: manufacturer, ltr: false, icon: 'store' as const }]
+      : []),
+    ...(skuCode ? [{ key: 'sku', label: 'کد کالا', value: skuCode, ltr: true, icon: 'barcode' as const }] : []),
+  ];
 
   const mainSpecs = specs.filter((spec) => spec.key !== 'sku');
   const skuSpec = specs.find((spec) => spec.key === 'sku');
 
-  const sections = [
+  type ProductSection = { id: string; label: string; title: string; value: string; icon: StoreIconName };
+  const sections: ProductSection[] = ([
     {
       id: 'product-about',
       label: 'درباره محصول',
       title: 'دربارهٔ محصول',
       value: description,
-      icon: Leaf,
+      icon: 'documentFile',
     },
     {
       id: 'product-ingredients',
       label: 'ترکیبات',
       title: 'ترکیبات',
       value: ingredients,
-      icon: FlaskConical,
+      icon: 'pillBox',
     },
     {
       id: 'product-usage',
       label: 'دستور مصرف',
       title: 'دستور مصرف',
       value: usage,
-      icon: ClipboardList,
+      icon: 'checklist',
     },
     {
       id: 'product-warnings',
       label: 'هشدارها',
       title: 'هشدارها',
       value: warnings,
-      icon: TriangleAlert,
+      icon: 'errorTriangle',
     },
     {
       id: 'product-contraindications',
       label: 'موارد منع مصرف',
       title: 'موارد منع مصرف',
       value: contraindications,
-      icon: TriangleAlert,
+      icon: 'errorTriangle',
     },
-  ].filter(
-    (
-      section,
-    ): section is { id: string; label: string; title: string; value: string; icon: typeof Leaf } =>
-      section.value !== null,
+  ] as (Omit<ProductSection, 'value'> & { value: string | null })[]).filter(
+    (section): section is ProductSection => section.value !== null,
   );
 
   return (
@@ -159,10 +144,10 @@ export function ProductContentSections({
                   className="
               flex size-8 shrink-0 items-center justify-center
               rounded-[10px] bg-slate-100
-              text-[#087c91]
+              text-[var(--dp-brand)]
             "
                 >
-                  <spec.icon size={16} strokeWidth={1.75} aria-hidden="true" />
+                  <StoreIcon name={spec.icon} size={16} />
                 </span>
                 {spec.label}
               </dt>
@@ -209,7 +194,7 @@ export function ProductContentSections({
       )}
 
       <div className="min-w-0">
-        {sections.map(({ id, label, title, value, icon: Icon }) => {
+        {sections.map(({ id, label, title, value, icon }) => {
           const safety = id === 'product-warnings' || id === 'product-contraindications';
           return (
             <section
@@ -227,9 +212,9 @@ export function ProductContentSections({
                 className={`flex min-w-0 items-center gap-2 text-[0.9375rem] leading-7 font-medium @sm:text-base ${safety ? 'text-amber-900' : 'text-slate-900'}`}
               >
                 <span
-                  className={`inline-flex size-8 shrink-0 items-center justify-center rounded-xl ${safety ? 'bg-amber-100 text-amber-800' : 'bg-teal-50 text-[#087c91]'}`}
+                  className={`inline-flex size-8 shrink-0 items-center justify-center rounded-xl ${safety ? 'bg-amber-100 text-amber-800' : 'bg-teal-50 text-[var(--dp-brand)]'}`}
                 >
-                  <Icon size={17} aria-hidden="true" />
+                  <StoreIcon name={icon} size={17} />
                 </span>
                 {title}
               </h3>

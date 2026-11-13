@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ChevronUp } from "lucide-react";
+import { StoreIcon } from "./store-icon";
 
 /** Inertia projection window for release snapping, in milliseconds. */
 const SNAP_PROJECTION_MS = 320;
@@ -89,7 +89,7 @@ export function ProductDetailPanel({ gallery, children }: { gallery: ReactNode; 
         <span className="store-detail__handle" aria-hidden="true" />
         <span className="store-detail__handle-label">
           {expanded ? "برگشت به تصویر" : "مشخصات و توضیحات"}
-          <ChevronUp className="store-detail__handle-chevron" aria-hidden="true" size={15} />
+          <StoreIcon name="arrow2Up" className="store-detail__handle-chevron" size={15} />
         </span>
       </button>
       {children}

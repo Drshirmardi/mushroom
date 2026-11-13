@@ -15,7 +15,7 @@ export function mizajPercentages(scores: Record<string, number>, dimensions: { i
 }
 
 export function MizajChart({ scores = {}, dimensions = [], variant = 'full', isLoading = false }: { scores?: Record<string, number>; dimensions?: { id: string; title: string }[]; variant?: 'full' | 'semi'; isLoading?: boolean }) {
-  const colors = ['#0d9488', '#2563eb', '#d97706', '#a855f7'];
+  const colors = ['var(--dp-success)', 'var(--dp-brand)', 'var(--dp-warning)', 'var(--dp-error)'];
   const reducedMotion = useReducedMotion();
   const chartId = useId().replace(/:/g, '');
   const [phase, setPhase] = useState(0);
@@ -33,7 +33,7 @@ export function MizajChart({ scores = {}, dimensions = [], variant = 'full', isL
     : dimensions.map((item, index) => ({ name: item.title, value: units[index] / 10, fill: `url(#${chartId}-${index})` }));
   return (
     <figure
-      className="m-0 w-full min-w-0 rounded-3xl border border-border/80 bg-background/60 p-4 sm:p-5"
+      className={`m-0 w-full min-w-0 rounded-3xl border border-border/80 bg-background/60 ${variant === 'semi' ? 'p-3' : 'p-4 sm:p-5'}`}
       data-variant={variant}
       aria-busy={isLoading}
     >
@@ -84,7 +84,7 @@ export function MizajChart({ scores = {}, dimensions = [], variant = 'full', isL
         </div>
       </div>
       {isLoading ? (
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2" aria-hidden="true">
+        <div className={`grid gap-2 ${variant === 'semi' ? 'grid-cols-2' : 'grid-cols-1 gap-2.5 sm:grid-cols-2'}`} aria-hidden="true">
           {[0, 1, 2, 3].map((index) => (
             <span
               key={index}
@@ -93,11 +93,11 @@ export function MizajChart({ scores = {}, dimensions = [], variant = 'full', isL
           ))}
         </div>
       ) : (
-        <dl className="m-0 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <dl className={`m-0 grid ${variant === 'semi' ? 'grid-cols-2 gap-2' : 'grid-cols-1 gap-2.5 sm:grid-cols-2'}`}>
           {dimensions.map((item, index) => (
             <div
               key={item.id}
-              className="flex items-center justify-between gap-3 rounded-2xl border border-border/80 bg-white px-3.5 py-2.5 shadow-2xs"
+              className={`flex items-center justify-between gap-2 rounded-2xl border border-border/80 bg-white shadow-2xs ${variant === 'semi' ? 'px-2.5 py-2' : 'gap-3 px-3.5 py-2.5'}`}
             >
               <dt className="inline-flex min-w-0 items-center gap-2 text-xs font-medium text-muted-foreground">
                 <span

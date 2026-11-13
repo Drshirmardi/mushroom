@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { X } from "lucide-react";
+import { StoreIcon } from "./store-icon";
 import styles from "./receipt-page.module.css";
 import { Button } from "@/components/ui/button";
 import type { CommerceOrder, CommerceReceipt } from "@/lib/commerce-catalog-api";
@@ -32,12 +32,11 @@ export function OrderPaymentSuccess({ order, receipt, onClose, onTrack }: {
     onCancel={event => { event.preventDefault(); onClose(); }}
     onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
     <motion.div className="relative p-6" initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.25 }}>
-      <button type="button" aria-label="بستن تأیید پرداخت" onClick={onClose} className="absolute left-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"><X size={18} /></button>
+      <button type="button" aria-label="بستن تأیید پرداخت" onClick={onClose} className="absolute left-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-primary"><StoreIcon name="close" size={18} /></button>
       <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-50 text-emerald-600" aria-hidden="true">
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-          <motion.circle cx="26" cy="26" r="22" stroke="currentColor" strokeWidth="2" initial={reduceMotion ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.45 }} />
-          <motion.path d="m16 26 7 7 14-15" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" initial={reduceMotion ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 0.3, duration: 0.3 }} />
-        </svg>
+        <motion.span initial={reduceMotion ? false : { opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35, delay: 0.2 }}>
+          <StoreIcon name="checkCircle" size={52} />
+        </motion.span>
       </div>
       <h2 id="order-paid-title" className="text-center text-lg font-semibold">پرداختت با موفقیت انجام شد!</h2>
       <p id="order-paid-description" className="mt-2 text-center text-sm leading-7 text-muted-foreground">سفارشت ثبت شد؛ مراحل آماده‌سازی را از بخش پیگیری سفارش ببین.</p>

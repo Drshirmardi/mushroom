@@ -4,7 +4,7 @@ import { ShellAction } from '@/components/layout/shell-slots';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Heart, Share2, ShoppingCart } from 'lucide-react';
+import { StoreIcon } from '@/components/store/store-icon';
 import { useOptionalAuthSession } from '@/components/auth/session-gate';
 import {
   commerceErrorMessage,
@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
       className={`patient-button patient-button--ghost store-icon-button ${styles.cartLink}`}
       aria-label={`سبد خرید، ${toP(count)} کالا`}
     >
-      <ShoppingCart aria-hidden="true" size={23} strokeWidth={1.75} />
+      <StoreIcon name="shoppingBag" size={24} />
 
       {count > 0 && (
         <span className={`store-badge store-badge--danger ${styles.cartBadge}`} aria-hidden="true">
@@ -313,7 +313,7 @@ export default function ProductDetailPage() {
               aria-label="اشتراک‌گذاری محصول"
               onClick={() => void share()}
             >
-              <Share2 aria-hidden="true" size={20} />
+              <StoreIcon name="share" size={20} />
             </Button>
             <Button
               variant="secondary"
@@ -329,7 +329,7 @@ export default function ProductDetailPage() {
               aria-label={saved ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
               onClick={() => void toggle()}
             >
-              <Heart aria-hidden="true" size={20} fill={saved ? 'currentColor' : 'none'} />
+              <StoreIcon name={saved ? 'heartBold' : 'heart'} size={20} />
             </Button>
           </div>
         </div>
@@ -338,7 +338,7 @@ export default function ProductDetailPage() {
             <label htmlFor="product-variant" className="text-xs font-medium text-slate-700">انتخاب نوع محصول</label>
             <select
               id="product-variant"
-              className="min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-offset-2 focus-visible:outline-2 focus-visible:outline-[#087c91]"
+              className="min-h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--dp-brand)]"
               value={sku.id}
               disabled={busy}
               onChange={(event) => {
@@ -424,7 +424,7 @@ export default function ProductDetailPage() {
                 aria-label={session ? 'افزودن به سبد' : 'ورود برای خرید'}
                 onClick={() => void setQty(1)}
               >
-                <ShoppingCart aria-hidden="true" size={20} />
+                <StoreIcon name="shoppingBag" size={20} />
                 {session ? 'افزودن به سبد' : 'ورود برای خرید'}
               </Button>
             ) : (

@@ -65,6 +65,19 @@ describe("Store ProductCard presentation contract", () => {
   it("does not invent a purchasable SKU for an empty product", () => {
     expect(renderToStaticMarkup(createElement(ProductCard, { ...cardProps, product: { ...product, skus: [] } }))).toBe("");
   });
+  it("keeps the installment frame out of the card until the API sends it", () => {
+    const plain = renderToStaticMarkup(createElement(ProductCard, cardProps));
+    expect(plain).not.toContain("store-product__installment");
+    expect(plain).not.toContain("قسط");
+    const offered = renderToStaticMarkup(createElement(ProductCard, {
+      ...cardProps,
+      product: { ...product, installmentCount: 4, installmentAmountToman: "1450000" } as CommerceProduct,
+    }));
+    expect(offered).toContain("store-product__installment");
+    expect(offered).toContain("قسط");
+    expect(offered).toContain("۱٬۴۵۰٬۰۰۰");
+    expect(offered).toContain("تومانی");
+  });
 });
 
 it("exposes a labeled favorite control bound to the product", () => {

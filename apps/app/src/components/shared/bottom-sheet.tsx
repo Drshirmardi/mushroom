@@ -214,7 +214,7 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(funct
                 // Layout
                 'pointer-events-auto relative',
                 'mx-auto flex min-h-0 w-full flex-col',
-                'max-w-[720px]',
+                'max-w-[var(--patient-frame-max)]',
                 sizes[size],
 
                 // Surface
@@ -223,7 +223,7 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(funct
                 'border border-b-0',
                 'border-slate-200/60',
                 'bg-white text-foreground',
-                'shadow-[0_-12px_48px_-20px_rgba(15,23,42,0.18)]',
+                'shadow-[0_-12px_48px_-20px_color-mix(in srgb, var(--dp-text-high) 18%, transparent)]',
                 'outline-none',
 
                 // Base UI swipe position

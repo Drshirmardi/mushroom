@@ -5,7 +5,7 @@ import { LoadingState } from "@/components/shared/skeletons";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw } from "lucide-react";
+import { StoreIcon } from "@/components/store/store-icon";
 import { OrderSummary } from "@/components/store/order-summary";
 import { OrderPaymentSuccess } from "@/components/store/order-payment-success";
 import { PageHeader } from "@/components/shared/page-header";
@@ -39,14 +39,14 @@ export default function OrderSuccessPage() {
     return () => { active = false; };
   }, [authentication.accessToken, orderId, receipt]);
   const validReceipt = receipt?.orderId === orderId && receipt.status === "VERIFIED" ? receipt : null;
-  return <div><PageHeader title="وضعیت سفارش" onBack={() => router.back()} /><div className="space-y-4 px-4 pb-4">
+  return <div><PageHeader title="وضعیت سفارش" onBack={() => router.back()} backIcon={<StoreIcon name="arrowRight" size={20} className="text-foreground" />} /><div className="space-y-4 px-4 pb-4">
     {loading && <LoadingState label="در حال دریافت وضعیت معتبر سفارش…" variant="payment" />}
     {error && <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}<button onClick={() => void load()} className="mr-3 font-bold underline">تلاش دوباره</button></div>}
     {order?.id === orderId ? <><section className="rounded-2xl border border-border bg-white p-4 shadow-sm"><div className="flex justify-between"><span className="text-sm text-muted-foreground">شماره سفارش</span><span className="font-black text-primary">{toP(order.orderNumber)}</span></div><div className="mt-3 rounded-xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{validReceipt ? "پرداخت شما تأیید شده است." : paymentLabel(order.paymentStatus)}</div><p className="mt-3 text-sm">مبلغ سفارش: <strong>{formatPrice(BigInt(order.totalAmountToman))} تومان</strong></p></section>
       <OrderSummary order={order} />
       {validReceipt ? <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-950"><p className="font-bold">رسید پرداخت</p><p className="mt-2">تأیید در {new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(validReceipt.verifiedAt))}</p>{validReceipt.providerReferenceId ? <p className="mt-1">شماره مرجع: {validReceipt.providerReferenceId}</p> : null}{validReceipt.providerTraceNumber ? <p className="mt-1">شماره پیگیری: {validReceipt.providerTraceNumber}</p> : null}</section> : <p className="rounded-2xl border border-border bg-white p-4 text-sm text-muted-foreground">تا زمان تأیید واقعی پرداخت، رسید موفق صادر نمی‌شود. اگر تازه پرداخت کرده‌اید، وضعیت را دوباره بررسی کنید.</p>}
 
-      {!validReceipt && <button onClick={() => void load()} className="w-full rounded-2xl border py-3 text-sm font-bold"><RefreshCw size={15} className="ml-2 inline" />تازه‌سازی وضعیت</button>}
+      {!validReceipt && <button onClick={() => void load()} className="w-full rounded-2xl border py-3 text-sm font-bold"><StoreIcon name="refresh" size={15} className="ml-2 inline" />تازه‌سازی وضعیت</button>}
     </> : null}
   </div>
     {order?.id === orderId && <ShellAction><div className={styles.actions} role="region" aria-label="اقدام سفارش"><button type="button" onClick={() => router.push(`/store/order-tracking?orderId=${encodeURIComponent(order.id)}`)} className="patient-button w-full">پیگیری سفارش</button></div></ShellAction>}

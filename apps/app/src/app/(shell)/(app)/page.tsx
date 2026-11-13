@@ -10,12 +10,13 @@ const NotificationSheet = dynamic(
   { ssr: false },
 );
 import { useCallback, useState } from "react";
-import { ArrowLeft, Bell, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, MessageCircle, ShoppingBag, Users, Wallet } from "lucide-react";
+import { ArrowLeft, BookOpen } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { getPatientJourney } from "@/lib/patient-journey-api";
 import { patientCacheKey, peekPatientCache } from "@/lib/patient-request";
-import { HomeJourney } from "@/components/home/home-journey";
+import { HomeJourney, HomeJourneyOverview } from "@/components/home/home-journey";
+import { HomeBanners } from "@/components/home/home-banners";
 import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
 import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
@@ -23,19 +24,38 @@ import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
 
 const services = [
-  { href: "/assessment", title: "تست فردی", description: "شروع تست، ادامه و نتایج", icon: ClipboardList },
-  { href: "/assessment/couples", title: "تست دو نفره", description: "دعوت نفر دوم، ادامه تست و نتیجه", icon: Users },
-  { href: "/appointments/book", title: "رزرو مشاوره", description: "انتخاب پزشک، خدمت و زمان", icon: CalendarDays },
-  { href: "/programs", title: "برنامه‌های سلامت", description: "آموزشی و اختصاصی", icon: BookOpen },
+  { href: "/assessment", title: "تست فردی", icon: "assessment" },
+  { href: "/assessment/couples", title: "تست دو نفره", icon: "couples" },
+  { href: "/appointments/book", title: "رزرو مشاوره", icon: "booking" },
+  { href: "/programs", title: "برنامه‌های سلامت", icon: "programs" },
 ];
 const followUps = [
-  { href: "/appointments", title: "نوبت‌های من", icon: CalendarDays },
-  { href: "/treatment", title: "درمان من", icon: HeartPulse },
-  { href: "/chat", title: "گفتگو با پزشک", icon: MessageCircle },
-  { href: "/profile/medical?from=home", title: "پرونده پزشکی", icon: FileHeart },
-  { href: "/profile/wallet", title: "کیف پول", icon: Wallet },
-  { href: "/store/orders", title: "سفارش‌های من", icon: ShoppingBag },
+  { href: "/appointments", title: "نوبت‌های من", icon: "appointments" },
+  { href: "/treatment", title: "درمان من", icon: "treatment" },
+  { href: "/chat", title: "گفتگو با پزشک", icon: "chat" },
+  { href: "/profile/medical?from=home", title: "پرونده پزشکی", icon: "medical" },
+  { href: "/profile/wallet", title: "کیف پول", icon: "wallet" },
+  { href: "/store/orders", title: "سفارش‌های من", icon: "orders" },
 ];
+
+function HomeShortcuts({ label, items, className }: {
+  label: string;
+  items: readonly { href: string; title: string; icon: string }[];
+  className: string;
+}) {
+  return (
+    <nav aria-label={label} className={`home-shortcuts ${className}`}>
+      {items.map(({ href, title, icon }) => (
+        <Link key={href} href={href} className="home-shortcut">
+          <span className="home-shortcut-tile">
+            <img src={`/home/glass-icons/${icon}.webp`} width={36} height={36} alt="" draggable={false} />
+          </span>
+          <span>{title}</span>
+        </Link>
+      ))}
+    </nav>
+  );
+}
 
 export default function HomePage() {
   const { authentication } = useAuthSession();
@@ -48,27 +68,129 @@ export default function HomePage() {
   const [entryBusy,setEntryBusy]=useState(false),[entryError,setEntryError]=useState('');
   const unread = notifications.data?.items.some(item => !item.readAt);
 
-  return <div className="home-page" dir="rtl">
-    <header className="home-header">
-      <div><p>دکتر شیرمردی</p><h1>{entry?.status?.firstName ? `سلام، ${entry.status.firstName}` : 'سلام، خوش آمدید'}</h1></div>
-      <button type="button" onClick={() => setNotificationsOpen(true)} aria-haspopup="dialog" aria-expanded={notificationsOpen} aria-label={unread ? "اعلان‌ها؛ پیام خوانده‌نشده دارید" : "اعلان‌ها"} className="home-icon-link"><Bell size={21} aria-hidden="true" />{unread && <span className="home-unread" />}</button>
-    </header>
+  return (
+    <div
+      className="home-page"
+      dir="rtl"
+    >
+      <div className="home-hero">
+        <header className="home-header flex items-center justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs leading-6 text-[var(--home-muted)]">دکتر شیرمردی</p>
+            <h1 className="text-lg leading-8 font-medium [overflow-wrap:anywhere]">
+              {entry?.status?.firstName
+                ? `سلام، ${entry.status.firstName}`
+                : 'سلام، خوش آمدید'}
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setNotificationsOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={notificationsOpen}
+            aria-label={unread ? 'اعلان‌ها؛ پیام خوانده‌نشده دارید' : 'اعلان‌ها'}
+            className="home-icon-link size-11"
+          >
+            <span className="home-notification-icon" aria-hidden="true">
+              <i className={`icon icon-notification-${unread ? 'bold' : 'linear'}`} />
+            </span>
+            {unread && <span className="home-unread" />}
+          </button>
+        </header>
+        <HomeJourneyOverview key={authentication.user.id} journey={journey} token={token} />
+      </div>
 
-    {entry?.status?.reminder&&<section className="home-panel"><h2>تست ورود اولیهٔ شما هنوز کامل نشده است</h2><p>{entry.status.assessmentTitle}</p><AsyncButton className="entry-primary" disabled={entryBusy} onClick={async()=>{setEntryBusy(true);setEntryError('');try{await resumeEntry(token);window.location.assign('/welcome');}catch{setEntryError('بازگشت به تست انجام نشد؛ دوباره تلاش کنید.');setEntryBusy(false);}}}>ادامهٔ تست من</AsyncButton>{entryError&&<p role="alert">{entryError}</p>}</section>}
-    <HomeJourney key={authentication.user.id} journey={journey} token={token} />
-    <OwnedServices key={`services:${authentication.user.id}`} />
+      <div className="home-sheet">
+        <div className="home-sheet-handle" aria-hidden="true" />
+        <div className="home-hub">
+          <HomeShortcuts label="خدمات سلامت" items={services} className="home-shortcuts-services" />
+          <HomeBanners />
+          <HomeShortcuts label="دسترسی‌های من" items={followUps} className="home-shortcuts-access" />
+        </div>
 
-    <section className="home-access" aria-labelledby="home-access-title"><div className="home-section-heading"><div><h2 id="home-access-title">دسترسی‌های من</h2><p>نوبت، مراقبت و حساب شما</p></div><span className="home-section-detail" aria-hidden="true"><FileHeart size={21} strokeWidth={1.5} /></span></div><nav aria-label="دسترسی‌های شخصی" className="home-followups">{followUps.map(({ href, title, icon: Icon }) => <Link href={href} key={href}><span className="home-access-icon"><Icon size={24} strokeWidth={1.5} aria-hidden="true" /></span><span>{title}</span></Link>)}</nav></section>
+        {entry?.status?.reminder && (
+          <section className="home-panel min-w-0">
+            <h2 className="text-base leading-7 font-medium">
+              تست ورود اولیهٔ شما هنوز کامل نشده است
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-[var(--home-muted)]">
+              {entry.status.assessmentTitle}
+            </p>
+            <AsyncButton
+              className="entry-primary"
+              disabled={entryBusy}
+              onClick={async () => {
+                setEntryBusy(true);
+                setEntryError('');
+                try {
+                  await resumeEntry(token);
+                  window.location.assign('/welcome');
+                } catch {
+                  setEntryError('بازگشت به تست انجام نشد؛ دوباره تلاش کنید.');
+                  setEntryBusy(false);
+                }
+              }}
+            >
+              ادامهٔ تست من
+            </AsyncButton>
+            {entryError && (
+              <p className="mt-2 text-sm leading-6" role="alert">
+                {entryError}
+              </p>
+            )}
+          </section>
+        )}
+        <HomeJourney key={authentication.user.id} journey={journey} token={token} />
+        <OwnedServices key={`services:${authentication.user.id}`} />
 
-    <section aria-labelledby="home-services-title">
-      <div className="home-section-heading"><div><h2 id="home-services-title">خدمات سلامت</h2><p>خدمت مورد نیازتان را انتخاب کنید</p></div></div>
-      <div className="home-services">{services.map(({ href, title, description, icon: Icon }) => <Link key={href} href={href} className="home-service"><span className="home-service-icon"><Icon size={23} strokeWidth={1.5} aria-hidden="true" /></span><h3>{title}</h3><p>{description}</p><ArrowLeft className="home-service-arrow" size={16} strokeWidth={1.5} aria-hidden="true" /></Link>)}</div>
-    </section>
+        <section className="home-panel min-w-0" aria-labelledby="home-articles-title">
+          <div className="home-section-heading mb-1 flex items-center justify-between gap-3">
+            <h2 id="home-articles-title" className="text-sm leading-7 font-medium">
+              برای آگاهی بیشتر
+            </h2>
+            <Link
+              href="/articles"
+              className="inline-flex min-h-11 items-center text-xs font-medium text-[var(--home-action)]"
+            >
+              همهٔ مقاله‌ها
+            </Link>
+          </div>
+          <PatientResourceState {...articles} retry={() => void articles.reload()} />
+          {articles.data?.items.slice(0, 2).map((item) => (
+            <Link
+              key={item.id}
+              href={`/articles/${encodeURIComponent(item.slug)}`}
+              className="home-content-link flex min-h-[54px] flex-wrap items-center gap-2.5 py-3.5 text-[var(--home-action)]"
+            >
+              <BookOpen size={20} aria-hidden="true" />
+              <h3 className="min-w-0 flex-1 text-[13px] leading-[26px] font-medium text-[var(--home-ink)] [overflow-wrap:anywhere]">
+                {item.title}
+              </h3>
+              <ArrowLeft size={17} aria-hidden="true" />
+            </Link>
+          ))}
+          {articles.data?.items.length === 0 && (
+            <div className="home-articles-empty" role="status">
+              <span className="home-articles-empty-icon" aria-hidden="true">
+                <i className="icon icon-book-linear" />
+              </span>
+              <h3 className="home-articles-empty-title">هنوز مقاله‌ای منتشر نشده</h3>
+              <p className="home-articles-empty-copy">
+                با انتشار محتوای آموزشی تازه، آن را همین‌جا می‌بینید.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
 
-
-    <Link href="/store" className="home-store"><span className="home-store-icon"><ShoppingBag size={26} aria-hidden="true" /></span><div><h2>فروشگاه محصولات سلامت</h2><p>بررسی محصولات، موجودی و قیمت</p></div><ArrowLeft size={19} aria-hidden="true" /></Link>
-
-      <section className="home-panel" aria-labelledby="home-articles-title"><div className="home-section-heading"><h2 id="home-articles-title">برای آگاهی بیشتر</h2><Link href="/articles">همهٔ مقاله‌ها</Link></div><PatientResourceState {...articles} retry={() => void articles.reload()} />{articles.data?.items.slice(0, 2).map(item => <Link key={item.id} href={`/articles/${encodeURIComponent(item.slug)}`} className="home-content-link"><BookOpen size={20} aria-hidden="true" /><h3>{item.title}</h3><ArrowLeft size={17} aria-hidden="true" /></Link>)}{articles.data?.items.length === 0 && <p className="home-caption">پس از انتشار محتوای آموزشی، مقاله‌ها در این بخش نمایش داده می‌شوند.</p>}</section>
-    <AnimatePresence>{notificationsOpen && <NotificationSheet onClose={() => setNotificationsOpen(false)} onUpdated={() => void notifications.reload()} />}</AnimatePresence>
-  </div>;
+      <AnimatePresence>
+        {notificationsOpen && (
+          <NotificationSheet
+            onClose={() => setNotificationsOpen(false)}
+            onUpdated={() => void notifications.reload()}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }

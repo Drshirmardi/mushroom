@@ -58,7 +58,7 @@ export default function MoodTrackerPage() {
         {[{ label: "ساعت خواب", value: sleep, set: setSleep, min: 0, max: 12, unit: "ساعت", color: "text-blue-600" }, { label: "سطح استرس", value: stress, set: setStress, min: 0, max: 10, unit: "/۱۰", color: "text-rose-600" }, { label: "سطح انرژی", value: energy, set: setEnergy, min: 0, max: 10, unit: "/۱۰", color: "text-amber-600" }].map(item => (
           <div key={item.label} className="bg-white rounded-3xl border border-border shadow-sm p-4">
             <div className="flex items-center justify-between mb-3"><p className="text-sm font-bold text-foreground">{item.label}</p><span className={`text-lg font-black ${item.color}`}>{toP(item.value)}<span className="text-xs">{item.unit}</span></span></div>
-            <input type="range" min={item.min} max={item.max} value={item.value} onChange={e => item.set(Number(e.target.value))} className="w-full accent-[#1b5e3b] h-2 rounded-full cursor-pointer" />
+            <input type="range" min={item.min} max={item.max} value={item.value} onChange={e => item.set(Number(e.target.value))} className="w-full accent-[var(--dp-brand)] h-2 rounded-full cursor-pointer" />
           </div>
         ))}
         <div className="bg-white rounded-3xl border border-border shadow-sm p-5">

@@ -301,7 +301,7 @@ export default function ProgramPurchasePage() {
   const purchase = resource.data;
 
   return (
-    <main dir="rtl" className="flex min-h-full w-full flex-col bg-[#f8fafc] text-foreground">
+    <main dir="rtl" className="flex min-h-full w-full flex-col bg-white text-foreground">
       {/* Header */}
       <div className="mx-auto w-full max-w-[720px]">
         <nav aria-label="مسیر صفحه" className="flex items-center justify-between px-5 pb-2 pt-5">

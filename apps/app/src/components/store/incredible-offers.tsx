@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, Timer } from "lucide-react";
+import { StoreIcon } from "./store-icon";
 import { Button } from "../ui/button";
 import { StoreCollection } from "./store-collection";
 import { formatPrice, toP } from "../../lib/format";
@@ -63,7 +63,7 @@ export function IncredibleOffers({ onViewAll }: { onViewAll: () => void }) {
       railClassName="store-product-rail--offers"
       header={<div className="store-offers__head">
         <div className="store-offers__title">
-          <Timer size={20} aria-hidden="true" />
+          <StoreIcon name="clock" size={20} />
           <h2 id="store-offers">پیشنهاد شگفت‌انگیز</h2>
         </div>
         <div className="store-offers__timer" aria-hidden="true">
@@ -75,7 +75,7 @@ export function IncredibleOffers({ onViewAll }: { onViewAll: () => void }) {
           ))}
         </div>
         <Button variant="ghost" className="store-offers__all" onClick={onViewAll} aria-label="مشاهده همه پیشنهادها">
-          مشاهده همه<ChevronLeft size={16} aria-hidden="true" />
+          مشاهده همه<StoreIcon name="arrowLeft" size={16} />
         </Button>
       </div>}
     >

@@ -2,7 +2,7 @@
 
 import { ShellOverlay } from '@/components/layout/shell-slots';
 import { AnimatePresence, motion } from "motion/react";
-import { Check, ChevronLeft, X } from "lucide-react";
+import { StoreIcon } from "./store-icon";
 
 type Props = {
   open: boolean;
@@ -21,11 +21,11 @@ export function AddedToCartToast({ open, onClose, onGoCart }: Props) {
       exit={{ y: 24, opacity: 0, x: "-50%" }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      <button type="button" aria-label="بستن" onClick={onClose} className="store-toast__close"><X size={18} aria-hidden="true" /></button>
-      <span className="store-toast__check"><Check size={16} aria-hidden="true" /></span>
+      <button type="button" aria-label="بستن" onClick={onClose} className="store-toast__close"><StoreIcon name="close" size={18} /></button>
+      <span className="store-toast__check"><StoreIcon name="check" size={16} /></span>
       <span className="store-toast__title">کالا به سبد اضافه شد!</span>
       <button type="button" className="store-toast__go" onClick={onGoCart}>
-        برو به سبد خرید<ChevronLeft size={16} aria-hidden="true" />
+        برو به سبد خرید<StoreIcon name="arrowLeft" size={16} />
       </button>
     </motion.div>}
   </AnimatePresence></ShellOverlay>;

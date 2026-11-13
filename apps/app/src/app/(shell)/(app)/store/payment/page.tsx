@@ -3,7 +3,7 @@ import { LoadingState } from "@/components/shared/skeletons";
 
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronDown, ReceiptText } from "lucide-react";
+import { StoreIcon } from "@/components/store/store-icon";
 import { OrderSummary } from "@/components/store/order-summary";
 import { orderStatusLabel } from "@/lib/order-labels";
 import { PageHeader } from "@/components/shared/page-header";
@@ -110,7 +110,7 @@ function PaymentScreen() {
 
   return (
     <div className={styles.page}>
-      <PageHeader title="پرداخت" onBack={() => returnFromPayment(router, intent, null, resolvedOrderId ? `/store/order-tracking?orderId=${encodeURIComponent(resolvedOrderId)}` : "/store/cart")} />
+      <PageHeader title="پرداخت" onBack={() => returnFromPayment(router, intent, null, resolvedOrderId ? `/store/order-tracking?orderId=${encodeURIComponent(resolvedOrderId)}` : "/store/cart")} backIcon={<StoreIcon name="arrowRight" size={20} className="text-foreground" />} />
       <div className={styles.content}>
         {state === "loading" && (
           <LoadingState variant="payment" />
@@ -134,7 +134,7 @@ function PaymentScreen() {
                 onClick={() => router.push(`/store/order-tracking?orderId=${encodeURIComponent(resolvedOrderId)}`)}
                 className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-bold text-white"
               >
-                <ReceiptText size={17} aria-hidden="true" />پیگیری سفارش
+                <StoreIcon name="receipt" size={17} />پیگیری سفارش
               </button>
             )}
           </div>
@@ -147,7 +147,7 @@ function PaymentScreen() {
               accessToken={authentication.accessToken}
               intent={intent}
               context={order ? `سفارش شمارهٔ ${toP(order.orderNumber)}` : undefined}
-              details={order && <details className={styles.details}><summary>جزئیات سفارش<ChevronDown size={18} aria-hidden="true" /></summary><OrderSummary order={order} /></details>}
+              details={order && <details className={styles.details}><summary>جزئیات سفارش<StoreIcon name="arrow2Down" size={18} /></summary><OrderSummary order={order} /></details>}
               onPaid={(paid) => {
                 const paidOrderId = paid.orderId ?? resolvedOrderId;
                 if (paidOrderId) router.replace(`/store/order-success?orderId=${encodeURIComponent(paidOrderId)}`);

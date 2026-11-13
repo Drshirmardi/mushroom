@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Check, Plus } from 'lucide-react';
+import { StoreIcon } from './store-icon';
 
 import { BottomSheet, type BottomSheetHandle } from '../shared/bottom-sheet';
 
@@ -97,7 +97,7 @@ export function AddressSheet({
                   }`}
                 >
                   <span className="store-address-radio" aria-hidden="true">
-                    {selectedId === item.id && <Check size={14} />}
+                    {selectedId === item.id && <StoreIcon name="check" size={14} />}
                   </span>
 
                   <span className="store-address-text">
@@ -120,7 +120,7 @@ export function AddressSheet({
               className="store-full-button"
               onClick={() => closeWith(() => setShowForm(true))}
             >
-              <Plus size={18} aria-hidden="true" />
+              <StoreIcon name="plus" size={18} />
               افزودن آدرس جدید
             </Button>
           </>

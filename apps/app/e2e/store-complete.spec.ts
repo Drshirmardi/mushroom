@@ -57,7 +57,7 @@ async function fixture(page: Page, options: { failedAccount?: boolean; paid?: bo
     else if (path.endsWith("/billing/intents/intent-1")) await send(intent());
     else if (path === "/v1/patients/me") await send({ firstName: "کاربر", lastName: "آزمایشی", phone: "09120000000", accountStatus: "ACTIVE" });
     else if (path === "/v1/content/banners") await send({ items: options.banners ? [1, 2].map(id => ({ id: String(id), title: `بنر ${id}`, contentPath: `/v1/content/banners/${id}/image`, destinationUrl: "/store?view=all" })) : [] });
-    else if (/\/content\/banners\/\d\/image$/.test(path)) await route.fulfill({ status: 200, headers, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600"><rect width="1200" height="600" fill="#f0f6fa"/></svg>' });
+    else if (/\/content\/banners\/\d\/image$/.test(path)) await route.fulfill({ status: 200, headers, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600"><rect width="1200" height="600" fill="#DEEDFF"/></svg>' });
     else if (path.endsWith("/notifications")) await send({ items: [], total: 0 });
     else await send({}, 503);
   });
