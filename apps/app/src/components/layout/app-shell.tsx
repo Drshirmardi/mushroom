@@ -20,18 +20,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isStore = pathname === '/store' || pathname.startsWith('/store/');
   const isProfile = pathname === '/profile' || pathname.startsWith('/profile/');
   const isProduct = pathname.startsWith('/store/products/');
+  const isDoctorProfile = /^\/doctors\/[^/]+\/?$/.test(pathname);
   const isAssessmentWizard =
     pathname === '/assessment/resume' ||
     (pathname.startsWith('/assessment/') &&
       pathname !== '/assessment/result' &&
       /^\/assessment\/[^/]+$/.test(pathname));
   const immersive = useUiStore((state) => state.immersive);
-  const showTabs =
-    !isProduct &&
-    !isAssessmentWizard &&
-    !immersive &&
-    (session?.status === 'authenticated' || isStore);
+  const hasNavigation = !isProduct && !isDoctorProfile && !isAssessmentWizard && !immersive;
   const framed = session?.status === 'authenticated' || isStore;
+  const showTabs = hasNavigation && framed;
   const [action, setAction] = useState<HTMLElement | null>(null);
   const [overlay, setOverlay] = useState<HTMLElement | null>(null);
   const frame = useRef<HTMLDivElement>(null);
@@ -64,11 +62,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <ShellSlots.Provider value={{ action, overlay }}>
       <div
         onWheel={handleShellWheel}
-        className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? 'patient-store-shell' : ''} ${isHome ? 'patient-home-shell' : ''} ${isStorefront ? 'patient-storefront-shell' : ''} ${isProfile ? 'patient-profile-shell' : ''}`}
+        className={`patient-app-shell patient-viewport-shell flex justify-center ${isStore ? 'patient-store-shell' : ''} ${isHome ? 'patient-home-shell' : ''} ${isStorefront ? 'patient-storefront-shell' : ''} ${isProfile ? 'patient-profile-shell' : ''} ${isDoctorProfile ? 'patient-doctor-profile-shell' : ''}`}
       >
         <div
           ref={frame}
-          data-nav={String(!isProduct && !isAssessmentWizard && !immersive)}
+          data-nav={String(hasNavigation)}
           className="patient-app-frame relative w-full max-w-[720px] flex flex-col shadow-2xl overflow-hidden"
         >
           {/* Screen content */}

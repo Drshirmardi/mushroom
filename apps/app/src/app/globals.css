@@ -422,6 +422,10 @@
   outline: 2px solid var(--patient-focus);
   outline-offset: 2px;
 }
+.patient-app-shell .doctor-directory-search input:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
 .patient-button {
   display: inline-flex;
   align-items: center;
@@ -3449,6 +3453,17 @@
 .patient-app-shell:not(.patient-home-shell) .patient-shell-content {
   background-color: var(--dp-surface-elevated);
 }
+.patient-app-shell.patient-doctor-profile-shell {
+  --doctor-profile-canvas: linear-gradient(
+    140deg,
+    color-mix(in srgb, var(--dp-brand) 20%, var(--dp-brand-tint)) 0%,
+    var(--dp-brand-tint) 54%,
+    color-mix(in srgb, #dff4e9 72%, var(--dp-brand-tint)) 100%
+  );
+}
+.patient-app-shell.patient-doctor-profile-shell .patient-shell-content {
+  background: var(--doctor-profile-canvas);
+}
 .patient-app-shell:is(.patient-store-shell, .patient-profile-shell) {
   background: var(--dp-surface-back);
 }
@@ -5951,6 +5966,25 @@ button.home-content-link {
 .patient-app-frame[data-nav='false'] .patient-shell-footer:has(.patient-action-slot > *) {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--patient-surface);
+  pointer-events: auto;
+}
+.patient-app-shell.patient-doctor-profile-shell .patient-app-frame[data-nav='false'] .patient-shell-footer:has(.patient-action-slot > *) {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 20;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: transparent !important;
+  pointer-events: none;
+}
+.patient-app-shell.patient-doctor-profile-shell .patient-shell-content {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+.patient-app-shell.patient-doctor-profile-shell .patient-action-slot {
+  background: none !important;
+  pointer-events: none;
+}
+.patient-app-shell.patient-doctor-profile-shell .patient-action-slot > button {
   pointer-events: auto;
 }
 html[data-keyboard-open='true'] .patient-shell-nav {

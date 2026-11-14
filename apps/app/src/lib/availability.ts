@@ -17,9 +17,9 @@ export function availabilityDateRange(now = new Date(), days = 7, timeZone = BOO
   return { fromDate, toDate: end.toISOString().slice(0, 10) };
 }
 
-export function bookingDays(start: string, offset = 0) {
+export function bookingDays(start: string, offset = 0, count = 7) {
   const [year, month, day] = start.split("-").map(Number);
-  return Array.from({ length: 7 }, (_, index) =>
+  return Array.from({ length: count }, (_, index) =>
     new Date(Date.UTC(year, month - 1, day + offset + index)).toISOString().slice(0, 10),
   );
 }

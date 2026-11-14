@@ -127,7 +127,7 @@ function BookingDirectory() {
     <PatientResourceState {...eligibility} retry={() => void eligibility.reload()} />
     {blocker && <BookingNotice icon={ShieldAlert} title="یک مرحله تا آماده‌شدن رزرو" description={blocker.message} href={blocker.href} action={blocker.action} />}
     {eligibility.data && !blocker && !previousDoctor && <>
-      <label className="flex min-h-12 w-full items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 sm:px-4">
+      <label className="doctor-directory-search flex min-h-12 w-full items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 transition-[border-color,box-shadow] has-[:focus-visible]:border-primary has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary/15 sm:px-4">
         <Search size={19} className="shrink-0 text-muted-foreground" aria-hidden="true" />
         <input className="min-h-11 min-w-0 flex-1 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground/75" type="search" value={input} maxLength={160} onChange={event => setInput(event.target.value)} aria-label="جست‌وجوی نام پزشک" placeholder="نام پزشک را جست‌وجو کنید" />
       </label>
