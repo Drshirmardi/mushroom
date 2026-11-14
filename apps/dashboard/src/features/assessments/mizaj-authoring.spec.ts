@@ -21,7 +21,40 @@ describe('Mizaj authoring contract', () => {
     expect(source).toEqual(before);
     expect(draft.schemaVersion).toBe(3);
     expect(row(draft.scoring).algorithmId).toBe('DIMENSION_TIEBREAK');
-    expect(draft.followUps).toEqual([]);
+    expect(rows(draft.followUps)).toHaveLength(6);
+  });
+  it('seeds the six exact pair questions and answer-to-dimension mappings', () => {
+    const dimensionIds = ['DAMAVI', 'SAFRAVI', 'BALGHAMI', 'SODAVI'];
+    const source = {
+      schemaVersion: 2,
+      scoring: { dimensions: dimensionIds.map(id => ({ id, title: id })), minInformativeAnswers: 5 },
+      sections: [{ id: 'mizaj', title: 'پرسش‌های مزاج‌شناسی', questions: Array.from({ length: 11 }, (_, index) => ({
+        id: `q${index + 1}`, title: `سؤال ${index + 1}`, type: 'SINGLE_CHOICE', required: true,
+        options: dimensionIds.map((id, optionIndex) => ({ id: `o${optionIndex + 1}`, title: `پاسخ ${optionIndex + 1}`, scores: { [id]: 1 } })),
+      })) }],
+    };
+    const draft = createMizajTieBreakDraft(source);
+    const followUps = rows(draft.followUps);
+    expect(validateMizajPublication(draft)).toEqual([]);
+    expect(followUps.map(question => candidateKey(question.tiedDimensions as string[]))).toEqual([
+      'DAMAVI:SAFRAVI', 'BALGHAMI:DAMAVI', 'BALGHAMI:SAFRAVI', 'DAMAVI:SODAVI', 'SAFRAVI:SODAVI', 'BALGHAMI:SODAVI',
+    ]);
+    expect(followUps.map(question => question.title)).toEqual([
+      'آیا میزان علاقمندی شما به خوردن شیرینی بیشتر است یا ترشی؟',
+      'آیا بعد از بیداری از خواب احساس سرحالی دارید یا عدم رفع خستگی ؟',
+      'میزان اتش شما نسبت به خوردن آب آشامیدنی چقدر است؟',
+      'رنگ پوست یا جسه شما چگونه است ؟',
+      'رنگ صورت شما چگونه است ؟',
+      'میزان علاقمندی شما نسبت به آشامیدن آب چقدر است ؟',
+    ]);
+    expect(followUps.map(question => rows(question.options).map(option => [option.title, option.dimensionId]))).toEqual([
+      [['علاقه به خوردن شیرینی دارم', 'DAMAVI'], ['علاقه به خوردن ترشی دارم', 'SAFRAVI']],
+      [['بعد از بیداری احساس سرحالی دارم', 'DAMAVI'], ['بعد از بیداری احساس عدم رفع خستگی دارم', 'BALGHAMI']],
+      [['میل زیادی به آشامیدن آب دارم', 'SAFRAVI'], ['میلی به آشامیدن آب ندارم', 'BALGHAMI']],
+      [['رنگ پوستی گلگون و قرمزی دارم', 'DAMAVI'], ['جسه چاق و هیکلی دارم', 'DAMAVI'], ['رنگ تیره ای دارم', 'SODAVI'], ['جسه ای لاغر دارم', 'SODAVI']],
+      [['رنگ صورتم زرد و یا گندمی است', 'SAFRAVI'], ['رنگ صورتم تیره و یا پرخال است', 'SODAVI']],
+      [['علاقه به خوردن آب آشامیدنی ندارم', 'BALGHAMI'], ['علاقه زیادی به خوردن آب آشامیدنی دارم', 'SODAVI']],
+    ]);
   });
   it('has six pair cases and distinct exact cases for all larger ties', () => {
     const cases = tieCases(['a', 'b', 'c', 'd']);

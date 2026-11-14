@@ -1,8 +1,67 @@
 import { QUESTION_TEXT_MAX_LENGTH, countQuestions, identifier, row, rows, text, type Row } from './assessment-authoring';
 
+const DEFAULT_MIZAJ_FOLLOW_UPS: Row[] = [
+  {
+    id: 'tie_damavi_safravi',
+    title: 'آیا میزان علاقمندی شما به خوردن شیرینی بیشتر است یا ترشی؟',
+    tiedDimensions: ['DAMAVI', 'SAFRAVI'],
+    options: [
+      { id: 'tie_damavi_safravi_sweet', title: 'علاقه به خوردن شیرینی دارم', dimensionId: 'DAMAVI' },
+      { id: 'tie_damavi_safravi_sour', title: 'علاقه به خوردن ترشی دارم', dimensionId: 'SAFRAVI' },
+    ],
+  },
+  {
+    id: 'tie_damavi_balghami',
+    title: 'آیا بعد از بیداری از خواب احساس سرحالی دارید یا عدم رفع خستگی ؟',
+    tiedDimensions: ['DAMAVI', 'BALGHAMI'],
+    options: [
+      { id: 'tie_damavi_balghami_fresh', title: 'بعد از بیداری احساس سرحالی دارم', dimensionId: 'DAMAVI' },
+      { id: 'tie_damavi_balghami_tired', title: 'بعد از بیداری احساس عدم رفع خستگی دارم', dimensionId: 'BALGHAMI' },
+    ],
+  },
+  {
+    id: 'tie_safravi_balghami',
+    title: 'میزان اتش شما نسبت به خوردن آب آشامیدنی چقدر است؟',
+    tiedDimensions: ['SAFRAVI', 'BALGHAMI'],
+    options: [
+      { id: 'tie_safravi_balghami_thirsty', title: 'میل زیادی به آشامیدن آب دارم', dimensionId: 'SAFRAVI' },
+      { id: 'tie_safravi_balghami_not_thirsty', title: 'میلی به آشامیدن آب ندارم', dimensionId: 'BALGHAMI' },
+    ],
+  },
+  {
+    id: 'tie_damavi_sodavi',
+    title: 'رنگ پوست یا جسه شما چگونه است ؟',
+    tiedDimensions: ['DAMAVI', 'SODAVI'],
+    options: [
+      { id: 'tie_damavi_sodavi_red', title: 'رنگ پوستی گلگون و قرمزی دارم', dimensionId: 'DAMAVI' },
+      { id: 'tie_damavi_sodavi_large', title: 'جسه چاق و هیکلی دارم', dimensionId: 'DAMAVI' },
+      { id: 'tie_damavi_sodavi_dark', title: 'رنگ تیره ای دارم', dimensionId: 'SODAVI' },
+      { id: 'tie_damavi_sodavi_thin', title: 'جسه ای لاغر دارم', dimensionId: 'SODAVI' },
+    ],
+  },
+  {
+    id: 'tie_safravi_sodavi',
+    title: 'رنگ صورت شما چگونه است ؟',
+    tiedDimensions: ['SAFRAVI', 'SODAVI'],
+    options: [
+      { id: 'tie_safravi_sodavi_yellow', title: 'رنگ صورتم زرد و یا گندمی است', dimensionId: 'SAFRAVI' },
+      { id: 'tie_safravi_sodavi_dark', title: 'رنگ صورتم تیره و یا پرخال است', dimensionId: 'SODAVI' },
+    ],
+  },
+  {
+    id: 'tie_balghami_sodavi',
+    title: 'میزان علاقمندی شما نسبت به آشامیدن آب چقدر است ؟',
+    tiedDimensions: ['BALGHAMI', 'SODAVI'],
+    options: [
+      { id: 'tie_balghami_sodavi_not_interested', title: 'علاقه به خوردن آب آشامیدنی ندارم', dimensionId: 'BALGHAMI' },
+      { id: 'tie_balghami_sodavi_interested', title: 'علاقه زیادی به خوردن آب آشامیدنی دارم', dimensionId: 'SODAVI' },
+    ],
+  },
+];
+
 export function createMizajTieBreakDraft(source: Row): Row {
   const copy = structuredClone(source);
-  return { ...copy, schemaVersion: 3, scoring: { ...row(copy.scoring), algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion: 1 }, followUps: [] };
+  return { ...copy, schemaVersion: 3, scoring: { ...row(copy.scoring), algorithmId: 'DIMENSION_TIEBREAK', algorithmVersion: 1 }, followUps: structuredClone(DEFAULT_MIZAJ_FOLLOW_UPS) };
 }
 
 export const candidateKey = (ids: string[]) => [...ids].sort().join(':');

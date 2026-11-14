@@ -86,22 +86,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "سرخی چهره و رخساره (بطور معمول و بدون استفاده از مواد آرایشی و اضافی چهره گلگون، چاق و نسبتا قرمز یا قرمز دارم).",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "زردی چهره و رخساره (معمولا چهره زرد یا گندمگون دارم).",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "سفیدی، نرمی و سستی رخساره (معمولا چهره نسبتا چاق و سفید دارم (سفیدگونه یا سفید مهتابی)).",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "تیرگی و کدر بودن رخساره دارم (سبزینه) (رنگ پوستم تیره یا سبزه است)",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           },
@@ -114,22 +114,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "سرخی سر زبان (با نگاه کردن روی زبانم، سرخی آن جلب توجه می‌نماید)",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "خشکی زبان یا زردی زبان (چنانچه هرکدام از این دو حالت را داشته باشید می‌توانید این گزینه را علامت بزنید)",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "زبان باردار و مرطوب (معمولا دهانم مرطوب است و با خوردن چیزهای سردی دهانم زود پر اب و سنگین می‌شود.)",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "سیاهی روی زبان (رگه سیاهی روی زبانم است که با چیزی پاک نمی‌شود)",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           },
@@ -142,22 +142,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "شیرینی طعم دهان (طعم صبحگاهی دهن شما شیرین است)",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "تلخی دهان (طعم صبحگاهی دهان شما تلخ است)",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "بی‌مزه بودن دهان (طعم صبحگاهی دهان شما بی‌مزه است)",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "ترش بودن دهان (طعم صبحگاهی دهان شما ترش است)",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           },
@@ -206,22 +206,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "اندکی با تاخیر بدنم گرم می‌شود",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "خیلی زود گرم می‌شوم",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "واکنش معمولی (وضعیت عادی دارم)",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "با تاخیر زیاد و دیرهنگام بدنم گرم می‌شود (حتی در فصل گرما هم گرما را به خوبی حس نمی‌کنم)",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           },
@@ -342,22 +342,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "علامت گوارشی خاصی ندارم",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "اشتهای کم، تهوع صبحگاهی دارم ( تمایل اندک به خوردن شیرینی جات دارم)",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "ضعف گوارشی دارم ( آروغ، نفخ معده، ورم معده، عدم تشنگی)",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "اشتهای کاذب، سیری زودرس و درد معده سوزشی دارم",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           },
@@ -370,22 +370,22 @@ export const MIZAJ_DRAFT_PRESET: { assessmentKey: string; locale: 'fa-IR'; title
               {
                 "id": "o1",
                 "title": "گهگاهی سرما می خورم ولی زود خوب می شوم ( گهگاهی آبریزش بینی یا گلو درد دارم، پوستی معمولی و مرطوب دارم)",
-                "scores": {}
+                "scores": { "DAMAVI": 1 }
               },
               {
                 "id": "o2",
                 "title": "خیلی کم مبتلا به بیماری های سرد از قبیل سرما خوردگی و گلو درد می شوم ( معمولا قوام پوست بدنم خشک است)",
-                "scores": {}
+                "scores": { "SAFRAVI": 1 }
               },
               {
                 "id": "o3",
                 "title": "در حد زیاد سرما می خورم ( معمولا قوام پوست بدنم معمولی یا تر است)",
-                "scores": {}
+                "scores": { "BALGHAMI": 1 }
               },
               {
                 "id": "o4",
                 "title": "در حد متوسط سرما می خورم و معمولا پوستم خشک است.",
-                "scores": {}
+                "scores": { "SODAVI": 1 }
               }
             ]
           }
