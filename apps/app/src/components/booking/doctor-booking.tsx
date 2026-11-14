@@ -249,16 +249,27 @@ function BookingDateRange({
                 <>
                   <h3 className="mt-1 text-sm font-semibold">انتخاب ساعت</h3>
                   <div
-                    className="grid grid-cols-4 gap-x-1.5 gap-y-4 sm:gap-x-2"
+                    className="scrollbar-hide grid min-w-0 snap-x auto-cols-[calc((100%_-_1.5rem)/4)] grid-flow-col gap-x-1.5 overflow-x-auto px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:gap-x-2"
                     role="group"
                     aria-label="ساعت‌های آزاد"
+                    tabIndex={0}
+                    onWheel={(event) => {
+                      const strip = event.currentTarget;
+                      if (strip.scrollWidth <= strip.clientWidth) return;
+                      const direction = getComputedStyle(strip).direction === 'rtl' ? -1 : 1;
+                      const delta = event.deltaX || event.deltaY * direction;
+                      if (!delta) return;
+                      const before = strip.scrollLeft;
+                      strip.scrollLeft += delta;
+                      if (strip.scrollLeft !== before) event.preventDefault();
+                    }}
                   >
                     {available
                       .filter((item) => item.localDate === selectedDay)
                       .map((item, index) => (
                         <button
                           type="button"
-                          className="group flex min-w-0 flex-col items-stretch rounded-lg px-0.5 pb-1 text-center text-sm tabular-nums aria-pressed:font-medium aria-pressed:text-primary"
+                          className="group flex min-w-0 snap-start flex-col items-stretch rounded-lg px-0.5 pb-1 text-center text-sm tabular-nums aria-pressed:font-medium aria-pressed:text-primary"
                           aria-pressed={selectedSlot?.startsAt === item.startsAt}
                           key={item.startsAt}
                           onClick={() => {

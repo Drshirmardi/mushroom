@@ -81,7 +81,7 @@
   align-items: end;
   justify-items: center;
 }
-.landingPortrait { width: 66%; inset-inline-end: 0; }
+.landingPortrait { width: 72%; inset-inline-end: 0; }
 .heroImage img {
   position: absolute;
   inset: 0;
