@@ -45633,6 +45633,11 @@
             ],
             "nullable": true
           },
+          "birthDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date"
+          },
           "updatedAt": {
             "type": "string",
             "nullable": true,
@@ -45676,6 +45681,10 @@
               "MALE"
             ],
             "nullable": true
+          },
+          "birthDate": {
+            "type": "string",
+            "format": "date"
           }
         }
       },

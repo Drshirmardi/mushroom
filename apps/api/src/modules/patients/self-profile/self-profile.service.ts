@@ -1,4 +1,4 @@
-import { Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
+import { ConflictException, Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import type { Prisma } from '../../../generated/prisma/client';
@@ -19,6 +19,7 @@ type SelfProfile = {
   email: string | null;
   cityName: string | null;
   gender: 'FEMALE' | 'MALE' | null;
+  birthDate: string | null;
   updatedAt: Date | null;
 };
 
@@ -44,24 +45,88 @@ export class SelfProfileService {
     return this.toProfile(patient);
   }
 
-  async update(userId: string, input: UpdateSelfProfileDto): Promise<SelfProfile> {
-    const patient = await this.ensurePatientProfile(userId);
+  async update(
+    userId: string,
+    input: UpdateSelfProfileDto,
+    context?: { actorSessionId: string; requestId: string; ipAddress: string },
+  ): Promise<SelfProfile> {
     const data = this.canonicalizeUpdate(input);
-    const profile = await this.prisma.userProfile.upsert({
-      where: { userId },
-      create: { userId, ...data },
-      update: data,
-    });
+    const birthDate = input.birthDate === undefined ? undefined : this.canonicalizeBirthDate(input.birthDate);
 
-    return {
-      ...this.toProfile(patient),
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      email: profile.email,
-      cityName: profile.cityName,
-      gender: profile.gender as SelfProfile['gender'],
-      updatedAt: profile.updatedAt,
-    };
+    return this.prisma.$transaction(async (tx) => {
+      const patient = await this.ensurePatientProfile(userId, tx);
+      const profile = await tx.userProfile.upsert({
+        where: { userId },
+        create: { userId, ...data },
+        update: data,
+      });
+
+      if (birthDate) {
+        const entry = await tx.patientEntry.findUnique({
+          where: { patientId: patient.id },
+          include: { submission: { select: { state: true, invalidatedAt: true } } },
+        });
+
+        if (entry?.submission?.state === 'IN_PROGRESS' && !entry.submission.invalidatedAt) {
+          throw new ConflictException({
+            code: 'PROFILE_BIRTH_DATE_LOCKED',
+            message: 'Birth date cannot be changed while an assessment is in progress.',
+            details: {},
+          });
+        }
+
+        if (entry) {
+          const changed = entry.birthDate?.getTime() !== birthDate.getTime();
+          await tx.patientEntry.update({ where: { patientId: patient.id }, data: { birthDate } });
+          if (changed && context) {
+            await tx.auditEvent.create({
+              data: {
+                action: 'PATIENT_ENTRY_BIRTH_DATE_UPDATED',
+                actorUserId: userId,
+                actorSessionId: context.actorSessionId,
+                subjectType: 'PATIENT_ENTRY',
+                subjectId: patient.id,
+                requestId: context.requestId.slice(0, 128),
+                ipAddress: context.ipAddress,
+                metadata: { birthDateChanged: true },
+              },
+            });
+          }
+        } else {
+          const policy = await tx.patientEntryPolicy.findUnique({ where: { clinicId: patient.clinicId } });
+          const assessmentRequired = Boolean(
+            policy?.enabled && policy.enforcedFrom && patient.user.createdAt >= policy.enforcedFrom,
+          );
+          await tx.patientEntry.create({
+            data: {
+              patientId: patient.id,
+              clinicId: patient.clinicId,
+              birthDate,
+              completedAt: assessmentRequired ? null : new Date(),
+            },
+          });
+          if (context) {
+            await tx.auditEvent.create({
+              data: {
+                action: 'PATIENT_ENTRY_BIRTH_DATE_UPDATED',
+                actorUserId: userId,
+                actorSessionId: context.actorSessionId,
+                subjectType: 'PATIENT_ENTRY',
+                subjectId: patient.id,
+                requestId: context.requestId.slice(0, 128),
+                ipAddress: context.ipAddress,
+                metadata: { birthDateChanged: true },
+              },
+            });
+          }
+        }
+      }
+
+      return this.toProfile(
+        { ...patient, user: { ...patient.user, userProfile: profile } },
+        tx,
+      );
+    });
   }
 
   async getOnboardingStatus(userId: string, db: Prisma.TransactionClient = this.prisma): Promise<SelfOnboardingStatus> {
@@ -86,7 +151,7 @@ export class SelfProfileService {
     const evaluation = evaluateOnboarding({
       firstName: profile?.firstName,
       lastName: profile?.lastName,
-      birthDate: (currentRevision?.birthDate ?? entry?.birthDate)?.toISOString().slice(0, 10),
+      birthDate: (entry?.birthDate ?? currentRevision?.birthDate)?.toISOString().slice(0, 10),
       sexAtBirth: currentRevision?.sexAtBirth,
       allergyReport: currentRevision?.allergyReport as never,
       chronicConditionReport: currentRevision?.chronicConditionReport as never,
@@ -177,8 +242,34 @@ export class SelfProfileService {
     }
   }
 
-  private toProfile(patient: Awaited<ReturnType<SelfProfileService['ensurePatientProfile']>>): SelfProfile {
+  private async toProfile(
+    patient: Awaited<ReturnType<SelfProfileService['ensurePatientProfile']>>,
+    db: PrismaService | Prisma.TransactionClient = this.prisma,
+  ): Promise<SelfProfile> {
     const profile = patient.user.userProfile;
+    const entry = await db.patientEntry.findUnique({
+      where: { patientId: patient.id },
+      select: { birthDate: true },
+    });
+    let birthDate = entry?.birthDate ?? null;
+    if (!birthDate) {
+      const intake = await db.patientMedicalIntake.findUnique({
+        where: { patientId: patient.id },
+        select: { id: true, currentRevisionNumber: true },
+      });
+      if (intake && intake.currentRevisionNumber > 0) {
+        const revision = await db.patientMedicalIntakeRevision.findUnique({
+          where: {
+            intakeId_revisionNumber: {
+              intakeId: intake.id,
+              revisionNumber: intake.currentRevisionNumber,
+            },
+          },
+          select: { birthDate: true },
+        });
+        birthDate = revision?.birthDate ?? null;
+      }
+    }
     return {
       patientId: patient.id,
       phone: patient.user.phone,
@@ -188,8 +279,28 @@ export class SelfProfileService {
       email: profile?.email ?? null,
       cityName: profile?.cityName ?? null,
       gender: (profile?.gender as SelfProfile['gender'] | undefined) ?? null,
+      birthDate: birthDate?.toISOString().slice(0, 10) ?? null,
       updatedAt: profile?.updatedAt ?? null,
     };
+  }
+
+  private canonicalizeBirthDate(value: string): Date {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    const today = new Date();
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+      !Number.isFinite(date.getTime()) ||
+      date.toISOString().slice(0, 10) !== value ||
+      date > new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())) ||
+      date.getUTCFullYear() < today.getUTCFullYear() - 130
+    ) {
+      throw new UnprocessableEntityException({
+        code: 'PROFILE_BIRTH_DATE_INVALID',
+        message: 'A valid birth date is required.',
+        details: {},
+      });
+    }
+    return date;
   }
 
   private latestUpdate(first: Date | null, second: Date | null): Date | null {

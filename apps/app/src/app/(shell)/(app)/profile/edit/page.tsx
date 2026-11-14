@@ -14,19 +14,22 @@ import {
 } from '@/components/onboarding/profile-fields';
 import { BottomSheet, type BottomSheetHandle } from '@/components/shared/bottom-sheet';
 import { PageHeader } from '@/components/shared/page-header';
+import { ProfileBirthDateField } from '@/components/profile/profile-birth-date-field';
 import {
   loadSelfProfile,
   onboardingErrorMessage,
   updateSelfProfile,
 } from '@/lib/onboarding/patient-onboarding';
 
-const EMPTY: ProfileDraft = { firstName: '', lastName: '', email: '', cityName: '', gender: '' };
-const same = (a: ProfileDraft, b: ProfileDraft) =>
+type EditableProfileDraft = ProfileDraft & { birthDate: string };
+const EMPTY: EditableProfileDraft = { firstName: '', lastName: '', email: '', cityName: '', gender: '', birthDate: '' };
+const same = (a: EditableProfileDraft, b: EditableProfileDraft) =>
   a.firstName === b.firstName &&
   a.lastName === b.lastName &&
   a.email === b.email &&
   a.cityName === b.cityName &&
-  a.gender === b.gender;
+  a.gender === b.gender &&
+  a.birthDate === b.birthDate;
 
 function FieldsSkeleton() {
   return (
@@ -38,7 +41,7 @@ function FieldsSkeleton() {
       </p>
       <div className="mt-4 rounded-2xl border border-border bg-white p-4">
         <div className="space-y-3">
-          {[0, 1, 2, 3, 4].map((row) => (
+          {[0, 1, 2, 3, 4, 5].map((row) => (
             <div key={row}>
               <span className="mb-1 block h-3 w-20 skeleton rounded bg-muted" />
               <span
@@ -59,8 +62,8 @@ function FieldsSkeleton() {
 export default function EditProfilePage() {
   const router = useRouter();
   const { authentication } = useAuthSession();
-  const [profile, setProfile] = useState<ProfileDraft>(EMPTY);
-  const [initial, setInitial] = useState<ProfileDraft>(EMPTY);
+  const [profile, setProfile] = useState<EditableProfileDraft>(EMPTY);
+  const [initial, setInitial] = useState<EditableProfileDraft>(EMPTY);
   const [phone, setPhone] = useState<string>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -87,6 +90,7 @@ export default function EditProfilePage() {
           lastName: typeof result.lastName === 'string' ? result.lastName : '',
           email: typeof result.email === 'string' ? result.email : '',
           cityName: typeof result.cityName === 'string' ? result.cityName : '',
+          birthDate: typeof result.birthDate === 'string' ? result.birthDate.slice(0, 10) : '',
           gender:
             result.gender === 'FEMALE' || result.gender === 'MALE' ? result.gender : ('' as const),
         };
@@ -112,7 +116,10 @@ export default function EditProfilePage() {
     setSaving(true);
     setError(null);
     try {
-      await updateSelfProfile(authentication.accessToken, profile);
+      await updateSelfProfile(authentication.accessToken, {
+        ...profile,
+        birthDate: profile.birthDate || undefined,
+      });
       setInitial(profile);
       if (navigate) {
         setJustSaved(true);
@@ -225,7 +232,7 @@ export default function EditProfilePage() {
             <div className="rounded-2xl border border-border bg-white p-4">
               <ProfileFields
                 value={profile}
-                onChange={setProfile}
+                onChange={(value) => setProfile((current) => ({ ...current, ...value }))}
                 phone={phone}
                 tone="blue"
                 grouped
@@ -238,6 +245,13 @@ export default function EditProfilePage() {
                   label: 'رفتن به امنیت حساب',
                   onClick: () => router.push('/profile/security'),
                 }}
+                identityAfter={
+                  <ProfileBirthDateField
+                    value={profile.birthDate}
+                    onChange={(birthDate) => setProfile((current) => ({ ...current, birthDate }))}
+                    disabled={saving || justSaved}
+                  />
+                }
               />
             </div>
             <button

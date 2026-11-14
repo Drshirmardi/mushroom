@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { Check, ChevronLeft, CircleAlert, Plus } from "lucide-react";
+import type { ReactNode } from "react";
 
 export type ProfileGenderDraft = "" | "MALE" | "FEMALE";
 export type ProfileDraft = { firstName: string; lastName: string; email: string; cityName: string; gender: ProfileGenderDraft };
-type Props = { value: ProfileDraft; onChange: (value: ProfileDraft) => void; phone?: string; tone?: "green" | "blue"; grouped?: boolean; inlineEdit?: boolean; showGender?: boolean; hiddenFields?: (keyof ProfileDraft)[]; emailError?: string | null; onEmailError?: (message: string | null) => void; phoneAction?: { label: string; onClick: () => void } };
+type Props = { value: ProfileDraft; onChange: (value: ProfileDraft) => void; phone?: string; tone?: "green" | "blue"; grouped?: boolean; inlineEdit?: boolean; showGender?: boolean; hiddenFields?: (keyof ProfileDraft)[]; emailError?: string | null; onEmailError?: (message: string | null) => void; phoneAction?: { label: string; onClick: () => void }; identityAfter?: ReactNode };
 type FieldDef = { key: keyof ProfileDraft; label: string; required?: boolean; type?: "email" | "text"; inputMode?: "email"; autoComplete?: string; group: "identity" | "contact" };
 const FIELDS: FieldDef[] = [
   { key: "firstName", label: "نام", required: true, autoComplete: "given-name", group: "identity" }, { key: "lastName", label: "نام خانوادگی", required: true, autoComplete: "family-name", group: "identity" }, { key: "email", label: "ایمیل", type: "email", inputMode: "email", autoComplete: "email", group: "contact" }, { key: "cityName", label: "شهر", autoComplete: "address-level2", group: "contact" },
@@ -19,7 +20,7 @@ export function validateEmail(value: string): string | null {
 }
 const GROUPS: { id: FieldDef["group"]; title: string }[] = [{ id: "identity", title: "مشخصات فردی" }, { id: "contact", title: "راه‌های تماس" }];
 const GENDER_OPTIONS: (readonly [Exclude<ProfileGenderDraft, "">, string])[] = [["MALE", "آقا"], ["FEMALE", "خانم"]];
-export function ProfileFields({ value, onChange, phone, tone = "green", grouped = false, inlineEdit = false, showGender = false, hiddenFields = [], emailError, onEmailError, phoneAction }: Props) {
+export function ProfileFields({ value, onChange, phone, tone = "green", grouped = false, inlineEdit = false, showGender = false, hiddenFields = [], emailError, onEmailError, phoneAction, identityAfter }: Props) {
   const [open, setOpen] = useState<Partial<Record<keyof ProfileDraft, boolean>>>({});
   const refs = useRef<Partial<Record<keyof ProfileDraft, HTMLInputElement>>>({});
   const unlock = (key: keyof ProfileDraft) => { setOpen((prev) => ({ ...prev, [key]: true })); requestAnimationFrame(() => refs.current[key]?.focus()); };
@@ -76,5 +77,5 @@ export function ProfileFields({ value, onChange, phone, tone = "green", grouped 
   </div>;
   const visibleFields = FIELDS.filter((field) => !hiddenFields.includes(field.key));
   if (!grouped) return <div className="space-y-3">{visibleFields.map(renderField)}{renderPhone()}</div>;
-  return <div className="space-y-5">{GROUPS.map((group, groupIndex) => <section key={group.id} aria-label={group.title} className={groupIndex > 0 ? "border-t border-slate-200 pt-5" : ""}><h3 className="mb-2 text-[11px] font-bold text-muted-foreground">{group.title}</h3><div className="space-y-3">{visibleFields.filter((field) => field.group === group.id).map(renderField)}{group.id === "identity" && showGender && renderGender()}{group.id === "contact" && renderPhone()}</div></section>)}</div>;
+  return <div className="space-y-5">{GROUPS.map((group, groupIndex) => <section key={group.id} aria-label={group.title} className={groupIndex > 0 ? "border-t border-slate-200 pt-5" : ""}><h3 className="mb-2 text-[11px] font-bold text-muted-foreground">{group.title}</h3><div className="space-y-3">{visibleFields.filter((field) => field.group === group.id).map(renderField)}{group.id === "identity" && showGender && renderGender()}{group.id === "identity" && identityAfter}{group.id === "contact" && renderPhone()}</div></section>)}</div>;
 }

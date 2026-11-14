@@ -4,6 +4,7 @@ import {
   IsIn,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
 } from 'class-validator';
 
@@ -39,6 +40,12 @@ export class UpdateSelfProfileDto {
   @IsOptional()
   @IsIn(profileGenderValues)
   gender?: ProfileGender | null;
+
+  @ApiPropertyOptional({ type: String, format: 'date' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  birthDate?: string;
 }
 
 export class SelfProfileResponseDto {
@@ -65,6 +72,9 @@ export class SelfProfileResponseDto {
 
   @ApiPropertyOptional({ enum: profileGenderValues, nullable: true })
   gender!: ProfileGender | null;
+
+  @ApiPropertyOptional({ type: String, nullable: true, format: 'date' })
+  birthDate!: string | null;
 
   @ApiPropertyOptional({ type: String, nullable: true, format: 'date-time' })
   updatedAt!: Date | null;

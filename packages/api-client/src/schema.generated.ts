@@ -7805,6 +7805,8 @@ export interface components {
             cityName?: string | null;
             /** @enum {string|null} */
             gender?: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate?: string | null;
             /** Format: date-time */
             updatedAt?: string | null;
         };
@@ -7816,6 +7818,8 @@ export interface components {
             cityName?: string | null;
             /** @enum {string|null} */
             gender?: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate?: string;
         };
         OnboardingStatusResponseDto: {
             /** @enum {string} */

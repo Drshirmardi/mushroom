@@ -1,24 +1,8 @@
 "use client";
 import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
-import { LoadingState, SkeletonBox } from "@/components/shared/skeletons";
+import { LoadingState } from "@/components/shared/skeletons";
 
-import { useCallback, useEffect, useState } from "react";
-import {
-  Activity,
-  Bell,
-  Check,
-  ChevronLeft,
-  Edit2,
-  FileText,
-  History,
-  LogOut,
-  MapPin,
-  Package,
-  Phone,
-  Fingerprint,
-  Wallet,
-  type LucideIcon,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceAddresses, type CommerceAddress } from "@/lib/commerce-catalog-api";
@@ -26,33 +10,23 @@ import { toP } from "@/lib/format";
 import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type OnboardingStatus, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
 import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData, peekPatientCache } from "@/lib/patient-request";
 
-import { getCurrentMezaj } from '@/lib/assessment-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
-
-function CurrentMezajCard({token}:{token:string}){
- const resource=usePatientResource(useCallback(()=>getCurrentMezaj(token),[token]));
- const band=resource.data?.resultBand;
- const title=typeof band?.title==='string'?band.title:'نتیجهٔ ثبت‌شده';
- const router=useRouter();
- return <section aria-label="مزاج فعلی من" className="rounded-2xl border border-border bg-white p-4 space-y-2"><h2 className="text-sm font-medium">مزاج فعلی من</h2>{resource.data?<><p className="font-medium text-primary">{title}</p><p className="text-xs text-muted-foreground">بر اساس آخرین نتیجهٔ معتبر آزمون شما</p><button className="text-sm text-primary" onClick={()=>router.push(`/assessment/result?submissionId=${resource.data!.assessmentSubmissionId}`)}>مشاهدهٔ نتیجهٔ آزمون</button></>:resource.loading?<div role="status" className="loading-state space-y-2"><span className="sr-only">در حال دریافت نتیجه…</span><SkeletonBox className="h-4 w-2/3" /><SkeletonBox className="h-3 w-1/2" /></div>:resource.error?<button onClick={()=>void resource.reload()} className="text-xs text-primary">دریافت دوبارهٔ نتیجه</button>:<p className="text-xs text-muted-foreground">هنوز نتیجهٔ معتبر آزمون مزاج ثبت نشده است.</p>}</section>;
-}
+import { StoreIcon, type StoreIconName } from '@/components/store/store-icon';
 
 /**
- * Icon-chip tones: blue family first (page accent), amber only for wallet
- * (value association), soft neutral for the rest. No green, no red.
+ * Keep the Digipay glyphs color-coded by section without adding icon chips.
  */
 type Tone = "soft" | "blue" | "sky" | "amber" | "slate";
 
 const TONES: Record<Tone, string> = {
-  soft: "bg-muted text-foreground",
-  blue: "bg-blue-50 text-blue-700",
-  sky: "bg-sky-50 text-sky-700",
-  amber: "bg-amber-50 text-amber-600",
-  slate: "bg-slate-100 text-slate-600",
+  soft: "text-foreground",
+  blue: "text-blue-700",
+  sky: "text-sky-700",
+  amber: "text-amber-600",
+  slate: "text-slate-600",
 };
 
-function MenuRow({ icon: Icon, label, hint, tone = "soft", onClick }: {
-  icon: LucideIcon;
+function MenuRow({ icon, label, hint, tone = "soft", onClick }: {
+  icon: StoreIconName;
   label: string;
   hint?: string;
   tone?: Tone;
@@ -63,10 +37,10 @@ function MenuRow({ icon: Icon, label, hint, tone = "soft", onClick }: {
     onClick={onClick}
     className="flex w-full items-center gap-3 p-4 text-right transition-colors hover:bg-muted/60 active:bg-muted"
   >
-    <span className={`rounded-xl p-2 ${TONES[tone]}`}><Icon size={17} aria-hidden="true" /></span>
+    <StoreIcon name={icon} size={21} className={`shrink-0 ${TONES[tone]}`} />
     <span className="flex-1 text-[13px] leading-6 font-medium text-foreground">{label}</span>
     {hint && <span title={hint} className="min-w-0 max-w-[60%] shrink truncate text-xs text-muted-foreground">{hint}</span>}
-    <ChevronLeft size={15} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+    <StoreIcon name="arrowLeft" size={15} className="shrink-0 text-muted-foreground" />
   </button>;
 }
 
@@ -153,23 +127,23 @@ export default function ProfilePage() {
               </span>
               <span className="mt-1.5 flex flex-col gap-1">
                 {profile?.phone ? (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Phone size={12} aria-hidden="true" /><span dir="ltr">{profile.phone}</span></span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><StoreIcon name="call" size={10} /><span dir="ltr">{profile.phone}</span></span>
                 ) : null}
                 {typeof profile?.cityName === "string" && profile.cityName ? (
-                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><MapPin size={12} aria-hidden="true" />{profile.cityName}</span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><StoreIcon name="location" size={10} />{profile.cityName}</span>
                 ) : null}
                 {!profile?.phone && !(typeof profile?.cityName === "string" && profile.cityName) ? (
                   <span className="text-xs text-muted-foreground">اطلاعات تماس ثبت نشده است</span>
                 ) : null}
               </span>
             </div>
-            <button type="button" aria-label="ویرایش پروفایل" onClick={() => router.push("/profile/edit")} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-transparent text-foreground transition-all hover:text-blue-700 active:scale-95"><Edit2 size={19} strokeWidth={2.5} aria-hidden="true" /></button>
+            <button type="button" aria-label="ویرایش پروفایل" onClick={() => router.push("/profile/edit")} className="flex h-12 w-12 shrink-0 items-center justify-center bg-transparent text-foreground transition-colors hover:text-blue-700 active:scale-95"><StoreIcon name="pen" size={24} /></button>
           </div>
         </section>
-        <CurrentMezajCard key={authentication.user.id} token={authentication.accessToken}/><section aria-label="وضعیت پرونده پزشکی">
+        <section aria-label="وضعیت پرونده پزشکی">
           <button type="button" onClick={() => router.push("/profile/medical")} className="block w-full cursor-pointer rounded-2xl border border-border bg-white p-4 text-right shadow-sm transition-all hover:bg-muted/40 active:scale-[0.99] active:bg-muted">
             <span className="flex items-center gap-3">
-              <span className="rounded-xl bg-blue-50 p-2 text-blue-700"><FileText size={18} aria-hidden="true" /></span>
+              <StoreIcon name="medicalBag" size={16} className="shrink-0 text-blue-700" />
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-foreground">پرونده پزشکی</span>
                 <span className="mt-0.5 block text-[11px] text-muted-foreground">{complete ? "همه بخش‌ها ثبت شده است" : "با تکمیل بخش‌ها، خدمات دقیق‌تری می‌گیرید"}</span>
@@ -190,39 +164,39 @@ export default function ProfilePage() {
             </span>
             <span className="mt-3 flex items-center justify-between border-t border-border pt-3 text-xs">
               {complete
-                ? <span className="inline-flex items-center gap-1.5 font-medium text-foreground"><Check size={14} className="text-blue-600" aria-hidden="true" />پرونده کامل است</span>
+                ? <span className="inline-flex items-center gap-1.5 font-medium text-foreground"><StoreIcon name="checkCircle" size={11} className="text-blue-600" />پرونده کامل است</span>
                 : hasSteps
                   ? <span className="text-muted-foreground">فقط <b className="font-medium tabular-nums text-blue-700">{toP(remaining)}</b> بخش مانده</span>
                   : <span className="text-muted-foreground">برای خدمات بهتر، پرونده را کامل کنید</span>}
-              <span className="inline-flex items-center gap-0.5 font-medium text-blue-700">{complete ? "مشاهده پرونده" : "ادامه تکمیل"}<ChevronLeft size={14} aria-hidden="true" /></span>
+              <span className="inline-flex items-center gap-0.5 font-medium text-blue-700">{complete ? "مشاهده پرونده" : "ادامه تکمیل"}<StoreIcon name="arrowLeft" size={11} /></span>
             </span>
           </button>
         </section>
         <div className="space-y-2">
           <Caption>سفارش‌ها و خرید</Caption>
           <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="سفارش‌ها و خرید">
-            <MenuRow icon={Package} label="پیگیری سفارش" hint="وضعیت سفارش‌ها" tone="blue" onClick={() => router.push("/store/orders")} />
-            <MenuRow icon={MapPin} label="آدرس‌ها" hint={defaultAddress ? `${defaultAddress.label} · ${defaultAddress.city}، ${defaultAddress.line1}` : "تحویل سفارش‌ها"} tone="blue" onClick={() => router.push("/profile/addresses")} />
-            <MenuRow icon={Wallet} label="کیف پول" tone="amber" onClick={() => router.push("/profile/wallet")} />
+            <MenuRow icon="deliveryBox" label="پیگیری سفارش" hint="وضعیت سفارش‌ها" tone="blue" onClick={() => router.push("/store/orders")} />
+            <MenuRow icon="location" label="آدرس‌ها" hint={defaultAddress ? `${defaultAddress.label} · ${defaultAddress.city}، ${defaultAddress.line1}` : "تحویل سفارش‌ها"} tone="blue" onClick={() => router.push("/profile/addresses")} />
+            <MenuRow icon="walletBold" label="کیف پول" tone="amber" onClick={() => router.push("/profile/wallet")} />
           </section>
         </div>
         <div className="space-y-2">
           <Caption>سلامت و مراقبت</Caption>
           <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="سلامت و مراقبت">
-            <MenuRow icon={History} label="سوابق درمانی" tone="sky" onClick={() => router.push("/profile/history")} />
-            <MenuRow icon={FileText} label="برنامه‌های آموزشی و اختصاصی من" tone="sky" onClick={() => router.push("/programs")} />
-            <MenuRow icon={Activity} label="ارزیابی‌های فردی و زوجین" tone="sky" onClick={() => router.push("/assessment")} />
+            <MenuRow icon="history" label="سوابق درمانی" tone="sky" onClick={() => router.push("/profile/history")} />
+            <MenuRow icon="book" label="برنامه‌های آموزشی و اختصاصی من" tone="sky" onClick={() => router.push("/programs")} />
+            <MenuRow icon="checklist" label="ارزیابی‌های فردی و زوجین" tone="sky" onClick={() => router.push("/assessment")} />
           </section>
         </div>
         <div className="space-y-2">
           <Caption>حساب کاربری</Caption>
           <section className="store-menu overflow-hidden rounded-2xl border border-border bg-white" aria-label="حساب کاربری">
-            <MenuRow icon={Fingerprint} label="امنیت و حریم خصوصی" tone="slate" onClick={() => router.push("/profile/security")} />
-            <MenuRow icon={Bell} label="اعلان‌ها" tone="sky" onClick={() => router.push("/profile/notifications")} />
+            <MenuRow icon="digitalDevice" label="دستگاه‌های متصل" tone="slate" onClick={() => router.push("/profile/security")} />
+            <MenuRow icon="notification" label="اعلان‌ها" tone="sky" onClick={() => router.push("/profile/notifications")} />
           </section>
         </div>
       </>}
     {logoutError && <p role="alert" className="text-sm text-red-700">خروج انجام نشد؛ دوباره تلاش کنید.</p>}
-    <button type="button" disabled={loggingOut || loading} onClick={() => { if (loggingOut) return; setLoggingOut(true); setLogoutError(false); void logout().then(ok => { if (!ok) { setLoggingOut(false); setLogoutError(true); } }); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60" aria-busy={Boolean(loggingOut)}><LogOut size={16} aria-hidden="true" />{loggingOut ? <><HeartbeatLoader />{"در حال خروج…"}</> : "خروج از حساب"}</button>
+    <button type="button" disabled={loggingOut || loading} onClick={() => { if (loggingOut) return; setLoggingOut(true); setLogoutError(false); void logout().then(ok => { if (!ok) { setLoggingOut(false); setLogoutError(true); } }); }} className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-medium text-red-600 transition-colors active:bg-red-50 disabled:opacity-60" aria-busy={Boolean(loggingOut)}><StoreIcon name="logout" size={13} />{loggingOut ? <><HeartbeatLoader />{"در حال خروج…"}</> : "خروج از حساب"}</button>
   </main>;
 }

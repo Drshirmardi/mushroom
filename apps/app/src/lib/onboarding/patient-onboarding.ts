@@ -141,6 +141,8 @@ export function onboardingErrorMessage(error: unknown, operation: "load" | "save
     return "دسترسی به پرونده شما مجاز نیست. لطفاً دوباره وارد حساب شوید.";
   }
   if (error.code === "PROFILE_FIELDS_INCOMPLETE") return "نام و نام خانوادگی را کامل کنید.";
+  if (error.code === "PROFILE_BIRTH_DATE_LOCKED") return "تا پایان آزمون جاری امکان تغییر تاریخ تولد وجود ندارد.";
+  if (error.code === "PROFILE_BIRTH_DATE_INVALID") return "تاریخ تولد را به‌درستی انتخاب کنید.";
   if (error.code === "INVALID_MEDICAL_DECLARATION") return "پاسخ‌های پزشکی را کامل و معتبر وارد کنید.";
   if (error.code === "BAD_REQUEST" || error.code === "UNPROCESSABLE_ENTITY") return "مقدار یکی از فیلدها معتبر نیست؛ موارد مشخص‌شده را بررسی کنید.";
   if (error.code === "MEDICAL_INTAKE_REVISION_CONFLICT") return "اطلاعات در دستگاه دیگری تغییر کرده است؛ صفحه را تازه کنید.";
