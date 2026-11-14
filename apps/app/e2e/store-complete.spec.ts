@@ -68,6 +68,181 @@ async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
 }
 
+test("services uses the latest mezaj result and preserves product filters between tabs", async ({ page }, testInfo) => {
+  if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 760 });
+  const requests: string[] = [];
+  let recommendationStatus = "NO_RESULT";
+  let failed = false;
+  const educational = { id: "education", title: "راهنمای شناخت خود", summary: "محتوای آموزشی", category: "شناخت خود", amountRial: "0", discountPercent: 0, accessMode: "DAYS", accessDurationDays: 30 };
+  const custom = { id: "custom", title: "برنامهٔ اختصاصی خواب", summary: "", category: "خواب", amountRial: "100000", physician: { displayName: "دکتر آزمایشی" }, requestSupported: false };
+  const recommended = { programDefinitionId: "featured", publicationId: "featured", title: "پیشنهاد نخست", summary: "برنامهٔ پیشنهادی", icon: "heart", amountRial: "100000", baseAmountRial: "150000", discountPercent: 33, state: "BUY" };
+  await fixture(page);
+  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offerings|custom-program-offerings)(?:\?|$)/, async (route) => {
+    const url = new URL(route.request().url());
+    const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-headers": "authorization, content-type, x-analytics-context" };
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    const path = url.pathname.split("/").at(-1)!;
+    requests.push(path);
+    if (path === "program-recommendations") {
+      expect(url.searchParams.has("submissionId")).toBe(false);
+      await route.fulfill({ status: failed ? 503 : 200, headers, json: {
+        status: recommendationStatus,
+        items: recommendationStatus === "READY" ? [
+          recommended,
+          { ...recommended, programDefinitionId: "pending", title: "خرید معلق", state: "PENDING", purchaseId: "pending" },
+          { ...recommended, programDefinitionId: "owned", title: "محتوای من", state: "OWNED", accessGrantId: "owned" },
+        ] : [],
+      } });
+      return;
+    }
+    const catalogPage = Number(url.searchParams.get("page") ?? 1);
+    const items = path === "program-offerings"
+      ? Array.from({ length: catalogPage === 1 ? 7 : 2 }, (_, index) => ({
+        ...educational,
+        id: `education-${catalogPage}-${index}`,
+        title: catalogPage === 1 ? (index ? `آموزش ${index + 1}` : educational.title) : (index ? "آموزش دوم این صفحه" : "صفحهٔ دوم آموزش"),
+      }))
+      : [custom];
+    await route.fulfill({ headers, json: { items, page: catalogPage, pageSize: 20, total: path === "program-offerings" ? 21 : 1 } });
+  });
+
+  await page.goto(`${origin}/store?view=all&q=شامپو&category=${categoryId}&page=2`);
+  await expect(page.locator(".store-product").first()).toBeVisible();
+  expect(requests).toEqual([]);
+  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
+  const services = tabs.getByRole("link", { name: "خدمات" });
+  await services.focus();
+  await page.keyboard.press("Enter");
+  await expect(services).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "شروع ارزیابی" })).toHaveAttribute("href", "/assessment");
+  await expect(page.locator("#store-search")).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get("page")).toBe("2");
+  const education = page.getByRole("region", { name: "برنامه‌های آموزشی" });
+  const educationRail = education.getByRole("group", { name: "برنامه‌های آموزشی، شناخت خود", exact: true });
+  await expect(educationRail.getByRole("button", { name: "کارت قبلی" })).toBeDisabled();
+  await educationRail.getByRole("button", { name: "کارت بعدی" }).click();
+  await expect(educationRail.getByText("۲ از ۷", { exact: true })).toBeVisible();
+  await education.getByRole("navigation", { name: "صفحه‌بندی" }).getByRole("button", { name: "بعدی" }).click();
+  await expect(education.getByText("صفحهٔ دوم آموزش")).toBeVisible();
+  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۱" })).toHaveAttribute("aria-current", "true");
+  await expect(page.getByText(/دکتر آزمایشی.*درخواست فعلاً غیرفعال/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "خدمات اختصاصی" }).locator(".swiper")).toHaveCount(0);
+  await page.goBack();
+  await expect(page.locator("#store-search")).toHaveValue("شامپو");
+
+  recommendationStatus = "READY";
+  failed = true;
+  await page.goForward();
+  await expect(page.getByText("پیشنهادهای خدمات دریافت نشد.")).toBeVisible();
+  await expect(education.getByText("راهنمای شناخت خود")).toBeVisible();
+  failed = false;
+  await page.getByRole("button", { name: "تلاش دوباره" }).click();
+  await expect(page.getByRole("link", { name: /جزئیات خدمت، پیشنهاد نخست/ })).toHaveAttribute("href", "/programs/offerings/featured");
+  await expect(page.getByRole("link", { name: /ادامهٔ پرداخت، خرید معلق/ })).toHaveAttribute("href", "/programs/purchases/pending");
+  await expect(page.getByRole("link", { name: /مطالعهٔ محتوا، محتوای من/ })).toHaveAttribute("href", "/programs/content/owned");
+  const rail = page.getByRole("group", { name: "پیشنهادهای بیشتر", exact: true });
+  const viewport = rail.getByLabel("جابه‌جایی کارت‌های پیشنهادهای بیشتر با کلیدهای جهت");
+  const firstDot = rail.getByRole("button", { name: "نمایش کارت ۱" });
+  const secondDot = rail.getByRole("button", { name: "نمایش کارت ۲" });
+  await viewport.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(secondDot).toHaveAttribute("aria-current", "true");
+  await page.keyboard.press("ArrowLeft");
+  await expect(secondDot).toHaveAttribute("aria-current", "true");
+  await firstDot.click();
+  await expect(firstDot).toHaveAttribute("aria-current", "true");
+  await expect.poll(() => rail.locator(".swiper-wrapper").evaluate(el => el.getAnimations().length)).toBe(0);
+  const railBounds = (await rail.locator(".swiper").boundingBox())!;
+  const activeBounds = (await rail.locator(".swiper-slide-active").boundingBox())!;
+  const adjacentBounds = (await rail.locator(".swiper-slide-next").boundingBox())!;
+  expect(Math.abs(activeBounds.x + activeBounds.width / 2 - railBounds.x - railBounds.width / 2)).toBeLessThan(2);
+  expect(adjacentBounds.x).toBeLessThan(railBounds.x);
+  expect(adjacentBounds.x + adjacentBounds.width).toBeGreaterThan(railBounds.x);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const card = rail.locator(".swiper-slide-active");
+  const link = card.getByRole("link", { name: /ادامهٔ پرداخت/ });
+  await link.scrollIntoViewIfNeeded();
+  const bounds = (await link.boundingBox())!;
+  const x = Math.round(bounds.x + bounds.width / 2);
+  const y = Math.round(bounds.y + bounds.height / 2);
+  if (testInfo.project.name === "mobile") {
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    for (const offset of [20, 50, 80]) {
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x + offset, y }] });
+    }
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await cdp.detach();
+  } else {
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 95, y, { steps: 8 });
+    await page.mouse.up();
+  }
+  await expect(secondDot).toHaveAttribute("aria-current", "true");
+  await expect(page).toHaveURL(/\/store\?/);
+  await expect.poll(() => rail.locator(".swiper-wrapper").evaluate(el => getComputedStyle(el).transitionDuration)).toBe("0s");
+  if (testInfo.project.name === "desktop") {
+    await rail.locator(".swiper").hover();
+    await page.mouse.wheel(260, 0);
+    await expect(firstDot).toHaveAttribute("aria-current", "true");
+    await page.mouse.wheel(0, 90);
+    await expect(firstDot).toHaveAttribute("aria-current", "true");
+  }
+  await noOverflow(page);
+  expect(await page.locator(".patient-shell-content").evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await page.reload();
+  await expect(services).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "پیشنهاد نخست" })).toBeVisible();
+  await page.getByRole("link", { name: /جزئیات خدمت، پیشنهاد نخست/ }).click();
+  await expect(page).toHaveURL(/\/programs\/offerings\/featured$/);
+  await page.goto(`${origin}/programs`);
+  await expect(page.getByRole("heading", { name: "برنامه‌های سلامت" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "بخش‌های فروشگاه" })).toHaveCount(0);
+});
+
+test("guest services offers login with a return destination and sends no private requests", async ({ page }) => {
+  const privateRequests: string[] = [];
+  await page.route("**/v1/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-headers": "authorization, content-type" };
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    if (path.includes("/patients/me/")) privateRequests.push(path);
+    await route.fulfill({ status: 401, headers, json: {} });
+  });
+  await page.goto(`${origin}/store?tab=services`);
+  const login = page.getByRole("link", { name: "ورود به حساب" });
+  await expect(login).toHaveAttribute("href", /[?&]next=/);
+  expect(new URL((await login.getAttribute("href"))!).searchParams.get("next")).toBe(`${origin}/store?tab=services`);
+  expect(privateRequests).toEqual([]);
+});
+
+test("product banner dots work after returning from services", async ({ page }) => {
+  await fixture(page, { banners: true });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto(`${origin}/store`);
+  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
+  const hero = page.getByRole("region", { name: "بنرهای فروشگاه" });
+  const dots = hero.getByRole("group", { name: "انتخاب بنر" });
+  const selectSecond = async () => {
+    const second = dots.getByRole("button", { name: "بنر 2", exact: true });
+    await second.click();
+    await expect(second).toHaveAttribute("aria-current", "true");
+  };
+  await selectSecond();
+  await tabs.getByRole("link", { name: "خدمات" }).click();
+  await expect(hero).toHaveCount(0);
+  await tabs.getByRole("link", { name: "محصولات" }).click();
+  await selectSecond();
+  await noOverflow(page);
+});
+
 test("selected SKU, favorites, cart, Persian address, totals and wallet receipt form one usable purchase", async ({ page }, testInfo) => {
   const mock = await fixture(page);
   const errors: string[] = [];

@@ -10,6 +10,7 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { Button } from '@/components/ui/button';
 import { CartItem, ProductPrice, StoreState } from '@/components/store/store-ui';
 import { PageHeader } from '@/components/shared/page-header';
+import { SegmentedTabs } from '@/components/shared/segmented-tabs';
 import styles from '@/components/store/purchase-flow.module.css';
 
 import {
@@ -179,44 +180,35 @@ function CartScreen() {
       <div className={styles.header}>
         <PageHeader title={savedTab ? 'علاقه‌مندی‌ها' : 'سبد خرید'} onBack={() => router.back()} backIcon={<StoreIcon name="arrowRight" size={20} className="text-foreground" />} />
       </div>
-      <div
-        className="mb-4 grid grid-cols-2 gap-1.5 rounded-2xl border border-border/70 bg-muted/60 p-1.5"
-        role="tablist"
-        aria-label="سبد و علاقه‌مندی"
-        onKeyDown={(event) => {
-          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
-          event.preventDefault();
-          const next = savedTab ? 'cart' : 'saved';
-          selectTab(next);
-          event.currentTarget.querySelector<HTMLButtonElement>(`#${next}-tab`)?.focus();
-        }}
-      >
-        <button
-          id="cart-tab"
-          type="button"
-          role="tab"
-          aria-selected={!savedTab}
-          aria-controls="cart-panel"
-          onClick={() => selectTab('cart')}
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          سبد خرید
-          <span className="tabular-nums">{toP(cartCount(items))}</span>
-        </button>
-        <button
-          id="saved-tab"
-          type="button"
-          role="tab"
-          aria-selected={savedTab}
-          aria-controls="saved-panel"
-          onClick={() => selectTab('saved')}
-          className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <StoreIcon name="heart" size={16} />
-          علاقه‌مندی‌ها
-          <span className="tabular-nums">{toP(savedCount)}</span>
-        </button>
-      </div>
+      <SegmentedTabs
+        ariaLabel="سبد و علاقه‌مندی"
+        value={savedTab ? 'saved' : 'cart'}
+        onChange={selectTab}
+        className="mb-4"
+        options={[
+          {
+            value: 'cart',
+            id: 'cart-tab',
+            controls: 'cart-panel',
+            label: (
+              <>
+                سبد خرید <span className="tabular-nums">{toP(cartCount(items))}</span>
+              </>
+            ),
+          },
+          {
+            value: 'saved',
+            id: 'saved-tab',
+            controls: 'saved-panel',
+            label: (
+              <>
+                <StoreIcon name="heart" size={16} />
+                علاقه‌مندی‌ها <span className="tabular-nums">{toP(savedCount)}</span>
+              </>
+            ),
+          },
+        ]}
+      />
       {savedTab ? (
         <div id="saved-panel" role="tabpanel" aria-labelledby="saved-tab">
           <WishlistPanel />

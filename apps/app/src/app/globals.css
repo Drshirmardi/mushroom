@@ -493,7 +493,7 @@
 }
 .store-catalog {
   --store-content-gutter: clamp(12px, 3vw, 16px);
-  padding: 16px 0 24px;
+  padding: 8px 0 24px;
   color: var(--patient-ink);
   letter-spacing: 0;
 }
@@ -4134,6 +4134,28 @@
       color-mix(in srgb, var(--dp-brand) 60%, var(--dp-success))
     );
 }
+.home-banner-slide[data-banner='service-personality'] {
+  color: #423260;
+  background:
+    radial-gradient(ellipse at 12% 85%, rgb(190 166 232 / 34%), transparent 50%),
+    linear-gradient(132deg, #eee7ff, #fcfaff 76%);
+}
+.home-banner-slide[data-banner='service-temperament'] {
+  color: #174f72;
+  background:
+    radial-gradient(ellipse at 12% 84%, rgb(75 175 192 / 28%), transparent 52%),
+    linear-gradient(132deg, #d9f1f4, #f9fdfd 76%);
+}
+.home-banner-slide[data-banner='service-specialist'] {
+  color: #754424;
+  background:
+    radial-gradient(ellipse at 12% 84%, rgb(255 183 100 / 34%), transparent 52%),
+    linear-gradient(132deg, #fff0dc, #fffaf3 76%);
+}
+.home-banner-slide[data-banner^='service-'] .home-banner-art {
+  transform: none;
+  filter: drop-shadow(0 8px 14px rgb(31 54 82 / 18%));
+}
 .home-banner-slide[data-banner='couples-assessment'] {
   color: var(--dp-text-high);
   background:
@@ -4257,6 +4279,10 @@
 
 .home-page .home-banner-slide:focus-visible {
   outline: 2px solid white;
+  outline-offset: -4px;
+}
+.store-service-banners .home-banner-slide:focus-visible {
+  outline: 2px solid var(--dp-brand);
   outline-offset: -4px;
 }
 .home-page .home-banners button:focus-visible {

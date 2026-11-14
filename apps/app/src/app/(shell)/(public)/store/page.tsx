@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { ProductCard } from '@/components/store/product-card';
 import { AddressSheet } from '@/components/store/address-sheet';
 import { StoreHeroSlider } from '@/components/store/store-hero-slider';
+import { StoreServices, StoreTabs } from '@/components/store/store-services';
 import { StoreShortcuts } from '@/components/store/store-shortcuts';
 import { StoreIcon } from '@/components/store/store-icon';
 import styles from '@/components/store/store-home.module.css';
@@ -54,6 +55,7 @@ const PRODUCT_GRID_CLASSES = [
 ].join(' ');
 
 const CATALOG_PAGE_SIZE = 20;
+const STORE_SERVICES_ENABLED = true;
 const cacheCart = (cart: CommerceCart) =>
   useCartStore.getState().replace(
     cart.items.map((item) => ({
@@ -82,8 +84,40 @@ const bannerSlides = (banners: StoreBanner[]) => banners
 export default function StorePage() {
   return (
     <Suspense fallback={<StorePageLoading />}>
-      <StoreCatalog />
+      <Storefront />
     </Suspense>
+  );
+}
+
+function Storefront() {
+  const params = useSearchParams();
+  const servicesActive = STORE_SERVICES_ENABLED && params.get('tab') === 'services';
+  const count = useCartStore((state) => cartCount(state.items));
+
+  return (
+    <main className={`store-catalog ${styles.catalog}`} aria-labelledby="store-heading" dir="rtl">
+      {!servicesActive && <a href="#store-products" className="store-skip-link">رفتن به محصولات</a>}
+      <header className="store-heading">
+        <div>
+          <p className="store-brand">دکتر شیرمردی</p>
+          <h1 id="store-heading">فروشگاه</h1>
+        </div>
+        {!servicesActive && (
+          <div className="store-actions">
+            <Link
+              href="/store/cart"
+              className="patient-button patient-button--ghost store-icon-button"
+              aria-label={`سبد خرید، ${toP(count)} کالا`}
+            >
+              <StoreIcon name="shoppingBag" size={24} />
+              {count > 0 && <span className="store-badge store-badge--danger">{toP(count)}</span>}
+            </Link>
+          </div>
+        )}
+      </header>
+      {STORE_SERVICES_ENABLED && <StoreTabs query={params.toString()} servicesActive={servicesActive} />}
+      {servicesActive ? <StoreServices /> : <StoreCatalog />}
+    </main>
   );
 }
 
@@ -110,7 +144,9 @@ function StoreCatalog() {
     );
   };
   const clearSearch = () => updateCatalog({ q: null, page: null }, true);
-  const browseKey = `${session?.authentication.user.id ?? 'guest'}:${params.toString()}`;
+  const productParams = new URLSearchParams(params.toString());
+  productParams.delete('tab');
+  const browseKey = `${session?.authentication.user.id ?? 'guest'}:${productParams.toString()}`;
   const [personalSettled, setPersonalSettled] = useState(false);
   const settlePersonal = useCallback(() => setPersonalSettled(true), []);
   const catalogKey = commerceProductsCacheKey({
@@ -136,7 +172,6 @@ function StoreCatalog() {
   const [bannerRetry, setBannerRetry] = useState(0);
   const cart = useCartStore((state) => state.items);
   const wishlist = useWishlistStore((state) => state.ids);
-  const count = cartCount(cart);
 
   const loadCatalog = useCallback(async () => {
     const version = ++requestVersion.current;
@@ -316,26 +351,7 @@ function StoreCatalog() {
   };
 
   return (
-    <main className={`store-catalog ${styles.catalog}`} aria-labelledby="store-heading" dir="rtl">
-      <a href="#store-products" className="store-skip-link">
-        رفتن به محصولات
-      </a>
-      <header className="store-heading">
-        <div>
-          <p className="store-brand">دکتر شیرمردی</p>
-          <h1 id="store-heading">فروشگاه</h1>
-        </div>
-        <div className="store-actions">
-          <Link
-            href="/store/cart"
-            className="patient-button patient-button--ghost store-icon-button"
-            aria-label={`سبد خرید، ${toP(count)} کالا`}
-          >
-            <StoreIcon name="shoppingBag" size={24} />
-            {count > 0 && <span className="store-badge store-badge--danger">{toP(count)}</span>}
-          </Link>
-        </div>
-      </header>
+    <>
       <div className="store-search-panel">
         <label className="sr-only" htmlFor="store-search">
           جستجو در فروشگاه
@@ -543,6 +559,6 @@ function StoreCatalog() {
           />
         )}
       </AnimatePresence>
-    </main>
+    </>
   );
 }
