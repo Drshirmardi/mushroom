@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BottomSheet } from '@/components/shared/bottom-sheet';
@@ -94,6 +94,14 @@ function BookingDateRange({
   const reviewButton = useRef<HTMLButtonElement>(null);
   const calendarButton = useRef<HTMLButtonElement>(null);
   const dayStrip = useRef<HTMLDivElement>(null);
+  const slotStrip = useRef<HTMLDivElement>(null);
+  const scrollHintPlayed = useRef(false);
+  const scrollHintInteracted = useRef(false);
+  const stopScrollHint = () => {
+    scrollHintInteracted.current = true;
+    if (dayStrip.current) dayStrip.current.style.scrollSnapType = '';
+    if (slotStrip.current) slotStrip.current.style.scrollSnapType = '';
+  };
   const operationKey = useOperationKey('patient-appointment');
   const resource = usePatientResource(
     useCallback(
@@ -114,6 +122,106 @@ function BookingDateRange({
     if (card.left < viewport.left) strip.scrollBy({ left: card.left - viewport.left });
     else if (card.right > viewport.right) strip.scrollBy({ left: card.right - viewport.right });
   }, [selectedDay]);
+  useLayoutEffect(() => {
+    const daysStrip = dayStrip.current;
+    const timesStrip = slotStrip.current;
+    if (
+      scrollHintPlayed.current ||
+      !resource.data ||
+      !daysStrip ||
+      !timesStrip ||
+      !available.some((item) => item.localDate === selectedDay)
+    ) return;
+
+    const daysMaxScroll = daysStrip.scrollWidth - daysStrip.clientWidth;
+    const timesMaxScroll = timesStrip.scrollWidth - timesStrip.clientWidth;
+    if (daysMaxScroll <= 0 || timesMaxScroll <= 0) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      scrollHintPlayed.current = true;
+      return;
+    }
+
+    const daysStart = daysStrip.scrollLeft;
+    const timesStart = timesStrip.scrollLeft;
+    const timesRtl = getComputedStyle(timesStrip).direction === 'rtl';
+    const timesFarEdge = timesRtl ? -timesMaxScroll : timesMaxScroll;
+    const daysSnapType = daysStrip.style.scrollSnapType;
+    const timesSnapType = timesStrip.style.scrollSnapType;
+    let restoreTimer = 0;
+    let dayFrame = 0;
+    let timesFrame = 0;
+    let hintStarted = false;
+    const animateScroll = (
+      strip: HTMLDivElement,
+      from: number,
+      to: number,
+      duration: number,
+      onFinish?: () => void,
+    ) => {
+      const startedAt = performance.now();
+      const frame = (now: number) => {
+        if (scrollHintInteracted.current) return;
+        const progress = Math.min(1, (now - startedAt) / duration);
+        const eased = progress < 0.5
+          ? 4 * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+        strip.scrollLeft = from + (to - from) * eased;
+        if (progress < 1) {
+          const nextFrame = window.requestAnimationFrame(frame);
+          if (strip === daysStrip) dayFrame = nextFrame;
+          else timesFrame = nextFrame;
+        } else {
+          onFinish?.();
+        }
+      };
+      return window.requestAnimationFrame(frame);
+    };
+    const startTimer = window.setTimeout(() => {
+      if (scrollHintInteracted.current) {
+        scrollHintPlayed.current = true;
+        return;
+      }
+      hintStarted = true;
+      scrollHintPlayed.current = true;
+
+      const rtl = getComputedStyle(daysStrip).direction === 'rtl';
+      const dayDistance = Math.min(daysMaxScroll, Math.max(120, Math.round(daysStrip.clientWidth * 0.72)));
+      dayFrame = animateScroll(
+        daysStrip,
+        daysStart,
+        daysStart + (rtl ? -dayDistance : dayDistance),
+        1800,
+      );
+
+      timesFrame = animateScroll(timesStrip, timesFarEdge, timesStart, 2300);
+
+      restoreTimer = window.setTimeout(() => {
+        if (scrollHintInteracted.current) return;
+        dayFrame = animateScroll(daysStrip, daysStrip.scrollLeft, daysStart, 1600, () => {
+          daysStrip.style.scrollSnapType = daysSnapType;
+          timesStrip.style.scrollSnapType = timesSnapType;
+        });
+      }, 2500);
+    }, 500);
+
+    // Temporarily turn off snap points so the scripted hint can travel smoothly
+    // across multiple cards instead of snapping to the nearest one each frame.
+    daysStrip.style.scrollSnapType = 'none';
+    timesStrip.style.scrollSnapType = 'none';
+    // Start the time strip at its far edge before paint so its hint is a real,
+    // continuous scroll in the opposite direction instead of a visible jump.
+    timesStrip.scrollLeft = timesFarEdge;
+
+    return () => {
+      window.clearTimeout(startTimer);
+      window.clearTimeout(restoreTimer);
+      window.cancelAnimationFrame(dayFrame);
+      window.cancelAnimationFrame(timesFrame);
+      if (!hintStarted) timesStrip.scrollLeft = timesStart;
+      daysStrip.style.scrollSnapType = daysSnapType;
+      timesStrip.style.scrollSnapType = timesSnapType;
+    };
+  }, [available, resource.data, selectedDay]);
   const dateLabel = selectedSlot
     ? new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
         dateStyle: 'full',
@@ -208,7 +316,10 @@ function BookingDateRange({
         role="group"
         aria-label="روزهای نوبت، ۱۴ روز آینده"
         tabIndex={0}
+        onPointerDown={stopScrollHint}
+        onKeyDown={stopScrollHint}
         onWheel={(event) => {
+          stopScrollHint();
           const strip = event.currentTarget;
           if (strip.scrollWidth <= strip.clientWidth) return;
           const direction = getComputedStyle(strip).direction === 'rtl' ? -1 : 1;
@@ -249,11 +360,15 @@ function BookingDateRange({
                 <>
                   <h3 className="mt-1 text-sm font-semibold">انتخاب ساعت</h3>
                   <div
-                    className="scrollbar-hide grid min-w-0 snap-x auto-cols-[calc((100%_-_1.5rem)/4)] grid-flow-col gap-x-1.5 overflow-x-auto px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:gap-x-2"
+                    ref={slotStrip}
+                    className="scrollbar-hide grid min-w-0 snap-x auto-cols-[calc((100%_-_0.75rem)/2.5)] grid-flow-col gap-x-1.5 overflow-x-auto px-1 py-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:gap-x-2"
                     role="group"
                     aria-label="ساعت‌های آزاد"
                     tabIndex={0}
+                    onPointerDown={stopScrollHint}
+                    onKeyDown={stopScrollHint}
                     onWheel={(event) => {
+                      stopScrollHint();
                       const strip = event.currentTarget;
                       if (strip.scrollWidth <= strip.clientWidth) return;
                       const direction = getComputedStyle(strip).direction === 'rtl' ? -1 : 1;
