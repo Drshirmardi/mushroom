@@ -7,7 +7,12 @@
 }
 .profile {
   position: relative;
-  background: transparent;
+  background: linear-gradient(
+    180deg,
+    rgb(18 72 166 / .3) 0%,
+    rgb(36 104 210 / .16) 30%,
+    transparent 68%
+  );
 }
 .frame {
   container-type: inline-size;
