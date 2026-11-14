@@ -3511,6 +3511,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/doctors/{doctorId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDoctorImagePreview"];
+        put: operations["adminDoctorImageUpload"];
+        post?: never;
+        delete: operations["adminDoctorImageRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/directory/doctors/{doctorId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientDoctorImageGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/availability-rules": {
         parameters: {
             query?: never;
@@ -7613,6 +7645,11 @@ export interface components {
         BillingIntentDto: {
             /**
              * Format: uuid
+             * @description Present for the APPOINTMENT target only
+             */
+            doctorId?: string;
+            /**
+             * Format: uuid
              * @description Present for the PROGRAM target only
              */
             programPurchaseId?: string | null;
@@ -8090,6 +8127,11 @@ export interface components {
             version: number;
         };
         AdminBillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the APPOINTMENT target only
+             */
+            doctorId?: string;
             /**
              * Format: uuid
              * @description Present for the PROGRAM target only
@@ -9476,7 +9518,7 @@ export interface components {
             displayName: string;
             biography?: Record<string, never> | null;
             yearsExperience?: Record<string, never> | null;
-            profileImageUrl?: Record<string, never> | null;
+            profileImageUrl?: string | null;
             languages: string[];
             education: string[];
             certifications: string[];
@@ -9665,7 +9707,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
         };
         PatientOfferingDto: {
             /** Format: uuid */
@@ -9683,8 +9725,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             displayName: string;
-            profileImageUrl?: Record<string, never> | null;
-            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: string | null;
+            yearsExperience?: number | null;
             specialties: components["schemas"]["PatientSpecialtyDto"][];
             offerings: components["schemas"]["PatientOfferingDto"][];
         };
@@ -9704,11 +9746,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             displayName: string;
-            profileImageUrl?: Record<string, never> | null;
-            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: string | null;
+            yearsExperience?: number | null;
             specialties: components["schemas"]["PatientSpecialtyDto"][];
             offerings: components["schemas"]["PatientOfferingDto"][];
-            biography?: Record<string, never> | null;
+            biography?: string | null;
             languages: string[];
             education: string[];
             certifications: string[];
@@ -23142,8 +23184,8 @@ export interface operations {
     patientDirectoryDoctorsList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 query?: string;
                 serviceId?: string;
                 specialtyId?: string;
@@ -23200,8 +23242,8 @@ export interface operations {
         parameters: {
             query?: {
                 doctorId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 query?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
@@ -23222,6 +23264,113 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientServicePageResponseDto"];
+                };
+            };
+        };
+    };
+    adminDoctorImagePreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+        };
+    };
+    adminDoctorImageUpload: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDoctorImageRemove: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientDoctorImageGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
                 };
             };
         };

@@ -1,24 +1,62 @@
 "use client";
-import { LoadingState } from "@/components/shared/skeletons";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Award, Building2, Check, ChevronLeft, Clock, Globe, GraduationCap } from "lucide-react";
+import { Suspense, useCallback, useState } from "react";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
+import { ArrowRight, ShieldAlert } from "lucide-react";
 import { useAuthSession } from "@/components/auth/session-gate";
-import { directoryErrorMessage, getPatientDoctor, type PatientDoctorDetail } from "@/lib/directory-api";
-import { formatPrice, toP } from "@/lib/format";
-import { useScreenNavigation } from "@/lib/navigation";
+import { DoctorBooking } from "@/components/booking/doctor-booking";
+import { DoctorPortrait } from "@/components/booking/doctor-portrait";
+import styles from "@/components/booking/booking.module.css";
+import { PatientResourceState } from "@/components/shared/patient-resource-state";
+import { ServiceEmpty } from "@/components/shared/service-page";
+import { LoadingState } from "@/components/shared/skeletons";
+import { getBookingEligibility } from "@/lib/assessment-api";
+import { bookingBlocker } from "@/lib/booking-eligibility";
+import { getPatientDoctor } from "@/lib/directory-api";
+import { toP } from "@/lib/format";
+import { usePatientResource } from "@/lib/use-patient-resource";
 
-const displayExperience = (value: PatientDoctorDetail["yearsExperience"]) => typeof value === "number" ? `${toP(value)} سال تجربه` : "ثبت نشده";
-const displayText = (value: unknown) => typeof value === "string" && value.trim() ? value : "ثبت نشده";
-const visitMode = (value: "IN_PERSON" | "ONLINE") => value === "IN_PERSON" ? "حضوری" : "آنلاین";
+function DoctorProfile() {
+  const { id } = useParams<{ id: string }>();
+  const params = useSearchParams();
+  const { authentication: { accessToken: token, user } } = useAuthSession();
+  const doctor = usePatientResource(useCallback(() => getPatientDoctor(token, id), [token, id]));
+  const eligibility = usePatientResource(useCallback(() => getBookingEligibility(token), [token]));
+  const blocker = eligibility.data ? bookingBlocker(eligibility.data) : null;
+  const [expandedId, setExpandedId] = useState("");
+  const from = new URLSearchParams();
+  const q = params.get("q");
+  const mode = params.get("mode");
+  if (q) from.set("q", q);
+  if (mode) from.set("mode", mode);
+  const profile = doctor.data;
 
-export default function DoctorProfilePage() {
-  const router = useRouter(); const params = useParams<{ id: string }>(); const navigateScreen = useScreenNavigation(); const { authentication } = useAuthSession(); const doctorId = params?.id;
-  const [doctor, setDoctor] = useState<PatientDoctorDetail | null>(null); const [error, setError] = useState<string | null>(null);
-  useEffect(() => { let cancelled = false; if (!doctorId) { setError("شناسهٔ پزشک معتبر نیست."); return () => { cancelled = true; }; } setDoctor(null); setError(null); void getPatientDoctor(authentication.accessToken, doctorId).then((value) => { if (!cancelled) setDoctor(value); }, (reason: unknown) => { if (!cancelled) setError(directoryErrorMessage(reason)); }); return () => { cancelled = true; }; }, [authentication.accessToken, doctorId]);
-  return <div><div className="relative"><div className="h-32 bg-gradient-to-b from-primary/30 to-accent" /><div className="px-4"><div className="flex items-end gap-4 -mt-12 mb-3"><div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-primary/10 text-3xl font-bold text-primary shadow-lg">{doctor?.displayName.slice(0, 1) ?? "—"}</div><div className="flex-1 pb-2"><div className="flex items-start justify-between"><div><h2 className="text-lg font-bold text-foreground">{doctor?.displayName ?? "پزشک"}</h2><p className="text-sm text-muted-foreground">{doctor?.specialties.map((specialty) => specialty.name).join("، ") || "تخصص ثبت نشده"}</p></div><button onClick={() => router.back()} className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-muted"><ChevronLeft size={20} style={{ transform: "rotate(180deg)" }} /></button></div></div></div>{!doctor && !error && <LoadingState label="در حال دریافت اطلاعات پزشک…" variant="detail" />}{error && <p role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">{error}</p>}{doctor && <div className="space-y-4 pb-4"><div className="grid grid-cols-2 gap-2"><div className="rounded-2xl border border-border bg-white p-3 text-center shadow-sm"><p className="text-sm font-black text-primary">{displayExperience(doctor.yearsExperience)}</p><p className="text-[10px] text-muted-foreground">سابقهٔ ثبت‌شده</p></div><div className="rounded-2xl border border-border bg-white p-3 text-center shadow-sm"><p className="text-sm font-black text-primary">{toP(doctor.offerings.length)}</p><p className="text-[10px] text-muted-foreground">خدمت فعال</p></div></div><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-2 text-sm font-bold text-foreground">بیوگرافی</p><p className="text-sm leading-7 text-foreground/70">{displayText(doctor.biography)}</p></div><InfoList title="تحصیلات" icon={GraduationCap} values={doctor.education} /><InfoList title="گواهینامه‌ها" icon={Award} values={doctor.certifications} check /><div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-3 text-sm font-bold text-foreground">خدمات قابل رزرو</p>{doctor.offerings.length ? <div className="space-y-3">{doctor.offerings.map((offering) => <div key={offering.id} className="rounded-xl bg-muted/50 p-3"><p className="font-semibold text-foreground">{offering.service.name}</p><p className="mt-1 text-xs text-muted-foreground">{visitMode(offering.visitMode)} · {toP(offering.durationMinutes)} دقیقه · {formatPrice(offering.priceAmount)} {offering.currency}</p></div>)}</div> : <p className="text-sm text-muted-foreground">خدمت قابل رزروی برای این پزشک منتشر نشده است.</p>}</div><div className="space-y-3 rounded-2xl border border-border bg-white p-4 shadow-sm"><Detail icon={Building2} label="کلینیک" value={doctor.clinic.name} /><Detail icon={Clock} label="منطقهٔ زمانی کلینیک" value={doctor.clinic.timeZone} /><Detail icon={Globe} label="زبان‌ها" value={doctor.languages.join("، ") || "ثبت نشده"} /></div></div>}</div></div>{doctor && <div className="px-4 pb-4"><button onClick={() => navigateScreen("BookStep1", { preselectedDoctor: doctor.id })} className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white shadow-md shadow-primary/20">انتخاب پزشک و خدمت</button></div>}</div>;
+  return <main className={styles.profile} dir="rtl">
+    <header className={styles.header}><Link href={`/appointments/book${from.size ? `?${from}` : ""}`} aria-label="بازگشت به فهرست پزشکان"><ArrowRight size={22} aria-hidden="true" /></Link><h1>پروفایل پزشک</h1></header>
+    <PatientResourceState {...doctor} variant="detail" retry={() => void doctor.reload()} />
+    {profile?.id === id && <>
+      <section className={styles.hero} aria-label="معرفی پزشک">
+        <div className={styles.heroText}>
+          {profile.yearsExperience != null && <p>{toP(profile.yearsExperience)} سال سابقه</p>}
+          <h2>{profile.displayName}</h2>
+          <p>{profile.specialties.map(item => item.name).join("، ")}</p>
+        </div>
+        <div className={styles.heroImage}><DoctorPortrait name={profile.displayName} url={profile.profileImageUrl} token={token} eager /></div>
+      </section>
+      {(profile.biography || profile.education.length > 0 || profile.certifications.length > 0 || profile.languages.length > 0) && <section className={styles.section}>
+        <h2>دربارهٔ پزشک</h2>
+        {profile.biography && <p className={styles.bio} id="doctor-biography">{expandedId !== id && profile.biography.length > 180 ? `${profile.biography.slice(0, 180).trimEnd()}…` : profile.biography}</p>}
+        {profile.biography && profile.biography.length > 180 && <button type="button" className="service-text-action justify-self-start" aria-expanded={expandedId === id} aria-controls="doctor-biography" onClick={() => setExpandedId(expandedId === id ? "" : id)}>{expandedId === id ? "نمایش کمتر" : "بیشتر بخوانید"}</button>}
+        {[["تحصیلات", profile.education], ["گواهی‌ها", profile.certifications], ["زبان‌ها", profile.languages]].map(([label, values]) => Array.isArray(values) && values.length > 0 && <p key={String(label)} className="text-sm"><strong>{label}</strong> · {values.join("، ")}</p>)}
+      </section>}
+      <PatientResourceState {...eligibility} retry={() => void eligibility.reload()} />
+      {blocker && <ServiceEmpty icon={ShieldAlert} title="شرایط رزرو" description={blocker.message} href={blocker.href} action={blocker.action} />}
+      {eligibility.data && !blocker && <DoctorBooking key={`${user.id}:${id}`} doctor={profile} token={token} userId={user.id} />}
+    </>}
+  </main>;
 }
 
-function InfoList({ title, icon: Icon, values, check = false }: { title: string; icon: typeof Award; values: string[]; check?: boolean }) { return <div className="rounded-2xl border border-border bg-white p-4 shadow-sm"><p className="mb-3 flex items-center gap-2 text-sm font-bold text-foreground"><Icon size={16} className="text-primary" />{title}</p>{values.length ? values.map((value) => <div key={value} className="flex items-start gap-2 border-b border-border py-2 last:border-0">{check ? <Check size={14} className="mt-0.5 flex-shrink-0 text-green-600" /> : <div className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />}<p className="text-sm text-foreground">{value}</p></div>) : <p className="text-sm text-muted-foreground">ثبت نشده</p>}</div>; }
-function Detail({ icon: Icon, label, value }: { icon: typeof Award; label: string; value: string }) { return <div className="flex items-start gap-3"><Icon size={15} className="mt-0.5 flex-shrink-0 text-primary" /><div><p className="text-xs text-muted-foreground">{label}</p><p className="text-sm font-semibold text-foreground">{value}</p></div></div>; }
+export default function DoctorProfilePage() {
+  return <Suspense fallback={<LoadingState variant="detail" />}><DoctorProfile /></Suspense>;
+}

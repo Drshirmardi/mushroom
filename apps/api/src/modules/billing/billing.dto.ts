@@ -93,6 +93,7 @@ export class BillingPaymentMethodDto {
   @ApiProperty({ type: String, nullable: true }) balanceRial!: string | null;
 }
 export class BillingIntentDto {
+  @ApiPropertyOptional({ type: String, format: 'uuid', description: 'Present for the APPOINTMENT target only' }) doctorId?: string;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the PROGRAM target only' }) programPurchaseId?: string | null;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the ASSESSMENT target only' }) assessmentPurchaseId?: string | null;
   @ApiPropertyOptional({ type: String, nullable: true, format: 'uuid', description: 'Present for the MARRIAGE_REQUEST target only' }) marriagePublicationId?: string | null;

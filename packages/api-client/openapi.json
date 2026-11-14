@@ -20547,11 +20547,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -20562,11 +20558,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -20730,11 +20722,7 @@
               "minimum": 1,
               "maximum": 10000,
               "default": 1,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -20745,11 +20733,7 @@
               "minimum": 1,
               "maximum": 50,
               "default": 20,
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ]
+              "type": "number"
             }
           },
           {
@@ -20792,6 +20776,233 @@
           }
         ],
         "summary": "List visible clinic services",
+        "tags": [
+          "Patient Directory"
+        ]
+      }
+    },
+    "/v1/admin/doctors/{doctorId}/image": {
+      "put": {
+        "operationId": "adminDoctorImageUpload",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "doctorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Directory"
+        ]
+      },
+      "delete": {
+        "operationId": "adminDoctorImageRemove",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "doctorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Directory"
+        ]
+      },
+      "get": {
+        "operationId": "adminDoctorImagePreview",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "doctorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Admin Directory"
+        ]
+      }
+    },
+    "/v1/directory/doctors/{doctorId}/image": {
+      "get": {
+        "operationId": "patientDoctorImageGet",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "doctorId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
         "tags": [
           "Patient Directory"
         ]
@@ -45024,6 +45235,11 @@
       "BillingIntentDto": {
         "type": "object",
         "properties": {
+          "doctorId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present for the APPOINTMENT target only"
+          },
           "programPurchaseId": {
             "type": "string",
             "nullable": true,
@@ -46695,6 +46911,11 @@
       "AdminBillingIntentDto": {
         "type": "object",
         "properties": {
+          "doctorId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Present for the APPOINTMENT target only"
+          },
           "programPurchaseId": {
             "type": "string",
             "nullable": true,
@@ -51846,7 +52067,7 @@
             "nullable": true
           },
           "profileImageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "languages": {
@@ -52543,7 +52764,7 @@
             "type": "string"
           },
           "description": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           }
         },
@@ -52606,11 +52827,11 @@
             "type": "string"
           },
           "profileImageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "yearsExperience": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "specialties": {
@@ -52690,11 +52911,11 @@
             "type": "string"
           },
           "profileImageUrl": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "yearsExperience": {
-            "type": "object",
+            "type": "number",
             "nullable": true
           },
           "specialties": {
@@ -52710,7 +52931,7 @@
             }
           },
           "biography": {
-            "type": "object",
+            "type": "string",
             "nullable": true
           },
           "languages": {

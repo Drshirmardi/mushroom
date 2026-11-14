@@ -18,6 +18,7 @@ function AppointmentPayment() {
   const [intent, setIntent] = useState<BillingIntent | null>(null);
   const [state, setState] = useState<State>("loading");
   const [error, setError] = useState<string | null>(null);
+  const bookingHref = intent?.doctorId ? `/doctors/${encodeURIComponent(intent.doctorId)}` : "/appointments/book";
 
   const load = useCallback(async () => {
     if (!intentId) {
@@ -68,7 +69,7 @@ function AppointmentPayment() {
             </div>
             <button
               type="button"
-              onClick={() => router.push("/appointments/book")}
+              onClick={() => router.replace(bookingHref)}
               className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white"
             >
               انتخاب زمان جدید
@@ -84,7 +85,7 @@ function AppointmentPayment() {
               if (paid.appointmentId) router.replace(`/appointments/book/success?appointmentId=${encodeURIComponent(paid.appointmentId)}`);
               else void load();
             }}
-            onCancelled={() => router.push("/appointments/book")}
+            onCancelled={() => router.replace(bookingHref)}
           />
         )}
       </div>

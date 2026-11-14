@@ -403,6 +403,19 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const result = await db.billingIntent.findUniqueOrThrow({ where: { id: intent.id } }); expect(result.status).toBe('COMPENSATED'); expect(result.appointmentId).toBeNull(); expect((await wallet.summary(p.profile)).balanceRial).toBe(intent.amountRial.toString());
   });
 
+  it('allows only one concurrent appointment hold for the same slot', async () => {
+    const first = await patient(true);
+    const second = await patient(true);
+    const input = await appointmentInput(first);
+    const results = await Promise.allSettled([first, second].map(item =>
+      billing.create(item.userId, 'APPOINTMENT', input, randomUUID(), context(item.userId)),
+    ));
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(await db.appointmentHold.count({
+      where: { doctorServiceId: input.doctorServiceId, startsAt: new Date(input.startsAt), releasedAt: null, expiresAt: { gt: new Date() } },
+    })).toBe(1);
+  });
+
   it('a fully verified bank payment creates one final appointment and cancellation requests an evidenced bank refund', async () => {
     const p = await patient(true); const input = await appointmentInput(p);
     const intent = await billing.create(p.userId, 'APPOINTMENT', input, randomUUID(), context(p.userId));

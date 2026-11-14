@@ -2525,6 +2525,7 @@ model DoctorProfile {
   id                String                        @id @default(uuid()) @db.Uuid
   clinicId          String                        @map("clinic_id") @db.Uuid
   userId            String?                       @unique(map: "doctor_profiles_user_id_key") @map("user_id") @db.Uuid
+  profileImageObjectKey String? @map("profile_image_object_key")
   displayName       String                        @map("display_name") @db.VarChar(160)
   biography         String?                       @db.Text
   yearsExperience   Int?                          @map("years_experience")

@@ -27,8 +27,8 @@ async function expectData<T>(request: Promise<{ data?: T; error?: unknown; respo
   }
 }
 
-export const listPatientDoctors = (accessToken: string) => patientCachedData(patientCacheKey(accessToken, "doctors"), PATIENT_CATALOG_TTL_MS, () => expectData<components["schemas"]["PatientDoctorPageResponseDto"]>(
-  apiClient.GET("/v1/directory/doctors", { headers: authorization(accessToken) }),
+export const listPatientDoctors = (accessToken: string, filters?: { query?: string; visitMode?: "ONLINE" | "IN_PERSON"; page?: number }) => patientCachedData(patientCacheKey(accessToken, filters ? `doctors:${JSON.stringify(filters)}` : "doctors"), PATIENT_CATALOG_TTL_MS, () => expectData<components["schemas"]["PatientDoctorPageResponseDto"]>(
+  apiClient.GET("/v1/directory/doctors", { headers: authorization(accessToken), ...(filters ? { params: { query: filters } } : {}) }),
 ));
 
 export const getPatientDoctor = (accessToken: string, doctorId: string) => expectData<PatientDoctorDetail>(

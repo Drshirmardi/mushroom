@@ -63,6 +63,9 @@ function PaymentResult() {
         marriageHref(`/store/order-success?orderId=${encodeURIComponent(intent.orderId)}`),
       );
     }
+    if (view === 'paid' && intent?.purpose === 'APPOINTMENT' && intent.appointmentId) {
+      router.replace(`/appointments/book/success?appointmentId=${encodeURIComponent(intent.appointmentId)}`);
+    }
   }, [intent, router, view]);
   const retry = intent ? retryHref(intent) : null;
 
@@ -84,7 +87,9 @@ function PaymentResult() {
                 label: 'پیگیری سفارش',
               }
             : intent.purpose === 'APPOINTMENT'
-              ? { href: '/appointments', label: 'مشاهدهٔ نوبت‌ها' }
+              ? view === 'closed' || view === 'compensated'
+                ? { href: intent.doctorId ? `/doctors/${encodeURIComponent(intent.doctorId)}` : '/appointments/book', label: 'انتخاب زمان جدید' }
+                : { href: '/appointments', label: 'مشاهدهٔ نوبت‌ها' }
               : intent.purpose === 'ENTRY_ASSESSMENT'
                 ? { href: '/welcome', label: 'ادامهٔ تست ورود اولیه' }
                 : intent.purpose === 'ASSESSMENT'
