@@ -5,7 +5,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { BookOpen, BookOpenText, HeartHandshake, LibraryBig } from 'lucide-react';
 
 import { useAuthSession } from '@/components/auth/session-gate';
-import { ServicePage, ServiceTabs } from '@/components/shared/service-page';
+import { SegmentedTabs } from '@/components/shared/segmented-tabs';
+import { ServicePage } from '@/components/shared/service-page';
 
 import { ProgramCatalog } from '@/components/programs/program-catalog';
 import { MyPrograms } from '@/components/programs/my-programs';
@@ -90,16 +91,29 @@ function ProgramsContent() {
         </section>
 
         {/* Navigation */}
-        <div className="min-w-0">
-          <ServiceTabs<View> value={view} onChange={changeView} options={OPTIONS} />
-        </div>
+        <SegmentedTabs<View>
+          ariaLabel="انتخاب بخش برنامه‌ها"
+          value={view}
+          onChange={changeView}
+          className="my-6"
+          options={OPTIONS.map((option) => ({
+            ...option,
+            id: `program-${option.value}-tab`,
+            controls: 'programs-panel',
+          }))}
+        />
 
         {/* Only the active tab mounts and fetches data */}
-        {view === 'education' && <ProgramCatalog token={token} kind="education" />}
-
-        {view === 'custom' && <ProgramCatalog token={token} kind="custom" />}
-
-        {view === 'mine' && <MyPrograms token={token} />}
+        <div
+          id="programs-panel"
+          role="tabpanel"
+          aria-labelledby={`program-${view}-tab`}
+          tabIndex={0}
+        >
+          {view === 'education' && <ProgramCatalog token={token} kind="education" />}
+          {view === 'custom' && <ProgramCatalog token={token} kind="custom" />}
+          {view === 'mine' && <MyPrograms token={token} />}
+        </div>
       </div>
     </ServicePage>
   );

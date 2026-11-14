@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Check, CheckCircle2, ChevronDown, Copy, HeartHandshake, Share2 } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
-import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { ServicePage } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -46,7 +46,6 @@ export function MarriageRequestView({ id }: { id: string }) {
   }, [scope]);
   const resource = usePatientResource(useCallback(() => loader.load(token), [loader, token]));
   const refresh = resource.refresh;
-  const [accepted, setAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -59,6 +58,9 @@ export function MarriageRequestView({ id }: { id: string }) {
   const smsKey = useRef<string | null>(null);
   const copyTimer = useRef<number | null>(null);
   const data = resource.data;
+  const { accepted, onChange: setAccepted } = usePolicyAcceptance(
+    JSON.stringify([scope, data?.ownRole, data?.status]), [data?.service.linkingPolicy],
+  );
 
   useEffect(() => {
     return () => {
@@ -424,12 +426,10 @@ export function MarriageRequestView({ id }: { id: string }) {
                     <span>هزینه این تست توسط دعوت‌کننده پرداخت شده است و شما نیازی به پرداخت ندارید.</span>
                   </div>
                   <PolicyAcceptance
-                    variant="compact"
                     policy={{ title: 'پذیرش نقش و دعوت', body: data.service.linkingPolicy.body }}
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy}
-                    label="نقش خودم و شرایط اتصال برای همین خدمت را می‌پذیرم."
                   />
                   <div className="grid gap-2.5 sm:grid-cols-2">
                     <button

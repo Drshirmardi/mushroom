@@ -25,6 +25,7 @@ import { coupleStartHref } from '@/lib/couples-flow';
 import { groupAssessmentCatalog } from '@/lib/assessment-catalog';
 import { AssessmentResourceState, AssessmentPageSkeleton } from './assessment-loading';
 import { PatientPagination } from '@/components/shared/patient-pagination';
+import { SegmentedTabs } from '@/components/shared/segmented-tabs';
 import { formatRialWithUnit } from '@/lib/wallet-money';
 import { billingStatusLabel } from '@/lib/wallet-labels';
 import { toP } from '@/lib/format';
@@ -192,41 +193,26 @@ function AssessmentHub() {
         </Panel>
       </div>
 
-      <div
-        className="my-5 grid grid-cols-2 gap-1.5 rounded-2xl border border-border/70 bg-muted/60 p-1.5"
-        onKeyDown={(event) => {
-          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-          event.preventDefault();
-          const index = event.key === 'Home' ? 0 : event.key === 'End' ? 1 : mine ? 0 : 1;
-          event.currentTarget.querySelectorAll<HTMLButtonElement>('button')[index]?.focus();
-          go(index ? 'mine' : 'start');
-        }}
-        role="tablist"
-        aria-label="بخش تست‌ها"
-      >
-        <button
-          id="assessment-new-tab"
-          type="button"
-          role="tab"
-          aria-selected={!mine}
-          aria-controls="assessment-panel"
-          onClick={() => go('start')}
-          className="min-h-11 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-all aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          تست جدید
-        </button>
-        <button
-          id="assessment-mine-tab"
-          type="button"
-          role="tab"
-          aria-selected={mine}
-          aria-controls="assessment-panel"
-          onClick={() => go('mine')}
-          className="min-h-11 rounded-xl px-3 py-2 text-sm font-medium text-muted-foreground transition-all aria-selected:bg-white aria-selected:font-bold aria-selected:text-foreground aria-selected:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          تست‌های من
-        </button>
-      </div>
+      <SegmentedTabs
+        ariaLabel="بخش تست‌ها"
+        value={mine ? 'mine' : 'start'}
+        onChange={(next) => go(next)}
+        className="my-5"
+        options={[
+          {
+            value: 'start',
+            id: 'assessment-new-tab',
+            controls: 'assessment-panel',
+            label: 'تست جدید',
+          },
+          {
+            value: 'mine',
+            id: 'assessment-mine-tab',
+            controls: 'assessment-panel',
+            label: 'تست‌های من',
+          },
+        ]}
+      />
 
       <div
         id="assessment-panel"

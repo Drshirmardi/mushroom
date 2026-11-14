@@ -103,13 +103,15 @@ const scenarios = [
  if(req.method()==='OPTIONS')return route.fulfill({status:204,headers:{...headers,'access-control-allow-methods':'GET,POST,OPTIONS','access-control-allow-headers':'authorization,content-type,x-marriage-request-id'}});
  if(p==='/v1/auth/refresh')return send({accessToken:'test',expiresIn:600,user:{id:publication,roles:['PATIENT']}});
  if(p==='/v1/patients/me/entry')return send({required:false});
- if(p.includes('/marriage-requests/settings/'))return send(settings);
+ if(p.includes('/marriage-requests/settings/'))return send({...settings,prepayment:{status:'PAID',intentId:id,amountRial:settings.amountRial}});
  if(p.endsWith('/review'))reviews++;
  return send({id,status:'PENDING',isInitiator:false,ownEligible:true,ownRole:'SECOND',service:settings,invitationPath:`/assessment/marriage/requests/${id}`,continuation:{profileRequired:false,nextPath:`/assessment/marriage/requests/${id}`}});
  });
  await page.setViewportSize({width:375,height:812});await page.goto(`${baseUrl}/assessment/marriage/requests/${id}`);
  const accept=page.getByRole('button',{name:'پذیرش دعوت و ادامه',exact:true});await accept.waitFor();assert(!await accept.isEnabled(),'consent auto accepted');
- const region=page.getByRole('region',{name:'پذیرش نقش و دعوت'});const body=region.getByText(settings.linkingPolicy.body,{exact:true});assert(await body.evaluate(el=>getComputedStyle(el).maxHeight)==='none','nested consent scroller');
+ const region=page.getByRole('region',{name:'پذیرش نقش و دعوت'});await region.getByRole('button',{name:'شرایط و قوانین'}).click();
+ await page.getByRole('dialog').getByText(settings.linkingPolicy.body,{exact:true}).waitFor();
+ await page.getByRole('button',{name:'متوجه شدم'}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
  await region.getByRole('checkbox').check();assert(await accept.isEnabled(),'consent not actionable');
  await page.addScriptTag(axeAsset);
  const violations=await page.evaluate(async()=>{const r=await window.axe.run();return r.violations.filter(v=>['critical','serious'].includes(v.impact)).map(v=>v.id);});assert(!violations.length,JSON.stringify(violations));
@@ -119,11 +121,15 @@ const scenarios = [
  await page.setViewportSize({width:320,height:812});await page.goto(`${baseUrl}/assessment/marriage/new/${publication}`);
  const create=page.getByRole('button',{name:'ساخت دعوت و دریافت لینک',exact:true});await create.waitFor();
  const ownConsent=page.getByRole('region',{name:'شرایط اتصال حساب‌ها'});
- await ownConsent.getByText(settings.linkingPolicy.body,{exact:true}).waitFor();
- assert(await page.locator('details').count()===0,'required initiator consent hidden');
+ await ownConsent.getByRole('button',{name:'شرایط و قوانین'}).click();
+ await page.getByRole('dialog').getByText(settings.linkingPolicy.body,{exact:true}).waitFor();
+ await page.getByRole('button',{name:'متوجه شدم'}).click();await page.getByRole('dialog').waitFor({state:'hidden'});
+ assert(await ownConsent.getByRole('checkbox').isVisible(),'required initiator consent hidden');
  assert(!await create.isEnabled(),'initiator consent auto accepted');
- await page.getByLabel('شماره همراه شخص موردنظر').fill('09120000000');
+ await page.getByLabel('شماره موبایل نفر دوم').fill('09120000000');
  await ownConsent.getByRole('checkbox').check();assert(await create.isEnabled(),'initiator consent not actionable');
+ await page.getByLabel('شماره موبایل نفر دوم').fill('09120000001');
+ assert(await create.isDisabled(),'consent retained after recipient changed');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'initiator consent overflow');
  assert(errors.length===0,JSON.stringify(errors));return {PASS:true,reviews,initiatorConsentVisible:true,axeCriticalSerious:0};
 } },

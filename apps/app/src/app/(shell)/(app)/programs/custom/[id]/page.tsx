@@ -9,7 +9,7 @@ import { ServicePage } from "@/components/shared/service-page";
 import { FileHeart } from "lucide-react";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { PatientPagination } from "@/components/shared/patient-pagination";
-import { PolicyAcceptance } from "@/components/shared/policy-acceptance";
+import { usePolicyAcceptance, PolicyAcceptance } from "@/components/shared/policy-acceptance";
 import { getCustomRequest, getCustomOffering, acceptCustomCare, withdrawCustomCare, acceptProgramConsent, createCustomPurchase, getCustomDelivery } from "@/lib/digital-services-api";
 import { usePatientResource } from "@/lib/use-patient-resource";
 import { finishOperation, useOperationKey } from "@/lib/use-operation-key";
@@ -25,9 +25,16 @@ export default function CustomRequestPage() {
   return <ServicePage title="برنامهٔ اختصاصی من" description="درخواست، رضایت دسترسی متخصص، پرداخت و نسخه‌های منتشرشده را پیگیری کنید." icon={FileHeart} backHref="/programs?view=mine" backLabel="برنامه‌های سلامت"><div className="service-detail space-y-4"><PatientResourceState variant="detail" {...request} retry={() => void request.reload()} />{request.data && <RequestActions key={`${authentication.user.id}:${request.data.id}:${request.data.careAuthorization?.versionNumber}:${request.data.careAuthorization?.withdrawnAt}:${request.data.carePolicy?.contentHash}`} request={request.data} token={token} userId={authentication.user.id} reload={() => { void request.reload(); void delivery.reload(); }} />}<section className="space-y-3"><h2 className="font-bold">وضعیت تحویل برنامه</h2><PatientResourceState variant="detail" {...delivery} retry={() => void delivery.reload()} />{delivery.data && <><p className="rounded-xl bg-muted p-4 text-sm leading-7">{deliveryLabels[delivery.data.deliveryState] ?? "وضعیت برنامه را دوباره بررسی کنید."}</p>{delivery.data.items.map(version => <div key={version.id} className="rounded-xl border border-border bg-white p-4"><p className="text-sm font-bold">نسخه {toP(version.versionNumber)}{version.current ? " · جاری" : ""}</p>{version.bodyAvailable ? <Link href={`/programs/custom/${id}/versions/${version.id}`} className="mt-3 block text-sm text-primary">مشاهدهٔ محتوای مجاز برنامه</Link> : <p className="mt-2 text-xs text-muted-foreground">محتوای این نسخه فعلاً قابل نمایش نیست.</p>}</div>)}<PatientPagination page={page} total={delivery.data.total} onChange={setPage} /></>}</section><Link href="/onboarding" className="block text-sm text-primary">بررسی و تکمیل پروندهٔ اولیه</Link><button onClick={() => { void request.reload(); void delivery.reload(); }} className="text-sm text-primary">دریافت وضعیت تازه</button></div></ServicePage>;
 }
 function RequestActions({ request, token, userId, reload }: { request: components["schemas"]["CustomProgramRequestDto"]; token: string; userId: string; reload: () => void }) {
-  const router = useRouter(); const [care, setCare] = useState(false); const [terms, setTerms] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [epoch] = useState(() => crypto.randomUUID());
+  const router = useRouter(); const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null); const [epoch] = useState(() => crypto.randomUUID());
   const key = useOperationKey(`${userId}:custom:${request.id}`);
   const offering = usePatientResource(useCallback(() => getCustomOffering(token, request.publicationId), [token, request.publicationId]));
+  const { accepted: care, onChange: setCare } = usePolicyAcceptance(
+    JSON.stringify([request.id, request.physician, request.careAuthorization?.versionNumber]),
+    [request.carePolicy],
+  );
+  const { accepted: terms, onChange: setTerms } = usePolicyAcceptance(
+    request.publicationHash, [offering.data?.terms],
+  );
   const authorize = async () => {
     if (!care || !request.carePolicy || busy) return; setBusy(true); setError(null);
     try { const body = { policyVersionId: request.carePolicy.id, contentHash: request.carePolicy.contentHash, accepted: true as const, expectedVersionNumber: request.careAuthorization?.versionNumber ?? 0 }; await acceptCustomCare(token, request.id, body, await key({ action: "care", ...body })); reload(); }

@@ -17,7 +17,11 @@ import type { components } from '@sabz-zendegi/api-client';
 
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { PolicyAcceptance, GuidanceSafety } from '@/components/shared/policy-acceptance';
+import {
+  usePolicyAcceptance,
+  PolicyAcceptance,
+  GuidanceSafety,
+} from '@/components/shared/policy-acceptance';
 import { Button } from '@/components/ui/button';
 
 import {
@@ -101,8 +105,11 @@ function Purchase({
 }) {
   const router = useRouter();
 
-  // Existing valid consent is already accepted.
-  const [accepted, setAccepted] = useState(() => Boolean(program.termsConsent));
+  const { accepted, onChange: setAccepted } = usePolicyAcceptance(
+    program.publicationHash,
+    [program.terms],
+    Boolean(program.termsConsent),
+  );
 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -258,9 +265,7 @@ function Purchase({
               aria-hidden="true"
             />
 
-            <p className="text-xs leading-6 text-muted-foreground">
-              این محصول آموزشی است؛ بازپرداخت عادی برای آن ارائه نمی‌شود.
-            </p>
+            <p className="text-xs leading-6 text-muted-foreground">این محصول آموزشی است.</p>
           </div>
         </section>
 
@@ -282,22 +287,20 @@ function Purchase({
 
         {/* Policy and acceptance */}
         <section className="space-y-3">
-          <div className="space-y-1">
-            <h2 className="text-base font-bold text-foreground">شرایط دریافت و استفاده</h2>
-
-            <p className="text-xs leading-6 text-muted-foreground">
-              پیش از ادامه، شرایط این نسخه از برنامه را بررسی کنید.
-            </p>
+          <div className="flex items-center gap-2">
+            {accepted && !busy && (
+              <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
+                <CheckCircle2 size={16} className="shrink-0 text-primary" aria-hidden="true" />
+              </p>
+            )}
+            <PolicyAcceptance
+              policy={program.terms}
+              recorded={Boolean(program.termsConsent)}
+              accepted={accepted}
+              onChange={setAccepted}
+              disabled={busy}
+            />
           </div>
-
-          <PolicyAcceptance
-            policy={program.terms}
-            accepted={accepted}
-            onChange={setAccepted}
-            disabled={busy}
-            variant="compact"
-            label="شرایط دریافت و استفاده از این برنامه را می‌پذیرم."
-          />
         </section>
 
         {/* Error */}
@@ -308,13 +311,6 @@ function Purchase({
           >
             {error}
           </div>
-        )}
-
-        {accepted && !busy && (
-          <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle2 size={16} className="shrink-0 text-primary" aria-hidden="true" />
-            شرایط دریافت برنامه پذیرفته شده است.
-          </p>
         )}
       </div>
 

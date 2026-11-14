@@ -20,8 +20,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isStore = pathname === '/store' || pathname.startsWith('/store/');
   const isProfile = pathname === '/profile' || pathname.startsWith('/profile/');
   const isProduct = pathname.startsWith('/store/products/');
+  const isAssessmentWizard =
+    pathname === '/assessment/resume' ||
+    (pathname.startsWith('/assessment/') &&
+      pathname !== '/assessment/result' &&
+      /^\/assessment\/[^/]+$/.test(pathname));
   const immersive = useUiStore((state) => state.immersive);
-  const showTabs = !isProduct && !immersive && (session?.status === 'authenticated' || isStore);
+  const showTabs =
+    !isProduct &&
+    !isAssessmentWizard &&
+    !immersive &&
+    (session?.status === 'authenticated' || isStore);
   const framed = session?.status === 'authenticated' || isStore;
   const [action, setAction] = useState<HTMLElement | null>(null);
   const [overlay, setOverlay] = useState<HTMLElement | null>(null);
@@ -59,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <div
           ref={frame}
-          data-nav={String(!isProduct && !immersive)}
+          data-nav={String(!isProduct && !isAssessmentWizard && !immersive)}
           className="patient-app-frame relative w-full max-w-[720px] flex flex-col shadow-2xl overflow-hidden"
         >
           {/* Screen content */}

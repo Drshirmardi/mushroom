@@ -9,7 +9,7 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { Users } from 'lucide-react';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { PolicyAcceptance, GuidanceSafety } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance, GuidanceSafety } from '@/components/shared/policy-acceptance';
 import {
   getCoupleAssessment,
   acceptCoupleAssessment,
@@ -148,10 +148,6 @@ function Actions({
   reload: () => void;
 }) {
   const router = useRouter();
-  const [processing, setProcessing] = useState(false);
-  const [sharing, setSharing] = useState(false);
-  const [partner, setPartner] = useState(false);
-  const [terms, setTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -164,8 +160,18 @@ function Actions({
     ),
   );
   const ownAccepted = !!detail.ownConsent.acceptedAt && !detail.ownConsent.withdrawnAt;
+  const participationPolicies = [
+    detail.processingPolicy,
+    detail.jointDisclosurePolicy,
+    { title: 'تأیید همراه', body: 'همراه متصل به همین مشارکت را بررسی کرده‌ام و اشتراک نتیجه با همین فرد را می‌پذیرم.' },
+  ];
+  const participation = usePolicyAcceptance(detail.contextHash, participationPolicies);
+  const { accepted: terms, onChange: setTerms } = usePolicyAcceptance(
+    detail.contextHash, [offering.data?.termsPolicy],
+  );
+
   const accept = async () => {
-    if (busy || !processing || !sharing || !partner || ownAccepted || detail.ownConsent.withdrawnAt)
+    if (busy || !participation.accepted || ownAccepted || detail.ownConsent.withdrawnAt)
       return;
     setBusy(true);
     setError(null);
@@ -303,31 +309,12 @@ function Actions({
       ) : !ownAccepted ? (
         <>
           <PolicyAcceptance
-            policy={detail.processingPolicy}
-            accepted={processing}
-            onChange={setProcessing}
+            policies={participationPolicies}
+            {...participation}
             disabled={busy}
           />
-          <PolicyAcceptance
-            policy={detail.jointDisclosurePolicy}
-            accepted={sharing}
-            onChange={setSharing}
-            disabled={busy}
-          />
-          <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-border/80 bg-white p-4 text-sm leading-7 text-foreground shadow-2xs">
-            <input
-              type="checkbox"
-              checked={partner}
-              disabled={busy}
-              onChange={(event) => setPartner(event.target.checked)}
-              className="mt-1.5 h-4 w-4 accent-primary"
-            />
-            <span>
-              همراه متصل به همین مشارکت را بررسی کرده‌ام و اشتراک نتیجه با همین فرد را می‌پذیرم.
-            </span>
-          </label>
           <AsyncButton
-            disabled={busy || !processing || !sharing || !partner}
+            disabled={busy || !participation.accepted}
             onClick={() => accept()}
             className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:opacity-40"
           >

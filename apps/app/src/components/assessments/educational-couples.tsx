@@ -11,7 +11,7 @@ import type { components } from '@sabz-zendegi/api-client';
 import { ServiceSection } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { PatientPagination } from '@/components/shared/patient-pagination';
-import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { acceptAssessmentConsent, listEducationalAssessmentOfferings, withdrawAssessmentConsent } from '@/lib/digital-services-api';
 import { acceptEducationalCouple, claimEducationalCoupleFreeAccess, createEducationalCouple, createEducationalCouplePurchase, getEducationalCouple, listEducationalCouples, withdrawEducationalCoupleSharing } from '@/lib/couples-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -197,9 +197,16 @@ function Participation({
 }) {
   const router = useRouter(), lock = useRef(false), scope = `${userId}:educational-couple:${data.id}`;
   const own = data.participants.find(p => p.isSelf), alreadyAccepted = own?.consentState === 'ACCEPTED';
-  const [processing, setProcessing] = useState(alreadyAccepted);
-  const [disclosure, setDisclosure] = useState(alreadyAccepted);
-  const [terms, setTerms] = useState(false);
+  const participationPolicies = [
+    data.processingPolicy,
+    data.disclosurePolicy,
+    {
+      title: 'تأیید همراه',
+      body: 'همراه متصل به همین آزمون را بررسی کرده‌ام و اشتراک نتیجه با همین فرد را می‌پذیرم.',
+    },
+  ];
+  const participation = usePolicyAcceptance(data.contextHash, participationPolicies);
+  const { accepted: terms, onChange: setTerms } = usePolicyAcceptance(data.contextHash, [data.termsPolicy]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [confirmWithdraw, setConfirmWithdraw] = useState<'sharing' | 'processing' | null>(null);
@@ -221,7 +228,7 @@ function Participation({
     }
   };
   const accept = () => run(async () => {
-    if (!processing || !disclosure || alreadyAccepted || own?.consentState === 'WITHDRAWN') return;
+    if (!participation.accepted || alreadyAccepted || own?.consentState === 'WITHDRAWN') return;
     const policy = data.processingPolicy, consentBody = { policyVersionId: policy.id, contentHash: policy.contentHash, accepted: true as const };
     const accepted = await acceptAssessmentConsent(token, consentBody, await key({ action: 'processing', ...consentBody }));
     const body = { contextHash: data.contextHash, processingConsentRecordId: accepted.id, disclosureContentHash: data.disclosurePolicy.contentHash, disclosureAccepted: true as const, linkedPartnerAcknowledged: true as const };
@@ -339,23 +346,14 @@ function Participation({
         <section className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5" aria-label="رضایت مستقل من">
           <h4 className="text-sm font-bold text-foreground">تأیید شرایط مشارکت و محرمانگی</h4>
           <PolicyAcceptance
-            variant="compact"
-            policy={data.processingPolicy}
-            accepted={processing}
-            onChange={setProcessing}
-            disabled={busy}
-          />
-          <PolicyAcceptance
-            variant="compact"
-            policy={data.disclosurePolicy}
-            accepted={disclosure}
-            onChange={setDisclosure}
+            policies={participationPolicies}
+            {...participation}
             disabled={busy}
           />
           <AsyncButton
             type="button"
             className={primary}
-            disabled={busy || !processing || !disclosure}
+            disabled={busy || !participation.accepted}
             onClick={() => accept()}
           >
             ثبت رضایت من و ادامه
@@ -423,7 +421,6 @@ function Participation({
           <section className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5" aria-label="پرداخت تست">
             {data.termsPolicy && (
               <PolicyAcceptance
-                variant="compact"
                 policy={data.termsPolicy}
                 accepted={terms}
                 onChange={setTerms}

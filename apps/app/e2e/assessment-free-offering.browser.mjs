@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const id = '71111111-1111-4111-8111-111111111111', consent = '72222222-2222-4222-8222-222222222222', grant = '73333333-3333-4333-8333-333333333333';
 const browser = await chromium.launch();
 try {
- for (const width of [390, 1440]) for (const mode of ['PAID']) {
+ for (const width of [320, 1440]) for (const mode of ['FREE', 'PAID']) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   const errors = [], writes = [];
   page.on('pageerror', e => errors.push(e.message));
@@ -19,14 +19,21 @@ try {
    if (path === '/v1/patients/me/assessment-consents') { writes.push('consent'); assert.ok(req.headers()['idempotency-key']); const body = req.postDataJSON(), terms = body.policyVersionId === grant; assert.deepEqual(body, { policyVersionId: terms ? grant : id, contentHash: (terms ? 'c' : 'a').repeat(64), accepted: true }); return send({ id: terms ? grant : consent, withdrawnAt: null }, 201); }
    if (path === '/v1/patients/me/educational-assessment-access') { writes.push('grant'); assert.ok(req.headers()['idempotency-key']); assert.deepEqual(req.postDataJSON(), { publicationId: id, processingConsentRecordId: consent }); entered(); await submitted; return send({ id: grant, accessMode: 'FREE', publicationId: id, grantedAt: new Date().toISOString() }, 201); }
    if (path === '/v1/patients/me/billing/assessment-intents') { assert.equal(mode, 'PAID'); writes.push('billing'); assert.ok(req.headers()['idempotency-key']); assert.deepEqual(req.postDataJSON(), { publicationId: id, publicationHash: 'b'.repeat(64), processingConsentRecordId: consent, termsConsentRecordId: grant }); entered(); await submitted; return send({ id: grant }, 201); }
-   if (path.includes('/billing/') || path.includes('/wallet/')) throw new Error('Free access must not request financial action');
+   if (mode === 'FREE' && (path.includes('/billing/') || path.includes('/wallet/'))) throw new Error('Free access must not request financial action');
    return send({ items: [], total: 0, unreadCount: 0 });
   });
   await page.goto(`http://localhost:3001/assessment/educational/${id}`);
   const button = page.getByRole('button', { name: mode === 'FREE' ? 'ثبت رضایت و شروع رایگان' : 'ثبت رضایت و ادامه به پرداخت', exact: true });
   await button.waitFor(); assert.equal(await button.isDisabled(), true);
-  await page.getByText('متن پردازش و نگهداری و نمایش همین آزمون', { exact: true }).waitFor();
-  for (const checkbox of await page.getByRole('checkbox').all()) await checkbox.check();
+  const checkbox = page.getByRole('checkbox');
+  assert.equal(await checkbox.count(), 1);
+  await page.getByRole('button', { name: 'شرایط و قوانین', exact: true }).click();
+  const sheet = page.getByRole('dialog', { name: 'قوانین و شرایط' });
+  await sheet.getByText('متن پردازش و نگهداری و نمایش همین آزمون', { exact: true }).waitFor();
+  await sheet.getByRole('button', { name: 'متوجه شدم' }).click();
+  await sheet.waitFor({ state: 'hidden' });
+  assert.equal(await checkbox.isChecked(), false);
+  await checkbox.check();
   await button.click(); await requested;
   await page.getByRole('button', { name: 'در حال ثبت…', exact: true }).waitFor();
   assert.deepEqual(writes, mode === 'FREE' ? ['consent', 'grant'] : ['consent', 'consent', 'billing']);

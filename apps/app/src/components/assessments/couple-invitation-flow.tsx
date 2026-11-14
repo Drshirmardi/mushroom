@@ -2,6 +2,7 @@
 import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 
 import Link from 'next/link';
+import { PolicyAcceptance, usePolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Copy } from 'lucide-react';
@@ -98,43 +99,6 @@ export function CopyValue({ value, label, id }: { value: string; label: string; 
         </div>
       )}
     </div>
-  );
-}
-
-function Consent({
-  policy,
-  accepted,
-  onChange,
-  disabled,
-}: {
-  policy: Schema['CoupleLinkPolicyDto'];
-  accepted: boolean;
-  onChange: (value: boolean) => void;
-  disabled: boolean;
-}) {
-  return (
-    <section
-      className="space-y-3 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs"
-      aria-label="شرایط اتصال حساب‌ها"
-    >
-      <h3 className="text-sm font-bold text-foreground">{policy.title}</h3>
-      <div
-        className="whitespace-pre-wrap rounded-xl bg-muted/40 p-3 text-xs leading-7 text-muted-foreground"
-        aria-label={policy.title}
-      >
-        {policy.body}
-      </div>
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/70 bg-background/60 p-3 text-xs font-medium leading-6 text-foreground">
-        <input
-          type="checkbox"
-          className="mt-1 h-4 w-4 accent-primary"
-          checked={accepted}
-          onChange={(event) => onChange(event.target.checked)}
-          disabled={disabled}
-        />
-        <span>شرایط را خواندم و با اتصال حسابم به همراه موردنظر موافقم.</span>
-      </label>
-    </section>
   );
 }
 
@@ -454,10 +418,10 @@ function ConfirmPolicy({
   busy: boolean;
   onConfirm: (policy: Schema['CoupleLinkPolicyDto']) => Promise<void>;
 }) {
-  const [accepted, setAccepted] = useState(false);
+  const { accepted, onChange: setAccepted } = usePolicyAcceptance(policy.id, [policy]);
   return (
     <div className="space-y-3">
-      <Consent policy={policy} accepted={accepted} onChange={setAccepted} disabled={busy} />
+      <PolicyAcceptance policy={policy} accepted={accepted} onChange={setAccepted} disabled={busy} />
       <p className="text-xs leading-6 text-muted-foreground">
         این رضایت فقط برای اتصال حساب‌هاست؛ شرایط و هزینه آزمون را بعد از پذیرش همراه بررسی می‌کنید.
       </p>
@@ -491,7 +455,7 @@ export function CoupleAcceptFlow({
   const router = useRouter();
   const [secret, setSecret] = useState('');
   const [preview, setPreview] = useState<Schema['CoupleInvitationPreviewDto'] | null>(null);
-  const [accepted, setAccepted] = useState(false);
+  const { accepted, onChange: setAccepted } = usePolicyAcceptance(JSON.stringify([publicationId, secret.trim()]), [preview?.policy]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldError, setFieldError] = useState<string | null>(null);
@@ -584,7 +548,7 @@ export function CoupleAcceptFlow({
           </p>
         </div>
       ) : (
-        <Consent
+        <PolicyAcceptance
           policy={preview.policy}
           accepted={accepted}
           onChange={setAccepted}

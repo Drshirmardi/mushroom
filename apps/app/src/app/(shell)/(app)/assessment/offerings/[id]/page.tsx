@@ -9,7 +9,7 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { ClipboardList } from 'lucide-react';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import {
   getAssessmentOffering,
   acceptAssessmentConsent,
@@ -65,8 +65,8 @@ function Checkout({
   reload: () => void;
 }) {
   const router = useRouter();
-  const [processing, setProcessing] = useState(false);
-  const [terms, setTerms] = useState(false);
+  const policies = [offering.processingPolicy, offering.termsPolicy];
+  const acceptance = usePolicyAcceptance(offering.publicationHash, policies);
   const [busy, setBusy] = useState(false);
   const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,8 +75,7 @@ function Checkout({
   const purchase = async () => {
     if (
       busy ||
-      !processing ||
-      !terms ||
+      !acceptance.accepted ||
       !offering.purchaseSupported ||
       offering.kind !== 'INDIVIDUAL'
     )
@@ -152,15 +151,8 @@ function Checkout({
         </p>
       </section>
       <PolicyAcceptance
-        policy={offering.processingPolicy}
-        accepted={processing}
-        onChange={setProcessing}
-        disabled={busy}
-      />
-      <PolicyAcceptance
-        policy={offering.termsPolicy}
-        accepted={terms}
-        onChange={setTerms}
+        policies={policies}
+        {...acceptance}
         disabled={busy}
       />
       {(!offering.purchaseSupported || offering.blockers.length > 0) && (
@@ -184,8 +176,7 @@ function Checkout({
         type="button"
         disabled={
           busy ||
-          !processing ||
-          !terms ||
+          !acceptance.accepted ||
           !offering.purchaseSupported ||
           offering.kind !== 'INDIVIDUAL'
         }

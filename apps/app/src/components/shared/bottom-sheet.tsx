@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
 } from 'react';
 import { Drawer } from '@base-ui/react/drawer';
 import { X } from 'lucide-react';
@@ -21,6 +22,8 @@ export type BottomSheetHandle = {
 export type BottomSheetProps = {
   title?: string;
   ariaLabel?: string;
+  headingIcon?: ReactNode;
+  finalFocus?: RefObject<HTMLElement | null>;
   onClose: () => void;
   children: ReactNode;
 
@@ -62,6 +65,8 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(funct
   {
     title,
     ariaLabel,
+    headingIcon,
+    finalFocus,
     onClose,
     children,
     size = 'auto',
@@ -207,6 +212,7 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(funct
           >
             <Drawer.Popup
               dir="rtl"
+              finalFocus={finalFocus}
               className={cn(
                 // App-specific theme variables
                 'patient-app-shell',
@@ -269,8 +275,10 @@ export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(funct
                     'relative flex min-h-14',
                     'shrink-0 items-center justify-center',
                     'px-14 py-2',
+                    headingIcon && 'flex-col gap-3',
                   )}
                 >
+                  {headingIcon && <div aria-hidden="true" className="text-(--dp-brand)">{headingIcon}</div>}
                   <Drawer.Title
                     className={cn(
                       'text-center text-base',

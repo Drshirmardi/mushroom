@@ -9,7 +9,7 @@ import { ClipboardList } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import {
   getEducationalAssessmentOffering,
   acceptAssessmentConsent,
@@ -67,9 +67,7 @@ function FreeAccess({
 }) {
   const router = useRouter(),
     lock = useRef(false);
-  const [accepted, setAccepted] = useState(false),
-    [termsAccepted, setTermsAccepted] = useState(false),
-    [busy, setBusy] = useState(false),
+  const [busy, setBusy] = useState(false),
     [confirmWithdraw, setConfirmWithdraw] = useState(false),
     [error, setError] = useState('');
   const key = useOperationKey(`${userId}:educational-assessment:${offering.id}`);
@@ -78,12 +76,22 @@ function FreeAccess({
     available = repurchasing
       ? offering.publicPurchaseAvailable
       : offering.accessSupported && (!offering.pendingIntentId || !!offering.accessGrantId);
+  const paid = offering.priceMode === 'PAID';
+  const policies = [
+    ...(offering.processingPolicy ? [offering.processingPolicy] : []),
+    ...(paid && offering.termsPolicy ? [offering.termsPolicy] : []),
+  ];
+  const acceptance = usePolicyAcceptance(
+    JSON.stringify([offering.publicationHash, ownedGrantId, repurchasing]),
+    policies,
+  );
+  const canAccept = Boolean(offering.processingPolicy && (!paid || offering.termsPolicy));
   const start = async () => {
     if (
       lock.current ||
       !available ||
       !offering.processingPolicy ||
-      (!ownedGrantId && (!accepted || (offering.priceMode === 'PAID' && !termsAccepted)))
+      (!ownedGrantId && (!canAccept || !acceptance.accepted))
     )
       return;
     lock.current = true;
@@ -185,32 +193,18 @@ function FreeAccess({
           ویژهٔ افراد ۱۸ سال و بالاتر؛ نتیجهٔ آموزشی جایگزین بررسی پزشک نیست.
         </p>
       </section>
-      {offering.processingPolicy &&
-        (ownedGrantId ? (
-          <HistoricalPolicy
-            policy={offering.processingPolicy}
-            accepted={!!offering.processingConsentId}
-          />
-        ) : (
-          <PolicyAcceptance
-            policy={offering.processingPolicy}
-            accepted={accepted}
-            onChange={setAccepted}
-            disabled={busy}
-          />
-        ))}
-      {offering.priceMode === 'PAID' &&
-        offering.termsPolicy &&
-        (ownedGrantId ? (
-          <HistoricalPolicy policy={offering.termsPolicy} accepted={!!offering.termsConsentId} />
-        ) : (
-          <PolicyAcceptance
-            policy={offering.termsPolicy}
-            accepted={termsAccepted}
-            onChange={setTermsAccepted}
-            disabled={busy}
-          />
-        ))}
+      {ownedGrantId ? (
+        <>
+          {offering.processingPolicy && (
+            <HistoricalPolicy policy={offering.processingPolicy} accepted={!!offering.processingConsentId} />
+          )}
+          {paid && offering.termsPolicy && (
+            <HistoricalPolicy policy={offering.termsPolicy} accepted={!!offering.termsConsentId} />
+          )}
+        </>
+      ) : (
+        <PolicyAcceptance policies={policies} {...acceptance} disabled={busy || !canAccept} />
+      )}
       {!available && (
         <p
           role="status"
@@ -234,7 +228,7 @@ function FreeAccess({
         disabled={
           busy ||
           !available ||
-          (!ownedGrantId && (!accepted || (offering.priceMode === 'PAID' && !termsAccepted)))
+          (!ownedGrantId && (!canAccept || !acceptance.accepted))
         }
         onClick={() => void start()}
         className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
@@ -268,8 +262,6 @@ function FreeAccess({
           disabled={busy}
           className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-primary transition hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
           onClick={() => {
-            setAccepted(false);
-            setTermsAccepted(false);
             setRepurchasing(true);
           }}
         >

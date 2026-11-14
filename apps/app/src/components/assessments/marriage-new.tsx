@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, CheckCircle2, ChevronDown } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
-import { PolicyAcceptance } from '@/components/shared/policy-acceptance';
+import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { acceptAssessmentConsent } from '@/lib/digital-services-api';
@@ -31,8 +31,6 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
   );
   const [role, setRole] = useState('');
   const [phone, setPhone] = useState('');
-  const [accepted, setAccepted] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
   const [prepayBusy, setPrepayBusy] = useState(false);
   const [refundBusy, setRefundBusy] = useState(false);
   const [confirmRefund, setConfirmRefund] = useState(false);
@@ -41,7 +39,7 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const phoneInput = useRef<HTMLInputElement>(null);
   const command = useRef<{ fingerprint: string; key: string } | null>(null);
-  const prepayKeys = useRef<{ consentKey: string; intentKey: string; termsRecordId?: string } | null>(null);
+  const prepayKeys = useRef<{ consentKey: string; intentKey: string; termsRecordId?: string; revision: string } | null>(null);
   const lock = useRef(false);
 
   useEffect(() => {
@@ -52,15 +50,24 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
   const isPrepaid = Boolean(replacesId || data?.prepayment?.status === 'PAID');
   const isPendingPayment = !replacesId && data?.prepayment?.status === 'PENDING';
   const ownRole = role || (data?.eligibleRoles.length === 1 ? data.eligibleRoles[0] : '');
+  const { accepted, onChange: setAccepted } = usePolicyAcceptance(
+    JSON.stringify([publicationId, replacesId, ownRole, phone.trim()]), [data?.linkingPolicy],
+  );
+  const { accepted: termsAccepted, onChange: setTermsAccepted } = usePolicyAcceptance(
+    publicationId, [data?.termsPolicy],
+  );
   const returnTo = coupleStartHref(publicationId, replacesId);
 
   const handlePrepay = async () => {
-    if (!data || prepayBusy || lock.current) return;
+    if (!data || prepayBusy || lock.current || (data.termsPolicy && !termsAccepted)) return;
     lock.current = true;
     setPrepayBusy(true);
     setError('');
     try {
+      const revision = JSON.stringify([publicationId, data.termsPolicy?.id, data.termsPolicy?.contentHash]);
+      if (prepayKeys.current?.revision !== revision) prepayKeys.current = null;
       const keys = prepayKeys.current ??= {
+        revision,
         consentKey: crypto.randomUUID(),
         intentKey: crypto.randomUUID(),
       };
@@ -281,12 +288,10 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                 </div>
                 {data.termsPolicy && (
                   <PolicyAcceptance
-                    variant="compact"
                     policy={{ title: data.termsPolicy.title, body: data.termsPolicy.body }}
                     accepted={termsAccepted}
                     onChange={setTermsAccepted}
                     disabled={busy || prepayBusy}
-                    label="شرایط خرید و استفاده از خدمات ارزیابی را مطالعه کرده و می‌پذیرم."
                   />
                 )}
                 <button
@@ -439,12 +444,10 @@ export function MarriageNew({ publicationId, replacesId }: { publicationId: stri
                   )}
 
                   <PolicyAcceptance
-                    variant="compact"
                     policy={{ title: 'شرایط اتصال حساب‌ها', body: data.linkingPolicy.body }}
                     accepted={accepted}
                     onChange={setAccepted}
                     disabled={busy || refundBusy}
-                    label="با اتصال حسابم به نفر دوم برای این تست موافقم."
                   />
 
                   <button

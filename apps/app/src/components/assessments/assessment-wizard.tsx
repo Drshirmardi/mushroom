@@ -12,6 +12,8 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PageHeader } from '@/components/shared/page-header';
+import { ShellAction, ShellOverlay } from '@/components/layout/shell-slots';
+import { StoreIcon } from '@/components/store/store-icon';
 import {
   AssessmentRequestError,
   assessmentErrorMessage,
@@ -31,7 +33,7 @@ const primaryBtnClass =
 const secondaryBtnClass =
   'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground transition hover:border-primary/40 hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-60';
 const optionBtnClass =
-  'group flex min-h-14 w-full items-center gap-3.5 rounded-2xl border border-border bg-white px-4 py-3.5 text-start text-foreground shadow-2xs transition hover:border-primary/40 hover:bg-primary/5 aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:ring-1 aria-pressed:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60';
+  'group flex w-full items-center text-start text-foreground transition disabled:cursor-not-allowed disabled:opacity-60';
 const letterBadgeClass =
   'inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-muted text-xs font-bold text-foreground transition group-aria-pressed:bg-primary group-aria-pressed:text-white';
 const inputFieldClass =
@@ -131,12 +133,21 @@ function AssessmentAttempt({
   const [assessment, setAssessment] = useState<AssessmentQuestionnaire | null>(null);
   const [submission, setSubmission] = useState<AssessmentSubmission | null>(null);
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
+  const submissionRef = useRef<AssessmentSubmission | null>(null);
+  const answersRef = useRef<Record<string, unknown>>({});
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
+  const pendingSaves = useRef(0);
+  const conflictRef = useRef(false);
   const [step, setStep] = useState(0);
+  const [stepDirection, setStepDirection] = useState<'forward' | 'backward'>('forward');
   const [busy, setBusy] = useState(false);
+  const [locking, setLocking] = useState(false);
   const operation = useRef(false);
   const leaving = useRef(false);
   const [exitTo, setExitTo] = useState<ExitDestination | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [requiredNotice, setRequiredNotice] = useState<'hidden' | 'shown' | 'leaving'>('hidden');
+  const [requiredNoticeRevision, setRequiredNoticeRevision] = useState(0);
   const [reload, setReload] = useState(0);
   const [conflict, setConflict] = useState(false);
   const [submitCommand, setSubmitCommand] = useState<{ revision: number; key: string } | null>(
@@ -156,6 +167,16 @@ function AssessmentAttempt({
     if (error && current?.type === 'NUMBER')
       questionArea.current?.querySelector<HTMLInputElement>('input')?.focus();
   }, [error, current?.id, current?.type]);
+  useEffect(() => {
+    if (requiredNotice !== 'shown') return;
+    const timer = window.setTimeout(() => setRequiredNotice('leaving'), 2800);
+    return () => window.clearTimeout(timer);
+  }, [requiredNotice, requiredNoticeRevision, current?.id]);
+  useEffect(() => {
+    if (requiredNotice !== 'leaving') return;
+    const timer = window.setTimeout(() => setRequiredNotice('hidden'), 200);
+    return () => window.clearTimeout(timer);
+  }, [requiredNotice]);
   const adaptive = assessment?.structure.schemaVersion === 3;
   const dirty = !!submission && JSON.stringify(answers) !== JSON.stringify(submission.answers);
   useEffect(() => {
@@ -238,6 +259,9 @@ function AssessmentAttempt({
           setAssessment(questionnaire);
           setSubmission(attempt);
           setAnswers(attempt.answers);
+          submissionRef.current = attempt;
+          answersRef.current = attempt.answers;
+          conflictRef.current = false;
           {
             const pending = questions(questionnaire.structure).findIndex(
               (question) => !answered(question, attempt.answers[question.id]),
@@ -267,37 +291,70 @@ function AssessmentAttempt({
     onComplete,
   ]);
 
-  const persist = async () => {
-    if (!submission || conflict) return null;
-    if (typeof submission.revision !== 'number') throw new Error('ASSESSMENT_REVISION_UNAVAILABLE');
-    const invalid = items.findIndex(
-      (question) => question.type === 'NUMBER' && numericError(question, answers[question.id]),
-    );
-    if (invalid >= 0) {
-      setStep(invalid);
-      throw new NumericAnswerError(numericError(items[invalid], answers[items[invalid].id])!);
-    }
-    const saved = await saveAssessmentAnswers(accessToken.current, submission.id, {
-      answers,
-      expectedRevision: submission.revision,
+  const persist = (answerSnapshot = answersRef.current) => {
+    if (!submissionRef.current || conflictRef.current) return Promise.resolve(null);
+    const task = saveQueue.current.then(async () => {
+      const latestSubmission = submissionRef.current;
+      if (!latestSubmission || conflictRef.current) return null;
+      if (typeof latestSubmission.revision !== 'number')
+        throw new Error('ASSESSMENT_REVISION_UNAVAILABLE');
+      const invalid = items.findIndex(
+        (question) =>
+          question.type === 'NUMBER' && numericError(question, answerSnapshot[question.id]),
+      );
+      if (invalid >= 0) {
+        setStep(invalid);
+        throw new NumericAnswerError(
+          numericError(items[invalid], answerSnapshot[items[invalid].id])!,
+        );
+      }
+      if (JSON.stringify(latestSubmission.answers) === JSON.stringify(answerSnapshot))
+        return latestSubmission;
+      const saved = await saveAssessmentAnswers(accessToken.current, latestSubmission.id, {
+        answers: answerSnapshot,
+        expectedRevision: latestSubmission.revision,
+      });
+      submissionRef.current = saved;
+      setSubmission(saved);
+      if (JSON.stringify(answersRef.current) === JSON.stringify(answerSnapshot)) {
+        answersRef.current = saved.answers;
+        setAnswers(saved.answers);
+      }
+      return saved;
     });
-    setSubmission(saved);
-    setAnswers(saved.answers);
-    return saved;
+    saveQueue.current = task.then(
+      () => undefined,
+      () => undefined,
+    );
+    return task;
+  };
+
+  const persistTracked = async (answerSnapshot = answersRef.current) => {
+    pendingSaves.current += 1;
+    setBusy(true);
+    try {
+      return await persist(answerSnapshot);
+    } finally {
+      pendingSaves.current -= 1;
+      setBusy(pendingSaves.current > 0 || operation.current);
+    }
   };
 
   const continueFlow = async () => {
-    if (operation.current || busy || conflict) return;
+    if (operation.current || conflictRef.current) return;
     if (
       !submitCommand &&
       (!current || (current.required && !answered(current, answers[current.id])))
     ) {
-      setError('پاسخ این سؤال ضروری است.');
+      setError(null);
+      setRequiredNotice('shown');
+      setRequiredNoticeRevision((revision) => revision + 1);
       if (current?.type === 'NUMBER')
         questionArea.current?.querySelector<HTMLInputElement>('input')?.focus();
       else entryQuestion.current?.focus();
       return;
     }
+    if (requiredNotice !== 'hidden') setRequiredNotice('leaving');
     if (!submitCommand && current?.type === 'NUMBER') {
       const value = answers[current.id];
       const message = numericError(current, value);
@@ -307,16 +364,29 @@ function AssessmentAttempt({
         return;
       }
     }
-    operation.current = true;
-    setBusy(true);
     setError(null);
+    const answerSnapshot = { ...answersRef.current };
+    const advancesWithoutWaiting = step < items.length - 1 && !(adaptive && step >= 10);
+    if (advancesWithoutWaiting && !submitCommand) {
+      setStepDirection('forward');
+      setStep((value) => value + 1);
+      void persistTracked(answerSnapshot).catch((reason) => {
+        if (reason instanceof AssessmentRequestError && reason.status === 409) {
+          conflictRef.current = true;
+          setConflict(true);
+        }
+        setError(
+          reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason),
+        );
+      });
+      return;
+    }
+
+    operation.current = true;
+    setLocking(true);
     try {
-      const saved = submitCommand ? submission : await persist();
+      const saved = submitCommand ? submissionRef.current : await persistTracked(answerSnapshot);
       if (!saved) return;
-      if (step < items.length - 1 && !(adaptive && step >= 10)) {
-        setStep((value) => value + 1);
-        return;
-      }
       if (adaptive && !submitCommand) {
         const refreshed = await getAssessmentQuestionnaire(accessToken.current, saved.id);
         setAssessment(refreshed);
@@ -326,6 +396,7 @@ function AssessmentAttempt({
         );
         const followUp = nextQuestions[nextIndex];
         if (followUp && !answered(followUp, saved.answers[followUp.id])) {
+          setStepDirection('forward');
           setStep(nextIndex);
           return;
         }
@@ -343,7 +414,10 @@ function AssessmentAttempt({
       if (entry) entry.onComplete();
       else router.push(marriageHref(`/assessment/result?submissionId=${completed.id}`));
     } catch (reason) {
-      if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true);
+      if (reason instanceof AssessmentRequestError && reason.status === 409) {
+        conflictRef.current = true;
+        setConflict(true);
+      }
       if (
         reason instanceof AssessmentRequestError &&
         (reason.status === 400 || reason.status === 422)
@@ -354,7 +428,8 @@ function AssessmentAttempt({
       );
     } finally {
       operation.current = false;
-      setBusy(false);
+      setLocking(false);
+      setBusy(pendingSaves.current > 0);
     }
   };
 
@@ -366,12 +441,12 @@ function AssessmentAttempt({
     else destination.traverse();
   };
   const saveAndExit = async (destination?: ExitDestination) => {
-    if (operation.current || busy || conflict || submitCommand) return;
+    if (operation.current || conflictRef.current || submitCommand) return;
     operation.current = true;
-    setBusy(true);
+    setLocking(true);
     setError(null);
     try {
-      const saved = await persist();
+      const saved = await persistTracked({ ...answersRef.current });
       if (!saved) return;
       leave(
         destination ??
@@ -380,27 +455,31 @@ function AssessmentAttempt({
             : '/assessment'),
       );
     } catch (reason) {
-      if (reason instanceof AssessmentRequestError && reason.status === 409) setConflict(true);
+      if (reason instanceof AssessmentRequestError && reason.status === 409) {
+        conflictRef.current = true;
+        setConflict(true);
+      }
       setError(
         reason instanceof NumericAnswerError ? reason.message : assessmentErrorMessage(reason),
       );
     } finally {
       operation.current = false;
-      setBusy(false);
+      setLocking(false);
+      setBusy(pendingSaves.current > 0);
     }
   };
 
   if (!assessment && !error)
     return (
       <div>
-        {!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}
+        {!entry && <PageHeader title="ارزیابی" onBack={() => router.push('/assessment')} />}
         <LoadingState label="در حال دریافت ارزیابی و پیش‌نویس شما…" variant="form" />
       </div>
     );
   if (!assessment || !submission || items.length === 0 || !current)
     return (
       <div className="space-y-4">
-        {!entry && <PageHeader title="ارزیابی" onBack={() => router.back()} />}
+        {!entry && <PageHeader title="ارزیابی" onBack={() => router.push('/assessment')} />}
         <div className="mx-auto max-w-2xl space-y-4 p-4">
           <p
             role="alert"
@@ -415,6 +494,9 @@ function AssessmentAttempt({
               setAssessment(null);
               setSubmission(null);
               setAnswers({});
+              answersRef.current = {};
+              submissionRef.current = null;
+              conflictRef.current = false;
               setError(null);
               setConflict(false);
               setSubmitCommand(null);
@@ -432,6 +514,9 @@ function AssessmentAttempt({
     setAssessment(null);
     setSubmission(null);
     setAnswers({});
+    answersRef.current = {};
+    submissionRef.current = null;
+    conflictRef.current = false;
     setStep(0);
     setError(null);
     setConflict(false);
@@ -439,45 +524,73 @@ function AssessmentAttempt({
     setReload((value) => value + 1);
   };
   const Container = entry ? 'div' : 'main';
+  const actionButtons = (
+    <>
+      <div className="flex items-center gap-2.5">
+        {step > 0 && (
+          <button
+            className={`${secondaryBtnClass} assessment-action-previous min-w-0 flex-1 border-transparent bg-transparent px-2 text-xs hover:bg-muted sm:text-sm`}
+            disabled={locking || conflict || submitCommand !== null}
+            onClick={() => {
+              setStepDirection('backward');
+              setStep((value) => value - 1);
+            }}
+          >
+            سؤال قبل
+          </button>
+        )}
+        <button
+          className={`${primaryBtnClass} assessment-action-primary min-w-0 ${step > 0 ? 'flex-[1.5]' : 'flex-1'} px-3 text-sm`}
+          disabled={locking || conflict}
+          onClick={() => void continueFlow()}
+          aria-busy={Boolean(locking)}
+        >
+          {locking && <HeartbeatLoader />}
+          ادامه
+        </button>
+      </div>
+      {busy && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mb-0 mt-2 text-center text-[11px] text-muted-foreground"
+        >
+          پاسخ در حال ذخیره است…
+        </p>
+      )}
+    </>
+  );
   return (
     <Container
-      className="min-h-dvh bg-background pb-28 data-[entry=true]:min-h-0 data-[entry=true]:bg-transparent data-[entry=true]:pb-0"
+      className="assessment-wizard-main min-h-full bg-background pb-8 data-[entry=true]:min-h-0 data-[entry=true]:bg-transparent data-[entry=true]:pb-0"
       data-entry={!!entry}
     >
       {!entry && (
-        <PageHeader
-          title={assessment.title}
-          onBack={() => {
-            if (operation.current || busy || submitCommand) return;
-            if (step > 0) {
-              setStep((value) => value - 1);
-              return;
-            }
-            if (dirty)
-              setExitTo(
-                currentInvitationContext()
-                  ? `/assessment/marriage/requests/${currentInvitationContext()}`
-                  : '/assessment',
-              );
-            else router.back();
-          }}
-        />
+        <div className="assessment-wizard-header">
+          <PageHeader title={assessment.title} onBack={() => void saveAndExit()} />
+        </div>
       )}
       <div
         ref={questionArea}
         data-entry={!!entry}
-        className="mx-auto max-w-2xl space-y-4 p-4 data-[entry=true]:p-0"
+        className="assessment-question-area mx-auto max-w-2xl space-y-4 p-4 data-[entry=true]:p-0"
         aria-busy={busy}
       >
-        <div className="space-y-2.5 rounded-2xl border border-border/80 bg-white p-4 shadow-xs">
+        <div className="assessment-progress-card flex flex-col gap-3 rounded-3xl border border-primary/10 bg-gradient-to-l from-primary/[0.06] via-white to-white p-4 shadow-xs sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-muted-foreground">
             <span>
               {adaptive && step >= 11 ? (
                 'سؤال تکمیلی برای روشن‌شدن نتیجه'
               ) : (
-                <>
-                  سؤال {toP(step + 1)} از {toP(adaptive ? 11 : items.length)}
-                </>
+                <span
+                  className="assessment-step-label inline-flex items-center gap-1.5"
+                >
+                  <span>سؤال</span>
+                  <span key={step} className="assessment-step-number">
+                    {toP(step + 1)}
+                  </span>
+                  <span>از {toP(adaptive ? 11 : items.length)}</span>
+                </span>
               )}
             </span>
             {!entry && (
@@ -486,21 +599,42 @@ function AssessmentAttempt({
               </span>
             )}
           </div>
-          <progress
+          <div
+            className="assessment-progress-track"
+            role="progressbar"
+            dir="rtl"
             aria-label="پیشرفت پاسخ‌گویی"
-            className="h-2.5 w-full overflow-hidden rounded-full bg-muted accent-primary [&::-moz-progress-bar]:rounded-full [&::-moz-progress-bar]:bg-primary [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-muted [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary"
-            max={adaptive ? 11 : items.length}
-            value={Math.min(step + 1, adaptive ? 11 : items.length)}
-          />
+            aria-valuemin={0}
+            aria-valuemax={adaptive ? 11 : items.length}
+            aria-valuenow={Math.min(step + 1, adaptive ? 11 : items.length)}
+          >
+            <span
+              className="assessment-progress-fill"
+              style={{
+                width: `${(Math.min(step + 1, adaptive ? 11 : items.length) / (adaptive ? 11 : items.length)) * 100}%`,
+              }}
+            />
+          </div>
         </div>
-        <h2
-          id="assessment-question"
-          ref={entryQuestion}
-          tabIndex={-1}
-          className="m-0 rounded-2xl border border-border/80 bg-white p-5 text-base font-bold leading-8 text-foreground shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-lg"
+        <div
+          key={current.id}
+          data-direction={stepDirection}
+          className="assessment-question-transition flex flex-col gap-4"
         >
-          {current.text}
-        </h2>
+        <section className="assessment-question-card">
+          <div className="assessment-question-eyebrow" aria-hidden="true">
+            <span className="assessment-question-eyebrow__dot" />
+            پرسش این مرحله
+          </div>
+          <h2
+            id="assessment-question"
+            ref={entryQuestion}
+            tabIndex={-1}
+            className="assessment-question-title m-0 text-base font-bold leading-8 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-lg"
+          >
+            {current.text}
+          </h2>
+        </section>
         {current.type === 'MULTIPLE_CHOICE' && (
           <p className="m-0 text-xs font-medium text-muted-foreground">
             می‌توانید بیش از یک گزینه را انتخاب کنید.
@@ -514,17 +648,18 @@ function AssessmentAttempt({
           </p>
         )}
         <fieldset
-          className="m-0 min-w-0 border-0 p-0"
+          className="assessment-answer-group min-w-0 border-0 p-0"
           aria-labelledby="assessment-question"
           aria-describedby={error ? 'assessment-answer-error' : undefined}
-          disabled={busy || conflict || submitCommand !== null}
+          disabled={locking || conflict || submitCommand !== null}
         >
           <AnswerInput
             invalid={!!error}
             question={current}
             value={answers[current.id]}
             onChange={(value) => {
-              setAnswers((all) => ({
+              const all = answersRef.current;
+              const updated = {
                 ...(adaptive && current.phase !== 'FOLLOW_UP'
                   ? Object.fromEntries(
                       Object.entries(all).filter(([id]) =>
@@ -541,8 +676,11 @@ function AssessmentAttempt({
                       )
                     : all),
                 [current.id]: value,
-              }));
+              };
+              answersRef.current = updated;
+              setAnswers(updated);
               setError(null);
+              if (requiredNotice !== 'hidden') setRequiredNotice('leaving');
             }}
           />
         </fieldset>
@@ -555,6 +693,7 @@ function AssessmentAttempt({
             {error}
           </p>
         )}
+        </div>
         {conflict && (
           <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
             <p className="leading-7">
@@ -566,50 +705,36 @@ function AssessmentAttempt({
             </button>
           </div>
         )}
-        <div className="sticky bottom-0 z-10 -mx-4 mt-4 grid gap-2.5 border-t border-border/80 bg-background/95 px-4 py-3 backdrop-blur-xs sm:mx-0 sm:rounded-2xl sm:border sm:bg-white sm:p-4 sm:shadow-xs">
-          <button
-            className={primaryBtnClass}
-            disabled={busy || conflict}
-            onClick={() => void continueFlow()}
-            aria-busy={Boolean(busy)}
-          >
-            {busy ? (
-              <>
-                <HeartbeatLoader />
-                {'در حال ذخیره…'}
-              </>
-            ) : submitCommand ? (
-              'پیگیری ثبت نهایی'
-            ) : adaptive ? (
-              'ذخیره و ادامه'
-            ) : step === items.length - 1 ? (
-              'ثبت نهایی و مشاهده نتیجه'
-            ) : (
-              'ذخیره و ادامه'
-            )}
-          </button>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {step > 0 && (
-              <button
-                className={secondaryBtnClass}
-                disabled={busy || conflict || submitCommand !== null}
-                onClick={() => setStep((value) => value - 1)}
-              >
-                سؤال قبل
-              </button>
-            )}
-            {!entry && (
-              <AsyncButton
-                className={secondaryBtnClass}
-                disabled={busy || conflict || submitCommand !== null}
-                onClick={() => saveAndExit()}
-              >
-                ذخیره و خروج
-              </AsyncButton>
-            )}
-          </div>
-        </div>
       </div>
+      {entry ? (
+        <div className="assessment-action-dock sticky bottom-0 z-10 -mx-4 mt-5 border-t border-border/70 bg-white px-3 py-3 shadow-[0_-8px_20px_rgba(15,23,42,0.06)] sm:mx-0 sm:rounded-2xl sm:border sm:p-4 sm:shadow-xs">
+          {actionButtons}
+        </div>
+      ) : (
+        <ShellAction>
+          <div className="assessment-action-dock w-full border-t border-border/70 bg-white px-3 py-3 shadow-[0_-8px_20px_rgba(15,23,42,0.06)] sm:px-4 sm:py-4">
+            <div className="mx-auto w-full max-w-2xl">{actionButtons}</div>
+          </div>
+        </ShellAction>
+      )}
+      <ShellOverlay>
+        {requiredNotice !== 'hidden' && (
+          <div
+            className={`assessment-required-toast${entry ? ' assessment-required-toast--entry' : ''}${requiredNotice === 'leaving' ? ' assessment-required-toast--leaving' : ''}`}
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
+            <span className="assessment-required-toast__icon">
+              <StoreIcon name="errorCircle" size={20} />
+            </span>
+            <span className="assessment-required-toast__copy">
+              <strong>هنوز پاسخ ندادی</strong>
+              <span>برای رفتن به سؤال بعد، یک گزینه را انتخاب کن.</span>
+            </span>
+          </div>
+        )}
+      </ShellOverlay>
       {exitTo && (
         <BottomSheet
           title="پاسخ ذخیره‌نشده"
@@ -619,17 +744,17 @@ function AssessmentAttempt({
         >
           <div className="space-y-3">
             <p className="text-sm leading-8 text-muted-foreground">
-              انتخاب تازه هنوز ذخیره نشده است. برای حفظ پاسخ، ذخیره و خروج را انتخاب کنید.
+              پاسخ تازه هنوز ذخیره نشده است. برای حفظ آن، ذخیره و بازگشت را انتخاب کنید.
             </p>
             <AsyncButton
               className={primaryBtnClass}
               disabled={busy || conflict || !!submitCommand}
               onClick={() => saveAndExit(exitTo)}
             >
-              ذخیره و خروج
+              ذخیره و بازگشت
             </AsyncButton>
             <button className={secondaryBtnClass} disabled={busy} onClick={() => leave(exitTo)}>
-              خروج بدون ذخیره
+              بازگشت بدون ذخیره
             </button>
             <button className={secondaryBtnClass} disabled={busy} onClick={() => setExitTo(null)}>
               ماندن در آزمون
@@ -665,19 +790,19 @@ function AnswerInput({
     : [];
   if (question.type === 'SINGLE_CHOICE')
     return (
-      <div className="grid gap-2.5">
+      <div className="assessment-answer-list grid gap-2.5">
         {options.map((option, index) => (
           <button
             key={String(option.id)}
             type="button"
             aria-pressed={value === option.id}
             onClick={() => onChange(option.id)}
-            className={optionBtnClass}
+            className={`${optionBtnClass} assessment-answer-option`}
           >
             <span className={letterBadgeClass}>
               {['الف', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ی'][index] ?? toP(index + 1)}
             </span>
-            <span className="min-w-0 flex-1 text-sm font-medium leading-7">
+            <span className="assessment-answer-copy min-w-0 flex-1 text-sm font-medium leading-7">
               {String(option.label ?? option.title ?? 'گزینه')}
             </span>
             <span
@@ -693,7 +818,7 @@ function AnswerInput({
   if (question.type === 'MULTIPLE_CHOICE') {
     const selected = Array.isArray(value) ? value : [];
     return (
-      <div className="grid gap-2.5">
+      <div className="assessment-answer-list grid gap-2.5">
         {options.map((option, index) => {
           const active = selected.includes(option.id);
           return (
@@ -706,12 +831,12 @@ function AnswerInput({
                   active ? selected.filter((id) => id !== option.id) : [...selected, option.id],
                 )
               }
-              className={optionBtnClass}
+              className={`${optionBtnClass} assessment-answer-option`}
             >
               <span className={letterBadgeClass}>
                 {['الف', 'ب', 'ج', 'د', 'ه', 'و', 'ز', 'ح', 'ط', 'ی'][index] ?? toP(index + 1)}
               </span>
-              <span className="min-w-0 flex-1 text-sm font-medium leading-7">
+              <span className="assessment-answer-copy min-w-0 flex-1 text-sm font-medium leading-7">
                 {String(option.label ?? option.title ?? 'گزینه')}
               </span>
               <span
@@ -728,7 +853,7 @@ function AnswerInput({
   }
   if (question.type === 'BOOLEAN')
     return (
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="assessment-answer-list assessment-answer-list--boolean grid grid-cols-1 sm:grid-cols-2">
         {[
           [true, 'بله'],
           [false, 'خیر'],
@@ -738,10 +863,12 @@ function AnswerInput({
             type="button"
             aria-pressed={value === answer}
             onClick={() => onChange(answer)}
-            className={optionBtnClass}
+            className={`${optionBtnClass} assessment-answer-option`}
           >
             <span className={letterBadgeClass}>{index === 0 ? 'الف' : 'ب'}</span>
-            <span className="min-w-0 flex-1 text-sm font-medium leading-7">{String(label)}</span>
+            <span className="assessment-answer-copy min-w-0 flex-1 text-sm font-medium leading-7">
+              {String(label)}
+            </span>
             <span
               className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-primary"
               aria-hidden="true"

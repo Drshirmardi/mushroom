@@ -4,10 +4,10 @@ const id='91111111-1111-4111-8111-111111111111', processingId='92222222-2222-422
 const base='/v1/patients/me/educational-couple-assessments';
 const browser=await chromium.launch();
 try {
- for(const width of [390,1440]) for(const mode of ['PAID']) {
-  const page=await browser.newPage({viewport:{width,height:1000}}), errors=[], writes=[]; let accepted=false;
+ for(const width of [320,1440]) for(const mode of ['PAID']) {
+  const page=await browser.newPage({viewport:{width,height:640}, hasTouch:width===320}), errors=[], writes=[]; let accepted=false, disclosureHash='c'.repeat(64);
   page.on('pageerror',e=>errors.push(e.message));
-  const data=()=>({id,coupleSessionId:id,publicationId:id,contextHash:'a'.repeat(64),title:'آزمون آموزشی مشترک آزمایشی',priceMode:mode,amountRial:mode==='FREE'?'0':'500000',currency:'IRR',participants:[{slot:'INITIATOR',isSelf:true,consentState:accepted?'ACCEPTED':'PENDING'},{slot:'PARTNER',isSelf:false,consentState:'ACCEPTED'}],ownAccessGrantId:null,ownSubmissionId:null,ownProcessingConsentRecordId:accepted?consent:null,ownPendingIntentId:null,paymentPending:false,newAccessAvailable:true,mutualConsentComplete:accepted,jointResultAvailable:false,processingPolicy:{id:processingId,title:'رضایت پردازش همین آزمون',body:'پردازش و نگهداری و نمایش برای همین نسخه',contentHash:'b'.repeat(64),status:'ACTIVE'},disclosurePolicy:{id,title:'اشتراک با همین همراه',body:'اجازه نمایش دو نتیجه فقط پس از تکمیل هر دو نفر',contentHash:'c'.repeat(64),status:'ACTIVE'},termsPolicy:mode==='PAID'?{id:grant,title:'شرایط خرید هر دو نفر',body:'هزینه کامل برای دو دسترسی مستقل',contentHash:'d'.repeat(64),status:'ACTIVE'}:null});
+  const data=()=>({id,coupleSessionId:id,publicationId:id,contextHash:'a'.repeat(64),title:'آزمون آموزشی مشترک آزمایشی',priceMode:mode,amountRial:mode==='FREE'?'0':'500000',currency:'IRR',participants:[{slot:'INITIATOR',isSelf:true,consentState:accepted?'ACCEPTED':'PENDING'},{slot:'PARTNER',isSelf:false,consentState:'ACCEPTED'}],ownAccessGrantId:null,ownSubmissionId:null,ownProcessingConsentRecordId:accepted?consent:null,ownPendingIntentId:null,paymentPending:false,newAccessAvailable:true,mutualConsentComplete:accepted,jointResultAvailable:false,processingPolicy:{id:processingId,title:'رضایت پردازش همین آزمون',body:'پردازش و نگهداری و نمایش برای همین نسخه',contentHash:'b'.repeat(64),status:'ACTIVE'},disclosurePolicy:{id,title:'اشتراک با همین همراه',body:'اجازه نمایش دو نتیجه فقط پس از تکمیل هر دو نفر',contentHash:disclosureHash,status:'ACTIVE'},termsPolicy:mode==='PAID'?{id:grant,title:'شرایط خرید هر دو نفر',body:'هزینه کامل برای دو دسترسی مستقل',contentHash:'d'.repeat(64),status:'ACTIVE'}:null});
   await page.route('**/v1/**',async route=>{
    const req=route.request(),path=new URL(req.url()).pathname,headers={'access-control-allow-origin':req.headers().origin||'http://localhost:3001','access-control-allow-credentials':'true'};
    const send=(body,status=200)=>route.fulfill({status,headers,contentType:'application/json',body:JSON.stringify(body)});
@@ -16,7 +16,7 @@ try {
    if(path==='/v1/patients/me/entry')return send({required:false});
    if(path===`${base}/${id}`)return send(data());
    if(path==='/v1/patients/me/assessment-consents'){const body=req.postDataJSON(),isTerms=body.policyVersionId===grant;assert.ok(req.headers()['idempotency-key']);assert.deepEqual(body,{policyVersionId:isTerms?grant:processingId,contentHash:(isTerms?'d':'b').repeat(64),accepted:true});writes.push(isTerms?'terms':'processing');return send({id:isTerms?grant:consent,withdrawnAt:null},201);}
-   if(path===`${base}/${id}/consent`){assert.deepEqual(req.postDataJSON(),{contextHash:'a'.repeat(64),processingConsentRecordId:consent,disclosureContentHash:'c'.repeat(64),disclosureAccepted:true,linkedPartnerAcknowledged:true});assert.ok(req.headers()['idempotency-key']);writes.push('sharing');accepted=true;return send(data(),201);}
+   if(path===`${base}/${id}/consent`){assert.deepEqual(req.postDataJSON(),{contextHash:'a'.repeat(64),processingConsentRecordId:consent,disclosureContentHash:disclosureHash,disclosureAccepted:true,linkedPartnerAcknowledged:true});assert.ok(req.headers()['idempotency-key']);writes.push('sharing');accepted=true;return send(data(),201);}
    if(path===`${base}/${id}/free-access`){assert.equal(mode,'FREE');assert.equal(accepted,true);assert.ok(req.headers()['idempotency-key']);writes.push('free');return send({id:grant,accessMode:'FREE',publicationId:id,grantedAt:new Date().toISOString()},201);}
    if(path===`${base}/${id}/billing-intents`){assert.equal(mode,'PAID');assert.equal(accepted,true);assert.ok(req.headers()['idempotency-key']);assert.deepEqual(req.postDataJSON(),{contextHash:'a'.repeat(64),termsConsentRecordId:grant});writes.push('billing');return send({id:grant},201);}
    if(path.includes('/billing/')||path.includes('/wallet/'))assert.equal(mode,'PAID');
@@ -25,10 +25,34 @@ try {
   await page.goto(`http://localhost:3001/assessment/couples/educational/${id}`);
   const accept=page.getByRole('button',{name:'ثبت رضایت من و ادامه',exact:true});
   await accept.waitFor();assert.equal(await accept.isDisabled(),true);assert.deepEqual(writes,[]);
-  for(const checkbox of await page.getByRole('checkbox').all())await checkbox.check();
+  const checkbox=page.getByRole('checkbox');
+  const rules=page.getByRole('button',{name:'شرایط و قوانین',exact:true});
+  const sheet=page.getByRole('dialog',{name:'قوانین و شرایط'});
+  assert.equal(await checkbox.count(),1);
+  if(width===320) await rules.tap();
+  else { await rules.focus(); await page.keyboard.press('Enter'); }
+  await sheet.getByRole('heading',{name:'رضایت پردازش همین آزمون'}).waitFor();
+  await sheet.getByRole('heading',{name:'اشتراک با همین همراه'}).waitFor();
+  assert.ok(await sheet.getByText('پردازش و نگهداری و نمایش برای همین نسخه').isVisible());
+  assert.ok(await sheet.getByText('اجازه نمایش دو نتیجه فقط پس از تکمیل هر دو نفر').isVisible());
+  const bounds=await sheet.boundingBox();
+  assert.ok(bounds.width<=Math.min(width,552) && bounds.x>=0);
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+  await sheet.getByRole('button',{name:'متوجه شدم'}).click();
+  await sheet.waitFor({state:'hidden'});
+  await page.waitForFunction(()=>document.activeElement?.textContent?.trim()==='شرایط و قوانین');
+  assert.equal(await checkbox.isChecked(),false);
+  assert.equal(await accept.isDisabled(),true);
+  await checkbox.check();
+  disclosureHash='e'.repeat(64);
+  await page.getByRole('button',{name:'به‌روزرسانی وضعیت',exact:true}).click();
+  await page.waitForFunction(()=>!document.querySelector('input[type=checkbox]')?.checked);
+  assert.equal(await accept.isDisabled(),true);
+  assert.deepEqual(writes,[]);
+  await checkbox.check();
   await accept.click();
   if(mode==='FREE'){await page.getByRole('button',{name:'شروع تست رایگان من',exact:true}).click();await page.waitForURL(`**/assessment/resume?grantId=${grant}`);assert.deepEqual(writes,['processing','sharing','free']);}
-  else{await page.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینه تست دو نفره',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
+  else{await rules.click();await sheet.getByRole('heading',{name:'شرایط خرید هر دو نفر',exact:true}).waitFor();await page.keyboard.press('Escape');await sheet.waitFor({state:'hidden'});await page.getByRole('checkbox').check();await page.getByRole('button',{name:'پرداخت هزینه تست دو نفره',exact:true}).click();await page.waitForURL(`**/profile/wallet/pay?intentId=${grant}`);assert.deepEqual(writes,['processing','sharing','terms','billing']);}
   assert.deepEqual(errors,[]);console.log('PASS independent couple processing/disclosure and owned access or existing billing',mode,width);await page.close();
  }
  for(const width of [390,1440]){
