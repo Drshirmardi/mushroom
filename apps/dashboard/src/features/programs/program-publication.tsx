@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getPublicationSetup, previewProgram, ProgramApiError, publishProgram, type Commercial, type Definition, type Preview, type PublicationRecord, type PublicationSetup, type ManagedService } from '@/lib/program-services-api';
 import { formatRial } from '@/lib/wallet-money';
 import { priceFromInput, priceToInput } from './program-price';
+import { ProgramMarkdown } from './program-markdown';
 
 const blockerText: Record<string, string> = {
   PROGRAM_CLINICAL_DEFINITION_UNAVAILABLE: 'متن این نسخه یا منابع آن هنوز وضعیت معتبر انتشار ندارند. ابتدا بازبینی محتوای همین نسخه را کامل کنید.',
@@ -81,7 +82,7 @@ function PublicationForm({ token, item, setup, reload, preset, onPublished }: { 
         </label>
         <p id="program-price-help">مثلاً برای ۱۵۰ هزار تومان، ۱۵۰۰۰۰ وارد کنید. صفر یعنی رایگان. {amountRial !== null && <strong>مبلغ انتخابی: {amountRial === '0' ? 'رایگان' : formatRial(BigInt(amountRial))}</strong>}</p>
         <ProgramDiscountFields prefix="program-discount" percent={percent} start={start} end={end} onPercent={v=>{setPercent(v);changed();}} onStart={v=>{setStart(v);changed();}} onEnd={v=>{setEnd(v);changed();}}/>
-        {terms && <details className="program-terms"><summary>شرایط خرید: {terms.title}</summary><p className="program-full-body">{terms.body}</p></details>}
+        {terms && <details className="program-terms"><summary>شرایط خرید: {terms.title}</summary><ProgramMarkdown body={terms.body} /></details>}
         <p>مبلغ و تنظیمات این فرم تا زدن «انتشار برای خرید» ذخیره نمی‌شوند.</p>
         <button className="dashboard-button" type="submit">{busy ? 'در حال بررسی…' : 'بررسی آمادگی انتشار'}</button>
       </fieldset>
@@ -91,7 +92,7 @@ function PublicationForm({ token, item, setup, reload, preset, onPublished }: { 
       {preview.blockers.map(value => <p key={value}>{blockerText[value] ?? 'یکی از پیش‌نیازهای انتشار معتبر نیست؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.'}</p>)}
       {preview.configurationReady && preview.publicationHash && <>
         <p>قیمت نهایی: <strong>{preview.configuration.amountRial === '0' ? 'رایگان' : formatRial(BigInt(pricePreview(preview.configuration.amountRial,preview.configuration.discountPercent ?? 0,preview.configuration.discountStartsAt,preview.configuration.discountEndsAt)))}</strong></p>
-        {preview.termsPolicy && <details open><summary>{preview.termsPolicy.title}</summary><p className="program-full-body">{preview.termsPolicy.body}</p></details>}
+        {preview.termsPolicy && <details open><summary>{preview.termsPolicy.title}</summary><ProgramMarkdown body={preview.termsPolicy.body} /></details>}
         <label className="program-check"><input type="checkbox" checked={accepted} disabled={busy} onChange={e => setAccepted(e.target.checked)} />مبلغ و شرایط خرید را بررسی کرده‌ام.</label>
         <button disabled={!accepted || busy} className="dashboard-button dashboard-button-primary" onClick={() => {
           const config = configuration(); if (!config) return;

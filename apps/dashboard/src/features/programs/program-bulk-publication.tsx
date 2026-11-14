@@ -7,6 +7,7 @@ import { priceFromInput } from './program-price';
 import { pricePreview, tehranInstant } from './program-schedule';
 import { ProgramModal, programError, useProgramCommand } from './program-management-shared';
 import { ProgramDraftPublication } from './program-draft-publication';
+import { ProgramMarkdown } from './program-markdown';
 
 type Prepared = { service:ManagedService; configuration?:Commercial; preview?:Preview; error?:string; key:string };
 type BulkProps={token:string;services:ManagedService[];mode:'publish'|'pricing';onClose:()=>void;onChanged:()=>void};
@@ -51,7 +52,7 @@ function ProgramBulkPricing({token,services,mode,onClose,onChanged}: BulkProps) 
       <button className="dashboard-button" onClick={prepare}>بررسی و پیش‌نمایش گروه</button>
     </fieldset>
     {command.notice && <p className="program-notice" role="status">{command.notice}</p>}{progress&&<p role="status">{progress}</p>}
-    {!!prepared.length&&<><div className="program-managed-list">{prepared.map(item=><article className="program-import-item" key={item.service.id}><strong>{item.service.draft.title ?? 'خدمت بدون عنوان'}</strong><p>{results[item.service.id] ?? item.error ?? 'آمادهٔ انتشار'}</p>{item.configuration&&<p>قیمت اصلی: {formatRial(BigInt(item.configuration.amountRial))} · قیمت اکنون: {formatRial(BigInt(pricePreview(item.configuration.amountRial,item.configuration.discountPercent ?? 0,item.configuration.discountStartsAt,item.configuration.discountEndsAt)))}</p>}{item.preview?.termsPolicy&&<details><summary>شرایط خرید این خدمت</summary><p className="program-full-body">{item.preview.termsPolicy.body}</p></details>}</article>)}</div>
+    {!!prepared.length&&<><div className="program-managed-list">{prepared.map(item=><article className="program-import-item" key={item.service.id}><strong>{item.service.draft.title ?? 'خدمت بدون عنوان'}</strong><p>{results[item.service.id] ?? item.error ?? 'آمادهٔ انتشار'}</p>{item.configuration&&<p>قیمت اصلی: {formatRial(BigInt(item.configuration.amountRial))} · قیمت اکنون: {formatRial(BigInt(pricePreview(item.configuration.amountRial,item.configuration.discountPercent ?? 0,item.configuration.discountStartsAt,item.configuration.discountEndsAt)))}</p>}{item.preview?.termsPolicy&&<details><summary>شرایط خرید این خدمت</summary><ProgramMarkdown body={item.preview.termsPolicy.body} /></details>}</article>)}</div>
     <label className="program-check"><input type="checkbox" checked={accepted} disabled={command.busy} onChange={e=>setAccepted(e.target.checked)}/>قیمت‌ها، تخفیف‌ها و شرایط خرید موارد آماده را بررسی کرده‌ام.</label>
     <button className="dashboard-button dashboard-button-primary" disabled={!accepted||command.busy||!ready.length} onClick={apply}>انتشار {ready.length.toLocaleString('fa-IR')} مورد آماده</button></>}
   </ProgramModal>;
