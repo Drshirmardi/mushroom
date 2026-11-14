@@ -18,11 +18,7 @@ if (Boolean(developmentAdminPhone) !== Boolean(developmentAdminPassword)) {
   );
 }
 
-if (
-  developmentAdminPhone
-  && developmentAdminPassword
-  && process.env.NODE_ENV !== 'development'
-) {
+if (developmentAdminPhone && developmentAdminPassword && process.env.NODE_ENV !== 'development') {
   throw new Error('Development dashboard credentials may only be seeded in development.');
 }
 
@@ -52,9 +48,11 @@ try {
   const clinicId = seededClinic.rows[0]?.id;
   if (!clinicId) throw new Error('An active clinic is required for the development seed.');
 
-  const policyBody = 'با ثبت اطلاعات پزشکی خوداظهاری، رضایت می‌دهم این داده‌ها برای تکمیل پرونده اولیهٔ کلینیک پردازش شوند.';
+  const policyBody =
+    'با ثبت اطلاعات پزشکی خوداظهاری، رضایت می‌دهم این داده‌ها برای تکمیل پرونده اولیهٔ کلینیک پردازش شوند.';
   const policyContentHash = createHash('sha256').update(policyBody, 'utf8').digest('hex');
-  await client.query(`
+  await client.query(
+    `
     INSERT INTO consent_policy_versions (
       id, clinic_id, policy_key, version_number, locale, title, body,
       content_hash, status, activated_at, updated_at
@@ -70,8 +68,11 @@ try {
           AND locale = 'fa-IR'
           AND status = 'ACTIVE'
       )
-  `, [policyBody, policyContentHash, clinicId]);
-  await client.query(`
+  `,
+    [policyBody, policyContentHash, clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO specialties (id, clinic_id, name, canonical_name, description, is_active, publication_status, published_at, updated_at)
     VALUES
       ('40000000-0000-4000-8000-000000000001', $1::uuid, 'طب سنتی ایرانی', 'traditional-iranian-medicine', 'ویزیت و مشاورهٔ طب سنتی', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -81,8 +82,11 @@ try {
       description = EXCLUDED.description, is_active = EXCLUDED.is_active,
       publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
       updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO services (id, clinic_id, name, canonical_name, description, is_active, publication_status, published_at, updated_at)
     VALUES
       ('40000000-0000-4000-8000-000000000011', $1::uuid, 'ویزیت طب سنتی', 'traditional-medicine-visit', 'ویزیت حضوری طب سنتی', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -92,8 +96,11 @@ try {
       description = EXCLUDED.description, is_active = EXCLUDED.is_active,
       publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
       updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO doctor_profiles (id, clinic_id, display_name, biography, years_experience, languages, education, certifications, is_active, publication_status, published_at, updated_at)
     VALUES
       ('40000000-0000-4000-8000-000000000021', $1::uuid, 'دکتر مهران فرهمند', 'پزشک طب سنتی با تمرکز بر مراقبت‌های سبک زندگی.', 12, ARRAY['فارسی', 'انگلیسی'], ARRAY['دکترای طب سنتی'], ARRAY['گواهی طب سنتی ایران'], FALSE, 'UNPUBLISHED', NULL, CURRENT_TIMESTAMP),
@@ -104,21 +111,30 @@ try {
       certifications = EXCLUDED.certifications, is_active = EXCLUDED.is_active,
       publication_status = EXCLUDED.publication_status, published_at = EXCLUDED.published_at,
       updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO doctor_specialties (clinic_id, doctor_id, specialty_id)
     VALUES
       ($1::uuid, '40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000001'),
       ($1::uuid, '40000000-0000-4000-8000-000000000022', '40000000-0000-4000-8000-000000000002')
     ON CONFLICT (doctor_id, specialty_id) DO NOTHING
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     UPDATE doctor_profiles
     SET is_active = TRUE, publication_status = 'PUBLISHED', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
     WHERE id IN ('40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000022')
       AND clinic_id = $1::uuid
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO doctor_services (id, clinic_id, doctor_id, service_id, visit_mode, duration_minutes, buffer_minutes, price_amount, currency, is_active, publication_status, published_at, updated_at)
     VALUES
       ('40000000-0000-4000-8000-000000000031', $1::uuid, '40000000-0000-4000-8000-000000000021', '40000000-0000-4000-8000-000000000011', 'IN_PERSON', 30, 10, 850000, 'IRR', TRUE, 'PUBLISHED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -129,8 +145,11 @@ try {
       buffer_minutes = EXCLUDED.buffer_minutes, price_amount = EXCLUDED.price_amount, currency = EXCLUDED.currency,
       is_active = EXCLUDED.is_active, publication_status = EXCLUDED.publication_status,
       published_at = EXCLUDED.published_at, updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO availability_rules (id, clinic_id, doctor_id, visit_mode, iso_weekday, start_local_time, end_local_time, is_active, updated_at)
     VALUES
       ('40000000-0000-4000-8000-000000000041', $1::uuid, '40000000-0000-4000-8000-000000000021', 'IN_PERSON', 1, TIME '09:00:00', TIME '12:00:00', TRUE, CURRENT_TIMESTAMP),
@@ -147,46 +166,94 @@ try {
       clinic_id = EXCLUDED.clinic_id, doctor_id = EXCLUDED.doctor_id, visit_mode = EXCLUDED.visit_mode,
       iso_weekday = EXCLUDED.iso_weekday, start_local_time = EXCLUDED.start_local_time,
       end_local_time = EXCLUDED.end_local_time, is_active = EXCLUDED.is_active, updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO commerce_categories (id, clinic_id, name, slug, is_active, updated_at)
     VALUES ('40000000-0000-4000-8000-000000000101', $1::uuid, 'محصولات نمونه', 'sample-products', TRUE, CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO UPDATE SET
       clinic_id = EXCLUDED.clinic_id, name = EXCLUDED.name, slug = EXCLUDED.slug,
       is_active = EXCLUDED.is_active, updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
-    INSERT INTO commerce_products (id, clinic_id, category_id, title, slug, description, status, updated_at)
-    VALUES ('40000000-0000-4000-8000-000000000102', $1::uuid, '40000000-0000-4000-8000-000000000101', 'محصول نمونهٔ فروشگاه', 'sample-store-product', 'دادهٔ غیرحساس توسعه برای آزمون catalog.', 'ACTIVE', CURRENT_TIMESTAMP)
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
+    INSERT INTO commerce_products (id, clinic_id, category_id, title, slug, description, brand, manufacturer, short_description, ingredients, usage_instructions, warnings, contraindications, source_kind, status, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000102', $1::uuid, '40000000-0000-4000-8000-000000000101', 'محصول نمونهٔ فروشگاه', 'sample-store-product', 'دادهٔ غیرحساس توسعه برای آزمون catalog.', 'سبز زندگی', 'تأمین‌کنندهٔ نمونه', 'توضیح کوتاه برای نمایش در کارت محصول و لیست موجودی.', 'مادهٔ Effective، است Extract گیاهی، مواد قینویی', 'چای سنای با آب جوش برسانید', 'بیشتر از ۳ گرم در روز مصرف نشود', 'حساسیت به مواد گیاهی', 'MANUFACTURER_DOCUMENT', 'ACTIVE', CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO UPDATE SET
       clinic_id = EXCLUDED.clinic_id, category_id = EXCLUDED.category_id, title = EXCLUDED.title,
-      slug = EXCLUDED.slug, description = EXCLUDED.description, status = EXCLUDED.status,
+      slug = EXCLUDED.slug, description = EXCLUDED.description, brand = EXCLUDED.brand,
+      manufacturer = EXCLUDED.manufacturer, short_description = EXCLUDED.short_description,
+      ingredients = EXCLUDED.ingredients, usage_instructions = EXCLUDED.usage_instructions,
+      warnings = EXCLUDED.warnings, contraindications = EXCLUDED.contraindications,
+      source_kind = EXCLUDED.source_kind, status = EXCLUDED.status,
       updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
+    INSERT INTO commerce_product_images (id, product_id, object_key, mime_type, size_bytes, width, height, alt_text, status, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000201', '40000000-0000-4000-8000-000000000102', 'products/sample-store-product/cover.webp', 'image/webp', 245760, 800, 800, 'عکس couverture محصول نمونهٔ فروشگاه', 'READY', CURRENT_TIMESTAMP)
+    ON CONFLICT (product_id) DO UPDATE SET
+      object_key = EXCLUDED.object_key, mime_type = EXCLUDED.mime_type, size_bytes = EXCLUDED.size_bytes,
+      width = EXCLUDED.width, height = EXCLUDED.height, alt_text = EXCLUDED.alt_text,
+      status = EXCLUDED.status, updated_at = CURRENT_TIMESTAMP
+  `,
+  );
+  await client.query(
+    `
+    INSERT INTO commerce_discounts (id, clinic_id, code, title, kind, amount_toman, percentage_basis_points, starts_at, ends_at, usage_limit, per_patient_usage_limit, is_active, created_at, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000301', $1::uuid, 'SAMPLE-20', 'تخفیف ۲۰٪ محصول نمونه', 'PERCENTAGE', NULL, 2000, NOW(), NOW() + INTERVAL '60 days', 1000, 1, TRUE, NOW(), NOW())
+    ON CONFLICT (clinic_id, code) DO UPDATE SET
+      title = EXCLUDED.title, kind = EXCLUDED.kind, amount_toman = EXCLUDED.amount_toman,
+      percentage_basis_points = EXCLUDED.percentage_basis_points, starts_at = EXCLUDED.starts_at,
+      ends_at = EXCLUDED.ends_at, usage_limit = EXCLUDED.usage_limit,
+      per_patient_usage_limit = EXCLUDED.per_patient_usage_limit, is_active = EXCLUDED.is_active,
+      updated_at = CURRENT_TIMESTAMP
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO commerce_skus (id, clinic_id, product_id, code, title, current_price_toman, current_tax_toman, is_active, updated_at)
-    VALUES ('40000000-0000-4000-8000-000000000103', $1::uuid, '40000000-0000-4000-8000-000000000102', 'SAMPLE-COMMERCE-001', 'واحد نمونه', 125000, 0, TRUE, CURRENT_TIMESTAMP)
+    VALUES
+      ('40000000-0000-4000-8000-000000000103', $1::uuid, '40000000-0000-4000-8000-000000000102', 'SAMPLE-COMMERCE-001', 'واحد نمونه', 125000, 0, TRUE, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000105', $1::uuid, '40000000-0000-4000-8000-000000000102', 'SAMPLE-COMMERCE-002', 'بسته دوگانه', 220000, 0, TRUE, CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO UPDATE SET
       clinic_id = EXCLUDED.clinic_id, product_id = EXCLUDED.product_id, code = EXCLUDED.code,
       title = EXCLUDED.title, current_price_toman = EXCLUDED.current_price_toman,
       current_tax_toman = EXCLUDED.current_tax_toman, is_active = EXCLUDED.is_active,
       updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO inventory_items (id, clinic_id, sku_id, on_hand_quantity, reserved_quantity, updated_at)
-    VALUES ('40000000-0000-4000-8000-000000000104', $1::uuid, '40000000-0000-4000-8000-000000000103', 25, 0, CURRENT_TIMESTAMP)
+    VALUES
+      ('40000000-0000-4000-8000-000000000104', $1::uuid, '40000000-0000-4000-8000-000000000103', 25, 0, CURRENT_TIMESTAMP),
+      ('40000000-0000-4000-8000-000000000106', $1::uuid, '40000000-0000-4000-8000-000000000105', 12, 0, CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO UPDATE SET
       clinic_id = EXCLUDED.clinic_id, sku_id = EXCLUDED.sku_id, on_hand_quantity = EXCLUDED.on_hand_quantity,
       reserved_quantity = EXCLUDED.reserved_quantity, updated_at = CURRENT_TIMESTAMP
-  `, [clinicId]);
-  await client.query(`
+  `,
+    [clinicId],
+  );
+  await client.query(
+    `
     INSERT INTO commerce_shipping_rates (id, clinic_id, method, amount_toman, is_active, updated_at)
     SELECT gen_random_uuid(), $1::uuid, 'COURIER', 25000, TRUE, CURRENT_TIMESTAMP
     WHERE NOT EXISTS (
       SELECT 1 FROM commerce_shipping_rates
       WHERE clinic_id = $1::uuid AND method = 'COURIER'
     )
-  `, [clinicId]);
+  `,
+    [clinicId],
+  );
   if (developmentAdminPhone && developmentAdminPassword) {
     const passwordHash = await hash(developmentAdminPassword, {
       type: argon2id,
@@ -196,37 +263,51 @@ try {
       parallelism: 4,
       hashLength: 32,
     });
-    const admin = await client.query(`
+    const admin = await client.query(
+      `
       INSERT INTO users (id, phone, status, updated_at)
       VALUES (gen_random_uuid(), $1, 'ACTIVE', CURRENT_TIMESTAMP)
       ON CONFLICT (phone) DO UPDATE
         SET status = 'ACTIVE', updated_at = CURRENT_TIMESTAMP
       RETURNING id
-    `, [developmentAdminPhone]);
+    `,
+      [developmentAdminPhone],
+    );
     const adminUserId = admin.rows[0]?.id;
 
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO credentials (id, user_id, password_hash, password_changed_at, updated_at)
       VALUES (gen_random_uuid(), $1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
       ON CONFLICT (user_id) DO UPDATE
         SET password_hash = EXCLUDED.password_hash,
             password_changed_at = CURRENT_TIMESTAMP,
             updated_at = CURRENT_TIMESTAMP
-    `, [adminUserId, passwordHash]);
-    await client.query(`
+    `,
+      [adminUserId, passwordHash],
+    );
+    await client.query(
+      `
       INSERT INTO user_roles (user_id, role_id, assigned_at)
-      SELECT $1, id, CURRENT_TIMESTAMP FROM roles WHERE code = 'ADMIN'
+      SELECT $1, id, CURRENT_TIMESTAMP FROM roles WHERE code IN ('ADMIN', 'DOCTOR')
       ON CONFLICT (user_id, role_id) DO NOTHING
-    `, [adminUserId]);
+    `,
+      [adminUserId],
+    );
     // Wallet administration uses the same explicit clinic scope as other protected resources.
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO clinical_clinic_accesses (user_id, clinic_id)
       VALUES ($1, $2)
       ON CONFLICT (user_id, clinic_id) DO NOTHING
-    `, [adminUserId, clinicId]);
+    `,
+      [adminUserId, clinicId],
+    );
     await client.query('DELETE FROM login_attempts WHERE phone = $1', [developmentAdminPhone]);
   }
-  console.log('Development seed completed: identity roles, clinic directory/schedule records, and non-sensitive Phase 09 catalog data are available.');
+  console.log(
+    'Development seed completed: identity roles, clinic directory/schedule records, and non-sensitive Phase 09 catalog data are available.',
+  );
 } finally {
   await client.end();
 }
