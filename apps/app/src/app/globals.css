@@ -3479,9 +3479,12 @@
   --font-weight-semibold: 500;
   --font-weight-bold: 500;
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   min-height: 100%;
   flex-direction: column;
   isolation: isolate;
+  overflow-x: clip;
   color: var(--home-ink);
   font-family: var(--font-iranyekanx);
   font-synthesis: none;
@@ -4073,7 +4076,7 @@
 .home-banners {
   position: relative;
   min-width: 0;
-  width: min(552px, calc(100% + 48px));
+  width: min(552px, calc(100% + clamp(32px, 8vw, 48px)));
   justify-self: center;
   margin-inline: 0;
   background: transparent;
