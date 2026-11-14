@@ -33,8 +33,7 @@ function DoctorProfile() {
   if (q) from.set("q", q);
   if (mode) from.set("mode", mode);
   const profile = doctor.data?.id === id ? doctor.data : null;
-  const demoPortrait = process.env.NODE_ENV === "development" &&
-    !profile?.profileImageUrl && profile?.displayName.startsWith("Synthetic chat doctor ");
+  const demoPortrait = process.env.NODE_ENV === "development";
   const specialty = profile?.specialties.map(item => item.name).join("، ");
   const details = profile ? [
     { label: "تحصیلات", values: profile.education },

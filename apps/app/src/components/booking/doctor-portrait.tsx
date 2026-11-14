@@ -8,9 +8,10 @@ export function DoctorPortrait({ name, url, token, eager = false, className }: {
 }) {
   const [loaded, setLoaded] = useState<{ path: string; token: string; blob: string }>();
   const [failed, setFailed] = useState<string>();
-  const managed = url?.startsWith("/v1/directory/doctors/");
+  const referencePortrait = process.env.NODE_ENV === "development";
+  const managed = !referencePortrait && url?.startsWith("/v1/directory/doctors/");
   useEffect(() => {
-    if (!url || !managed) return;
+    if (referencePortrait || !url || !managed) return;
     const controller = new AbortController();
     let blob: string | undefined;
     void sessionFetch(new URL(url, apiBaseUrl), {
@@ -27,9 +28,13 @@ export function DoctorPortrait({ name, url, token, eager = false, className }: {
       controller.abort();
       if (blob) URL.revokeObjectURL(blob);
     };
-  }, [managed, token, url]);
+  }, [managed, referencePortrait, token, url]);
 
-  const source = managed ? (loaded?.path === url && loaded?.token === token ? loaded.blob : undefined) : url;
+  const source = referencePortrait
+    ? "/booking/doctor-portrait.webp"
+    : managed
+      ? (loaded?.path === url && loaded?.token === token ? loaded.blob : undefined)
+      : url;
   return source && source !== failed
     ? <img className={className} src={source} alt="" loading={eager ? "eager" : "lazy"} decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(source)} />
     : <span className={className} aria-hidden="true">{name.trim().split(/\s+/u).slice(0, 2).map(word => Array.from(word)[0]).join("")}</span>;
