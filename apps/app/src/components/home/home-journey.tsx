@@ -19,7 +19,7 @@ import {
 import { getAssessmentResult } from '@/lib/assessment-api';
 import { HomeOrderProgress } from './home-order-progress';
 import { toP } from '@/lib/format';
-import { homePendingAction, homeResultSummary, homeMizajData } from '@/lib/home-status';
+import { homePendingAction, homeMizajData } from '@/lib/home-status';
 import { MizajChart, mizajPercentages } from '@/components/assessments/mizaj-chart';
 import type { PatientJourney } from '@/lib/patient-journey-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -276,7 +276,6 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
   const result = usePatientResource(
     useCallback(() => getAssessmentResult(token, latest.id), [token, latest.id]),
   );
-  const summary = result.data ? homeResultSummary(result.data.resultSnapshot) : null;
   const chart = homeMizajData(result.data?.resultSnapshot);
   const percentages = chart ? mizajPercentages(chart.scores, chart.dimensions) : [];
   const distribution = chart
@@ -303,16 +302,6 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
       <AssessmentCarousel>
         <div className="home-assessment-heading">
           <span id="home-assessment-title">وضعیت شما</span>
-          {result.loading ? (
-            <span
-              className="home-assessment-result home-assessment-result--skeleton"
-              aria-hidden="true"
-            >
-              <SkeletonBox className="h-3 w-24" />
-            </span>
-          ) : summary ? (
-            <span className="home-assessment-result">{summary.title}</span>
-          ) : null}
         </div>
         <Link
           href={resultLink}
@@ -388,7 +377,7 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
             ranked.length > 0 && (
               <div className="home-assessment-primary-types">
                 {ranked.slice(0, 2).map((item, index) => (
-                  <span className="home-assessment-type" key={item.id}>
+                  <span className="home-assessment-type home-assessment-type--result" key={item.id}>
                     <small>مزاج {index === 0 ? 'اول' : 'دوم'}</small>
                     <strong>{item.title}</strong>
                   </span>
@@ -436,9 +425,6 @@ function AssessmentStatusSkeleton() {
         <div className="home-assessment-skeleton-slide">
           <div className="home-assessment-heading">
             <span>وضعیت شما</span>
-            <span className="home-assessment-result home-assessment-result--skeleton">
-              <SkeletonBox className="h-3 w-24" />
-            </span>
           </div>
           <div className="home-assessment-chart-layout">
             {scorePlaceholders('left')}
