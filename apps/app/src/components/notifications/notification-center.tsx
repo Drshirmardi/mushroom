@@ -112,22 +112,6 @@ export function NotificationCenter({
           }
         />
       )}
-      {embedded && unread > 0 && (
-        <button
-          type="button"
-          disabled={saving}
-          onClick={() => void markAllRead()}
-          className="mb-3 flex min-h-11 items-center text-sm font-bold text-primary disabled:opacity-60"
-          aria-busy={savingId === 'all'}
-        >
-          {savingId === 'all' && <HeartbeatLoader />}خواندن همه
-        </button>
-      )}
-      {unread > 0 && (
-        <div className="mx-4 mb-3 rounded-2xl bg-primary/10 p-3 text-center">
-          <p className="text-sm font-semibold text-primary">{toP(unread)} اعلان خوانده‌نشده</p>
-        </div>
-      )}
       <div className={`space-y-2 pb-4 ${embedded ? '' : 'px-4'}`}>
         {refreshing && items && <RefreshIndicator />}
         {!items && !error && <LoadingState label="در حال دریافت اعلان‌ها…" variant="list" />}

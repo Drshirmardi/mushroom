@@ -8,7 +8,16 @@ import { Autoplay, A11y } from 'swiper/modules';
 import type { Swiper as SwiperInstance } from 'swiper';
 import 'swiper/css';
 
-const banners = [
+export type HomeBannerItem = {
+  id: string;
+  title: string;
+  description: string;
+  action: string;
+  href: string;
+  image: string;
+};
+
+const homeBanners: readonly HomeBannerItem[] = [
   {
     id: 'couples-assessment',
     title: 'ارزیابی مزاج زوجین',
@@ -27,15 +36,23 @@ const banners = [
   },
 ] as const;
 
-export function HomeBanners() {
+export function HomeBanners({
+  banners = homeBanners,
+  label = 'پیشنهادهای خانه',
+  className,
+}: {
+  banners?: readonly HomeBannerItem[];
+  label?: string;
+  className?: string;
+} = {}) {
   const swiper = useRef<SwiperInstance | null>(null);
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion();
 
   return (
     <section
-      className="home-banners"
-      aria-label="پیشنهادهای خانه"
+      className={['home-banners', className].filter(Boolean).join(' ')}
+      aria-label={label}
       aria-roledescription="اسلایدر"
       onFocusCapture={() => swiper.current?.autoplay?.stop()}
       onBlurCapture={(event) => {

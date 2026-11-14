@@ -1,44 +1,51 @@
-"use client";
-import { AsyncButton } from "@/components/shared/async-button";
+'use client';
+import { AsyncButton } from '@/components/shared/async-button';
 
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import { AnimatePresence } from "motion/react";
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { AnimatePresence } from 'motion/react';
 
 const NotificationSheet = dynamic(
-  () => import("@/components/notifications/notification-sheet").then((module) => module.NotificationSheet),
+  () =>
+    import('@/components/notifications/notification-sheet').then(
+      (module) => module.NotificationSheet,
+    ),
   { ssr: false },
 );
-import { useCallback, useState } from "react";
-import { ArrowLeft, BookOpen } from "lucide-react";
-import { useAuthSession } from "@/components/auth/session-gate";
-import { PatientResourceState } from "@/components/shared/patient-resource-state";
-import { getPatientJourney } from "@/lib/patient-journey-api";
-import { patientCacheKey, peekPatientCache } from "@/lib/patient-request";
-import { HomeJourney, HomeJourneyOverview } from "@/components/home/home-journey";
-import { HomeBanners } from "@/components/home/home-banners";
-import { useOptionalPatientEntry } from "@/components/auth/patient-entry-gate";
-import { listPatientArticles, listNotifications } from "@/lib/follow-up-api";
-import { usePatientResource } from "@/lib/use-patient-resource";
+import { useCallback, useState } from 'react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
+import { useAuthSession } from '@/components/auth/session-gate';
+import { PatientResourceState } from '@/components/shared/patient-resource-state';
+import { getPatientJourney } from '@/lib/patient-journey-api';
+import { patientCacheKey, peekPatientCache } from '@/lib/patient-request';
+import { HomeJourney, HomeJourneyOverview } from '@/components/home/home-journey';
+import { HomeBanners } from '@/components/home/home-banners';
+import { useOptionalPatientEntry } from '@/components/auth/patient-entry-gate';
+import { listPatientArticles, listNotifications } from '@/lib/follow-up-api';
+import { usePatientResource } from '@/lib/use-patient-resource';
 import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
 
 const services = [
-  { href: "/assessment", title: "تست فردی", icon: "assessment" },
-  { href: "/assessment/couples", title: "تست دو نفره", icon: "couples" },
-  { href: "/appointments/book", title: "رزرو مشاوره", icon: "booking" },
-  { href: "/programs", title: "برنامه‌های سلامت", icon: "programs" },
+  { href: '/assessment', title: 'تست فردی', icon: 'assessment' },
+  { href: '/assessment/couples', title: 'تست دونفره', icon: 'couples' },
+  { href: '/appointments', title: 'رزرو مشاوره', icon: 'booking' },
+  { href: '/programs', title: 'خدمات من', icon: 'programs' },
 ];
 const followUps = [
-  { href: "/appointments", title: "نوبت‌های من", icon: "appointments" },
-  { href: "/treatment", title: "درمان من", icon: "treatment" },
-  { href: "/chat", title: "گفتگو با پزشک", icon: "chat" },
-  { href: "/profile/medical?from=home", title: "پرونده پزشکی", icon: "medical" },
-  { href: "/profile/wallet", title: "کیف پول", icon: "wallet" },
-  { href: "/store/orders", title: "سفارش‌های من", icon: "orders" },
+  { href: '/appointments', title: 'نوبت‌های من', icon: 'appointments' },
+  { href: '/treatment', title: 'درمان من', icon: 'treatment' },
+  { href: '/chat', title: 'گفتگو با پزشک', icon: 'chat' },
+  { href: '/profile/medical?from=home', title: 'پرونده پزشکی', icon: 'medical' },
+  { href: '/profile/wallet', title: 'کیف پول', icon: 'wallet' },
+  { href: '/store/orders', title: 'سفارش‌های من', icon: 'orders' },
 ];
 
-function HomeShortcuts({ label, items, className }: {
+function HomeShortcuts({
+  label,
+  items,
+  className,
+}: {
   label: string;
   items: readonly { href: string; title: string; icon: string }[];
   className: string;
@@ -48,7 +55,13 @@ function HomeShortcuts({ label, items, className }: {
       {items.map(({ href, title, icon }) => (
         <Link key={href} href={href} className="home-shortcut">
           <span className="home-shortcut-tile">
-            <img src={`/home/glass-icons/${icon}.webp`} width={36} height={36} alt="" draggable={false} />
+            <img
+              src={`/home/glass-icons/${icon}.webp`}
+              width={36}
+              height={36}
+              alt=""
+              draggable={false}
+            />
           </span>
           <span>{title}</span>
         </Link>
@@ -61,26 +74,25 @@ export default function HomePage() {
   const { authentication } = useAuthSession();
   const entry = useOptionalPatientEntry();
   const token = authentication.accessToken;
-  const journey = usePatientResource(useCallback(() => getPatientJourney(token), [token]), peekPatientCache(patientCacheKey(token, "journey")));
+  const journey = usePatientResource(
+    useCallback(() => getPatientJourney(token), [token]),
+    peekPatientCache(patientCacheKey(token, 'journey')),
+  );
   const articles = usePatientResource(useCallback(() => listPatientArticles(token), [token]));
   const notifications = usePatientResource(useCallback(() => listNotifications(token), [token]));
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [entryBusy,setEntryBusy]=useState(false),[entryError,setEntryError]=useState('');
-  const unread = notifications.data?.items.some(item => !item.readAt);
+  const [entryBusy, setEntryBusy] = useState(false),
+    [entryError, setEntryError] = useState('');
+  const unread = notifications.data?.items.some((item) => !item.readAt);
 
   return (
-    <div
-      className="home-page"
-      dir="rtl"
-    >
+    <div className="home-page" dir="rtl">
       <div className="home-hero">
         <header className="home-header flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-xs leading-6 text-[var(--home-muted)]">دکتر شیرمردی</p>
             <h1 className="text-lg leading-8 font-medium [overflow-wrap:anywhere]">
-              {entry?.status?.firstName
-                ? `سلام، ${entry.status.firstName}`
-                : 'سلام، خوش آمدید'}
+              {entry?.status?.firstName ? `سلام، ${entry.status.firstName}` : 'سلام، خوش آمدید'}
             </h1>
           </div>
           <button
@@ -92,7 +104,7 @@ export default function HomePage() {
             className="home-icon-link size-11"
           >
             <span className="home-notification-icon" aria-hidden="true">
-              <i className={`icon icon-notification-${unread ? 'bold' : 'linear'}`} />
+              <i className="icon icon-notification-linear icon-primary" />
             </span>
             {unread && <span className="home-unread" />}
           </button>
@@ -105,7 +117,11 @@ export default function HomePage() {
         <div className="home-hub">
           <HomeShortcuts label="خدمات سلامت" items={services} className="home-shortcuts-services" />
           <HomeBanners />
-          <HomeShortcuts label="دسترسی‌های من" items={followUps} className="home-shortcuts-access" />
+          <HomeShortcuts
+            label="دسترسی‌های من"
+            items={followUps}
+            className="home-shortcuts-access"
+          />
         </div>
 
         {entry?.status?.reminder && (
