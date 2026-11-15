@@ -110,7 +110,9 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment c
   it('terms rotation/hash mismatch blocks commercial usability and never falls back to retired prices',async()=>{
     const f=await prepared(); const row=(await publish(f)).json(); const next=await policy('ASSESSMENT_PURCHASE_TERMS'); expect(await usable(row.id)).toBeNull(); expect((await req('GET',`${base}/${row.id}`)).json().blockers).toContain('PURCHASE_TERMS_UNAVAILABLE');
     expect((await publish(f,admin,randomUUID(),{expectedPublicationNumber:1})).statusCode).toBe(409); const p=(await preview(f.d.id,next.id)).json(); expect(p.publicationHash).not.toBe(row.publicationHash); expect((await publish(f,admin,randomUUID(),{expectedPublicationNumber:1,termsPolicyVersionId:next.id,publicationHash:p.publicationHash})).statusCode).toBe(201);
-    const broken=await policy('ASSESSMENT_PURCHASE_TERMS','fa-IR',clinicId,false); expect((await preview(f.d.id,broken.id)).json().blockers).toContain('PURCHASE_TERMS_UNAVAILABLE');
+    await expect(policy('ASSESSMENT_PURCHASE_TERMS','fa-IR',clinicId,false)).rejects.toThrow(/assessment_consent_body_hash_matches/);
+    expect((await db.consentPolicyVersion.findUniqueOrThrow({where:{id:next.id}})).status).toBe('RETIRED');
+    expect((await preview(f.d.id,next.id)).json().blockers).toContain('PURCHASE_TERMS_UNAVAILABLE');
   });
   it('physician withdrawal/re-review cannot inherit publication and retirement stays possible with unavailable sources',async()=>{
     const f=await prepared(); const row=(await publish(f)).json(); expect((await req('POST',`clinical/assessment-protocols/${f.v.id}/reviews/${f.review.id}/withdrawal`,doctor,{protocolHash:f.review.protocolHash,expectedReviewNumber:1,withdrawalReason:'Synthetic withdrawal'})).statusCode).toBe(201); expect(await usable(row.id)).toBeNull();
