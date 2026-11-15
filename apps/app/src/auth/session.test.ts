@@ -181,4 +181,16 @@ describe("app auth session", () => {
     await expect(manager.logout()).resolves.toBe(false);
     expect(manager.getSnapshot()).toEqual({ status: "authenticated", authentication });
   });
+  it("adopts an externally authenticated Bale session without a refresh or web login", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const manager = new AuthSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => 1_000,
+    );
+    manager.acceptAuthentication(authentication);
+    expect(manager.getSnapshot()).toEqual({ status: "authenticated", authentication });
+    await expect(manager.bootstrap()).resolves.toEqual({ status: "authenticated", authentication });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
 });
