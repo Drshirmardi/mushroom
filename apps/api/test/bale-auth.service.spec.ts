@@ -58,7 +58,7 @@ describe('Bale account authentication boundaries', () => {
     const createMany = vi.fn().mockResolvedValue({ count: 1 });
     const updateMany = vi.fn().mockResolvedValue({ count: 1 });
     const tx = { baleWebhookEvent: { createMany }, baleContactChallenge: { updateMany } };
-    const transact = vi.fn(async (callback: (tx: typeof tx) => Promise<unknown>) => callback(tx));
+    const transact = vi.fn(async (callback: (db: typeof tx) => Promise<unknown>) => callback(tx));
     const bale = service({ $transaction: transact });
     const update = { update_id: 101, message: { date: Math.floor(Date.now() / 1000),
       chat: { type: 'private' }, from: { id: 456789 },
