@@ -43,7 +43,7 @@ function priceOffer(sku: CommerceProduct['skus'][number]): PriceOffer | null {
   const previous = BigInt(previousText);
   const current = BigInt(sku.currentPriceToman);
   if (previous <= current) return null;
-  const percent = Number(((previous - current) * 100n) / previous);
+  const percent = Number(((previous - current) * BigInt(100)) / previous);
   if (percent < 1) return null;
   return { previous, percent };
 }
