@@ -18,11 +18,11 @@ export function DoctorImageField({ id, imageUrl, token, refresh }: {
   const managed = imageUrl?.startsWith("/v1/admin/doctors/");
 
   useEffect(() => {
-    if (!file) return;
-    const objectUrl = URL.createObjectURL(file);
-    setLocalPreview(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [file]);
+    // The object URL is created by the file-selection event, not during an effect.
+    return () => {
+      if (localPreview) URL.revokeObjectURL(localPreview);
+    };
+  }, [localPreview]);
 
   useEffect(() => {
     if (!managed) return;
@@ -59,6 +59,7 @@ export function DoctorImageField({ id, imageUrl, token, refresh }: {
         return;
       }
       setFile(undefined);
+      setLocalPreview(undefined);
       if (input.current) input.current.value = "";
       setVersion(current => current + 1);
       const refreshed = await refresh();
@@ -81,6 +82,7 @@ export function DoctorImageField({ id, imageUrl, token, refresh }: {
         const selected = event.target.files?.[0];
         const valid = selected && selected.size <= 5 * 1024 * 1024 && ["image/jpeg", "image/png", "image/webp"].includes(selected.type);
         setFile(valid ? selected : undefined);
+        setLocalPreview(valid && selected ? URL.createObjectURL(selected) : undefined);
         setError(Boolean(selected && !valid));
         setMessage(selected && !valid ? "فرمت یا حجم عکس قابل قبول نیست." : "");
       }} />
