@@ -7,7 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, type PrismaClient } from '../../../generated/prisma/client';
+import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { normalizeIranianMobile } from '../domain/phone-number';
 import { SessionIssuerUseCase } from '../application/session-issuer.use-case';
@@ -93,7 +93,7 @@ export class BaleAuthService {
         expiresAt, status: 'PENDING',
       },
       update: {
-        id: randomUUID(), ticketHash: hashTicket(ticket), status: 'PENDING',
+        ticketHash: hashTicket(ticket), status: 'PENDING',
         phone: null, verifiedAt: null, consumedAt: null, createdAt: new Date(), expiresAt,
       },
     });
@@ -178,7 +178,7 @@ export class BaleAuthService {
     });
     if (!user || user.status !== 'ACTIVE' || !hasPatientRole(user.roles.map(({ role }) => role.code)) ||
       user.phone !== challenge.phone || session?.userId !== userId || session.verifiedPhone !== challenge.phone ||
-      session.revokedAt || session.expiresAt <= new Date() || session.createdAt.getTime() < Date.now() - 10 * 60_000) throw new ForbiddenException({ code: 'BALE_REAUTH_REQUIRED', message: 'Fresh phone authentication is required.', details: {} });
+      session.revokedAt || session.expiresAt.getTime() <= Date.now() || session.createdAt.getTime() < Date.now() - 10 * 60_000) throw new ForbiddenException({ code: 'BALE_REAUTH_REQUIRED', message: 'Fresh phone authentication is required.', details: {} });
 
     try {
       await this.prisma.$transaction(async tx => {
