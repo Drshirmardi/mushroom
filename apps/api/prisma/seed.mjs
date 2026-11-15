@@ -169,6 +169,9 @@ try {
   `,
     [clinicId],
   );
+  // Legacy chat-migration fixture applies the Phase 09 schema, before catalog-detail columns existed.
+  // Do not make the regular production/development seed depend on pre-migration column shapes.
+  if (process.env.MUSHROOM_SEED_LEGACY_CHAT_FIXTURE !== 'true') {
   await client.query(
     `
     INSERT INTO commerce_categories (id, clinic_id, name, slug, is_active, updated_at)
@@ -254,6 +257,7 @@ try {
   `,
     [clinicId],
   );
+  }
   if (developmentAdminPhone && developmentAdminPassword) {
     const passwordHash = await hash(developmentAdminPassword, {
       type: argon2id,
