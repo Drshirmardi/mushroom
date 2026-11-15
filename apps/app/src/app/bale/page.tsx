@@ -25,7 +25,9 @@ type BaleFlow =
   | { status: "CONTACT_REQUIRED" | "CONTACT_PENDING" };
 type BaleRequest = { status: "CONTACT_REQUIRED"; ticket: string; expiresAt: string };
 type OtpChallenge = { challengeId: string; destinationMasked: string; expiresAt: string };
-type View = "opening" | "contact" | "waiting" | "phone" | "code" | "error";
+type View = "opening" | "contact" | "waiting" | "phone" | "code" | "unsupported-account" | "error";
+const isUnsupportedAccount = (error: unknown) =>
+  error instanceof Error && error.message === "BALE_ACCOUNT_UNSUPPORTED";
 
 async function apiPost<T>(path: string, body: object, extraHeaders: Record<string, string> = {}): Promise<T> {
   const response = await fetch(`${apiBaseUrl}/v1/${path}`, {
@@ -52,6 +54,7 @@ export default function BaleMiniAppPage() {
   const [code, setCode] = useState("");
   const [challenge, setChallenge] = useState<OtpChallenge | null>(null);
   const [busy, setBusy] = useState(false);
+  const [canExpand, setCanExpand] = useState(false);
   const initData = useRef("");
   const opening = useRef(false);
 
@@ -71,7 +74,7 @@ export default function BaleMiniAppPage() {
       initData.current = webApp.initData;
       window.sessionStorage.setItem("mushroom:bale-miniapp", "1");
       webApp.ready();
-      webApp.expand?.();
+      setCanExpand(typeof webApp.expand === "function");
       const result = await apiPost<BaleFlow>("auth/bale/exchange", { initData: initData.current });
       if (result.status === "AUTHENTICATED") finish(result.authentication);
       else setView("contact");
@@ -118,8 +121,12 @@ export default function BaleMiniAppPage() {
           setPhone(result.phone);
           setView("phone");
         }
-      } catch {
+      } catch (failure) {
         if (!cancelled) {
+          if (isUnsupportedAccount(failure)) {
+            setView("unsupported-account");
+            return;
+          }
           setError("تأیید شماره کامل نشد یا زمان درخواست پایان یافت. دوباره تلاش کنید.");
           setView("error");
         }
@@ -159,8 +166,12 @@ export default function BaleMiniAppPage() {
           { authorization: `Bearer ${authentication.accessToken}` },
         );
         finish(authentication);
-      } catch {
-        setError("تأیید انجام شد، اما اتصال حساب کامل نشد. دوباره از بله وارد شوید.");
+      } catch (failure) {
+        if (isUnsupportedAccount(failure)) {
+          setView("unsupported-account");
+        } else {
+          setError("تأیید انجام شد، اما اتصال حساب کامل نشد. دوباره از بله وارد شوید.");
+        }
       }
     } catch {
       setError("کد معتبر نبود یا زمان آن تمام شده است. کد تازه بگیرید و دوباره تلاش کنید.");
@@ -171,7 +182,7 @@ export default function BaleMiniAppPage() {
     <main className="min-h-dvh bg-[#eef9fd] px-4 py-6 text-slate-900 sm:px-6 sm:py-10" dir="rtl">
       <Script src="https://tapi.bale.ai/miniapp.js?3" strategy="afterInteractive" onReady={() => { void openBale(); }}
         onError={() => { setError("دریافت ابزار ارتباطی بله ناموفق بود."); setView("error"); }} />
-      <section className="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-md flex-col items-center justify-center gap-5 rounded-3xl border border-sky-100 bg-white px-5 py-8 text-center shadow-sm sm:min-h-[75dvh] sm:px-8">
+      <section className="mx-auto flex w-full max-w-md flex-col items-center gap-5 rounded-3xl border border-sky-100 bg-white px-5 py-6 text-center shadow-sm sm:px-8">
         <div className="flex size-16 items-center justify-center rounded-2xl bg-[#e5f6fc] text-[#008fc8]">
           {view === "opening" || view === "waiting" ? <LoaderCircle className="size-8 animate-spin" />
             : view === "code" ? <ShieldCheck className="size-8" /> : <Smartphone className="size-8" />}
@@ -207,10 +218,16 @@ export default function BaleMiniAppPage() {
             تأیید و اتصال حساب
           </button>
         </>}
+        {view === "unsupported-account" && <p role="alert" className="text-sm leading-7 text-slate-700">
+          ورود از بله فقط برای حساب فعال مراجعان در دسترس است.
+        </p>}
         {view === "error" && <button type="button" className="w-full rounded-2xl border px-5 py-3"
           onClick={() => void openBale()}>تلاش دوباره</button>}
         {error && <p role="alert" className="text-sm leading-6 text-rose-700">{error}</p>}
-        <p className="text-xs leading-6 text-slate-500">حساب شما فقط پس از تأیید امن بله وارد می‌شود.</p>
+        {canExpand && <button type="button" onClick={() => window.Bale?.WebApp?.expand?.()}
+          className="min-h-11 rounded-lg px-3 text-sm font-medium text-sky-800 hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700">
+          تمام‌صفحه
+        </button>}
       </section>
     </main>
   );

@@ -13,6 +13,7 @@ import { ACCESS_TOKEN_TTL_SECONDS } from '../../../common/auth/access-token.serv
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
+import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { AuthenticationResponseDto } from '../presentation/http/dto/login.dto';
 import { BaleAuthService, type BaleFlowResult } from './bale-auth.service';
 
@@ -99,6 +100,7 @@ export class BaleAuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'baleContactComplete', summary: 'Finish a server-verified Bale contact flow; never trusts the browser phone' })
   @ApiOkResponse({ type: BaleFlowResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed or the existing account is ineligible (BALE_ACCOUNT_UNSUPPORTED).')
   async complete(@Body() body: BaleContactTicketDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     this.origins.assertAllowed(originOf(request));
     return this.flow(await this.bale.completeContact(body.initData, body.ticket, contextOf(request)), reply);
@@ -111,6 +113,7 @@ export class BaleAuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ operationId: 'baleContactLink', summary: 'Link an existing patient after fresh OTP phone verification' })
   @ApiNoContentResponse()
+  @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Access is denied, fresh phone verification is required, or the account is ineligible (BALE_ACCOUNT_UNSUPPORTED).')
   async link(@Body() body: BaleContactTicketDto, @Req() request: AuthenticatedRequest) {
     this.origins.assertAllowed(originOf(request));
     await this.bale.linkExisting(body.initData, body.ticket, request.auth.userId, request.auth.sessionId, contextOf(request));

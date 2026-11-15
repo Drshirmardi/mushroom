@@ -1,6 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 
 export const API_ERROR_CODES = [
+  'BALE_ACCOUNT_UNSUPPORTED',
   'PATIENT_ENTRY_REQUIRED',
   'ENTRY_UNAVAILABLE',
   'ENTRY_CONFLICT',

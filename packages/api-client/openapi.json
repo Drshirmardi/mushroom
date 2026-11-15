@@ -1774,6 +1774,16 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "Browser origin is not allowed or the existing account is ineligible (BALE_ACCOUNT_UNSUPPORTED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "summary": "Finish a server-verified Bale contact flow; never trusts the browser phone",
@@ -1829,6 +1839,16 @@
         "responses": {
           "204": {
             "description": ""
+          },
+          "403": {
+            "description": "Access is denied, fresh phone verification is required, or the account is ineligible (BALE_ACCOUNT_UNSUPPORTED).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -42582,6 +42602,7 @@
           "code": {
             "type": "string",
             "enum": [
+              "BALE_ACCOUNT_UNSUPPORTED",
               "PATIENT_ENTRY_REQUIRED",
               "ENTRY_UNAVAILABLE",
               "ENTRY_CONFLICT",

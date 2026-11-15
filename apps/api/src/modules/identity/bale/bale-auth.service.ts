@@ -25,7 +25,14 @@ const CONTACT_TTL_MS = 5 * 60_000;
 const hashTicket = (ticket: string) => createHash('sha256').update(ticket).digest('hex');
 const invalid = () => new UnauthorizedException({ code: 'BALE_AUTH_INVALID', message: 'Bale identity or contact request is invalid.', details: {} });
 const limited = () => new ConflictException({ code: 'BALE_LINK_CONFLICT', message: 'The account cannot be linked.', details: {} });
+const unsupportedAccount = () => new ForbiddenException({
+  code: 'BALE_ACCOUNT_UNSUPPORTED',
+  message: 'Bale sign-in is available only for active patient accounts.',
+  details: {},
+});
 const hasPatientRole = (roles: string[]) => roles.includes('PATIENT') && !roles.some(role => ['ADMIN', 'STAFF', 'DOCTOR'].includes(role));
+const isActivePatient = (user: { status: string; roles: { role: { code: string } }[] }) =>
+  user.status === 'ACTIVE' && hasPatientRole(user.roles.map(({ role }) => role.code));
 
 /** This service only trusts signed Bale initData and authenticated webhook updates. */
 @Injectable()
@@ -48,7 +55,7 @@ export class BaleAuthService {
 
   private async issue(user: { id: string; phone: string; status: string; roles: { role: { code: string } }[] }, context: RequestContext): Promise<Authentication> {
     const roles = user.roles.map(({ role }) => role.code);
-    if (user.status !== 'ACTIVE' || !hasPatientRole(roles)) throw invalid();
+    if (!isActivePatient(user)) throw invalid();
     return {
       status: 'AUTHENTICATED',
       result: await this.sessions.execute({
@@ -115,8 +122,14 @@ export class BaleAuthService {
     if (challenge.status !== 'VERIFIED' || !challenge.phone) throw invalid();
 
     // Never auto-link an existing medical account based on a phone from the browser.
-    const prior = await this.prisma.user.findUnique({ where: { phone: challenge.phone }, select: { id: true } });
-    if (prior) return { status: 'ACCOUNT_LINK_REQUIRED', phone: challenge.phone };
+    const prior = await this.prisma.user.findUnique({
+      where: { phone: challenge.phone },
+      select: { status: true, roles: { select: { role: { select: { code: true } } } } },
+    });
+    if (prior) {
+      if (!isActivePatient(prior)) throw unsupportedAccount();
+      return { status: 'ACCOUNT_LINK_REQUIRED', phone: challenge.phone };
+    }
 
     try {
       const user = await this.prisma.$transaction(async tx => {
@@ -176,8 +189,8 @@ export class BaleAuthService {
       where: { id: userId },
       select: { id: true, phone: true, status: true, roles: { select: { role: { select: { code: true } } } } },
     });
-    if (!user || user.status !== 'ACTIVE' || !hasPatientRole(user.roles.map(({ role }) => role.code)) ||
-      user.phone !== challenge.phone || session?.userId !== userId || session.verifiedPhone !== challenge.phone ||
+    if (!user || !isActivePatient(user)) throw unsupportedAccount();
+    if (user.phone !== challenge.phone || session?.userId !== userId || session.verifiedPhone !== challenge.phone ||
       session.revokedAt || session.expiresAt.getTime() <= Date.now() || session.createdAt.getTime() < Date.now() - 10 * 60_000) throw new ForbiddenException({ code: 'BALE_REAUTH_REQUIRED', message: 'Fresh phone authentication is required.', details: {} });
 
     try {

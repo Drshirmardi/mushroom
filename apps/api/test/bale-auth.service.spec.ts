@@ -1,4 +1,4 @@
-import { createHmac } from 'node:crypto';
+import { createHash, createHmac } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
 import { describe, expect, it, vi } from 'vitest';
 import { BaleAuthService } from '../src/modules/identity/bale/bale-auth.service';
@@ -17,6 +17,20 @@ function service(prisma: object, sessions: object = { execute: vi.fn() }) {
     new ConfigService({ BALE_AUTH_ENABLED: 'true', BALE_BOT_TOKEN: token, BALE_WEBHOOK_SECRET: webhookSecret }),
     sessions as never,
   );
+}
+
+const contactTicket = 'a'.repeat(43);
+const verifiedPhone = '+989121234567';
+const context = { ipAddress: '127.0.0.1', requestId: 'req' };
+
+function verifiedContact() {
+  return {
+    findUnique: vi.fn().mockResolvedValue({
+      id: 'contact-id', status: 'VERIFIED', phone: verifiedPhone, consumedAt: null,
+      ticketHash: createHash('sha256').update(contactTicket).digest('hex'),
+      expiresAt: new Date(Date.now() + 60_000),
+    }),
+  };
 }
 
 describe('Bale account authentication boundaries', () => {
@@ -42,6 +56,91 @@ describe('Bale account authentication boundaries', () => {
       roles: [{ role: { code: 'PATIENT' } }, { role: { code: 'ADMIN' } }] };
     const bale = service({ externalAuthIdentity: { findUnique: vi.fn().mockResolvedValue({ user }) } });
     await expect(bale.exchange(signed(), { ipAddress: '127.0.0.1', requestId: 'req' })).rejects.toMatchObject({ status: 401 });
+  });
+
+  it.each([
+    ['ACTIVE', ['ADMIN']],
+    ['ACTIVE', ['PATIENT', 'ADMIN']],
+    ['DISABLED', ['PATIENT']],
+  ])('rejects an ineligible account (%s, %j) before prompting for OTP', async (status, roles) => {
+    const bale = service({
+      baleContactChallenge: verifiedContact(),
+      user: { findUnique: vi.fn().mockResolvedValue({ status, roles: roles.map(code => ({ role: { code } })) }) },
+    });
+    await expect(bale.completeContact(signed(), contactTicket, context)).rejects.toMatchObject({
+      status: 403, response: { code: 'BALE_ACCOUNT_UNSUPPORTED' },
+    });
+  });
+
+  it('returns the verified phone for an eligible existing patient', async () => {
+    const bale = service({
+      baleContactChallenge: verifiedContact(),
+      user: { findUnique: vi.fn().mockResolvedValue({ status: 'ACTIVE', roles: [{ role: { code: 'PATIENT' } }] }) },
+    });
+    await expect(bale.completeContact(signed(), contactTicket, context)).resolves.toEqual({
+      status: 'ACCOUNT_LINK_REQUIRED', phone: verifiedPhone,
+    });
+  });
+
+  it('links a freshly verified patient and signs them in on the next launch', async () => {
+    const user = { id: 'patient-id', phone: verifiedPhone, status: 'ACTIVE', roles: [{ role: { code: 'PATIENT' } }] };
+    const identity = {
+      create: vi.fn(),
+      findUnique: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce({ user }),
+    };
+    const contact = { ...verifiedContact(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) };
+    const prisma = {
+      baleContactChallenge: contact,
+      externalAuthIdentity: identity,
+      auditEvent: { create: vi.fn() },
+      user: { findUnique: vi.fn().mockResolvedValue(user) },
+      session: { findUnique: vi.fn().mockResolvedValue({
+        userId: user.id, verifiedPhone, createdAt: new Date(), expiresAt: new Date(Date.now() + 60_000), revokedAt: null,
+      }) },
+    };
+    const issue = vi.fn().mockResolvedValue({ accessToken: 'access' });
+    const bale = service({ ...prisma, $transaction: (run: (tx: typeof prisma) => unknown) => run(prisma) }, { execute: issue });
+    await expect(bale.exchange(signed(), context)).resolves.toEqual({ status: 'CONTACT_REQUIRED' });
+    await bale.linkExisting(signed(), contactTicket, user.id, 'session-id', context);
+    expect(identity.create).toHaveBeenCalledWith({
+      data: { provider: 'BALE', providerUserId: '456789', userId: user.id },
+    });
+    await expect(bale.exchange(signed(), context)).resolves.toMatchObject({ status: 'AUTHENTICATED' });
+  });
+
+  it('creates a patient and issues a session for a verified new phone', async () => {
+    const user = { id: 'new-patient', phone: verifiedPhone, status: 'ACTIVE', roles: [{ role: { code: 'PATIENT' } }] };
+    const prisma = {
+      baleContactChallenge: { ...verifiedContact(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+      externalAuthIdentity: { findUnique: vi.fn().mockResolvedValue(null) },
+      user: { findUnique: vi.fn().mockResolvedValue(null), create: vi.fn().mockResolvedValue(user) },
+      role: { findUnique: vi.fn().mockResolvedValue({ id: 'patient-role' }) },
+      clinic: { findFirst: vi.fn().mockResolvedValue({ id: 'clinic-id' }) },
+      auditEvent: { create: vi.fn() },
+    };
+    const issue = vi.fn().mockResolvedValue({ accessToken: 'access' });
+    const bale = service({ ...prisma, $transaction: (run: (tx: typeof prisma) => unknown) => run(prisma) }, { execute: issue });
+    await expect(bale.completeContact(signed(), contactTicket, context)).resolves.toMatchObject({ status: 'AUTHENTICATED' });
+    expect(prisma.user.create).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
+      phone: verifiedPhone,
+      externalAuthIdentities: { create: { provider: 'BALE', providerUserId: '456789' } },
+    }) }));
+  });
+
+  it('rejects linking when the OTP account has gained a privileged role', async () => {
+    const transact = vi.fn();
+    const bale = service({
+      $transaction: transact,
+      baleContactChallenge: verifiedContact(),
+      session: { findUnique: vi.fn().mockResolvedValue({ userId: 'patient-id', verifiedPhone }) },
+      user: { findUnique: vi.fn().mockResolvedValue({
+        status: 'ACTIVE', phone: verifiedPhone, roles: [{ role: { code: 'PATIENT' } }, { role: { code: 'ADMIN' } }],
+      }) },
+    });
+    await expect(bale.linkExisting(signed(), contactTicket, 'patient-id', 'session-id', context)).rejects.toMatchObject({
+      status: 403, response: { code: 'BALE_ACCOUNT_UNSUPPORTED' },
+    });
+    expect(transact).not.toHaveBeenCalled();
   });
 
   it('refuses forged contact updates where contact.user_id differs from message.from.id', async () => {
