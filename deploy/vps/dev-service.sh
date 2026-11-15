@@ -106,6 +106,21 @@ case "$command_name" in
       R2_SECRET_ACCESS_KEY=$(<"$R2_SECRET_ACCESS_KEY_FILE")
       export R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY
     fi
+    # Bale secrets are optional while disabled. Read mounted files only when enabled.
+    if [[ ${BALE_AUTH_ENABLED:-false} == true ]]; then
+      for name in BALE_BOT_TOKEN BALE_WEBHOOK_SECRET; do
+        if [[ -z ${!name:-} ]]; then
+          file_var="${name}_FILE"
+          file="${!file_var:-}"
+          [[ -n $file && -r $file ]] || {
+            printf '%s is not readable or configured\\n' "$file_var" >&2
+            exit 1
+          }
+          printf -v "$name" '%s' "$(<"$file")"
+          export "$name"
+        fi
+      done
+    fi
     for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER OTP_PEPPER \
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS \
       SMS_CREDENTIAL_ENCRYPTION_KEY SMS_CREDENTIAL_DECRYPTION_KEYS; do
