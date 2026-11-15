@@ -185,3 +185,11 @@ export class PatientJourneyResponseDto {
   @ApiProperty({ type: JourneyCoupleLinksDto }) coupleLinks!: JourneyCoupleLinksDto;
   @ApiProperty({ description: 'Shopping is independent of medical onboarding' }) storeAvailable!: boolean;
 }
+
+export class PatientHomeResponseDto {
+  @ApiProperty({ type: [JourneySetupStepDto], minItems: 3, maxItems: 3 }) setupSteps!: JourneySetupStepDto[];
+  @ApiProperty() isOnboardingComplete!: boolean;
+  @ApiProperty({ type: JourneyLatestAssessmentDto, nullable: true }) latestAssessment!: JourneyLatestAssessmentDto | null;
+  @ApiProperty({ type: JourneyAppointmentDto, nullable: true }) nextAppointment!: JourneyAppointmentDto | null;
+  @ApiProperty({ type: [JourneyHomeActionDto], maxItems: 12 }) actions!: JourneyHomeActionDto[];
+}

@@ -1,8 +1,11 @@
 import { createCompleteTestPatient } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
+import { writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
@@ -14,17 +17,28 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
   let app: NestFastifyApplication;
   let db: PrismaService;
   let clinicId: string;
+  let tokens: AccessTokenService;
   type Actor = Awaited<ReturnType<typeof patient>>;
   beforeAll(async () => {
     assertPatientJourneyTestDatabase();
     Logger.overrideLogger(false);
-    app = await createApiApplication(); await app.init(); db = app.get(PrismaService);
+    if (process.env.PATIENT_HOME_BENCHMARK_BUILT === '1') {
+      const built = createRequire(resolve('package.json'));
+      app = await (built('./dist/app.factory.js').createApiApplication as typeof createApiApplication)();
+      db = app.get(built('./dist/database/prisma/prisma.service.js').PrismaService);
+      tokens = app.get(built('./dist/common/auth/access-token.service.js').AccessTokenService);
+    } else {
+      app = await createApiApplication();
+      db = app.get(PrismaService);
+      tokens = app.get(AccessTokenService);
+    }
+    await app.init();
     clinicId = (await db.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } })).id;
   }, 30_000);
   afterAll(async () => { await app?.close(); });
 
   async function patient(complete = false) {
-    const auth = await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT']);
+    const auth = await createTestAccessToken(db, tokens, ['PATIENT']);
     const role = await db.role.findUniqueOrThrow({ where: { code: 'PATIENT' } });
     await db.userRole.create({ data: { userId: auth.userId, roleId: role.id } });
     const profile = await createCompleteTestPatient(db, { data: { userId: auth.userId, clinicId } });
@@ -38,6 +52,88 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     return { ...auth, patientId: profile.id };
   }
   const get = (p: { token: string }, query = '') => app.inject({ method: 'GET', url: `/v1/patients/me/journey${query}`, headers: { authorization: `Bearer ${p.token}` } });
+  const home = (p: { token: string }) => app.inject({
+    method: 'GET', url: '/v1/patients/me/home', headers: { authorization: `Bearer ${p.token}` },
+  });
+
+  it.skipIf(process.env.PATIENT_HOME_BENCHMARK !== '1')('measures home, legacy journey and answer saves at a fixed arrival rate', async () => {
+    const { setTimeout: delay } = await import('node:timers/promises');
+    const accounts = await Promise.all([patient(true), patient(true)]);
+    const version = await db.assessmentVersion.create({ data: {
+      clinicId, assessmentKey: `PERF-${randomUUID()}`, locale: 'fa-IR', versionNumber: 1,
+      title: 'Synthetic performance assessment', contentHash: 'a'.repeat(64), status: 'PUBLISHED', publishedAt: new Date(),
+      structure: { schemaVersion: 1, sections: [{ id: 's', questions: [{ id: 'q', type: 'BOOLEAN', required: true, trueScore: 2, falseScore: 0 }] }], resultBands: [] },
+    } });
+    await db.patientAssessmentSubmission.createMany({ data: Array.from({ length: 24 }, (_, i) => ({
+      patientId: accounts[1]!.patientId, assessmentVersionId: version.id, attemptNumber: i + 1,
+      state: 'COMPLETE' as const, completedAt: new Date(), completionIdempotencyKey: randomUUID(),
+      completionPayloadHash: 'd'.repeat(64), answers: { q: true }, resultSnapshot: { primary: 'a', secondary: 'b' },
+    })) });
+    const drafts = await Promise.all(Array.from({ length: 20 }, async () => {
+      const actor = await patient(true);
+      await db.patientEntry.update({ where: { patientId: actor.patientId }, data: { assessmentVersionId: version.id } });
+      const draft = await db.patientAssessmentSubmission.create({ data: {
+        patientId: actor.patientId, assessmentVersionId: version.id, entryPatientId: actor.patientId, answers: {},
+      } });
+      return { actor, draft };
+    }));
+
+    let queries = 0, auditMs = 0;
+    const transactionStart: number[] = [];
+    const transactionDuration: number[] = [];
+    (db as unknown as { $on(event: 'query', handler: (event: Prisma.QueryEvent) => void): void }).$on('query', event => {
+      queries++;
+      if (/INSERT INTO .*?(audit_events|patient_access_audits)/i.test(event.query)) auditMs += event.duration;
+    });
+    const transaction = db.$transaction.bind(db);
+    const transactionSpy = vi.spyOn(db, '$transaction');
+    transactionSpy.mockImplementation(((callback: (tx: Prisma.TransactionClient) => Promise<unknown>, options?: { maxWait?: number; timeout?: number; isolationLevel?: Prisma.TransactionIsolationLevel }) => {
+      const started = performance.now();
+      return transaction(async tx => {
+        const entered = performance.now();
+        transactionStart.push(entered - started);
+        try { return await callback(tx); }
+        finally { transactionDuration.push(performance.now() - entered); }
+      }, options);
+    }) as typeof db.$transaction);
+    const percentile = (values: number[], percentile: number) =>
+      Number(([...values].sort((a, b) => a - b)[Math.ceil(values.length * percentile) - 1] ?? 0).toFixed(1));
+
+    const measurements = [];
+    try {
+      for (const [route, send] of [
+        ['journey', (i: number) => get(accounts[i % 2]!)],
+        ['home', (i: number) => home(accounts[i % 2]!)],
+        ['autosave', (i: number) => {
+          const { actor, draft } = drafts[i]!;
+          return app.inject({
+            method: 'PUT', url: `/v1/assessment-submissions/${draft.id}`,
+            headers: { authorization: `Bearer ${actor.token}` },
+            payload: { answers: { q: true }, expectedRevision: 0 },
+          });
+        }],
+      ] as const) {
+        if (route !== 'autosave') await send(0);
+        queries = auditMs = transactionStart.length = transactionDuration.length = 0;
+        const durations = await Promise.all(Array.from({ length: 20 }, async (_, i) => {
+          await delay(i * 100);
+          const started = performance.now();
+          const response = await send(i);
+          expect(response.statusCode, response.body).toBe(200);
+          return performance.now() - started;
+        }));
+        measurements.push({
+          route, api: process.env.PATIENT_HOME_BENCHMARK_BUILT === '1' ? 'compiled' : 'source', requests: durations.length, arrivalRps: 10, p50Ms: percentile(durations, .50), p95Ms: percentile(durations, .95),
+          sqlPerRequest: queries / durations.length, auditSqlMsPerRequest: Number((auditMs / durations.length).toFixed(1)),
+          transactionEntryP95Ms: percentile(transactionStart, .95), transactionCallbackP95Ms: percentile(transactionDuration, .95),
+        });
+      }
+    } finally { transactionSpy.mockRestore(); }
+    const report = JSON.stringify(measurements, null, 2);
+    if (process.env.PATIENT_HOME_BENCHMARK_OUTPUT) await writeFile(process.env.PATIENT_HOME_BENCHMARK_OUTPUT, report);
+    else console.info(report);
+  }, 30_000);
+
   it('selects an owned paid unfulfilled order independently of unpaid previews and drops closed orders', async () => {
     const p = await patient(); const outsider = await patient();
     const makeOrder = (patientId: string, paid = true) => db.$transaction(async tx => {
@@ -99,11 +195,23 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     } });
     expect(response.body).not.toContain('hidden');
     expect(await db.auditEvent.count({ where: { action: 'PATIENT_ASSESSMENT_RESULT_READ', subjectId: completed.id, actorUserId: p.userId } })).toBe(1);
+    const dashboard = await home(p);
+    expect(dashboard.statusCode, dashboard.body).toBe(200);
+    expect(dashboard.json()).toEqual({
+      latestAssessment: response.json().home.latestAssessment,
+      setupSteps: response.json().home.setupSteps,
+      isOnboardingComplete: response.json().onboarding.isComplete,
+      nextAppointment: response.json().appointments.items[0] ?? null,
+      actions: response.json().home.actions,
+    });
+    expect(dashboard.body).not.toContain('hidden');
+    expect(await db.auditEvent.count({ where: { action: 'PATIENT_ASSESSMENT_RESULT_READ', subjectId: completed.id, actorUserId: p.userId } })).toBe(2);
+
 
     await db.$executeRawUnsafe("CREATE FUNCTION journey_result_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action = 'PATIENT_ASSESSMENT_RESULT_READ' THEN RAISE EXCEPTION 'synthetic result audit failure'; END IF; RETURN NEW; END $$");
     await db.$executeRawUnsafe('CREATE TRIGGER journey_result_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION journey_result_audit_fail()');
     try {
-      const failed = await get(p);
+      const failed = await home(p);
       expect(failed.statusCode).toBeGreaterThanOrEqual(500);
       expect(failed.body).not.toContain('DIMENSION_TIEBREAK');
     } finally {
@@ -117,6 +225,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     for (const role of ['DOCTOR', 'STAFF', 'ADMIN']) {
       const actor = await createTestAccessToken(db, app.get(AccessTokenService), [role]);
       expect((await get(actor)).statusCode).toBe(403);
+      expect((await home(actor)).statusCode).toBe(403);
     }
   });
   it('derives incomplete progress without blocking independent shopping', async () => {

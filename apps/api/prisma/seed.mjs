@@ -181,15 +181,15 @@ try {
   );
   await client.query(
     `
-    INSERT INTO commerce_products (id, clinic_id, category_id, title, slug, description, brand, manufacturer, short_description, ingredients, usage_instructions, warnings, contraindications, source_kind, status, updated_at)
-    VALUES ('40000000-0000-4000-8000-000000000102', $1::uuid, '40000000-0000-4000-8000-000000000101', 'محصول نمونهٔ فروشگاه', 'sample-store-product', 'دادهٔ غیرحساس توسعه برای آزمون catalog.', 'سبز زندگی', 'تأمین‌کنندهٔ نمونه', 'توضیح کوتاه برای نمایش در کارت محصول و لیست موجودی.', 'مادهٔ Effective، است Extract گیاهی، مواد قینویی', 'چای سنای با آب جوش برسانید', 'بیشتر از ۳ گرم در روز مصرف نشود', 'حساسیت به مواد گیاهی', 'MANUFACTURER_DOCUMENT', 'ACTIVE', CURRENT_TIMESTAMP)
+    INSERT INTO commerce_products (id, clinic_id, category_id, title, slug, description, brand, manufacturer, short_description, ingredients, usage_instructions, warnings, contraindications, source_kind, source_reference, status, updated_at)
+    VALUES ('40000000-0000-4000-8000-000000000102', $1::uuid, '40000000-0000-4000-8000-000000000101', 'محصول نمونهٔ فروشگاه', 'sample-store-product', 'دادهٔ غیرحساس توسعه برای آزمون catalog.', 'سبز زندگی', 'تأمین‌کنندهٔ نمونه', 'توضیح کوتاه برای نمایش در کارت محصول و لیست موجودی.', 'مادهٔ Effective، است Extract گیاهی، مواد قینویی', 'چای سنای با آب جوش برسانید', 'بیشتر از ۳ گرم در روز مصرف نشود', 'حساسیت به مواد گیاهی', 'MANUFACTURER_DOCUMENT', 'synthetic-development-seed', 'ACTIVE', CURRENT_TIMESTAMP)
     ON CONFLICT (id) DO UPDATE SET
       clinic_id = EXCLUDED.clinic_id, category_id = EXCLUDED.category_id, title = EXCLUDED.title,
       slug = EXCLUDED.slug, description = EXCLUDED.description, brand = EXCLUDED.brand,
       manufacturer = EXCLUDED.manufacturer, short_description = EXCLUDED.short_description,
       ingredients = EXCLUDED.ingredients, usage_instructions = EXCLUDED.usage_instructions,
       warnings = EXCLUDED.warnings, contraindications = EXCLUDED.contraindications,
-      source_kind = EXCLUDED.source_kind, status = EXCLUDED.status,
+      source_kind = EXCLUDED.source_kind, source_reference = EXCLUDED.source_reference, status = EXCLUDED.status,
       updated_at = CURRENT_TIMESTAMP
   `,
     [clinicId],

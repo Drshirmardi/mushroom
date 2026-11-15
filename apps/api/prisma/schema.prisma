@@ -2304,6 +2304,7 @@ model PatientConsentRecord {
 }
 
 model AssessmentVersion {
+  assessmentPurchases AssessmentPurchase[] @relation("AssessmentPurchaseVersion")
   distribution AssessmentDistributionSetting?
   entryPolicies PatientEntryPolicy[]
   patientEntries PatientEntry[]
@@ -2468,6 +2469,7 @@ model PatientAssessmentSubmission {
   answers                  Json                   @default("{}")
   score                    Decimal?               @db.Decimal(8, 2)
   resultSnapshot           Json?                  @map("result_snapshot")
+  resultSummary               Json?                  @default(dbgenerated()) @map("result_summary")
   startedAt                DateTime               @default(now()) @map("started_at") @db.Timestamptz(3)
   completedAt              DateTime?              @map("completed_at") @db.Timestamptz(3)
   invalidatedAt            DateTime?              @map("invalidated_at") @db.Timestamptz(3)
@@ -3428,6 +3430,10 @@ model AssessmentPurchase {
   amountRial BigInt @map("amount_rial")
   currency String @default("IRR") @db.Char(3)
   snapshot Json @db.JsonB
+  assessmentVersionId String @default(dbgenerated()) @map("assessment_version_id") @db.Uuid
+  title String @default(dbgenerated())
+  sourceKind String @default(dbgenerated()) @map("source_kind")
+  assessmentVersion AssessmentVersion @relation("AssessmentPurchaseVersion", fields: [assessmentVersionId, clinicId], references: [id, clinicId], onDelete: Restrict, onUpdate: NoAction, map: "assessment_purchases_version_clinic_fk")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
   clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Restrict)
   patient PatientProfile @relation(fields: [patientId, clinicId], references: [id, clinicId], onDelete: Restrict)

@@ -22,7 +22,7 @@ try {for(const width of [320,390,1440]){
  if(p==='/v1/patients/me/commerce/recommendations'){assert.equal(url.searchParams.get('submissionId'),id);return send({status:'READY',primary:'damavi',secondary:'safravi',items:[product]});}
  if(p.includes('program-access-grants'))return send({id:grant,title:'خدمت خریداری‌شده',body:'متن کامل خریداری‌شده',safety,contentReferences:[],endsAt:null});
  if(p==='/v1/patients/me/program-library')return send({items:[{accessGrantId:grant,purchaseId:grant,title:def.title,icon:'compass',accessAvailable:true,endsAt:null}],total:1,page:1,pageSize:6});
- if(p==='/v1/patients/me/journey')return send({code:'UNAVAILABLE'},503);
+ if(p==='/v1/patients/me/home')return send({code:'UNAVAILABLE'},503);
  if(p.endsWith('/questionnaire'))return send({assessmentKey:'MIZAJ',title:'مزاج‌شناسی',versionNumber:1,structure:{}});
  if(p.endsWith('/result'))return send({resultSnapshot:{algorithmId:'DIMENSION_TIEBREAK',status:'PAIR',reviewState:'ADMIN_PUBLISHED',primary:'DAMAVI',secondary:'SAFRAVI',dimensionTitles:[{id:'DAMAVI',title:'دموی'},{id:'SAFRAVI',title:'صفراوی'}],profile:{title:'دموی و صفراوی',summary:'نتیجهٔ آموزشی شما',strengths:[],attentionPoints:[]}},completedAt:'2026-10-24T12:00:00Z'});
  if(p.endsWith('/provenance'))return send({provenanceStatus:'RECORDED'});

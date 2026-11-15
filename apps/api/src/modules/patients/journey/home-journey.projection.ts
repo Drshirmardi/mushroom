@@ -16,7 +16,7 @@ type HomeSources = {
 };
 
 /** Presentation projection only; never changes eligibility, consent or resource authority. */
-export function homeJourney(summary: JourneySummary, sources: HomeSources): JourneyHomeDto {
+export function homeJourney(summary: Pick<JourneySummary, 'onboarding' | 'bookingEligibility'> & { pendingOrders: { items: { id: string }[] } }, sources: HomeSources): JourneyHomeDto {
   const profileComplete = !summary.onboarding.missingFields.some(field => ['firstName', 'lastName', 'birthDate', 'sexAtBirth'].includes(field));
   const healthComplete = summary.onboarding.missingFields.length === 0;
   const complete = [profileComplete, healthComplete, summary.onboarding.isComplete];

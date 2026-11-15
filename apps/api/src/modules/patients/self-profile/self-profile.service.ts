@@ -129,11 +129,19 @@ export class SelfProfileService {
     });
   }
 
-  async getOnboardingStatus(userId: string, db: Prisma.TransactionClient = this.prisma): Promise<SelfOnboardingStatus> {
-    const patient = await this.ensurePatientProfile(userId, db);
+  async getOnboardingStatus(
+    userId: string,
+    db: Prisma.TransactionClient = this.prisma,
+    knownPatient?: {
+      id: string;
+      user: { userProfile: { firstName: string | null; lastName: string | null; updatedAt: Date } | null };
+      entry: { birthDate: Date } | null;
+    },
+  ): Promise<SelfOnboardingStatus> {
+    const patient = knownPatient ?? await this.ensurePatientProfile(userId, db);
     const [intake, entry] = await Promise.all([
       db.patientMedicalIntake.findUnique({ where: { patientId: patient.id }, select: { id: true, currentRevisionNumber: true, completedRevisionNumber: true, submissionState: true, assignedSchemaVersion: true, updatedAt: true } }),
-      db.patientEntry.findUnique({ where: { patientId: patient.id }, select: { birthDate: true } }),
+      knownPatient ? knownPatient.entry : db.patientEntry.findUnique({ where: { patientId: patient.id }, select: { birthDate: true } }),
     ]);
     const currentRevision = intake && intake.currentRevisionNumber > 0
       ? await db.patientMedicalIntakeRevision.findUnique({

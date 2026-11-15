@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { homeResultSummary, homeMizajData, loadHomeAssessmentSnapshot, subscribeHomeRefresh } from './home-status';
+import { homeResultSummary, homeMizajData, subscribeHomeRefresh } from './home-status';
 
 it('shares one 60-second window between visibility and restored-page refreshes', () => {
   vi.useFakeTimers({ toFake: ['Date'] });
@@ -44,15 +44,6 @@ describe('Home result summary', () => {
 });
 
 describe('Home temperament chart source', () => {
-  it('uses the journey summary and falls back only when the field is absent', async () => {
-    const load = vi.fn().mockResolvedValue({ resultSnapshot: { algorithmId: 'legacy' } });
-    const summary = { algorithmId: 'DIMENSION_TIEBREAK', scores: { a: 4 }, dimensionTitles: [{ id: 'a', title: 'اول' }] };
-    expect(await loadHomeAssessmentSnapshot(summary, load)).toEqual(summary);
-    expect(await loadHomeAssessmentSnapshot(null, load)).toBeNull();
-    expect(load).not.toHaveBeenCalled();
-    expect(await loadHomeAssessmentSnapshot(undefined, load)).toEqual({ algorithmId: 'legacy' });
-    expect(load).toHaveBeenCalledTimes(1);
-  });
   const dimensionTitles = [{ id: 'a', title: 'الف' }, { id: 'b', title: 'ب' }, { id: 'c', title: 'ج' }];
   const tiedResult = { algorithmId: 'DIMENSION_TIEBREAK', scores: { a: 6, b: 4, c: 4 }, dimensionTitles };
 

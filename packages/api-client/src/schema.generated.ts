@@ -2303,6 +2303,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the patient home screen */
+        get: operations["patientHomeGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/couple-assessments/{id}/billing-intents": {
         parameters: {
             query?: never;
@@ -4757,6 +4774,22 @@ export interface paths {
         };
         /** List authorized patient health observations */
         get: operations["adminHealthObservationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/article-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContentController_patientArticlePreviews"];
         put?: never;
         post?: never;
         delete?: never;
@@ -8467,6 +8500,13 @@ export interface components {
             /** @description Shopping is independent of medical onboarding */
             storeAvailable: boolean;
         };
+        PatientHomeResponseDto: {
+            setupSteps: components["schemas"]["JourneySetupStepDto"][];
+            isOnboardingComplete: boolean;
+            latestAssessment: components["schemas"]["JourneyLatestAssessmentDto"] | null;
+            nextAppointment: components["schemas"]["JourneyAppointmentDto"] | null;
+            actions: components["schemas"]["JourneyHomeActionDto"][];
+        };
         CoupleAssessmentBillingIntentDto: {
             contextHash: string;
             /** Format: uuid */
@@ -10903,6 +10943,15 @@ export interface components {
             items: components["schemas"]["HealthObservationResponseDto"][];
             /** Format: uuid */
             nextCursor?: Record<string, never> | null;
+        };
+        ArticlePreviewDto: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+        };
+        ArticlePreviewListDto: {
+            items: components["schemas"]["ArticlePreviewDto"][];
         };
         CreateCategoryDto: {
             name: string;
@@ -17798,6 +17847,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PatientJourneyResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Sensitive audit is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientHomeGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientHomeResponseDto"];
                 };
             };
             /** @description Authentication is required. */
@@ -28720,6 +28829,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthObservationListResponseDto"];
+                };
+            };
+        };
+    };
+    ContentController_patientArticlePreviews: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticlePreviewListDto"];
                 };
             };
         };

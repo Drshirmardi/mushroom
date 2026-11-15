@@ -16,12 +16,12 @@ import { useState } from 'react';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { getPatientJourney } from '@/lib/patient-journey-api';
+import { fetchArticlePreviews, getPatientHome } from '@/lib/patient-journey-api';
 import { PATIENT_CATALOG_TTL_MS } from '@/lib/patient-request';
 import { HomeJourney, HomeJourneyOverview } from '@/components/home/home-journey';
 import { HomeBanners } from '@/components/home/home-banners';
 import { useOptionalPatientEntry } from '@/components/auth/patient-entry-gate';
-import { fetchPatientArticles, listNotifications } from '@/lib/follow-up-api';
+import { listNotifications } from '@/lib/follow-up-api';
 import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
@@ -74,8 +74,8 @@ export default function HomePage() {
   const { authentication, sessionKey } = useAuthSession();
   const entry = useOptionalPatientEntry();
   const token = authentication.accessToken;
-  const journey = useSessionPatientResource('journey', getPatientJourney, PATIENT_CATALOG_TTL_MS);
-  const articles = useSessionPatientResource('articles', fetchPatientArticles, PATIENT_CATALOG_TTL_MS);
+  const journey = useSessionPatientResource('home', getPatientHome, PATIENT_CATALOG_TTL_MS);
+  const articles = useSessionPatientResource('article-previews', fetchArticlePreviews, PATIENT_CATALOG_TTL_MS);
   const notifications = useSessionPatientResource('notifications', listNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [entryBusy, setEntryBusy] = useState(false),
@@ -169,7 +169,7 @@ export default function HomePage() {
             </Link>
           </div>
           <PatientResourceState {...articles} retry={() => void articles.reload()} />
-          {articles.data?.items.slice(0, 2).map((item) => (
+          {articles.data?.items.map((item) => (
             <Link
               key={item.id}
               href={`/articles/${encodeURIComponent(item.slug)}`}

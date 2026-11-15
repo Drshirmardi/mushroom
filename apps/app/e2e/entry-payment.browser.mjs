@@ -10,7 +10,7 @@ try{for(const width of [390,1440]){
   if(path==='/v1/patients/me/entry')return send(state());
   if(path==='/v1/patients/me/entry/defer'){deferred=true;return send(state());}
   if(path==='/v1/patients/me/entry/resume'){deferred=false;resumed++;return send(state());}
-  if(path==='/v1/patients/me/journey')return send({code:'SYNTHETIC_UNAVAILABLE'},503);
+  if(path==='/v1/patients/me/home')return send({code:'SYNTHETIC_UNAVAILABLE'},503);
   return send({items:[],total:0,page:1,pageSize:20});
  });
  await page.goto('http://localhost:3001/welcome');await page.getByRole('button',{name:'ادامه به پرداخت',exact:true}).waitFor();await page.getByText('توضیحات اختصاصی آزمون پیش از پرداخت',{exact:true}).waitFor();

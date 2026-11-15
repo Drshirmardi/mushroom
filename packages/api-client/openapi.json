@@ -11389,6 +11389,94 @@
         ]
       }
     },
+    "/v1/patients/me/home": {
+      "get": {
+        "operationId": "patientHomeGet",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientHomeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Patient self access is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Patient profile was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sensitive audit is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Get the patient home screen",
+        "tags": [
+          "Patient Journey"
+        ]
+      }
+    },
     "/v1/patients/me/couple-assessments/{id}/billing-intents": {
       "post": {
         "operationId": "patientCoupleAssessmentBillingIntentCreate",
@@ -30354,6 +30442,53 @@
         ]
       }
     },
+    "/v1/patients/me/article-previews": {
+      "get": {
+        "operationId": "ContentController_patientArticlePreviews",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlePreviewListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Content"
+        ]
+      }
+    },
     "/v1/patients/me/articles": {
       "get": {
         "operationId": "ContentController_patientArticles",
@@ -48205,6 +48340,54 @@
           "storeAvailable"
         ]
       },
+      "PatientHomeResponseDto": {
+        "type": "object",
+        "properties": {
+          "setupSteps": {
+            "minItems": 3,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneySetupStepDto"
+            }
+          },
+          "isOnboardingComplete": {
+            "type": "boolean"
+          },
+          "latestAssessment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyLatestAssessmentDto"
+              }
+            ]
+          },
+          "nextAppointment": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyAppointmentDto"
+              }
+            ]
+          },
+          "actions": {
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JourneyHomeActionDto"
+            }
+          }
+        },
+        "required": [
+          "setupSteps",
+          "isOnboardingComplete",
+          "latestAssessment",
+          "nextAppointment",
+          "actions"
+        ]
+      },
       "CoupleAssessmentBillingIntentDto": {
         "type": "object",
         "properties": {
@@ -57239,6 +57422,41 @@
             "type": "object",
             "format": "uuid",
             "nullable": true
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ArticlePreviewDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title"
+        ]
+      },
+      "ArticlePreviewListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArticlePreviewDto"
+            }
           }
         },
         "required": [

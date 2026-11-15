@@ -29,10 +29,6 @@ export function subscribeHomeRefresh(refresh: () => unknown): () => void {
   };
 }
 
-export function loadHomeAssessmentSnapshot(summary: unknown, loadResult: () => Promise<{ resultSnapshot?: unknown }>): Promise<unknown> {
-  return summary !== undefined ? Promise.resolve(summary) : loadResult().then(result => result.resultSnapshot);
-}
-
 /** Percentages come only from the saved dimension result, never from its rank. */
 export function homeMizajData(snapshot: unknown) {
   const value = object(snapshot);

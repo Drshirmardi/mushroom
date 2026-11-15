@@ -34,3 +34,13 @@ export class AdminBannerDto extends PublicBannerDto {
 }
 export class PublicBannerListDto { @ApiProperty({ type: [PublicBannerDto] }) items!: PublicBannerDto[]; }
 export class AdminBannerListDto { @ApiProperty({ type: [AdminBannerDto] }) items!: AdminBannerDto[]; }
+
+export class ArticlePreviewDto {
+  @ApiProperty({ format: 'uuid' }) id!: string;
+  @ApiProperty() slug!: string;
+  @ApiProperty() title!: string;
+}
+
+export class ArticlePreviewListDto {
+  @ApiProperty({ type: [ArticlePreviewDto], maxItems: 2 }) items!: ArticlePreviewDto[];
+}

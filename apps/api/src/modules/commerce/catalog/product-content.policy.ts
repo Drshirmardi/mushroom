@@ -40,7 +40,9 @@ export function contentFields(record: Pick<ContentRecord, keyof typeof CONTENT_L
 export function contentDigest(record: Pick<ContentRecord, keyof typeof CONTENT_LIMITS | 'sourceKind' | 'sourceReference'>) {
   return createHash('sha256').update(JSON.stringify({ ...contentFields(record), sourceKind: record.sourceKind, sourceReference: record.sourceReference })).digest('hex');
 }
-export function isContentApproved(record: ContentRecord) {
+type ContentApproval = Pick<ContentRecord, "legacyContent" | "approvedContentRevision" | "contentRevision" | "contentApprovedAt" | "contentApprovedByUserId">;
+export type PublicContentSummaryRecord = ContentApproval & Pick<ContentRecord, "description" | "brand" | "shortDescription">;
+export function isContentApproved(record: ContentApproval) {
   return !record.legacyContent && record.approvedContentRevision === record.contentRevision && record.contentApprovedAt !== null && record.contentApprovedByUserId !== null;
 }
 export function adminContent(record: ContentRecord) {
@@ -49,7 +51,7 @@ export function adminContent(record: ContentRecord) {
 export function publicContent(record: ContentRecord) {
   return isContentApproved(record) ? { ...contentFields(record), contentRevision: record.contentRevision } : null;
 }
-export function publicContentSummary(record: ContentRecord) {
+export function publicContentSummary(record: PublicContentSummaryRecord) {
   const approved = isContentApproved(record);
   return { description: record.legacyContent || approved ? record.description : null, brand: approved ? record.brand : null, shortDescription: approved ? record.shortDescription : null };
 }

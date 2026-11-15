@@ -49,7 +49,7 @@ export class AssessmentAdminPurchaseService {
     await tx.$executeRaw(Prisma.sql`SELECT assessment_admin_purchase_lock(p) FROM assessment_purchases p WHERE id=${purchase.id}::uuid`);
     const [proof] = await tx.$queryRaw<{ allowed: boolean }[]>(Prisma.sql`SELECT assessment_admin_purchase_source_current(p) AND ${intent.expiresAt}::timestamptz>CURRENT_TIMESTAMP AS allowed FROM assessment_purchases p WHERE id=${purchase.id}::uuid`);
     if (!proof?.allowed) return false;
-    const sourceId = (purchase.snapshot as unknown as Snapshot).assessmentVersionId;
+    const sourceId = purchase.assessmentVersionId;
     const beneficiaries = (purchase.snapshot as unknown as Snapshot).beneficiaries?.map(b => b.patientId) ?? [intent.patientId];
     return !await tx.assessmentAccessGrant.count({ where: { patientId: { in: beneficiaries }, assessmentVersionId: sourceId, processingConsent: { withdrawnAt: null }, submission: null } }) && !await tx.patientAssessmentSubmission.count({ where: { patientId: { in: beneficiaries }, assessmentVersionId: sourceId, state: 'IN_PROGRESS' } });
   }

@@ -20,11 +20,11 @@ export class AssessmentBillingTarget implements BillingTarget, OnModuleInit {
       await tx.$queryRaw(Prisma.sql`SELECT id FROM educational_couple_sessions WHERE id=${purchase.educationalCoupleSessionId}::uuid FOR UPDATE`);
       const snapshot = purchase.snapshot as unknown as AdminPurchaseSnapshot;
       if (!snapshot.beneficiaries || snapshot.beneficiaries.length !== 2) throw purchaseConflict();
-      for (const beneficiary of [...snapshot.beneficiaries].sort((a,b) => a.patientId.localeCompare(b.patientId))) await lockFinancial(tx, `assessment-purchase:${beneficiary.patientId}:${snapshot.assessmentVersionId}`);
+      for (const beneficiary of [...snapshot.beneficiaries].sort((a,b) => a.patientId.localeCompare(b.patientId))) await lockFinancial(tx, `assessment-purchase:${beneficiary.patientId}:${purchase.assessmentVersionId}`);
       return;
     }
     if (purchase.coupleAssessmentSessionId) { await this.couples.lock(tx, purchase); return; }
-    const sourceId = (purchase.snapshot as { assessmentVersionId: string }).assessmentVersionId;
+    const sourceId = purchase.assessmentVersionId;
     await lockFinancial(tx, `assessment-purchase:${intent.patientId}:${sourceId}`);
   }
   async canSettle(tx: Tx, intent: BillingIntent) {
@@ -38,11 +38,11 @@ export class AssessmentBillingTarget implements BillingTarget, OnModuleInit {
     if (purchase.educationalCoupleSessionId) {
       const snapshot = purchase.snapshot as unknown as AdminPurchaseSnapshot;
       if (!snapshot.beneficiaries || snapshot.beneficiaries.length !== 2) throw purchaseConflict();
-      for (const beneficiary of snapshot.beneficiaries) await tx.assessmentAccessGrant.create({ data: { clinicId: purchase.clinicId, patientId: beneficiary.patientId, purchaseId: purchase.id, educationalCoupleParticipantId: beneficiary.participantId, slot: beneficiary.slot, assessmentVersionId: snapshot.assessmentVersionId, processingConsentRecordId: beneficiary.processingConsentRecordId, method: intent.method!, walletJournalId: journalId, gatewayAttemptId } });
+      for (const beneficiary of snapshot.beneficiaries) await tx.assessmentAccessGrant.create({ data: { clinicId: purchase.clinicId, patientId: beneficiary.patientId, purchaseId: purchase.id, educationalCoupleParticipantId: beneficiary.participantId, slot: beneficiary.slot, assessmentVersionId: purchase.assessmentVersionId, processingConsentRecordId: beneficiary.processingConsentRecordId, method: intent.method!, walletJournalId: journalId, gatewayAttemptId } });
       await financialAudit(tx, context, 'COUPLE_ASSESSMENT_ACCESS_GRANTED', purchase.id, { beneficiaryCount: 2 });
       return { kind: 'NONE' as const };
     }
-    const sourceId = (purchase.snapshot as { assessmentVersionId: string }).assessmentVersionId;
+    const sourceId = purchase.assessmentVersionId;
     const [time] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`SELECT GREATEST(CURRENT_TIMESTAMP,${purchase.createdAt}::timestamptz) AS now`);
     const grant = await tx.assessmentAccessGrant.create({ data: { clinicId: purchase.clinicId, patientId: purchase.patientId, purchaseId: purchase.id, assessmentVersionId: sourceId, processingConsentRecordId: purchase.processingConsentRecordId,
       method: intent.method!, walletJournalId: journalId, gatewayAttemptId, grantedAt: time!.now } });

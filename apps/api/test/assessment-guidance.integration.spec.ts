@@ -62,7 +62,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('assessment e
   const read = (row: { id: string; who: Awaited<ReturnType<typeof actor>> }) => req('GET', `assessment-submissions/${row.id}/guidance`, row.who);
   async function historical(attempt: { id: string; who: Awaited<ReturnType<typeof actor>> }, snapshot: Prisma.InputJsonObject) {
     const original = await db.patientAssessmentSubmission.findUniqueOrThrow({ where: { id: attempt.id } });
-    const row = await db.patientAssessmentSubmission.create({ data: { ...original, entryPatientId: null, accessGrantId: null, answers: original.answers ?? Prisma.JsonNull, id: randomUUID(), attemptNumber: original.attemptNumber + 1, resultSnapshot: snapshot, completionIdempotencyKey: randomUUID() } });
+    const row = await db.patientAssessmentSubmission.create({ data: { ...original, resultSummary: undefined, entryPatientId: null, accessGrantId: null, answers: original.answers ?? Prisma.JsonNull, id: randomUUID(), attemptNumber: original.attemptNumber + 1, resultSnapshot: snapshot, completionIdempotencyKey: randomUUID() } });
     return { ...row, who: attempt.who };
   }
 

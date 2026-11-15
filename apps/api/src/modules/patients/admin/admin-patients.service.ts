@@ -49,19 +49,32 @@ export class AdminPatientsService {
         { user: { userProfile: { is: { lastName: { contains: search, mode: 'insensitive' } } } } },
       ],
     } : {};
-    const [total, patients, policies] = await this.prisma.$transaction([
-      this.prisma.patientProfile.count({ where }),
-      this.prisma.patientProfile.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (query.page - 1) * query.pageSize, take: query.pageSize, include: { user: { include: { userProfile: true } }, medicalIntake: { include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } }, consentRecords: { where: medicalConsentScope } } }),
-      this.prisma.consentPolicyVersion.findMany({ where: medicalPolicyScope, select: { id: true, clinicId: true, contentHash: true } }),
-    ], { isolationLevel: 'RepeatableRead' });
+    const { total, patients, policies, revisions } = await this.prisma.$transaction(async tx => {
+      const [total, patients, policies] = await Promise.all([
+        tx.patientProfile.count({ where }),
+        tx.patientProfile.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (query.page - 1) * query.pageSize, take: query.pageSize, include: { entry: { select: { birthDate: true } }, user: { include: { userProfile: true } }, medicalIntake: { select: { id: true, currentRevisionNumber: true, completedRevisionNumber: true, submissionState: true } }, consentRecords: { where: medicalConsentScope } } }),
+        tx.consentPolicyVersion.findMany({ where: medicalPolicyScope, select: { id: true, clinicId: true, contentHash: true } }),
+      ]);
+      const current = patients.flatMap(({ medicalIntake: intake }) => intake && intake.currentRevisionNumber > 0
+        ? [{ intakeId: intake.id, revisionNumber: intake.currentRevisionNumber }]
+        : []);
+      const revisions = current.length ? await tx.patientMedicalIntakeRevision.findMany({
+        where: { OR: current },
+        select: { intakeId: true, birthDate: true, sexAtBirth: true, allergyReport: true,
+          chronicConditionReport: true, currentMedicationReport: true, completedConsentRecordId: true },
+      }) : [];
+      return { total, patients, policies, revisions };
+    }, { isolationLevel: 'RepeatableRead' });
+    const revisionByIntake = new Map(revisions.map(revision => [revision.intakeId, revision]));
+
     return {
       items: patients.map((patient) => {
-        const revision = patient.medicalIntake?.revisions[0] ?? null;
+        const revision = patient.medicalIntake ? revisionByIntake.get(patient.medicalIntake.id) ?? null : null;
         const currentPolicies = policies.filter(policy => policy.clinicId === patient.clinicId);
         const activeConsent = this.activeMedicalConsent(patient.consentRecords, currentPolicies);
         const evaluation = evaluateOnboarding({
           firstName: patient.user.userProfile?.firstName, lastName: patient.user.userProfile?.lastName,
-          birthDate: revision?.birthDate?.toISOString().slice(0, 10), sexAtBirth: revision?.sexAtBirth,
+          birthDate: (patient.entry?.birthDate ?? revision?.birthDate)?.toISOString().slice(0, 10), sexAtBirth: revision?.sexAtBirth,
           allergyReport: revision?.allergyReport as MedicalDeclaration | null, chronicConditionReport: revision?.chronicConditionReport as MedicalDeclaration | null, currentMedicationReport: revision?.currentMedicationReport as MedicalDeclaration | null,
           activeCurrentConsent: Boolean(activeConsent), activeConsentRecordId: activeConsent?.id ?? null,
           completedConsentRecordId: revision?.completedConsentRecordId ?? null, hasConsentDecision: patient.consentRecords.length > 0,
@@ -115,14 +128,14 @@ export class AdminPatientsService {
 
   async get(patientId: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
-      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { where: { accessGrantId: null, OR: [{ entryPatientId: null }, { entryOrigin: { paidIntentId: null } }] }, include: { assessmentVersion: true }, orderBy: { startedAt: 'desc' } } } });
+      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { where: { accessGrantId: null, OR: [{ entryPatientId: null }, { entryOrigin: { paidIntentId: null } }] }, select: { id: true, assessmentVersionId: true, assessmentVersion: { select: { title: true } }, state: true, score: true, resultSnapshot: true, completedAt: true }, orderBy: { startedAt: 'desc' } } } });
       if (!patient) throw patientNotFound();
       const { policy: activePolicy, consent } = await this.currentMedicalAuthorization(tx, patientId, patient.clinicId);
       const medicalIntake = await tx.patientMedicalIntake.findUnique({ where: { patientId }, include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } });
       const revision = medicalIntake?.revisions[0] ?? null;
       const medical = revision && consent ? await this.readMedical(tx, patient.id, revision, context) : { status: revision ? 'CONSENT_REQUIRED' : 'NOT_STARTED', value: null };
       const assessments = patient.assessmentSubmissions.map((submission) => ({ submissionId: submission.id, assessmentVersionId: submission.assessmentVersionId, assessmentTitle: submission.assessmentVersion.title, state: submission.state, score: submission.score?.toString() ?? null, resultSnapshot: submission.resultSnapshot, completedAt: submission.completedAt }));
-      if (assessments.length) await Promise.all(assessments.map((assessment) => tx.auditEvent.create({ data: { action: 'ADMIN_ASSESSMENT_SUBMISSION_READ', actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId: assessment.submissionId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { source: 'ADMIN_PATIENT_DETAIL' } } })));
+      if (assessments.length) await tx.auditEvent.createMany({ data: assessments.map((assessment) => ({ action: 'ADMIN_ASSESSMENT_SUBMISSION_READ', actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId: assessment.submissionId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { source: 'ADMIN_PATIENT_DETAIL' } })) });
       return { patientId: patient.id, profile: { displayName: displayName(patient.user.userProfile), phone: patient.user.phone, accountStatus: patient.user.status, firstName: patient.user.userProfile?.firstName ?? null, lastName: patient.user.userProfile?.lastName ?? null, email: patient.user.userProfile?.email ?? null, cityName: patient.user.userProfile?.cityName ?? null }, consent: { active: Boolean(consent), policyVersionId: activePolicy?.id ?? null, consentRecordId: consent?.id ?? null }, intake: { assignedSchemaVersion: medicalIntake?.assignedSchemaVersion ?? null, currentRevision: medicalIntake?.currentRevisionNumber ?? 0, provenance: 'PATIENT_SELF_REPORTED', ...medical }, assessments };
     }, { timeout: 15_000 });
   }
@@ -206,13 +219,14 @@ export class AdminPatientsService {
              COUNT(*) FILTER (WHERE
                btrim(profile.first_name, ${onboardingWhitespace}) <> ''
                AND btrim(profile.last_name, ${onboardingWhitespace}) <> ''
-               AND latest.birth_date IS NOT NULL
+               AND COALESCE(entry.birth_date, latest.birth_date) IS NOT NULL
                AND ${declarationAnswered(Prisma.sql`latest.allergy_report`)}
                AND ${declarationAnswered(Prisma.sql`latest.chronic_condition_report`)}
                AND ${declarationAnswered(Prisma.sql`latest.current_medication_report`)}
              ) AS complete
       FROM patient_profiles AS patient
       LEFT JOIN user_profiles AS profile ON profile.user_id = patient.user_id
+      LEFT JOIN patient_entries AS entry ON entry.patient_id = patient.id
       LEFT JOIN patient_medical_intakes AS intake ON intake.patient_id = patient.id
         AND intake.submission_state = 'COMPLETE'
         AND intake.current_revision_number > 0
@@ -220,9 +234,7 @@ export class AdminPatientsService {
       LEFT JOIN LATERAL (
         SELECT birth_date, allergy_report, chronic_condition_report, current_medication_report
         FROM patient_medical_intake_revisions
-        WHERE intake_id = intake.id
-        ORDER BY revision_number DESC
-        LIMIT 1
+        WHERE intake_id = intake.id AND revision_number = intake.current_revision_number
       ) AS latest ON true
       ${scope}
     `);

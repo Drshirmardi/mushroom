@@ -67,7 +67,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('admin medica
   it('onboarding summary counts only medical completion across clinics and independent consent purposes',async()=>{
     const before=await req('GET','admin/patients/onboarding-summary');expect(before.statusCode,before.body).toBe(200);const old=before.json();await fixture('PROGRAM_PURCHASE_TERMS');await fixture();const after=await req('GET','admin/patients/onboarding-summary');expect(after.statusCode,after.body).toBe(200);expect(after.json()).toMatchObject({onboardingCompletePatients:old.onboardingCompletePatients+2,onboardingIncompletePatients:old.onboardingIncompletePatients});
   });
-  it('matches the list for incomplete names, declarations and the latest intake revision', async () => {
+  it('matches the list for incomplete names, declarations and the current intake revision', async () => {
     const f = await fixture();
     const profile = { userId: f.p.userId };
     const revision = { id: f.revision.id };
@@ -87,6 +87,11 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('admin medica
     await db.patientMedicalIntakeRevision.create({ data: {
       intakeId: f.intake.id, revisionNumber: 2, assignedSchemaVersion: 1, revisionState: 'DRAFT',
       reportedPatientId: f.patient.id, recordingMode: 'PATIENT_ENTRY', payloadHash: 'b'.repeat(64),
+    } });
+    // A later draft does not change the intake's current-revision pointer.
+    await completeState(f, true);
+    await db.patientMedicalIntake.update({ where: { id: f.intake.id }, data: {
+      currentRevisionNumber: 2, submissionState: 'DRAFT',
     } });
     await completeState(f, false);
   });

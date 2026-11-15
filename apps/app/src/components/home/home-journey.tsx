@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useReducedMotion } from 'motion/react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { A11y, Autoplay } from 'swiper/modules';
@@ -16,12 +16,11 @@ import {
   Users,
   Wallet,
 } from 'lucide-react';
-import { getAssessmentResult } from '@/lib/assessment-api';
 import { HomeOrderProgress } from './home-order-progress';
 import { toP } from '@/lib/format';
-import { homePendingAction, homeMizajData, loadHomeAssessmentSnapshot, subscribeHomeRefresh } from '@/lib/home-status';
+import { homePendingAction, homeMizajData, subscribeHomeRefresh } from '@/lib/home-status';
 import { MizajChart, mizajPercentages } from '@/components/assessments/mizaj-chart';
-import type { PatientJourney } from '@/lib/patient-journey-api';
+import type { PatientHome } from '@/lib/patient-journey-api';
 import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { LoadingState, SkeletonBox } from '@/components/shared/skeletons';
 import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
@@ -97,7 +96,7 @@ const setupStepContent = {
   },
 } as const;
 
-function SetupProgress({ steps }: { steps: PatientJourney['home']['setupSteps'] }) {
+function SetupProgress({ steps }: { steps: PatientHome['setupSteps'] }) {
   const currentStep =
     steps.find((step) => step.state === 'CURRENT') ??
     steps.find((step) => step.state !== 'COMPLETE');
@@ -161,7 +160,7 @@ function SetupProgress({ steps }: { steps: PatientJourney['home']['setupSteps'] 
   );
 }
 
-function NextVisit({ visit }: { visit: PatientJourney['appointments']['items'][number] }) {
+function NextVisit({ visit }: { visit: NonNullable<PatientHome['nextAppointment']> }) {
   const when = new Intl.DateTimeFormat('fa-IR', {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -271,14 +270,8 @@ function AssessmentCarousel({ children }: { children: ReactNode }) {
   );
 }
 
-function AssessmentStatus({ data }: { data: PatientJourney }) {
-  const latest = data.home.latestAssessment!;
-  const result = useSessionPatientResource(
-    `assessment-result:${latest.id}`,
-    useCallback((token, signal) => loadHomeAssessmentSnapshot(latest.summary, () => getAssessmentResult(token, latest.id, signal)), [latest.id, latest.summary]),
-    0, latest.summary,
-  );
-  const chart = homeMizajData(result.data);
+function AssessmentStatus({ latest }: { latest: NonNullable<PatientHome['latestAssessment']> }) {
+  const chart = homeMizajData(latest.summary);
   const percentages = chart ? mizajPercentages(chart.scores, chart.dimensions) : [];
   const distribution = chart
     ? chart.dimensions.map((dimension, index) => ({
@@ -299,7 +292,6 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
     <section
       className="home-next home-assessment-status"
       aria-label="وضعیت شما"
-      aria-busy={result.loading}
     >
       <AssessmentCarousel>
         <div className="home-assessment-heading">
@@ -313,14 +305,7 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
         >
           <div className="home-assessment-chart-layout" aria-label="درصد گرایش‌های مزاجی">
             <div className="home-assessment-scores" aria-label="گرایش‌های اول و دوم">
-              {result.loading
-                ? [0, 1].map((index) => (
-                    <div className="home-assessment-score" key={`left-${index}`}>
-                      <SkeletonBox className="h-6 w-12" />
-                      <SkeletonBox className="h-4 w-10" />
-                    </div>
-                  ))
-                : distribution.slice(0, 2).map((item) => (
+              {distribution.slice(0, 2).map((item) => (
                     <div className="home-assessment-score" key={item.id}>
                       <span
                         className="home-assessment-score__value"
@@ -333,9 +318,7 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
                   ))}
             </div>
             <div className="home-mizaj home-assessment-chart">
-              {result.loading ? (
-                <MizajChart variant="home" isLoading />
-              ) : chart ? (
+              {chart ? (
                 <MizajChart scores={chart.scores} dimensions={chart.dimensions} variant="home" />
               ) : (
                 <div className="home-assessment-chart-empty" role="status">
@@ -344,14 +327,7 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
               )}
             </div>
             <div className="home-assessment-scores" aria-label="گرایش‌های سوم و چهارم">
-              {result.loading
-                ? [0, 1].map((index) => (
-                    <div className="home-assessment-score" key={`right-${index}`}>
-                      <SkeletonBox className="h-6 w-12" />
-                      <SkeletonBox className="h-4 w-10" />
-                    </div>
-                  ))
-                : distribution.slice(2, 4).map((item) => (
+              {distribution.slice(2, 4).map((item) => (
                     <div className="home-assessment-score" key={item.id}>
                       <span
                         className="home-assessment-score__value"
@@ -366,17 +342,7 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
           </div>
         </Link>
         <div className="home-assessment-footer">
-          {result.loading ? (
-            <div className="home-assessment-primary-types" aria-hidden="true">
-              {[0, 1].map((index) => (
-                <span className="home-assessment-type home-assessment-type--skeleton" key={index}>
-                  <SkeletonBox className="h-3 w-8" />
-                  <SkeletonBox className="h-3 w-12" />
-                </span>
-              ))}
-            </div>
-          ) : (
-            ranks.some(Boolean) && (
+          {ranks.some(Boolean) && (
               <div className="home-assessment-primary-types">
                 {ranks.map((item, index) => item && (
                   <span className="home-assessment-type home-assessment-type--result" key={index}>
@@ -385,8 +351,7 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
                   </span>
                 ))}
               </div>
-            )
-          )}
+            )}
           <Link
             href="/store?tab=services"
             className="home-assessment-result-link"
@@ -396,14 +361,6 @@ function AssessmentStatus({ data }: { data: PatientJourney }) {
             <ArrowLeft size={16} aria-hidden="true" />
           </Link>
         </div>
-        {result.error && (
-          <div className="home-assessment-error" role="alert">
-            <span>خلاصهٔ نتیجه دریافت نشد.</span>
-            <button type="button" onClick={() => void result.reload()}>
-              دریافت دوباره
-            </button>
-          </div>
-        )}
       </AssessmentCarousel>
     </section>
   );
@@ -457,7 +414,7 @@ function AssessmentStatusSkeleton() {
 function ActionRow({
   action,
 }: {
-  action: PatientJourney['home']['actions'][number];
+  action: PatientHome['actions'][number];
 }) {
   if (action.code === 'TRACK_ORDER' && action.resourceId) {
     return <HomeOrderProgress orderId={action.resourceId} />;
@@ -503,7 +460,7 @@ function ActionRow({
 function PendingActions({
   actions,
 }: {
-  actions: PatientJourney['home']['actions'];
+  actions: PatientHome['actions'];
 }) {
   const [expanded, setExpanded] = useState(false);
   if (actions.length === 0) return null;
@@ -547,7 +504,7 @@ function PendingActions({
 }
 
 type HomeJourneyProps = {
-  journey: ReturnType<typeof useSessionPatientResource<PatientJourney>>;
+  journey: ReturnType<typeof useSessionPatientResource<PatientHome>>;
 };
 
 export function HomeJourneyOverview({ journey }: HomeJourneyProps) {
@@ -558,7 +515,7 @@ export function HomeJourneyOverview({ journey }: HomeJourneyProps) {
         <AssessmentStatusSkeleton />
       </LoadingState>
     );
-  if (!data?.home)
+  if (!data)
     return (
       <Hero
         label="وضعیت شما"
@@ -581,8 +538,8 @@ export function HomeJourneyOverview({ journey }: HomeJourneyProps) {
         </p>
       </Hero>
     );
-  return data.home.latestAssessment ? (
-    <AssessmentStatus key={data.home.latestAssessment.id} data={data} />
+  return data.latestAssessment ? (
+    <AssessmentStatus key={data.latestAssessment.id} latest={data.latestAssessment} />
   ) : (
     <Hero
       label="وضعیت شما"
@@ -600,9 +557,9 @@ export function HomeJourney({ journey }: HomeJourneyProps) {
   useEffect(() => subscribeHomeRefresh(journey.refresh), [journey.refresh]);
 
   const data = journey.data;
-  if (journey.loading || !data?.home) return null;
-  const [first, ...rest] = data.home.actions;
-  const visit = data.appointments.items[0];
+  if (journey.loading || !data) return null;
+  const [first, ...rest] = data.actions;
+  const visit = data.nextAppointment;
   const featuredIsVisit = first?.code === 'OPEN_APPOINTMENT' && first.resourceId === visit?.id;
   return (
     <>
@@ -624,7 +581,7 @@ export function HomeJourney({ journey }: HomeJourneyProps) {
         </section>
       ) : null}
       {visit && !featuredIsVisit ? <NextVisit visit={visit} /> : null}
-      {!data.onboarding.isComplete && <SetupProgress steps={data.home.setupSteps} />}
+      {!data.isOnboardingComplete && <SetupProgress steps={data.setupSteps} />}
       <PendingActions actions={rest} />
     </>
   );
