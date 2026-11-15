@@ -16,6 +16,8 @@ export const getAssessmentPurchase = (token: string, id: string) => data(apiClie
 export const startPaidAssessment = (token: string, id: string) => data(apiClient.POST("/v1/patients/me/assessment-access-grants/{id}/submission", { headers: auth(token), params: { path: { id } } }));
 // These two legacy list contracts describe numeric query parameters as Object; keep the wire values numeric.
 export const listProgramOfferings = (token: string, page = 1) => patientCachedData(patientCacheKey(token, `program-offerings:${page}`), PATIENT_CATALOG_TTL_MS, () => data(apiClient.GET("/v1/patients/me/program-offerings", { headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } })));
+export const listProgramOfferingCards = (token: string, cursor: string | null, signal?: AbortSignal) =>
+  data(apiClient.GET("/v1/patients/me/program-offering-cards", { headers: auth(token), params: { query: { cursor: cursor ?? undefined } }, signal }));
 export const getProgramOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const acceptProgramConsent = (token: string, body: Schema["ProgramConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/program-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
 export const createProgramPurchase = (token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/program-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
@@ -24,6 +26,8 @@ export const getProgramPurchase = (token: string, id: string) => data(apiClient.
 export const getProgramContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-access-grants/{id}/content", { cache: 'no-store', headers: auth(token), params: { path: { id } } }));
 export const getGuidanceContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/guidance-content/{id}", { headers: auth(token), params: { path: { id } } }));
 export const listCustomOfferings = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-offerings", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));
+export const listCustomOfferingCards = (token: string, cursor: string | null, signal?: AbortSignal) =>
+  data(apiClient.GET("/v1/patients/me/custom-program-offering-cards", { headers: auth(token), params: { query: { cursor: cursor ?? undefined } }, signal }));
 export const getCustomOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/custom-program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const createCustomRequest = (token: string, body: Schema["CustomProgramRequestCreateDto"], key: string) => data(apiClient.POST("/v1/patients/me/custom-program-requests", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
 export const listCustomRequests = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/custom-program-requests", { headers: auth(token), params: { query: { page, pageSize: 20 } } }));

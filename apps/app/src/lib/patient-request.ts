@@ -75,9 +75,10 @@ export function patientCachedData<T>(
   cacheKey: string,
   ttlMs: number,
   factory: () => Promise<T>,
+  refresh = false,
 ): Promise<T> {
   if (ttlMs > 0) {
-    const fresh = peekPatientCache<T>(cacheKey);
+    const fresh = refresh ? undefined : peekPatientCache<T>(cacheKey);
     if (fresh !== undefined) return Promise.resolve(fresh);
     cachedValues.delete(cacheKey);
   }
@@ -102,7 +103,7 @@ export function patientCachedData<T>(
   return request;
 }
 
-export function patientSessionData<T>(key: string, ttlMs: number, load: (signal: AbortSignal) => Promise<T>): Promise<T> {
+export function patientSessionData<T>(key: string, ttlMs: number, load: (signal: AbortSignal) => Promise<T>, refresh = false): Promise<T> {
   return patientCachedData(key, ttlMs, async () => {
     const controller = new AbortController();
     sessionRequests.add(controller);
@@ -115,7 +116,7 @@ export function patientSessionData<T>(key: string, ttlMs: number, load: (signal:
       clearTimeout(timeout);
       sessionRequests.delete(controller);
     }
-  });
+  }, refresh);
 }
 
 export async function patientEmpty(

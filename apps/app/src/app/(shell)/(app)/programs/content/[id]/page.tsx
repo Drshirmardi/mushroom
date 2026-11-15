@@ -317,7 +317,6 @@ function ProgramReadingPage({
           ) : mezaj.data?.assessmentSubmissionId ? (
             <div className="w-full min-w-0 max-w-full overflow-x-clip">
               <ResultRecommendations
-                token={token}
                 submissionId={mezaj.data.assessmentSubmissionId}
                 layout="horizontal"
               />

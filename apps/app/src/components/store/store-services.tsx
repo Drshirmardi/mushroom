@@ -9,10 +9,12 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import type { Swiper as SwiperInstance } from 'swiper';
 import 'swiper/css';
 import { HomeBanners, type HomeBannerItem } from '@/components/home/home-banners';
-import { useAuthSessionSnapshot } from '@/components/auth/session-gate';
+import { accessTokenForSession, useAuthSessionSnapshot } from '@/components/auth/session-gate';
+import { authSessionKey } from '@/auth/session';
 import { LoadingState, SkeletonBox, SkeletonCard } from '@/components/shared/skeletons';
 import { loginUrl } from '@/lib/api';
-import { listCustomOfferings, listProgramOfferings } from '@/lib/digital-services-api';
+import { listCustomOfferingCards, listProgramOfferingCards } from '@/lib/digital-services-api';
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientSessionData } from '@/lib/patient-request';
 import { toP } from '@/lib/format';
 import { getMezajServices, type MezajService } from '@/lib/mezaj-services-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -389,7 +391,7 @@ function Recommendations({ token }: { token: string }) {
 }
 
 type Offering = Awaited<
-  ReturnType<typeof listProgramOfferings | typeof listCustomOfferings>
+  ReturnType<typeof listProgramOfferingCards | typeof listCustomOfferingCards>
 >['items'][number];
 
 function categoryStyle(
@@ -469,7 +471,7 @@ function OfferingCard({
   );
 }
 
-function Offerings({ token, kind }: { token: string; kind: 'education' | 'custom' }) {
+function Offerings({ sessionKey, kind }: { sessionKey: string; kind: 'education' | 'custom' }) {
   const custom = kind === 'custom';
   const title = custom ? 'خدمات اختصاصی' : 'خدمات مرتبط با سایر مزاج‌ها';
   const [items, setItems] = useState<Offering[] | null>(null);
@@ -480,41 +482,44 @@ function Offerings({ token, kind }: { token: string; kind: 'education' | 'custom
   const [hasMore, setHasMore] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
   const generation = useRef(0);
-  const nextPage = useRef(2);
+  const nextCursor = useRef<string | null>(null);
   const loadingLock = useRef(false);
 
   const loadPage = useCallback(
-    async (page: number) => {
-      const response = await (custom
-        ? listCustomOfferings(token, page)
-        : listProgramOfferings(token, page));
-      return response as unknown as {
+    (cursor: string | null, refresh = false) => {
+      return patientSessionData<{
         items: Offering[];
-        total: number;
-        page: number;
-        pageSize: number;
-      };
+        nextCursor: string | null;
+      }>(
+        patientCacheKey(sessionKey, `store-offering-cards:${kind}:${cursor ?? ''}`),
+        PATIENT_CATALOG_TTL_MS,
+        (signal) => {
+          const token = accessTokenForSession(sessionKey);
+          return custom ? listCustomOfferingCards(token, cursor, signal) : listProgramOfferingCards(token, cursor, signal);
+        },
+        refresh,
+      );
     },
-    [custom, token],
+    [custom, kind, sessionKey],
   );
 
   const loadMore = useCallback(
     async (retry = false) => {
-      if (loadingLock.current || !hasMore || loading || (moreError && !retry)) return;
+      const cursor = nextCursor.current;
+      if (loadingLock.current || !cursor || loading || (moreError && !retry)) return;
       loadingLock.current = true;
       const requestGeneration = generation.current;
-      const page = nextPage.current;
       setLoadingMore(true);
       setMoreError(false);
       try {
-        const result = await loadPage(page);
+        const result = await loadPage(cursor, retry);
         if (requestGeneration !== generation.current) return;
         setItems((current) => {
           const known = new Set((current ?? []).map((item) => item.id));
           return [...(current ?? []), ...result.items.filter((item) => !known.has(item.id))];
         });
-        nextPage.current = page + 1;
-        setHasMore(page * result.pageSize < result.total);
+        nextCursor.current = result.nextCursor;
+        setHasMore(result.nextCursor !== null);
       } catch {
         if (requestGeneration === generation.current) setMoreError(true);
       } finally {
@@ -524,24 +529,25 @@ function Offerings({ token, kind }: { token: string; kind: 'education' | 'custom
         }
       }
     },
-    [hasMore, loadPage, loading, moreError],
+    [loadPage, loading, moreError],
   );
 
   useEffect(() => {
     const requestGeneration = ++generation.current;
     loadingLock.current = false;
-    nextPage.current = 2;
+    nextCursor.current = null;
     setItems(null);
     setLoading(true);
     setLoadingMore(false);
     setError(false);
     setMoreError(false);
     setHasMore(false);
-    void loadPage(1)
+    void loadPage(null)
       .then((result) => {
         if (requestGeneration !== generation.current) return;
         setItems(result.items);
-        setHasMore(result.page * result.pageSize < result.total);
+        nextCursor.current = result.nextCursor;
+        setHasMore(result.nextCursor !== null);
       })
       .catch(() => {
         if (requestGeneration === generation.current) setError(true);
@@ -573,12 +579,12 @@ function Offerings({ token, kind }: { token: string; kind: 'education' | 'custom
     loadingLock.current = false;
     setError(false);
     setLoading(true);
-    void loadPage(1)
+    void loadPage(null, true)
       .then((result) => {
         if (requestGeneration !== generation.current) return;
         setItems(result.items);
-        nextPage.current = 2;
-        setHasMore(result.page * result.pageSize < result.total);
+        nextCursor.current = result.nextCursor;
+        setHasMore(result.nextCursor !== null);
       })
       .catch(() => {
         if (requestGeneration === generation.current) setError(true);
@@ -674,6 +680,7 @@ function GuestServices() {
 
 export function StoreServices() {
   const session = useAuthSessionSnapshot();
+  const sessionKey = session?.status === 'authenticated' ? authSessionKey(session.authentication) : null;
   const panel = useRef<HTMLDivElement>(null);
   useEffect(() => {
     panel.current?.closest('.patient-shell-content')?.scrollTo({ top: 0 });
@@ -681,12 +688,12 @@ export function StoreServices() {
 
   return (
     <div ref={panel} className={styles.services}>
-      {session?.status === 'authenticated' ? (
-        <div className={styles.sections} key={session.authentication.user.id}>
+      {session?.status === 'authenticated' && sessionKey ? (
+        <div className={styles.sections} key={sessionKey}>
           <StoreServiceBanners />
           <Recommendations token={session.authentication.accessToken} />
-          <Offerings kind="education" token={session.authentication.accessToken} />
-          <Offerings kind="custom" token={session.authentication.accessToken} />
+          <Offerings kind="education" sessionKey={sessionKey} />
+          <Offerings kind="custom" sessionKey={sessionKey} />
         </div>
       ) : session?.status === 'unavailable' ? (
         <LoadError message="اطلاعات حساب دریافت نشد." retry={() => window.location.reload()} />

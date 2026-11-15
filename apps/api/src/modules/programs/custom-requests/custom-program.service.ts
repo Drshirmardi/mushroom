@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { Prisma, type ConsentPolicyVersion } from '../../../generated/prisma/client';
 import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
 import { financialKey, fingerprint, lockFinancial, type Tx } from '../../billing/billing.policy';
 import type { CustomProgramCareAcceptDto, CustomProgramQueryDto, CustomProgramRequestCreateDto } from './custom-program.dto';
+import { nextOfferingCardCursor, offeringCardBoundary, type CustomOfferingCardPageDto, type ProgramOfferingCardQueryDto } from '../publication/program-offering-card.dto';
 
 const missing = () => new NotFoundException({ code: 'CUSTOM_PROGRAM_NOT_FOUND', message: 'Owned request or available custom service unavailable.', details: {} });
 const conflict = () => new ConflictException({ code: 'CUSTOM_PROGRAM_CONFLICT', message: 'Exact custom service, current care consent or request version changed.', details: {} });
@@ -18,6 +19,7 @@ type CareRow = Prisma.CustomProgramCareAuthorizationGetPayload<{ include: { care
 
 @Injectable()
 export class CustomProgramService {
+  private readonly logger = new Logger(CustomProgramService.name);
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService) {}
   async catalog(q: CustomProgramQueryDto, ctx: Context) {
     return this.prisma.$transaction(async tx => {
@@ -31,6 +33,59 @@ export class CustomProgramService {
       await this.audit(tx, 'CATALOG_READ', p.id, ctx);
       return { items: ids.map(r => this.offeringView(rows.find(v => v.id === r.id)!, policies, available.has(r.id))), total: Number(total), page: q.page, pageSize: q.pageSize };
     }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+  }
+  async catalogCards(query: ProgramOfferingCardQueryDto, ctx: Context): Promise<CustomOfferingCardPageDto> {
+    const boundary = offeringCardBoundary(query.cursor);
+    const started = performance.now();
+    const page = await this.prisma.$transaction(async tx => {
+      const patient = await this.patient(tx, ctx);
+      const rows = await tx.$queryRaw<{
+        id: string; createdAt: Date; title: string; summary: string; category: string;
+        amountRial: bigint; physicianName: string; requestSupported: boolean;
+      }[]>(Prisma.sql`
+        WITH page AS MATERIALIZED (
+          SELECT candidate.* FROM (
+            SELECT pub.id, pub.created_at AS "createdAt", pub.amount_rial AS "amountRial", pub.locale,
+              d.title, d.summary, d.category, d.doctor_service_id
+            FROM program_offering_publications pub
+            JOIN program_definition_versions d ON d.id=pub.program_definition_id AND d.clinic_id=pub.clinic_id
+            JOIN consent_policy_versions t ON t.id=pub.terms_policy_version_id
+            WHERE pub.clinic_id=${patient.clinicId}::uuid AND pub.status='ACTIVE' AND d.kind='CUSTOM_PROFESSIONAL_PLAN'
+              AND t.status='ACTIVE' AND t.activated_at IS NOT NULL AND t.content_hash=pub.terms_content_hash
+              ${boundary}
+            -- Keep the publication check outside the join so it runs in page order.
+            ORDER BY pub.created_at DESC,pub.id DESC OFFSET 0
+          ) candidate
+          WHERE program_publication_current(candidate.id)
+          ORDER BY candidate."createdAt" DESC,candidate.id DESC
+          LIMIT ${query.limit + 1}
+        )
+        SELECT page.id, page."createdAt", page."amountRial", page.title, page.summary, page.category,
+          doctor.display_name AS "physicianName",
+          -- The page already passed the sale check in this same snapshot.
+          custom_program_source_available(page.id,false) AND EXISTS (
+            SELECT 1 FROM consent_policy_versions policy
+            WHERE policy.clinic_id=${patient.clinicId}::uuid AND policy.locale=page.locale
+              AND policy.policy_key='CUSTOM_PROGRAM_CARE' AND policy.status='ACTIVE' AND policy.activated_at IS NOT NULL
+              AND policy.content_hash=encode(sha256(convert_to(policy.body,'UTF8')),'hex')
+          ) AS "requestSupported"
+        FROM page
+        JOIN doctor_services ds ON ds.id=page.doctor_service_id AND ds.clinic_id=${patient.clinicId}::uuid
+        JOIN doctor_profiles doctor ON doctor.id=ds.doctor_id AND doctor.clinic_id=ds.clinic_id
+        ORDER BY page."createdAt" DESC,page.id DESC
+      `);
+      await this.audit(tx, 'CATALOG_READ', patient.id, ctx);
+      return {
+        items: rows.slice(0, query.limit).map(row => ({
+          id: row.id, title: row.title, summary: row.summary, category: row.category,
+          amountRial: row.amountRial.toString(), physician: { displayName: row.physicianName },
+          requestSupported: row.requestSupported,
+        })),
+        nextCursor: nextOfferingCardCursor(rows, query.limit),
+      };
+    }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+    this.logger.debug({ operation: 'custom-program-offering-cards', requestId: ctx.requestId, rows: page.items.length, durationMs: Math.round(performance.now() - started) });
+    return page;
   }
   async offering(id: string, ctx: Context) {
     return this.prisma.$transaction(async tx => {

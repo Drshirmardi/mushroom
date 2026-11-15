@@ -19,6 +19,13 @@ import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-
 import { ProgramMezajService } from '../src/modules/programs/purchases/program-mezaj.service';
 import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { previewTieBreakDraft, TIEBREAK_ALGORITHM } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
+import { readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
+import { PublicAuthRateLimiter } from '../src/modules/identity/application/ports/public-auth-rate-limiter';
+import { explainProgramStore, measureProgramStore } from './program-store-benchmark';
+import { offeringCardBoundary } from '../src/modules/programs/publication/program-offering-card.dto';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready program purchase/access (disposable PostgreSQL, synthetic PSP)', () => {
   let app: NestFastifyApplication, db: PrismaService, billing: BillingService, gateway: BillingGatewayService, wallet: WalletService, clinicId: string, doctorRole: string, originalSign: boolean;
@@ -89,6 +96,110 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     const snapshot={...evaluation,reviewState:'ADMIN_PUBLISHED',questionnaireContentHash:v.contentHash,answerPayloadHash:payloadHash,resultBand:{id:evaluation.profile!.id,title:evaluation.profile!.title,riskLevel:'NONE',requiresReview:false},answers};
     return db.patientAssessmentSubmission.create({data:{patientId:p.profile.id,assessmentVersionId:v.id,attemptNumber:1,state:'COMPLETE',completedAt:new Date(),completionPayloadHash:payloadHash,completionIdempotencyKey:randomUUID(),resultSnapshot:snapshot as unknown as Prisma.InputJsonValue}});
   }
+  it.skipIf(!process.env.STORE_PERF_CASE)('benchmarks the patient service catalog with retained synthetic fixtures', async () => {
+    const size = Number(process.env.STORE_PERF_CASE);
+    expect([110, 500]).toContain(size);
+    const output = process.env.STORE_PERF_OUTPUT!;
+    const builtDir = process.env.STORE_PERF_BUILD!;
+    expect(output && builtDir).toBeTruthy();
+    const fixtureFile = resolve(output, `fixture-${size}.json`);
+    let fixture: { userId: string; submissionId: string };
+    if (process.env.STORE_PERF_SEED === '1') {
+      expect(await db.programOfferingPublication.count()).toBe(0);
+      // The lab run deliberately exceeds the public per-user throttle.
+      // Authentication, tenant membership, approval and publication guards still run.
+      const limiter = vi.spyOn(app.get(PublicAuthRateLimiter), 'consume').mockResolvedValue(true);
+      try {
+        const reference = await setup();
+        const clinic = await db.clinic.create({ data: { name: 'Synthetic other catalog', timeZone: 'Asia/Tehran', status: 'INACTIVE' } });
+        const targetClinicId = clinicId, targetAdmin = admin, targetDoctor = doctor;
+        const switchClinic = (from: string, to: string) => db.$transaction([
+          db.clinic.update({ where: { id: from }, data: { status: 'INACTIVE' } }),
+          db.clinic.update({ where: { id: to }, data: { status: 'ACTIVE' } }),
+        ]);
+        await switchClinic(targetClinicId, clinic.id);
+        clinicId = clinic.id;
+        try {
+          admin = await actor('ADMIN');
+          doctor = await actor('DOCTOR');
+          for (let i = 0; i < 3; i++) await setup('0', 'PERPETUAL', true);
+        } finally {
+          await switchClinic(clinic.id, targetClinicId);
+          clinicId = targetClinicId;
+          admin = targetAdmin;
+          doctor = targetDoctor;
+        }
+        const retired = await req('POST', `admin/program-offerings/${reference.pub.id}/retire`);
+        expect(retired.statusCode, retired.body).toBe(201);
+        const label = randomUUID();
+        const professionalService = await db.service.create({ data: { clinicId, name: label, canonicalName: label, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+        const doctorService = await db.doctorService.create({ data: { clinicId, doctorId: doctor.doctorId!, serviceId: professionalService.id, visitMode: 'ONLINE', durationMinutes: 30, priceAmount: 50000, isActive: true, publicationStatus: 'PUBLISHED', publishedAt: new Date() } });
+        for (let i = 0; i < size; i++) {
+          const custom = i % 10 === 9;
+          const programKey = 'PERF_' + i;
+          const created = await req('POST', 'admin/program-definitions/versions', admin, {
+            ...reference.input, programKey, ...(custom ? { kind: 'CUSTOM_PROFESSIONAL_PLAN', doctorServiceId: doctorService.id } : {}),
+          });
+          expect(created.statusCode, created.body).toBe(201);
+          const d = created.json();
+          // A desktop VM clock adjustment can put a later transaction before createdAt.
+          // Wait for the same database clock used by the approval constraint.
+          for (let attempt = 0; attempt < 20; attempt++) {
+            const [clock] = await db.$queryRaw<{ now: Date }[]>`SELECT clock_timestamp() AS now`;
+            if (clock!.now.getTime() >= Date.parse(d.createdAt)) break;
+            await delay(100);
+          }
+          const approved = await req('POST', `clinical/program-definitions/${d.id}/approve`, doctor, {
+            contentHash: d.contentHash, reviewedProgramAndSafety: true, noAutomaticTherapyActivation: true,
+          });
+          expect(approved.statusCode, approved.body).toBe(201);
+          const config = { ...reference.config, programDefinitionId: d.id, ...(custom ? { accessMode: 'ONE_DELIVERY', accessDurationDays: null } : {}) };
+          await publish(config);
+          if (i % 4 === 0) await publish(config);
+          if (!custom) {
+            await db.programService.update({ where: { clinicId_programKey_locale: { clinicId, programKey, locale: 'fa-IR' } }, data: { audience: 'SHARED' } });
+            await app.get(ProgramMezajService).settings(d.id, ctx(), {
+              expectedRevision: 0, enabled: true, icon: 'compass', pairs: [i % 3 ? 'damavi/safravi' : 'balgami/sodavi'],
+            });
+          }
+        }
+        const p = await patient();
+        const submission = await dimensionalResult(p);
+        fixture = { userId: p.userId, submissionId: submission.id };
+        await writeFile(fixtureFile, JSON.stringify(fixture));
+      } finally {
+        limiter.mockRestore();
+      }
+    } else {
+      fixture = JSON.parse(await readFile(fixtureFile, 'utf8'));
+    }
+    const counts = await db.$queryRaw(Prisma.sql`
+      SELECT d.kind, pub.status, count(*)::int AS count,
+        count(*) FILTER (WHERE program_publication_current(pub.id))::int AS eligible
+      FROM program_offering_publications pub JOIN program_definition_versions d ON d.id=pub.program_definition_id
+      WHERE pub.clinic_id=${clinicId}::uuid AND pub.program_key LIKE 'PERF_%'
+      GROUP BY d.kind, pub.status ORDER BY d.kind, pub.status
+    `);
+    await writeFile(resolve(output, `catalog-${size}.json`), JSON.stringify(counts, null, 2));
+    await explainProgramStore(db, clinicId, resolve(output, `explain-${size}.json`));
+    if (process.env.STORE_PERF_SEED_ONLY === '1') return;
+    const freshToken = async () => (await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT'], fixture.userId)).token;
+    const built = createRequire(resolve('package.json'));
+    const measured: NestFastifyApplication = await built(resolve(builtDir, 'app.factory.js')).createApiApplication();
+    try {
+      await measured.init();
+      const measuredDb = measured.get<PrismaService>(built(resolve(builtDir, 'database/prisma/prisma.service.js')).PrismaService);
+      const rateLimiter = measured.get<PublicAuthRateLimiter>(built(resolve(builtDir, 'modules/identity/application/ports/public-auth-rate-limiter.js')).PublicAuthRateLimiter);
+      const noLabThrottle = vi.spyOn(rateLimiter, 'consume').mockResolvedValue(true);
+      try {
+        await measureProgramStore(measured, measuredDb, freshToken, fixture.submissionId, resolve(output, `${process.env.STORE_PERF_PHASE}-${size}.json`));
+      } finally {
+        noLabThrottle.mockRestore();
+      }
+    } finally {
+      await measured.close();
+    }
+  }, 900_000);
   it('Mezaj exact result recommendations support11+1 canonical IDs, private bodies, reverse pairs and source tamper without older fallback', async()=>{
     const f=await setup(),p=await patient(),q=await patient(),service=app.get(ProgramMezajService);
     await service.settings(f.definition.id,ctx(),{expectedRevision:0,enabled:true,icon:'compass',pairs:['damavi/safravi']});
@@ -118,8 +229,63 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
   },20000);
   it('catalog has exact terms/safety/current price, no curriculum or medical intake/age gate', async () => {
     const f = await setup(), p = await patient(), r = await req('GET', `patients/me/program-offerings/${f.pub.id}`, p); expect(r.statusCode, r.body).toBe(200); expect(r.json()).toMatchObject({ amountRial: '50000', educationalOnly: true, ordinaryRefunds: false, terms: { id: f.terms.id }, termsConsent: null }); expect(r.body).not.toContain(f.input.body); expect(await db.patientMedicalIntake.count({ where: { patientId: p.profile.id } })).toBe(0);
-    const list = await req('GET', 'patients/me/program-offerings?pageSize=1', p); expect(list.statusCode, list.body).toBe(200); expect(list.json().items).toHaveLength(1); const empty = await req('GET', 'patients/me/program-offerings?page=10000&pageSize=50', p); expect(empty.json().total).toBe(list.json().total); expect(empty.json().items).toEqual([]);
+    const list = await req('GET', 'patients/me/program-offerings?pageSize=1', p);
+    expect(list.statusCode, list.body).toBe(200);
+    expect(list.json().items).toHaveLength(1);
+    const service = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: f.definition.programKey, locale: f.definition.locale } } });
+    expect(list.json().items[0]).toMatchObject({ id: f.pub.id, serviceId: service.id });
+    const empty = await req('GET', 'patients/me/program-offerings?page=10000&pageSize=50', p);
+    expect(empty.json().total).toBe(list.json().total);
+    expect(empty.json().items).toEqual([]);
+    expect(await db.auditEvent.count({ where: { actorUserId: p.userId, action: 'PROGRAM_CATALOG_READ', subjectId: p.profile.id } })).toBe(2);
   }, 15_000);
+  it('paginates ready offering cards without returning legal or detail data', async () => {
+    const first = await setup('0', 'PERPETUAL', true);
+    const second = await setup('0', 'PERPETUAL', true);
+    const p = await patient();
+    const route = 'patients/me/program-offering-cards';
+    const legacy = await req('GET', 'patients/me/program-offerings', p);
+    const expectedIds: string[] = legacy.json().items.map((item: { id: string }) => item.id);
+    expect(expectedIds.slice(0, 2)).toEqual([second.pub.id, first.pub.id]);
+    const initial = await req('GET', route + '?limit=1', p);
+    expect(initial.statusCode, initial.body).toBe(200);
+    expect(initial.headers['cache-control']).toBe('private, no-store');
+    expect(initial.json()).toEqual({
+      items: [{ id: second.pub.id, title: second.input.title, summary: second.input.summary, category: second.input.category,
+        amountRial: '0', baseAmountRial: '0', discountPercent: 0, accessMode: 'PERPETUAL', accessDurationDays: null }],
+      nextCursor: expect.any(String),
+    });
+    const cursor = initial.json().nextCursor;
+    const tail = await req('GET', route + '?cursor=' + cursor, p);
+    expect(tail.statusCode, tail.body).toBe(200);
+    expect(tail.json().items.map((item: { id: string }) => item.id)).toEqual(expectedIds.slice(1));
+    expect(tail.json().nextCursor).toBeNull();
+    for (const query of ['cursor=bad', 'cursor=', 'limit=0', 'limit=21', 'clinicId=' + clinicId]) {
+      expect((await req('GET', route + '?' + query, p)).statusCode).toBe(400);
+    }
+    const oldestBoundary = Buffer.from(JSON.stringify([1, '2000-01-01T00:00:00.000Z', first.pub.id])).toString('base64url');
+    expect((await req('GET', route + '?cursor=' + oldestBoundary, p)).json()).toEqual({ items: [], nextCursor: null });
+    expect(await db.auditEvent.count({ where: { actorUserId: p.userId, action: 'PROGRAM_CATALOG_READ' } })).toBe(4);
+    expect((await req('POST', `admin/program-offerings/${first.pub.id}/retire`)).statusCode).toBe(201);
+    const replacement = await publish(second.config);
+    const afterChanges = await req('GET', route + '?cursor=' + cursor, p);
+    expect(afterChanges.json().items.map((item: { id: string }) => item.id)).toEqual(expectedIds.slice(2));
+    expect((await req('GET', route + '?limit=1', p)).json().items[0].id).toBe(replacement.id);
+
+    const at = '2026-01-01T00:00:00.000Z';
+    const low = '00000000-0000-4000-a000-000000000001';
+    const high = '00000000-0000-4000-a000-000000000002';
+    const tie = Buffer.from(JSON.stringify([1, at, high])).toString('base64url');
+    const tied = await db.$queryRaw(Prisma.sql`
+      SELECT pub.id::text AS id FROM (VALUES
+        (${new Date(at)}::timestamptz, ${low}::uuid),
+        (${new Date(at)}::timestamptz, ${high}::uuid)
+      ) pub(created_at, id)
+      WHERE true ${offeringCardBoundary(tie)}
+      ORDER BY pub.created_at DESC, pub.id DESC
+    `);
+    expect(tied).toEqual([{ id: low }]);
+  }, 20_000);
   it('free program atomically grants exactly one owned perpetual curriculum without ledger/provider/clinical record', async () => {
     const f = await setup('0', 'PERPETUAL'), p = await patient(), before = await Promise.all([db.walletJournal.count(), db.billingGatewayAttempt.count(), db.treatmentPlan.count()]), i = await purchase(f, p); expect(i.intent).toMatchObject({ status: 'PAID', method: 'FREE', amountRial: '0', purpose: 'PROGRAM' }); const g = await grant(p, i.intent.programPurchaseId); expect(g).toMatchObject({ accessAvailable: true, endsAt: null });
     const r = await req('GET', `patients/me/program-access-grants/${g.id}/content`, p); expect(r.statusCode, r.body).toBe(200); expect(r.json()).toMatchObject({ body: f.input.body, educationalOnly: true, contentHash: f.definition.contentHash }); expect(await Promise.all([db.walletJournal.count(), db.billingGatewayAttempt.count(), db.treatmentPlan.count()])).toEqual(before);

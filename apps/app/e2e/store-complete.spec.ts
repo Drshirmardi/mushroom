@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const origin = "http://localhost:3001";
+const origin = process.env.STORE_TEST_ORIGIN ?? "http://localhost:3001";
 const productId = "bd904d31-442e-45c1-af10-636c967cc381";
 const categoryId = "968fc43a-77c6-47ac-b88e-0f9ca86f2146";
 const product = { id: productId, title: "شامپو مراقبت مو", slug: "hair-care", image: null, category: { id: categoryId, name: "مراقبت مو", slug: "hair" }, description: "مشخصات واقعی محصول از سرویس فروشگاه دریافت می‌شود.", skus: [
@@ -68,6 +68,50 @@ async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
 }
 
+test("services reuses both catalog pages when returning within the session cache window", async ({ page }, testInfo) => {
+  const counts = { education: 0, custom: 0 };
+  await fixture(page);
+  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/, async route => {
+    const headers = {
+      "access-control-allow-origin": origin,
+      "access-control-allow-credentials": "true",
+      "access-control-allow-headers": "authorization, content-type, x-analytics-context",
+    };
+    if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    const path = new URL(route.request().url()).pathname;
+    if (path.endsWith("/program-recommendations")) {
+      return route.fulfill({ headers, json: { status: "NO_RESULT", items: [] } });
+    }
+    const custom = path.endsWith("/custom-program-offering-cards");
+    const type = custom ? "custom" : "education";
+    counts[type]++;
+    return route.fulfill({ headers, json: {
+      items: [{
+        id: type, title: custom ? "خدمت اختصاصی آزمایشی" : "خدمت آموزشی آزمایشی",
+        summary: "", category: "خواب", amountRial: "100000", discountPercent: 0,
+        accessMode: "PERPETUAL", accessDurationDays: null,
+        ...(custom ? { physician: { displayName: "دکتر آزمایشی" }, requestSupported: true } : {}),
+      }], nextCursor: null,
+    } });
+  });
+  await page.goto(`${origin}/store`);
+  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
+  const services = tabs.getByRole("link", { name: "خدمات" });
+  for (const phase of ["cold", "warm"]) {
+    const start = performance.now();
+    await services.click();
+    const times = await Promise.all(["خدمت آموزشی آزمایشی", "خدمت اختصاصی آزمایشی"].map(async title => {
+      await expect(page.getByText(title, { exact: true })).toBeVisible();
+      return performance.now() - start;
+    }));
+    await testInfo.attach(`catalog-${phase}`, { body: JSON.stringify({
+      mocks: true, firstVisibleCardMs: Math.min(...times), bothCardsMs: Math.max(...times), ...counts,
+    }), contentType: "application/json" });
+    expect(counts).toEqual({ education: 1, custom: 1 });
+    if (phase === "cold") await page.goBack();
+  }
+});
+
 test("services uses the latest mezaj result and preserves product filters between tabs", async ({ page }, testInfo) => {
   if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 760 });
   const requests: string[] = [];
@@ -77,7 +121,7 @@ test("services uses the latest mezaj result and preserves product filters betwee
   const custom = { id: "custom", title: "برنامهٔ اختصاصی خواب", summary: "", category: "خواب", amountRial: "100000", physician: { displayName: "دکتر آزمایشی" }, requestSupported: false };
   const recommended = { programDefinitionId: "featured", publicationId: "featured", title: "پیشنهاد نخست", summary: "برنامهٔ پیشنهادی", icon: "heart", amountRial: "100000", baseAmountRial: "150000", discountPercent: 33, state: "BUY" };
   await fixture(page);
-  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offerings|custom-program-offerings)(?:\?|$)/, async (route) => {
+  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/, async (route) => {
     const url = new URL(route.request().url());
     const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-headers": "authorization, content-type, x-analytics-context" };
     if (route.request().method() === "OPTIONS") {
@@ -98,15 +142,17 @@ test("services uses the latest mezaj result and preserves product filters betwee
       } });
       return;
     }
-    const catalogPage = Number(url.searchParams.get("page") ?? 1);
-    const items = path === "program-offerings"
+    const cursor = url.searchParams.get("cursor");
+    if (cursor !== null) expect(cursor).toBe("next-fixture");
+    const catalogPage = cursor ? 2 : 1;
+    const items = path === "program-offering-cards"
       ? Array.from({ length: catalogPage === 1 ? 7 : 2 }, (_, index) => ({
         ...educational,
         id: `education-${catalogPage}-${index}`,
         title: catalogPage === 1 ? (index ? `آموزش ${index + 1}` : educational.title) : (index ? "آموزش دوم این صفحه" : "صفحهٔ دوم آموزش"),
       }))
       : [custom];
-    await route.fulfill({ headers, json: { items, page: catalogPage, pageSize: 20, total: path === "program-offerings" ? 21 : 1 } });
+    await route.fulfill({ headers, json: { items, nextCursor: path === "program-offering-cards" && catalogPage === 1 ? "next-fixture" : null } });
   });
 
   await page.goto(`${origin}/store?view=all&q=شامپو&category=${categoryId}&page=2`);
@@ -120,14 +166,15 @@ test("services uses the latest mezaj result and preserves product filters betwee
   await expect(page.getByRole("link", { name: "شروع ارزیابی" })).toHaveAttribute("href", "/assessment");
   await expect(page.locator("#store-search")).toHaveCount(0);
   expect(new URL(page.url()).searchParams.get("page")).toBe("2");
-  const education = page.getByRole("region", { name: "برنامه‌های آموزشی" });
-  const educationRail = education.getByRole("group", { name: "برنامه‌های آموزشی، شناخت خود", exact: true });
-  await expect(educationRail.getByRole("button", { name: "کارت قبلی" })).toBeDisabled();
-  await educationRail.getByRole("button", { name: "کارت بعدی" }).click();
-  await expect(educationRail.getByText("۲ از ۷", { exact: true })).toBeVisible();
-  await education.getByRole("navigation", { name: "صفحه‌بندی" }).getByRole("button", { name: "بعدی" }).click();
-  await expect(education.getByText("صفحهٔ دوم آموزش")).toBeVisible();
-  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۱" })).toHaveAttribute("aria-current", "true");
+  const education = page.getByRole("region", { name: "خدمات مرتبط با سایر مزاج‌ها" });
+  const educationRail = education.getByRole("group", { name: "خدمات مرتبط با سایر مزاج‌ها، شناخت خود", exact: true });
+  await educationRail.getByRole("button", { name: "نمایش کارت ۱", exact: true }).click();
+  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۱", exact: true })).toHaveAttribute("aria-current", "true");
+  await educationRail.getByLabel("جابه‌جایی کارت‌های خدمات مرتبط با سایر مزاج‌ها، شناخت خود با کلیدهای جهت").focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۲", exact: true })).toHaveAttribute("aria-current", "true");
+  await page.getByRole("region", { name: "خدمات اختصاصی" }).scrollIntoViewIfNeeded();
+  await expect(education.getByText("صفحهٔ دوم آموزش")).toHaveCount(1);
   await expect(page.getByText(/دکتر آزمایشی.*درخواست فعلاً غیرفعال/)).toBeVisible();
   await expect(page.getByRole("region", { name: "خدمات اختصاصی" }).locator(".swiper")).toHaveCount(0);
   await page.goBack();

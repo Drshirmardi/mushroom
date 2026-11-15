@@ -56,9 +56,17 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('custom reque
     const r = await req('GET', `patients/me/custom-program-offerings/${f.pub.id}`, p); expect(r.statusCode, r.body).toBe(200); expect(r.headers['cache-control']).toContain('no-store'); expect(r.json()).toMatchObject({ requestSupported: true, checkoutAvailable: false, clinicalDeliveryAvailable: false, amountRial: '100000', physician: { id: doctor.doctorId }, carePolicy: { id: f.care!.id }, blockers: ['CUSTOM_PROGRAM_REQUEST_REQUIRED'] }); expect(r.body).not.toContain(f.input.body);
     const s = await select(f, p); expect(s).toMatchObject({ sourceAvailable: true, careAuthorization: null }); expect(await Promise.all([db.billingIntent.count(), db.treatmentPlan.count(), db.programAccessGrant.count()])).toEqual(before);
     const list = await req('GET', 'patients/me/custom-program-offerings?pageSize=1', p); expect(list.statusCode).toBe(200); expect(list.json().items).toHaveLength(1);
+    const cards = await req('GET', 'patients/me/custom-program-offering-cards?limit=1', p);
+    expect(cards.statusCode, cards.body).toBe(200);
+    expect(cards.headers['cache-control']).toBe('private, no-store');
+    expect(cards.json().items).toEqual([{ id: f.pub.id, title: f.input.title, summary: f.input.summary, category: f.input.category,
+      amountRial: '100000', physician: { displayName: 'Synthetic named professional' }, requestSupported: true }]);
   }, 15_000);
   it('missing released care policy is explicit and prevents new request without seeding text', async () => {
     const f = await setup(false), p = await actor('PATIENT'), r = await req('GET', `patients/me/custom-program-offerings/${f.pub.id}`, p); expect(r.json()).toMatchObject({ requestSupported: false, carePolicy: null }); expect(r.json().blockers).toContain('CUSTOM_PROGRAM_CARE_POLICY_UNAVAILABLE'); expect((await req('POST', base, p, selected(f))).statusCode).toBe(409);
+    const cards = await req('GET', 'patients/me/custom-program-offering-cards', p);
+    expect(cards.statusCode, cards.body).toBe(200);
+    expect(cards.json().items).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.pub.id, requestSupported: false })]));
   }, 15_000);
   it('same-key concurrent selection returns one canonical retained request after commercial retirement', async () => {
     const f = await setup(), p = await actor('PATIENT'), key = randomUUID(), rows = await Promise.all(Array.from({ length: 5 }, () => req('POST', base, p, selected(f), key))); expect(rows.map(r => r.statusCode)).toEqual(Array(5).fill(201)); const id = rows[0]!.json().id; expect(new Set(rows.map(r => r.json().id)).size).toBe(1); expect(await db.customProgramRequest.count({ where: { patientId: p.profile!.id } })).toBe(1);
@@ -131,7 +139,11 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('custom reque
   }, 15_000);
   it('audit failure withholds metadata and atomically rolls back request, generic consent and authority', async () => {
     const f = await setup(), p = await actor('PATIENT'), s = await select(f, p); await db.$executeRawUnsafe(`CREATE FUNCTION custom_care_test_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action LIKE 'CUSTOM_PROGRAM_%' THEN RAISE EXCEPTION 'synthetic custom audit failure'; END IF; RETURN NEW; END $$`); await db.$executeRawUnsafe('CREATE TRIGGER custom_care_test_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION custom_care_test_audit_fail()');
-    try { const r = await req('GET', `${base}/${s.id}`, p); expect(r.statusCode).toBe(500); expect(r.body).not.toContain(f.care!.body); expect((await req('POST', base, p, selected(f))).statusCode).toBe(500); expect(await db.customProgramRequest.count({ where: { patientId: p.profile!.id } })).toBe(1); expect((await req('POST', carePath(s.id), p, accepted(f))).statusCode).toBe(500); expect(await db.patientConsentRecord.count({ where: { patientId: p.profile!.id, policyVersionId: f.care!.id } })).toBe(0); expect(await db.customProgramCareAuthorization.count({ where: { requestId: s.id } })).toBe(0); }
+    try { const r = await req('GET', `${base}/${s.id}`, p); expect(r.statusCode).toBe(500); expect(r.body).not.toContain(f.care!.body); expect((await req('POST', base, p, selected(f))).statusCode).toBe(500); expect(await db.customProgramRequest.count({ where: { patientId: p.profile!.id } })).toBe(1); expect((await req('POST', carePath(s.id), p, accepted(f))).statusCode).toBe(500); expect(await db.patientConsentRecord.count({ where: { patientId: p.profile!.id, policyVersionId: f.care!.id } })).toBe(0); expect(await db.customProgramCareAuthorization.count({ where: { requestId: s.id } })).toBe(0);
+      const cards = await req('GET', 'patients/me/custom-program-offering-cards', p);
+      expect(cards.statusCode).toBe(500);
+      expect(cards.body).not.toContain(f.input.title);
+    }
     finally { await db.$executeRawUnsafe('DROP TRIGGER custom_care_test_audit_fail ON audit_events'); await db.$executeRawUnsafe('DROP FUNCTION custom_care_test_audit_fail()'); }
   }, 15_000);
   it('database timestamps remain accurate with application clock ninety seconds ahead', async () => {

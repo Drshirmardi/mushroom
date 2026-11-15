@@ -3,6 +3,18 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createApiClient, createSessionAwareFetch, DEFAULT_REQUEST_TIMEOUT_MS } from "@sabz-zendegi/api-client";
 import { PATIENT_CACHE_LIMIT, PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache } from "./patient-request";
 
+it("refreshes the store page without duplicating an in-flight refresh", async () => {
+  const key = patientCacheKey("store-test-session", "store-offerings:custom:1");
+  await patientSessionData(key, PATIENT_CATALOG_TTL_MS, async () => "old");
+  const load = vi.fn(async () => "new");
+  const refresh = patientSessionData(key, PATIENT_CATALOG_TTL_MS, load, true);
+  expect(patientSessionData(key, PATIENT_CATALOG_TTL_MS, load, true)).toBe(refresh);
+  await expect(refresh).resolves.toBe("new");
+  await expect(patientSessionData(key, PATIENT_CATALOG_TTL_MS, load)).resolves.toBe("new");
+  expect(load).toHaveBeenCalledTimes(1);
+  clearPatientRequestCache();
+});
+
 describe("patient request cache", () => {
   beforeEach(() => {
     clearPatientRequestCache();

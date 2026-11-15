@@ -50,7 +50,7 @@ test("personal products precede the general catalog and preserve primary/seconda
   await expect(section).toContainText("مزاج اول دموی، مزاج دوم صفراوی");
   await expect(section.getByRole("heading", { name: product.title, exact: true })).toBeVisible();
   expect(await page.evaluate(() => document.querySelector(".store-personal")!.getBoundingClientRect().top < document.querySelector("#store-products")!.getBoundingClientRect().top)).toBeTruthy();
-  await expect(page.locator("#store-products")).toContainText("محصول عمومی فروشگاه");
+  await expect(page.getByRole("region", { name: "محصولات فروشگاه", exact: true })).toContainText("محصول عمومی فروشگاه");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   await page.screenshot({ path: join(tmpdir(), `mezaj-store-${info.project.name}.png`) });
   mock.recommend({ status: "READY", primary: "safravi", secondary: "damavi", items: [product] }); await page.reload();
@@ -65,7 +65,7 @@ test("no result, pending review and recommendation outage never become fabricate
   mock.recommend({ status: "REVIEW_REQUIRED", primary: "", secondary: "", items: [] }); await page.reload();
   await expect(page.getByText("برای پیشنهاد محصولات مرتبط، نتیجهٔ ارزیابی شما به بررسی متخصص نیاز دارد.", { exact: true })).toBeVisible();
   mock.fail(true); await page.reload();
-  await expect(page.getByText("پیشنهادهای مرتبط با شما دریافت نشد.", { exact: true })).toBeVisible(); await expect(page.locator("#store-products")).toContainText("محصول عمومی فروشگاه");
+  await expect(page.getByText("پیشنهادهای مرتبط با شما دریافت نشد.", { exact: true })).toBeVisible(); await expect(page.getByRole("region", { name: "محصولات فروشگاه", exact: true })).toContainText("محصول عمومی فروشگاه");
   mock.fail(false); mock.recommend({ status: "READY", primary: "damavi", secondary: "safravi", items: [product] });
   await page.getByRole("complementary", { name: "پیشنهادهای مخصوص شما" }).getByRole("button", { name: "تلاش دوباره", exact: true }).click();
   await expect(page.locator(".store-personal")).toBeVisible(); expect(mock.writes).toEqual([]);

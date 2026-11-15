@@ -6,6 +6,7 @@ import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { ProgramDefinitionRateGuard } from '../definitions/program-definition.controller';
 import { CustomProgramService } from './custom-program.service';
+import { CustomOfferingCardPageDto, ProgramOfferingCardQueryDto } from '../publication/program-offering-card.dto';
 import { CustomProgramCareAcceptDto, CustomProgramCareDto, CustomProgramCarePageDto, CustomProgramOfferingDto, CustomProgramOfferingPageDto, CustomProgramQueryDto, CustomProgramRequestCreateDto, CustomProgramRequestDto, CustomProgramRequestPageDto } from './custom-program.dto';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
@@ -17,6 +18,9 @@ export class CustomProgramController {
   @Get('custom-program-offerings') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
   @ApiOperation({ operationId: 'patientCustomProgramOfferingsList' }) @ApiOkResponse({ type: CustomProgramOfferingPageDto })
   catalog(@Query() q: CustomProgramQueryDto, @Req() r: AuthenticatedRequest) { return this.programs.catalog(q, context(r)); }
+  @Get('custom-program-offering-cards') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
+  @ApiOperation({ operationId: 'patientCustomProgramOfferingCardsList' }) @ApiOkResponse({ type: CustomOfferingCardPageDto })
+  catalogCards(@Query() q: ProgramOfferingCardQueryDto, @Req() r: AuthenticatedRequest) { return this.programs.catalogCards(q, context(r)); }
   @Get('custom-program-offerings/:id') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
   @ApiOperation({ operationId: 'patientCustomProgramOfferingGet' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: CustomProgramOfferingDto })
   offering(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.programs.offering(id, context(r)); }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react';
 
 import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
 import { LoadingState } from '@/components/shared/skeletons';
@@ -8,18 +8,54 @@ import { ProductCard } from '@/components/store/product-card';
 
 import { getCommerceRecommendations } from '@/lib/commerce-catalog-api';
 import { getMezajServices } from '@/lib/mezaj-services-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { useSessionPatientResource } from '@/lib/use-patient-resource';
+import { useAuthSession } from '@/components/auth/session-gate';
 
 import { ServiceCard } from './service-card';
 
 export type RecommendationsLayout = 'vertical' | 'horizontal';
 
-export type ResultRecommendationsProps = {
-  token: string;
-  submissionId: string;
+type PresentationProps = {
   onNavigate?: (href: string) => Promise<void>;
   layout?: RecommendationsLayout;
 };
+
+function useRetryAfterResult(
+  scope: string,
+  confirmed: boolean,
+  error: string | null,
+  reload: () => Promise<unknown>,
+) {
+  const attempt = useRef({ scope, retried: false });
+  useEffect(() => {
+    if (attempt.current.scope !== scope) attempt.current = { scope, retried: false };
+    if (!attempt.current.retried && confirmed && error) {
+      attempt.current.retried = true;
+      void reload();
+    }
+  }, [scope, confirmed, error, reload]);
+}
+
+export function useResultRecommendations(submissionId: string, retryAfterConfirmation = false) {
+  const { sessionKey } = useAuthSession();
+  const services = useSessionPatientResource(
+    `program-recommendations:${submissionId}`,
+    useCallback((token: string, signal: AbortSignal) => getMezajServices(token, submissionId, signal), [submissionId]),
+  );
+  const products = useSessionPatientResource(
+    `commerce-recommendations:${submissionId}`,
+    useCallback((token: string, signal: AbortSignal) => getCommerceRecommendations(token, submissionId, signal), [submissionId]),
+  );
+  const scope = JSON.stringify([sessionKey, submissionId]);
+  useRetryAfterResult(scope, retryAfterConfirmation, services.error, services.reload);
+  useRetryAfterResult(scope, retryAfterConfirmation, products.error, products.reload);
+  return { services, products };
+}
+
+export function ResultRecommendations({ submissionId, ...presentation }: PresentationProps & { submissionId: string }) {
+  const resources = useResultRecommendations(submissionId);
+  return <ResultRecommendationSections {...presentation} {...resources} />;
+}
 
 // Shared visual styles.
 const stateClass =
@@ -35,12 +71,12 @@ const descriptionClass = 'mt-1 text-xs leading-6 text-muted-foreground @sm:text-
 const railClass =
   'flex w-full min-w-0 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-px-1 pb-3';
 
-export function ResultRecommendations({
-  token,
-  submissionId,
+export function ResultRecommendationSections({
+  services,
+  products,
   onNavigate,
   layout = 'vertical',
-}: ResultRecommendationsProps) {
+}: PresentationProps & ReturnType<typeof useResultRecommendations>) {
   const [navigating, setNavigating] = useState(false);
   const [navigationError, setNavigationError] = useState(false);
 
@@ -73,16 +109,6 @@ export function ResultRecommendations({
       setNavigating(false);
     }
   };
-
-  // Services associated with this completed assessment.
-  const services = usePatientResource(
-    useCallback(() => getMezajServices(token, submissionId), [token, submissionId]),
-  );
-
-  // Products associated with this completed assessment.
-  const products = usePatientResource(
-    useCallback(() => getCommerceRecommendations(token, submissionId), [token, submissionId]),
-  );
 
   return (
     <div

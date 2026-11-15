@@ -4362,6 +4362,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/program-offering-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramOfferingCardsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/program-offerings/{id}": {
         parameters: {
             query?: never;
@@ -4515,6 +4531,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["patientCustomProgramOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-offering-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramOfferingCardsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10579,6 +10611,22 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        ReadyOfferingCardDto: {
+            id: string;
+            title: string;
+            summary: string;
+            category: string;
+            amountRial: string;
+            baseAmountRial: string;
+            discountPercent: number;
+            /** @enum {string} */
+            accessMode: "DAYS" | "PERPETUAL";
+            accessDurationDays: number | null;
+        };
+        ReadyOfferingCardPageDto: {
+            nextCursor: string | null;
+            items: components["schemas"]["ReadyOfferingCardDto"][];
+        };
         ProgramConsentAcceptDto: {
             /** Format: uuid */
             policyVersionId: string;
@@ -10742,6 +10790,22 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        OfferingCardPhysicianDto: {
+            displayName: string;
+        };
+        CustomOfferingCardDto: {
+            id: string;
+            title: string;
+            summary: string;
+            category: string;
+            amountRial: string;
+            physician: components["schemas"]["OfferingCardPhysicianDto"];
+            requestSupported: boolean;
+        };
+        CustomOfferingCardPageDto: {
+            nextCursor: string | null;
+            items: components["schemas"]["CustomOfferingCardDto"][];
         };
         CustomProgramRequestCreateDto: {
             /** Format: uuid */
@@ -26481,6 +26545,87 @@ export interface operations {
             };
         };
     };
+    patientProgramOfferingCardsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadyOfferingCardPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientProgramOfferingGet: {
         parameters: {
             query?: never;
@@ -27100,6 +27245,87 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CustomProgramOfferingPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientCustomProgramOfferingCardsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomOfferingCardPageDto"];
                 };
             };
             /** @description Invalid input. */

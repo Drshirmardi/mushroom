@@ -16,17 +16,21 @@ import {
   getAssessmentGuidance,
   getAssessmentProvenance,
 } from '@/lib/assessment-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { usePatientResource, useSessionPatientResource } from '@/lib/use-patient-resource';
 import { MizajChart } from '@/components/assessments/mizaj-chart';
 import { MizajResult } from '@/components/assessments/mizaj-result';
 import { toP } from '@/lib/format';
-import { ResultRecommendations } from '@/components/programs/result-recommendations';
+import { ResultRecommendationSections, useResultRecommendations } from '@/components/programs/result-recommendations';
 
 function Result({ id }: { id: string }) {
   const { authentication } = useAuthSession();
   const token = authentication.accessToken;
 
-  const result = usePatientResource(useCallback(() => getAssessmentResult(token, id), [token, id]));
+  const result = useSessionPatientResource(
+    `assessment-result:${id}`,
+    useCallback((accessToken: string, signal: AbortSignal) => getAssessmentResult(accessToken, id, signal), [id]),
+  );
+  const recommendations = useResultRecommendations(id, result.data !== null);
 
   const questionnaire = usePatientResource(
     useCallback(() => getAssessmentQuestionnaire(token, id), [token, id]),
@@ -203,7 +207,7 @@ function Result({ id }: { id: string }) {
             </Link>
 
             <div className="mt-8 space-y-4">
-              <ResultRecommendations token={token} submissionId={id} layout="horizontal" />
+              <ResultRecommendationSections {...recommendations} layout="horizontal" />
             </div>
           </>
         )}

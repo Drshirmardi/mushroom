@@ -24,10 +24,10 @@ import {
 } from '@/lib/patient-entry-api';
 import { getAssessmentResult } from '@/lib/assessment-api';
 import { homeResultSummary } from '@/lib/home-status';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { usePatientResource, useSessionPatientResource } from '@/lib/use-patient-resource';
 import { toP } from '@/lib/format';
 import { persianBirthDate, persianDateParts } from '@/lib/persian-birth-date';
-import { ResultRecommendations } from '@/components/programs/result-recommendations';
+import { ResultRecommendationSections, useResultRecommendations } from '@/components/programs/result-recommendations';
 
 const entryLabels = ['مشخصات', 'آزمون', 'نتیجه'];
 const errorMessage = 'انجام نشد؛ اطلاعات و ارتباط اینترنت را بررسی و دوباره تلاش کنید.';
@@ -267,14 +267,16 @@ function Profile({
 
 function Result({
   id,
-  token,
   onEnter,
 }: {
   id: string;
-  token: string;
   onEnter: (href?: string) => Promise<void>;
 }) {
-  const result = usePatientResource(useCallback(() => getAssessmentResult(token, id), [token, id]));
+  const result = useSessionPatientResource(
+    `assessment-result:${id}`,
+    useCallback((accessToken: string, signal: AbortSignal) => getAssessmentResult(accessToken, id, signal), [id]),
+  );
+  const recommendations = useResultRecommendations(id, result.data !== null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const summary = result.data ? homeResultSummary(result.data.resultSnapshot) : null;
@@ -391,7 +393,7 @@ function Result({
         <ArrowLeft size={18} aria-hidden="true" />
       </button>
       {!result.loading && result.data && (
-        <ResultRecommendations token={token} submissionId={id} onNavigate={onEnter} />
+        <ResultRecommendationSections {...recommendations} onNavigate={onEnter} />
       )}
     </div>
   );
@@ -577,7 +579,7 @@ function Welcome() {
           ) : status.phase === 'PROFILE' ? (
             <Profile status={status} token={token} onSaved={reload} />
           ) : status.phase === 'RESULT' && status.submissionId ? (
-            <Result id={status.submissionId} token={token} onEnter={enter} />
+            <Result id={status.submissionId} onEnter={enter} />
           ) : status.submissionId ? (
             <>
               <div className="entry-quiz-heading">

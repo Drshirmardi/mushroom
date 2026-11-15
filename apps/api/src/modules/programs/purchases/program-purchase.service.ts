@@ -1,6 +1,6 @@
 import { programPrice } from '../publication/program-pricing';
 import { createHash, randomUUID } from 'node:crypto';
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { Prisma, type PatientConsentRecord, type PatientProfile } from '../../../generated/prisma/client';
 import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
@@ -8,6 +8,7 @@ import { BillingService } from '../../billing/billing.service';
 import { financialKey, fingerprint, lockFinancial, type Tx } from '../../billing/billing.policy';
 import type { PreparedTarget } from '../../billing/billing-target.registry';
 import type { ProgramConsentAcceptDto, ProgramPurchaseQueryDto } from './program-purchase.dto';
+import { nextOfferingCardCursor, offeringCardBoundary, type ProgramOfferingCardQueryDto, type ReadyOfferingCardPageDto } from '../publication/program-offering-card.dto';
 
 export const programMissing = () => new NotFoundException({ code: 'PROGRAM_PURCHASE_NOT_FOUND', message: 'Owned or available educational program unavailable.', details: {} });
 export const programConflict = () => new ConflictException({ code: 'PROGRAM_PURCHASE_CONFLICT', message: 'Exact program source, terms, quote or access changed.', details: {} });
@@ -18,6 +19,7 @@ const read = { intent: true, grant: true } satisfies Prisma.ProgramPurchaseInclu
 
 @Injectable()
 export class ProgramPurchaseService {
+  private readonly logger = new Logger(ProgramPurchaseService.name);
   constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly billing: BillingService) {}
   patientIdentity(ctx: Context) { return this.prisma.$transaction(tx => this.patient(tx, ctx)); }
   async catalog(query: ProgramPurchaseQueryDto, ctx: Context) {
@@ -30,9 +32,65 @@ export class ProgramPurchaseService {
       const total = ids[0]?.total ?? (await tx.$queryRaw<{ total: bigint }[]>(Prisma.sql`WITH candidates AS MATERIALIZED (${candidates}) SELECT count(*) AS total FROM candidates WHERE program_publication_current(id)`))[0]!.total;
       const consents = await tx.patientConsentRecord.findMany({ where: { patientId: p.id, policyVersionId: { in: rows.map(r => r.termsPolicyVersionId) }, withdrawnAt: null } });
       const at = await this.time(tx);
+      const services = rows.length ? await tx.$queryRaw<{ definitionId: string; serviceId: string }[]>(Prisma.sql`
+        SELECT d.id AS "definitionId", s.id AS "serviceId"
+        FROM program_definition_versions d
+        JOIN program_services s ON s.clinic_id=d.clinic_id AND s.program_key=d.program_key AND s.locale=d.locale
+        WHERE d.clinic_id=${p.clinicId}::uuid AND d.kind='READY_EDUCATION'
+          AND d.id IN (${Prisma.join(rows.map(row => Prisma.sql`${row.programDefinitionId}::uuid`))})
+      `) : [];
+      const serviceByDefinition = new Map(services.map(row => [row.definitionId, row.serviceId]));
+      const publicationById = new Map(rows.map(row => [row.id, row]));
       await this.audit(tx, 'CATALOG_READ', p.id, ctx);
-      return { items: await Promise.all(ids.map(r => { const row = rows.find(v => v.id === r.id)!; return this.withServiceIdentity(tx, this.offeringView(row, consents.find(c => c.policyVersionId === row.termsPolicyVersionId), at), row.programDefinitionId); })), total: Number(total), page: query.page, pageSize: query.pageSize };
+      const items = ids.map(({ id }) => {
+        const row = publicationById.get(id)!;
+        return {
+          ...this.offeringView(row, consents.find(consent => consent.policyVersionId === row.termsPolicyVersionId), at),
+          serviceId: serviceByDefinition.get(row.programDefinitionId) ?? null,
+        };
+      });
+      return { items, total: Number(total), page: query.page, pageSize: query.pageSize };
     }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+  }
+  async catalogCards(query: ProgramOfferingCardQueryDto, ctx: Context): Promise<ReadyOfferingCardPageDto> {
+    const boundary = offeringCardBoundary(query.cursor);
+    const started = performance.now();
+    const page = await this.prisma.$transaction(async tx => {
+      const patient = await this.patient(tx, ctx);
+      const rows = await tx.$queryRaw<{
+        id: string; createdAt: Date; title: string; summary: string; category: string;
+        amountRial: bigint; discountPercent: number; discountStartsAt: Date | null; discountEndsAt: Date | null;
+        accessMode: string; accessDurationDays: number | null; now: Date;
+      }[]>(Prisma.sql`
+        SELECT candidate.*, CURRENT_TIMESTAMP AS now FROM (
+          SELECT pub.id, pub.created_at AS "createdAt", d.title, d.summary, d.category,
+            pub.amount_rial AS "amountRial", pub.discount_percent AS "discountPercent",
+            pub.discount_starts_at AS "discountStartsAt", pub.discount_ends_at AS "discountEndsAt",
+            pub.access_mode AS "accessMode", pub.access_duration_days AS "accessDurationDays"
+          FROM program_offering_publications pub
+          JOIN program_definition_versions d ON d.id=pub.program_definition_id AND d.clinic_id=pub.clinic_id
+          JOIN consent_policy_versions t ON t.id=pub.terms_policy_version_id
+          WHERE pub.clinic_id=${patient.clinicId}::uuid AND pub.status='ACTIVE' AND d.kind='READY_EDUCATION'
+            AND t.status='ACTIVE' AND t.activated_at IS NOT NULL AND t.content_hash=pub.terms_content_hash
+            ${boundary}
+          -- Keep the publication check outside the join so it runs in page order.
+          ORDER BY pub.created_at DESC,pub.id DESC OFFSET 0
+        ) candidate
+        WHERE program_publication_current(candidate.id)
+        ORDER BY candidate."createdAt" DESC,candidate.id DESC
+        LIMIT ${query.limit + 1}
+      `);
+      await this.audit(tx, 'CATALOG_READ', patient.id, ctx);
+      return {
+        items: rows.slice(0, query.limit).map(row => ({
+          id: row.id, title: row.title, summary: row.summary, category: row.category,
+          accessMode: row.accessMode, accessDurationDays: row.accessDurationDays, ...programPrice(row, row.now),
+        })),
+        nextCursor: nextOfferingCardCursor(rows, query.limit),
+      };
+    }, { isolationLevel: 'RepeatableRead', timeout: 15_000 });
+    this.logger.debug({ operation: 'program-offering-cards', requestId: ctx.requestId, rows: page.items.length, durationMs: Math.round(performance.now() - started) });
+    return page;
   }
   async offering(id: string, ctx: Context) {
     return this.prisma.$transaction(async tx => {
