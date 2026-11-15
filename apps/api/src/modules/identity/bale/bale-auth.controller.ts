@@ -27,6 +27,8 @@ class BaleFlowResponseDto {
   status!: BaleFlowResult['status'];
   @ApiPropertyOptional({ type: AuthenticationResponseDto })
   authentication?: AuthenticationResponseDto;
+  @ApiPropertyOptional({ description: 'Server-verified phone required for linking an existing patient account.' })
+  phone?: string;
 }
 class BaleContactRequestResponseDto {
   @ApiProperty({ enum: ['CONTACT_REQUIRED'] }) status!: 'CONTACT_REQUIRED';
@@ -64,7 +66,9 @@ export class BaleAuthController {
     }
     // Avoid continuing a different person's cookie-based session in a Bale frame.
     this.cookies.clear(reply);
-    return { status: result.status };
+    return result.status === 'ACCOUNT_LINK_REQUIRED'
+      ? { status: result.status, phone: result.phone }
+      : { status: result.status };
   }
 
   @Post('exchange')

@@ -18,7 +18,7 @@ type RequestContext = { ipAddress: string; requestId: string; userAgent?: string
 type Authentication = { status: 'AUTHENTICATED'; result: SessionAuthenticationResult };
 type ContactRequired = { status: 'CONTACT_REQUIRED' };
 type Pending = { status: 'CONTACT_PENDING' };
-type LinkRequired = { status: 'ACCOUNT_LINK_REQUIRED' };
+type LinkRequired = { status: 'ACCOUNT_LINK_REQUIRED'; phone: string };
 export type BaleFlowResult = Authentication | ContactRequired | Pending | LinkRequired;
 
 const CONTACT_TTL_MS = 5 * 60_000;
@@ -116,7 +116,7 @@ export class BaleAuthService {
 
     // Never auto-link an existing medical account based on a phone from the browser.
     const prior = await this.prisma.user.findUnique({ where: { phone: challenge.phone }, select: { id: true } });
-    if (prior) return { status: 'ACCOUNT_LINK_REQUIRED' };
+    if (prior) return { status: 'ACCOUNT_LINK_REQUIRED', phone: challenge.phone };
 
     try {
       const user = await this.prisma.$transaction(async tx => {

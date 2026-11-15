@@ -7066,6 +7066,8 @@ export interface components {
             /** @enum {string} */
             status: "AUTHENTICATED" | "CONTACT_REQUIRED" | "CONTACT_PENDING" | "ACCOUNT_LINK_REQUIRED";
             authentication?: components["schemas"]["AuthenticationResponseDto"];
+            /** @description Server-verified phone required for linking an existing patient account. */
+            phone?: string;
         };
         BaleContactRequestResponseDto: {
             /** @enum {string} */

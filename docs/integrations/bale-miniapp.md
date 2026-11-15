@@ -73,7 +73,7 @@ Bale main mini-app -> https://app.example/bale
 - `POST /v1/auth/bale/exchange` – signed `{initData}`; `AUTHENTICATED` with normal `AuthenticationResponseDto`, or `CONTACT_REQUIRED`.
 - `POST /v1/auth/bale/contact/request` – signed `{initData}`; returns one-time ticket and expiration.
 - `POST /v1/integrations/bale/webhook/:secret` – bot-only Update JSON, acknowledges other event types without processing them.
-- `POST /v1/auth/bale/contact/complete` – signed `{initData,ticket}`; `CONTACT_PENDING`, `ACCOUNT_LINK_REQUIRED` or `AUTHENTICATED`.
+- `POST /v1/auth/bale/contact/complete` – signed `{initData,ticket}`; returns `CONTACT_PENDING`, `ACCOUNT_LINK_REQUIRED` with the server-verified phone, or `AUTHENTICATED`.
 - `POST /v1/auth/bale/contact/link` – signed `{initData,ticket}` and fresh OTP-verified Bearer; 204 on success.
 
 ## Manual acceptance checklist before changing draft PR to ready

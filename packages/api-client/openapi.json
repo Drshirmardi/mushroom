@@ -43337,6 +43337,10 @@
           },
           "authentication": {
             "$ref": "#/components/schemas/AuthenticationResponseDto"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Server-verified phone required for linking an existing patient account."
           }
         },
         "required": [
