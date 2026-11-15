@@ -256,6 +256,9 @@ api_runtime_hash=$(
     'PUBLIC_ANALYTICS_DEBUG false' \
     'ANALYTICS_SERVER_ENABLED false' \
     'GA4_API_SECRET_FILE /run/optional-secrets/ga4_api_secret' \
+    'BALE_AUTH_ENABLED false' \
+    'BALE_BOT_TOKEN_FILE /run/optional-secrets/bale_bot_token' \
+    'BALE_WEBHOOK_SECRET_FILE /run/optional-secrets/bale_webhook_secret' \
     'SADAD_TRANSPORT_MODE disabled' \
     'SADAD_REQUEST_TIMEOUT_MS 5000' \
     'SADAD_RETURN_URL -' \
@@ -264,7 +267,7 @@ api_runtime_hash=$(
     read -r key fallback <<<"$key_and_default"
     printf '%s=%s\n' "$key" "$(env_value_or_default "$key" "$fallback")"
   done
-  for name in r2_access_key_id r2_secret_access_key arvan_access_key_id arvan_secret_access_key ga4_api_secret; do
+  for name in r2_access_key_id r2_secret_access_key arvan_access_key_id arvan_secret_access_key ga4_api_secret bale_bot_token bale_webhook_secret; do
     if [[ -f $environment_root/secrets/$name ]]; then
       printf '%s=' "$name"
       sha256sum "$environment_root/secrets/$name" | cut -d' ' -f1
