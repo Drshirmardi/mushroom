@@ -628,6 +628,7 @@ model User {
   status                         UserStatus                      @default(ACTIVE)
   createdAt                      DateTime                        @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt                      DateTime                        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  externalAuthIdentities         ExternalAuthIdentity[]
   credential                     Credential?
   sessions                       Session[]
   roles                          UserRole[]                      @relation("UserRoleUser")
@@ -4188,4 +4189,39 @@ model MarriageInvitationDelivery {
   @@unique([requestId, idempotencyKey])
   @@index([status, createdAt])
   @@map("marriage_invitation_deliveries")
+}
+
+model ExternalAuthIdentity {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  provider       String   @db.VarChar(24)
+  providerUserId String   @map("provider_user_id") @db.VarChar(64)
+  linkedAt       DateTime @default(now()) @map("linked_at") @db.Timestamptz(3)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId], map: "external_auth_identities_provider_user_key")
+  @@index([userId], map: "external_auth_identities_user_id_idx")
+  @@map("external_auth_identities")
+}
+
+model BaleContactChallenge {
+  id             String    @id @default(uuid()) @db.Uuid
+  providerUserId String    @unique(map: "bale_contact_challenges_provider_user_key") @map("provider_user_id") @db.VarChar(64)
+  ticketHash     String    @map("ticket_hash") @db.Char(64)
+  phone          String?   @db.VarChar(13)
+  status         String    @default("PENDING") @db.VarChar(20)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(3)
+  verifiedAt     DateTime? @map("verified_at") @db.Timestamptz(3)
+  consumedAt     DateTime? @map("consumed_at") @db.Timestamptz(3)
+
+  @@index([expiresAt], map: "bale_contact_challenges_expires_at_idx")
+  @@map("bale_contact_challenges")
+}
+
+model BaleWebhookEvent {
+  updateId    BigInt   @id @map("update_id")
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(3)
+
+  @@map("bale_webhook_events")
 }
