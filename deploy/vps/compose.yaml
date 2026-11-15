@@ -20,6 +20,12 @@ services:
     image: "${API_IMAGE:?set an immutable API digest}"
     environment:
       NODE_ENV: production
+      # Optional Bale mini-app auth: disabled until a private bot token and webhook secret are provisioned.
+      BALE_AUTH_ENABLED: "${BALE_AUTH_ENABLED:-false}"
+      BALE_BOT_TOKEN: "${BALE_BOT_TOKEN:-}"
+      BALE_WEBHOOK_SECRET: "${BALE_WEBHOOK_SECRET:-}"
+      BALE_BOT_TOKEN_FILE: "${BALE_BOT_TOKEN_FILE:-}"
+      BALE_WEBHOOK_SECRET_FILE: "${BALE_WEBHOOK_SECRET_FILE:-}"
       ANALYTICS_SERVER_ENABLED: "${ANALYTICS_SERVER_ENABLED:-false}"
       GA4_API_SECRET_FILE: "${GA4_API_SECRET_FILE:-}"
       PORT: "3003"
