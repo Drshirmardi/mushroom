@@ -153,8 +153,8 @@ export default function HomePage() {
             )}
           </section>
         )}
-        <HomeJourney key={sessionKey} journey={journey} />
-        <OwnedServices key={sessionKey} />
+        <HomeJourney key={`home-journey:${sessionKey}`} journey={journey} />
+        <OwnedServices key={`owned-services:${sessionKey}`} />
 
         <section className="home-panel min-w-0" aria-labelledby="home-articles-title">
           <div className="home-section-heading mb-1 flex items-center justify-between gap-3">
