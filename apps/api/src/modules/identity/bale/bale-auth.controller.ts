@@ -1,7 +1,7 @@
 import {
-  Body, Controller, Headers, HttpCode, HttpStatus, Param, Post, Req, Res,
+  Body, Controller, HttpCode, HttpStatus, Param, Post, Req, Res,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiCookieAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
 import { IsString, MaxLength } from 'class-validator';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Public } from '../../../common/auth/public.decorator';
