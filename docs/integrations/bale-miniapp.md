@@ -6,6 +6,32 @@ Status: **feature branch / draft**. Disabled by default. Only `apps/app` and `ap
 - Mini App SDK, signed initData and requestContact: https://docs.bale.ai/miniapp
 - Bot API, Update/Contact and setWebhook: https://docs.bale.ai/
 
+## Dev server configuration with standalone installer
+
+The server-side installer now lives in
+[Drshirmardi/mushroom-installer](https://github.com/Drshirmardi/mushroom-installer).
+After its Bale-capable release is installed, **Dev only** can be configured without
+putting credentials in `runtime.env`:
+
+```bash
+sudo mushroom setup-bale --environment dev
+# Rerun the Sync shared dev VPS deployment workflow to recreate the API.
+# Only after the API endpoint is live and the bot webhook is not owned elsewhere:
+sudo mushroom register-bale-webhook --environment dev
+```
+
+The interactive panel (`sudo mushroom`) has separate configuration and webhook
+registration options. It stores the bot token and webhook bearer secret under
+`<DEV_ROOT>/secrets/bale_bot_token` and
+`<DEV_ROOT>/secrets/bale_webhook_secret` with mode `0600`, and the deployment
+script hashes their contents plus `BALE_AUTH_ENABLED` to detect API-runtime changes.
+
+No installer step changes the main mini-app URL in Bale BotFather; set it manually to
+`<PUBLIC_APP_URL>/bale`. The registration command refuses to replace a
+nonmatching existing webhook. It cannot detect an active `getUpdates` poller, so
+coordinate bot ownership before registering. Enabling or disabling Bale does not
+delete an existing remote webhook.
+
 ## Bot and deployment prerequisites
 
 1. Register a Bale bot with @botfather and configure the **main mini-app** URL as `https://<public-app-domain>/bale` (the Next.js patient app, not the landing web site).
