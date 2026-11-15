@@ -21,7 +21,7 @@ export const createRequestId = (headers: IncomingHttpHeaders): string => {
 
 /** The webhook path contains a bearer secret because Bale's documented setWebhook has only a URL. */
 export const redactBaleWebhookUrl = (url: string): string =>
-  url.replace(/(\\/v1\\/integrations\\/bale\\/webhook\\/)[^/?#]+/gu, '$1[REDACTED]');
+  url.replace(/(\/v1\/integrations\/bale\/webhook\/)[^/?#]+/gu, '$1[REDACTED]');
 
 export const createFastifyLoggingOptions = (
   logLevel: string,
