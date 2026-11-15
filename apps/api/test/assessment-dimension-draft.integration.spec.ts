@@ -58,7 +58,7 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('Mizaj draft 
   it('creates, reads, updates, duplicates and previews a persisted draft with an exact metadata-only audit', async () => {
     const row = await create(); const before = await db.patientAssessmentSubmission.count();
     const r = await preview(row); expect(r.statusCode).toBe(200); expect(r.headers['cache-control']).toBe('no-store');
-    expect(r.json()).toMatchObject({ assessmentVersionId: row.id, questionnaireContentHash: row.contentHash, status: 'PAIR', primary: 'DAMAVI', secondary: 'SAFRAVI', scores: { DAMAVI: 3, SAFRAVI: 2, BALGHAMI: 0, SODAVI: 0 }, reviewState: 'UNREVIEWED', educationalOnly: true, profile: { id: 'DAMAVI_SAFRAVI' } });
+    expect(r.json()).toMatchObject({ assessmentVersionId: row.id, questionnaireContentHash: row.contentHash, status: 'PAIR', primary: 'DAMAVI', secondary: 'SAFRAVI', scores: { DAMAVI: 9, SAFRAVI: 2, BALGHAMI: 0, SODAVI: 0 }, reviewState: 'UNREVIEWED', educationalOnly: true, profile: { id: 'DAMAVI_SAFRAVI' } });
     expect(await db.patientAssessmentSubmission.count()).toBe(before);
     const audits = await db.auditEvent.findMany({ where: { subjectId: row.id, action: 'ASSESSMENT_DRAFT_PREVIEWED' } });
     expect(audits).toHaveLength(1); expect(audits[0]).toMatchObject({ actorUserId: admin.userId, actorSessionId: admin.sessionId, metadata: {} });

@@ -8,7 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const databaseUrl = process.env.DATABASE_URL;
 const databaseName = `sabz_zendegi_chat_migration_${randomUUID().replaceAll('-', '')}`;
-const seedEnvironment = { ...process.env, DEV_DASHBOARD_ADMIN_PHONE: '', DEV_DASHBOARD_ADMIN_PASSWORD: '' };
+const seedEnvironment = { ...process.env, DEV_DASHBOARD_ADMIN_PHONE: '', DEV_DASHBOARD_ADMIN_PASSWORD: '', MUSHROOM_SEED_LEGACY_CHAT_FIXTURE: 'true' };
 let adminClient: Client;
 
 const createDatabaseUrl = (): string => {

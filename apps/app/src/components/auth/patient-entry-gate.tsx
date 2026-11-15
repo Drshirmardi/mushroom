@@ -37,6 +37,8 @@ export function PatientEntryGate({ children }: { children: ReactNode }) {
     if (!required && pathname === '/welcome') router.replace(userId ? marriageReturn(userId) ?? '/' : '/');
     if (!required && userId) clearOnboardingReturn(userId, pathname, query);
   }, [patient, session, resource.loading, resource.error, resource.data, required, pathname, query, router, invitationRoute, contextId, userId]);
+  // Bale entry is a public bootstrap route, before any patient session exists.
+  if (pathname === '/bale') return children;
   if (!snapshot || snapshot.status === 'checking') return <EntryWait />;
   if (snapshot.status === 'unavailable') return <EntryWait error="unavailable" retry={() => window.location.reload()} />;
   if (!patient) return session && pathname === '/welcome' ? <EntryWait /> : children;

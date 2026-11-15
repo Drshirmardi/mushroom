@@ -1580,6 +1580,312 @@
         ]
       }
     },
+    "/v1/auth/bale/exchange": {
+      "post": {
+        "operationId": "baleExchange",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaleInitDataDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaleFlowResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Validate signed Bale identity and exchange it for a patient session if linked",
+        "tags": [
+          "Bale Mini App Authentication"
+        ]
+      }
+    },
+    "/v1/auth/bale/contact/request": {
+      "post": {
+        "operationId": "baleContactRequest",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaleInitDataDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaleContactRequestResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Begin one-time contact confirmation via the Bale bot",
+        "tags": [
+          "Bale Mini App Authentication"
+        ]
+      }
+    },
+    "/v1/auth/bale/contact/complete": {
+      "post": {
+        "operationId": "baleContactComplete",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaleContactTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "headers": {
+              "Set-Cookie": {
+                "description": "HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaleFlowResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Finish a server-verified Bale contact flow; never trusts the browser phone",
+        "tags": [
+          "Bale Mini App Authentication"
+        ]
+      }
+    },
+    "/v1/auth/bale/contact/link": {
+      "post": {
+        "operationId": "baleContactLink",
+        "parameters": [
+          {
+            "name": "Origin",
+            "in": "header",
+            "description": "Browser-managed origin. When present, it must match the configured allowlist.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BaleContactTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "Link an existing patient after fresh OTP phone verification",
+        "tags": [
+          "Bale Mini App Authentication"
+        ]
+      }
+    },
+    "/v1/integrations/bale/webhook/{secret}": {
+      "post": {
+        "operationId": "baleWebhook",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "secret",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged"
+          }
+        },
+        "summary": "Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs",
+        "tags": [
+          "Bale Bot Webhook"
+        ]
+      }
+    },
     "/v1/chat/appointments/{appointmentId}/conversation": {
       "get": {
         "operationId": "chatAppointmentConversationGet",
@@ -43004,6 +43310,74 @@
           "to",
           "asOf",
           "items"
+        ]
+      },
+      "BaleInitDataDto": {
+        "type": "object",
+        "properties": {
+          "initData": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "initData"
+        ]
+      },
+      "BaleFlowResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "AUTHENTICATED",
+              "CONTACT_REQUIRED",
+              "CONTACT_PENDING",
+              "ACCOUNT_LINK_REQUIRED"
+            ]
+          },
+          "authentication": {
+            "$ref": "#/components/schemas/AuthenticationResponseDto"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "BaleContactRequestResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONTACT_REQUIRED"
+            ]
+          },
+          "ticket": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "ticket",
+          "expiresAt"
+        ]
+      },
+      "BaleContactTicketDto": {
+        "type": "object",
+        "properties": {
+          "initData": {
+            "type": "string"
+          },
+          "ticket": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "initData",
+          "ticket"
         ]
       },
       "ChatConversationResponseDto": {

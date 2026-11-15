@@ -29,6 +29,11 @@ sessionManager.subscribe(() => {
   currentSessionKey = nextKey;
 });
 
+/** After API verification, use exactly the same session and guards as web/OTP. */
+export function acceptBaleAuthentication(authentication: Authentication): void {
+  sessionManager.acceptAuthentication(authentication);
+}
+
 export function accessTokenForSession(sessionKey: string): string {
   const snapshot = sessionManager.getSnapshot();
   if (snapshot.status !== "authenticated" || currentSessionKey !== sessionKey) {
@@ -79,7 +84,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    void sessionManager.bootstrap();
+    // /bale first exchanges signed initData; a pre-existing cookie must not
+    // silently authorize a different Bale user.
+    if (window.location.pathname !== '/bale') void sessionManager.bootstrap();
   }, []);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
@@ -111,7 +118,10 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (snapshot?.status === "anonymous") {
-      window.location.replace(marriageLoginUrl());
+      const target = window.sessionStorage.getItem('mushroom:bale-miniapp') === '1'
+        ? '/bale'
+        : marriageLoginUrl();
+      window.location.replace(target);
     }
   }, [snapshot?.status]);
 

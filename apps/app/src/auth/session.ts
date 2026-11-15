@@ -54,6 +54,13 @@ export class AuthSessionManager {
     return () => this.listeners.delete(listener);
   };
 
+  /** Adopt an identity verified by the API; do not persist the access token. */
+  acceptAuthentication(authentication: Authentication): AuthSessionSnapshot {
+    this.accessTokenExpiresAt = this.now() + authentication.expiresIn * 1000;
+    this.refreshRetryAfter = 0;
+    return this.update({ status: "authenticated", authentication });
+  }
+
   async bootstrap(): Promise<AuthSessionSnapshot> {
     if (
       this.snapshot.status === "authenticated" &&

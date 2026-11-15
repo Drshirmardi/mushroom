@@ -274,6 +274,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/bale/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate signed Bale identity and exchange it for a patient session if linked */
+        post: operations["baleExchange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin one-time contact confirmation via the Bale bot */
+        post: operations["baleContactRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish a server-verified Bale contact flow; never trusts the browser phone */
+        post: operations["baleContactComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Link an existing patient after fresh OTP phone verification */
+        post: operations["baleContactLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/integrations/bale/webhook/{secret}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs */
+        post: operations["baleWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/appointments/{appointmentId}/conversation": {
         parameters: {
             query?: never;
@@ -6974,6 +7059,24 @@ export interface components {
             items: components["schemas"]["AuditViewerItemDto"][];
             nextCursor?: string | null;
         };
+        BaleInitDataDto: {
+            initData: string;
+        };
+        BaleFlowResponseDto: {
+            /** @enum {string} */
+            status: "AUTHENTICATED" | "CONTACT_REQUIRED" | "CONTACT_PENDING" | "ACCOUNT_LINK_REQUIRED";
+            authentication?: components["schemas"]["AuthenticationResponseDto"];
+        };
+        BaleContactRequestResponseDto: {
+            /** @enum {string} */
+            status: "CONTACT_REQUIRED";
+            ticket: string;
+            expiresAt: string;
+        };
+        BaleContactTicketDto: {
+            initData: string;
+            ticket: string;
+        };
         ChatConversationResponseDto: {
             /** Format: date-time */
             closedAt?: string | null;
@@ -13278,6 +13381,153 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AuditViewerPageDto"];
                 };
+            };
+        };
+    };
+    baleExchange: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleInitDataDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleFlowResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactRequest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleInitDataDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleContactRequestResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactComplete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleContactTicketDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleFlowResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleContactTicketDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    baleWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                secret: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

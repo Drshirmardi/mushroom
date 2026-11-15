@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { BaleAuthController, BaleWebhookController } from './bale/bale-auth.controller';
+import { BaleAuthService } from './bale/bale-auth.service';
 
 import { AccessTokenService } from '../../common/auth/access-token.service';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -39,7 +41,7 @@ import { AuditViewerService } from './audit/audit-viewer.service';
 
 @Module({
   imports: [ChatModule, ClinicalModule, SmsModule],
-  controllers: [AuthController, MeController, AuditViewerController],
+  controllers: [AuthController, MeController, AuditViewerController, BaleAuthController, BaleWebhookController],
   providers: [
     Argon2PasswordHasher,
     {
@@ -167,6 +169,7 @@ import { AuditViewerService } from './audit/audit-viewer.service';
     },
     AuditViewerSessionGuard,
     AuditViewerService,
+    BaleAuthService,
   ],
   exports: [
     LoginUserUseCase,
