@@ -257,6 +257,41 @@ grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
   || fail 'Analytics secret rotation did not recreate the API runtime'
 ! grep -q 'synthetic-ga-' "$docker_log" || fail 'Analytics secret leaked into deployment arguments'
 
+# Bale enablement, bot-token replacement and webhook-secret rotation must recreate the API
+# without rebuilding artifacts or exposing credentials in docker commands.
+cat >>"$dev_root/runtime.env" <<EOF
+BALE_AUTH_ENABLED=true
+BALE_BOT_USERNAME=health_test_bot
+EOF
+printf '123456789:syntheticBaleTestToken123' >"$dev_root/secrets/bale_bot_token"
+printf '%s' 'initial-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
+: >"$docker_log"
+run_deploy dddddddddddddddddddddddddddddddddddddddd
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale activation did not recreate the API runtime'
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'Bale activation unnecessarily ran bootstrap'
+! grep -q 'syntheticBaleTestToken' "$docker_log" || fail 'Bale bot token leaked into deployment args'
+
+printf '123456789:rotatedSyntheticBaleToken123' >"$dev_root/secrets/bale_bot_token"
+: >"$docker_log"
+run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale token rotation did not recreate the API runtime'
+
+printf '%s' 'rotated-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
+: >"$docker_log"
+run_deploy ffffffffffffffffffffffffffffffffffffffff
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale webhook-secret rotation did not recreate the API runtime'
+! grep -q 'rotated-bale-webhook-secret' "$docker_log" || fail 'Bale webhook secret leaked into deployment args'
+
+sed -i 's/^BALE_AUTH_ENABLED=.*/BALE_AUTH_ENABLED=false/' "$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy 1111111111111111111111111111111111111111
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Disabling Bale did not recreate the API runtime'
+
 printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
 : >"$docker_log"
 run_deploy 8888888888888888888888888888888888888888
