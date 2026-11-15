@@ -12,17 +12,17 @@ const NotificationSheet = dynamic(
     ),
   { ssr: false },
 );
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { getPatientJourney } from '@/lib/patient-journey-api';
-import { patientCacheKey, peekPatientCache } from '@/lib/patient-request';
+import { PATIENT_CATALOG_TTL_MS } from '@/lib/patient-request';
 import { HomeJourney, HomeJourneyOverview } from '@/components/home/home-journey';
 import { HomeBanners } from '@/components/home/home-banners';
 import { useOptionalPatientEntry } from '@/components/auth/patient-entry-gate';
-import { listPatientArticles, listNotifications } from '@/lib/follow-up-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { fetchPatientArticles, listNotifications } from '@/lib/follow-up-api';
+import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { resumeEntry } from '@/lib/patient-entry-api';
 import { OwnedServices } from '@/components/programs/owned-services';
 
@@ -71,15 +71,12 @@ function HomeShortcuts({
 }
 
 export default function HomePage() {
-  const { authentication } = useAuthSession();
+  const { authentication, sessionKey } = useAuthSession();
   const entry = useOptionalPatientEntry();
   const token = authentication.accessToken;
-  const journey = usePatientResource(
-    useCallback(() => getPatientJourney(token), [token]),
-    peekPatientCache(patientCacheKey(token, 'journey')),
-  );
-  const articles = usePatientResource(useCallback(() => listPatientArticles(token), [token]));
-  const notifications = usePatientResource(useCallback(() => listNotifications(token), [token]));
+  const journey = useSessionPatientResource('journey', getPatientJourney, PATIENT_CATALOG_TTL_MS);
+  const articles = useSessionPatientResource('articles', fetchPatientArticles, PATIENT_CATALOG_TTL_MS);
+  const notifications = useSessionPatientResource('notifications', listNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [entryBusy, setEntryBusy] = useState(false),
     [entryError, setEntryError] = useState('');
@@ -109,7 +106,7 @@ export default function HomePage() {
             {unread && <span className="home-unread" />}
           </button>
         </header>
-        <HomeJourneyOverview key={authentication.user.id} journey={journey} token={token} />
+        <HomeJourneyOverview key={sessionKey} journey={journey} />
       </div>
 
       <div className="home-sheet">
@@ -156,8 +153,8 @@ export default function HomePage() {
             )}
           </section>
         )}
-        <HomeJourney key={authentication.user.id} journey={journey} token={token} />
-        <OwnedServices key={`services:${authentication.user.id}`} />
+        <HomeJourney key={sessionKey} journey={journey} />
+        <OwnedServices key={sessionKey} />
 
         <section className="home-panel min-w-0" aria-labelledby="home-articles-title">
           <div className="home-section-heading mb-1 flex items-center justify-between gap-3">

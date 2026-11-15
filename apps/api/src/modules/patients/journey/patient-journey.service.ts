@@ -6,6 +6,7 @@ import {
   processableAssessmentGrants,
 } from '../../assessments/access/assessment-access.policy';
 import { PatientBookingEligibilityService } from '../../assessments/patient/patient-booking-eligibility.service';
+import { ASSESSMENT_AUDIT_ACTIONS } from '../../assessments/application/assessment-audit';
 import {
   coupleSessionSelect,
   coupleSessionSummary,
@@ -54,7 +55,7 @@ export class PatientJourneyService {
           });
         const scope = { patientId: patient.id, clinicId: patient.clinicId };
         const status = await this.profiles.getOnboardingStatus(userId, tx);
-        const bookingEligibility = await this.eligibility.get(userId, tx, status, evaluatedAt);
+        const bookingEligibility = await this.eligibility.get(userId, tx, status, evaluatedAt, patient);
         const nativePlanFilter = await this.customPrograms.patientFilter(
           tx,
           patient.id,
@@ -171,7 +172,7 @@ export class PatientJourneyService {
               completedAt: { not: null },
             },
             orderBy: [{ completedAt: 'desc' }, { id: 'desc' }],
-            select: { id: true, completedAt: true, assessmentVersion: { select: { title: true } } },
+            select: { id: true, completedAt: true, resultSnapshot: true, assessmentVersion: { select: { title: true } } },
           }),
           tx.appointment.findFirst({
             where: {
@@ -206,7 +207,6 @@ export class PatientJourneyService {
             take: 6,
             select: {
               id: true,
-              snapshot: true,
               amountRial: true,
               intent: { select: { id: true, status: true } },
               grants: {
@@ -279,6 +279,12 @@ export class PatientJourneyService {
           ...attempts.flatMap((row) => (row.accessGrantId ? [row.accessGrantId] : [])),
           ...purchases.flatMap((row) => row.grants.map((g) => g.id)),
         ]);
+        const purchaseTitles = purchases.length ? await tx.$queryRaw<{ id: string; title: string }[]>(Prisma.sql`
+          SELECT id, snapshot->>'title' AS title FROM assessment_purchases
+          WHERE patient_id = ${patient.id}::uuid AND clinic_id = ${patient.clinicId}::uuid
+            AND id IN (${Prisma.join(purchases.map(row => Prisma.sql`${row.id}::uuid`))})
+        `) : [];
+        const titlesByPurchase = new Map(purchaseTitles.map(row => [row.id, row.title]));
         const assessments = page(
           attempts.map(({ assessmentVersion, accessGrantId, ...attempt }) => ({
             ...attempt,
@@ -348,7 +354,7 @@ export class PatientJourneyService {
               const grant = row.grants[0];
               return {
                 id: row.id,
-                title: (row.snapshot as { title: string }).title,
+                title: titlesByPurchase.get(row.id)!,
                 amountRial: row.amountRial.toString(),
                 currency: 'IRR',
                 intentId: row.intent?.id ?? null,
@@ -372,12 +378,27 @@ export class PatientJourneyService {
           custom.readyId,
           payment?.id,
         );
+        const snapshot = latestResult?.resultSnapshot;
+        const result = snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot) ? snapshot : null;
+        const scores = result?.scores && typeof result.scores === 'object' && !Array.isArray(result.scores)
+          ? Object.fromEntries(Object.entries(result.scores).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1]))) : null;
+        const dimensions = Array.isArray(result?.dimensionTitles) ? result.dimensionTitles.flatMap(item => {
+          if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.id !== 'string' || typeof item.title !== 'string') return [];
+          return [{ id: item.id, title: item.title }];
+        }) : null;
         const home = homeJourney(summary, {
           latestAssessment: latestResult?.completedAt
             ? {
                 id: latestResult.id,
                 title: latestResult.assessmentVersion.title,
                 completedAt: latestResult.completedAt,
+                summary: {
+                  algorithmId: typeof result?.algorithmId === 'string' ? result.algorithmId : null,
+                  primary: typeof result?.primary === 'string' ? result.primary : null,
+                  secondary: typeof result?.secondary === 'string' ? result.secondary : null,
+                  scores,
+                  dimensionTitles: dimensions,
+                },
               }
             : null,
           activeTreatmentPlanId: activePlan?.id ?? null,
@@ -391,6 +412,11 @@ export class PatientJourneyService {
           payment,
           fulfillmentOrderId: fulfillmentOrder?.id,
         });
+        if (latestResult?.completedAt) await tx.auditEvent.create({ data: {
+          action: ASSESSMENT_AUDIT_ACTIONS.SUBMISSION_RESULT_READ, actorUserId: context.actorUserId,
+          actorSessionId: context.actorSessionId, subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId: latestResult.id,
+          requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: {},
+        } });
         await this.audit.record(
           {
             ...scope,

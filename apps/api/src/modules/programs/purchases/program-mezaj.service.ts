@@ -42,15 +42,7 @@ export class ProgramMezajService {
         const [grants, total] = await Promise.all([
           tx.programAccessGrant.findMany({
             where,
-            include: {
-              purchase: {
-                include: {
-                  definition: {
-                    include: { mezajPresentation: true },
-                  },
-                },
-              },
-            },
+            select: { id: true, purchaseId: true, endsAt: true, purchase: { select: { definition: { select: { title: true } } } } },
             orderBy: [{ grantedAt: 'desc' }, { id: 'desc' }],
             take: query.pageSize,
             skip: (query.page - 1) * query.pageSize,

@@ -1,9 +1,10 @@
 import type { components } from "@sabz-zendegi/api-client";
 import { apiClient } from "./api";
-import { PATIENT_CATALOG_TTL_MS, patientAuthorization, patientCacheKey, patientCachedData, patientData } from "./patient-request";
+import { patientAuthorization, patientData } from "./patient-request";
 
 export type PatientJourney = components["schemas"]["PatientJourneyResponseDto"];
-export const getPatientJourney = (token: string) => patientCachedData(patientCacheKey(token, "journey"), PATIENT_CATALOG_TTL_MS, () => patientData(apiClient.GET("/v1/patients/me/journey", { headers: patientAuthorization(token), cache: "no-store" })));
+export const getPatientJourney = (token: string, signal?: AbortSignal) =>
+  patientData(apiClient.GET("/v1/patients/me/journey", { headers: patientAuthorization(token), cache: "no-store", signal }));
 
 export function journeyActionLink(action: PatientJourney["nextAction"]): { href: string; label: string } {
   const id = action.resourceId ? encodeURIComponent(action.resourceId) : null;

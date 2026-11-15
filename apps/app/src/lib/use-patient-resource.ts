@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { patientErrorMessage } from "./patient-request";
+import { patientCacheKey, patientErrorMessage, patientSessionData, peekPatientCache } from "./patient-request";
+import { accessTokenForSession, useAuthSession } from "@/components/auth/session-gate";
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 
 /** Pass a useCallback loader keyed by session and resource to hide stale private data. */
@@ -34,4 +35,14 @@ export function usePatientResource<T>(load: () => Promise<T>, initialData?: T | 
   const refresh = useCallback(() => reload(true), [reload]);
   const current = snapshot?.load === load ? snapshot : null;
   return { data: current?.data ?? null, error: current?.error ?? null, loading: current?.loading ?? true, refreshing: current?.refreshing ?? false, reload, refresh };
+}
+
+export function useSessionPatientResource<T>(resource: string, load: (token: string, signal: AbortSignal) => Promise<T>, ttlMs = 0, initialData?: T | null) {
+  const { sessionKey } = useAuthSession();
+  const key = patientCacheKey(sessionKey, resource);
+  const request = useCallback(
+    () => patientSessionData(key, ttlMs, signal => load(accessTokenForSession(sessionKey), signal)),
+    [key, ttlMs, load, sessionKey],
+  );
+  return usePatientResource(request, initialData ?? peekPatientCache<T>(key));
 }

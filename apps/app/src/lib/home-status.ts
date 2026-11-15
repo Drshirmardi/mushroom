@@ -7,13 +7,41 @@ import { formatRial } from './wallet-money';
 const object = (value: unknown): Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 
+export function subscribeHomeRefresh(refresh: () => unknown): () => void {
+  let lastRefresh = Date.now();
+  const refreshIfDue = () => {
+    const now = Date.now();
+    if (now - lastRefresh < 60_000) return;
+    lastRefresh = now;
+    void refresh();
+  };
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible') refreshIfDue();
+  };
+  const onPageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) refreshIfDue();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('pageshow', onPageShow);
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.removeEventListener('pageshow', onPageShow);
+  };
+}
+
+export function loadHomeAssessmentSnapshot(summary: unknown, loadResult: () => Promise<{ resultSnapshot?: unknown }>): Promise<unknown> {
+  return summary !== undefined ? Promise.resolve(summary) : loadResult().then(result => result.resultSnapshot);
+}
+
 /** Percentages come only from the saved dimension result, never from its rank. */
 export function homeMizajData(snapshot: unknown) {
   const value = object(snapshot);
   if (value.algorithmId !== 'DIMENSION_TIEBREAK') return null;
   const scores = Object.fromEntries(Object.entries(object(value.scores)).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1])));
   const dimensions = Array.isArray(value.dimensionTitles) ? value.dimensionTitles.map(object).map(item => ({ id: text(item.id), title: text(item.title) })).filter(item => item.id && item.title) : [];
-  return dimensions.length ? { scores, dimensions } : null;
+  if (!dimensions.length) return null;
+  const ranks = [value.primary, value.secondary].map(id => dimensions.find(dimension => dimension.id === text(id)) ?? null);
+  return { scores, dimensions, ranks };
 }
 
 /** Only show authored result text; no inferred diagnosis, score or synthetic progress. */

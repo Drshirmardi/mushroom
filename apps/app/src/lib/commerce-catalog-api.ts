@@ -199,11 +199,12 @@ export const getCommerceOrders = (accessToken: string) =>
     apiClient.GET('/v1/patients/me/orders', { headers: authorization(accessToken) }),
   );
 
-export const getCommerceOrder = (accessToken: string, orderId: string) =>
+export const getCommerceOrder = (accessToken: string, orderId: string, signal?: AbortSignal) =>
   expectData<CommerceOrder>(
     apiClient.GET('/v1/patients/me/orders/{orderId}', {
       headers: authorization(accessToken),
       params: { path: { orderId } },
+      signal,
     }),
   );
 

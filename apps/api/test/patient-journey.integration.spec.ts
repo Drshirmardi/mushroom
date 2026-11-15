@@ -80,6 +80,38 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('patient jour
     return db.billingIntent.create({ data: { clinicId, patientId: p.patientId, actorUserId: p.userId, purpose: 'TOPUP', amountRial: 123450n, fingerprint: 'a'.repeat(64), idempotencyKey: randomUUID(), expiresAt, snapshot: { secret: 'must not leak' } } });
   }
 
+  it('returns a minimal result summary and audits its disclosure atomically', async () => {
+    const p = await patient();
+    const version = await db.assessmentVersion.create({ data: { clinicId, assessmentKey: `TEST-${randomUUID()}`, locale: 'fa-IR', versionNumber: 1, title: 'Synthetic result', contentHash: 'a'.repeat(64), structure: {}, status: 'PUBLISHED', publishedAt: new Date() } });
+    const completed = await db.patientAssessmentSubmission.create({ data: {
+      patientId: p.patientId, assessmentVersionId: version.id, state: 'COMPLETE', completedAt: new Date(),
+      completionIdempotencyKey: randomUUID(), completionPayloadHash: 'd'.repeat(64), answers: {},
+      resultSnapshot: {
+        algorithmId: 'DIMENSION_TIEBREAK', primary: 'b', secondary: 'a', scores: { a: 4, b: 4 },
+        dimensionTitles: [{ id: 'a', title: 'الف', secret: 'hidden' }, { id: 'b', title: 'ب' }], answers: { secret: 'hidden' },
+      },
+    } });
+    const response = await get(p);
+    expect(response.statusCode, response.body).toBe(200);
+    expect(response.json().home.latestAssessment).toMatchObject({ id: completed.id, summary: {
+      algorithmId: 'DIMENSION_TIEBREAK', primary: 'b', secondary: 'a', scores: { a: 4, b: 4 },
+      dimensionTitles: [{ id: 'a', title: 'الف' }, { id: 'b', title: 'ب' }],
+    } });
+    expect(response.body).not.toContain('hidden');
+    expect(await db.auditEvent.count({ where: { action: 'PATIENT_ASSESSMENT_RESULT_READ', subjectId: completed.id, actorUserId: p.userId } })).toBe(1);
+
+    await db.$executeRawUnsafe("CREATE FUNCTION journey_result_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action = 'PATIENT_ASSESSMENT_RESULT_READ' THEN RAISE EXCEPTION 'synthetic result audit failure'; END IF; RETURN NEW; END $$");
+    await db.$executeRawUnsafe('CREATE TRIGGER journey_result_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION journey_result_audit_fail()');
+    try {
+      const failed = await get(p);
+      expect(failed.statusCode).toBeGreaterThanOrEqual(500);
+      expect(failed.body).not.toContain('DIMENSION_TIEBREAK');
+    } finally {
+      await db.$executeRawUnsafe('DROP TRIGGER journey_result_audit_fail ON audit_events');
+      await db.$executeRawUnsafe('DROP FUNCTION journey_result_audit_fail()');
+    }
+  });
+
   it('rejects anonymous and nonpatient roles', async () => {
     expect((await app.inject({ method: 'GET', url: '/v1/patients/me/journey' })).statusCode).toBe(401);
     for (const role of ['DOCTOR', 'STAFF', 'ADMIN']) {

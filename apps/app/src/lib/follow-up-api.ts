@@ -30,12 +30,13 @@ const request = async <T>(accessToken: string, path: string, init?: RequestInit)
 export const listHealthObservations = (accessToken: string, metric?: HealthMetric) => request<{ items: HealthObservation[] }>(accessToken, `/v1/patients/me/health-observations${metric ? `?metric=${metric}` : ""}`);
 export const createHealthObservation = (accessToken: string, body: { metric: HealthMetric; value: number; observedAt: string }) => request<HealthObservation>(accessToken, "/v1/patients/me/health-observations", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 export const getMezajResult = (accessToken: string) => request<MezajResult>(accessToken, "/v1/patients/me/mezaj");
-export const listNotifications = (accessToken: string) => request<{ items: PatientNotification[] }>(accessToken, "/v1/patients/me/notifications");
+export const listNotifications = (accessToken: string, signal?: AbortSignal) => request<{ items: PatientNotification[] }>(accessToken, "/v1/patients/me/notifications", { signal });
 export const readNotification = (accessToken: string, id: string) => request<{ id: string }>(accessToken, `/v1/patients/me/notifications/${encodeURIComponent(id)}/read`, { method: "PATCH" });
 export const readAllNotifications = (accessToken: string) => request<{ ok: true }>(accessToken, "/v1/patients/me/notifications/read-all", { method: "POST" });
 export const listNotificationPreferences = (accessToken: string) => request<{ items: NotificationPreference[] }>(accessToken, "/v1/patients/me/notifications/preferences");
 export const updateNotificationPreference = (accessToken: string, category: NotificationCategory, inAppEnabled: boolean) => request<NotificationPreference>(accessToken, "/v1/patients/me/notifications/preferences", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ category, inAppEnabled }) });
-export const listPatientArticles = (accessToken: string) => patientCachedData(patientCacheKey(accessToken, "articles"), PATIENT_CATALOG_TTL_MS, () => request<{ items: PatientArticle[] }>(accessToken, "/v1/patients/me/articles"));
+export const fetchPatientArticles = (accessToken: string, signal?: AbortSignal) => request<{ items: PatientArticle[] }>(accessToken, "/v1/patients/me/articles", { signal });
+export const listPatientArticles = (accessToken: string) => patientCachedData(patientCacheKey(accessToken, "articles"), PATIENT_CATALOG_TTL_MS, () => fetchPatientArticles(accessToken));
 export const getPatientArticle = (accessToken: string, slug: string) => request<PatientArticle>(accessToken, `/v1/patients/me/articles/${encodeURIComponent(slug)}`);
 
 export function followUpErrorMessage(error: unknown, fallback = "دریافت اطلاعات ممکن نشد؛ دوباره تلاش کنید.") {

@@ -8,17 +8,17 @@ import { accessibleAssessmentWhere } from '../access/assessment-access.policy';
 export class PatientBookingEligibilityService {
   constructor(private readonly prisma: PrismaService, private readonly profiles: SelfProfileService) {}
 
-  async get(userId: string, db: Prisma.TransactionClient = this.prisma, evaluatedOnboarding?: SelfOnboardingStatus, now = new Date()) {
+  async get(userId: string, db: Prisma.TransactionClient = this.prisma, evaluatedOnboarding?: SelfOnboardingStatus, now = new Date(), knownPatient?: { id: string; clinicId: string }) {
     const onboarding = evaluatedOnboarding ?? await this.profiles.getOnboardingStatus(userId, db);
     if (onboarding.state !== 'COMPLETE') return { eligible: false, reason: 'PROFILE_INCOMPLETE', nextAction: 'COMPLETE_ONBOARDING' };
 
-    const patient = await db.patientProfile.findUnique({ where: { userId } });
+    const patient = knownPatient ?? await db.patientProfile.findUnique({ where: { userId }, select: { id: true, clinicId: true } });
     if (!patient) throw new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile was not found.', details: {} });
 
-    const policy = await db.bookingEligibilityPolicy.findUnique({ where: { clinicId: patient.clinicId } });
+    const policy = await db.bookingEligibilityPolicy.findUnique({ where: { clinicId: patient.clinicId }, select: { assessmentRequirement: true, requiredAssessmentVersionId: true, requireLatestPublishedVersion: true, validityDays: true } });
     if (!policy || policy.assessmentRequirement === 'NOT_REQUIRED') return { eligible: true, reason: 'ELIGIBLE', nextAction: null };
 
-    const required = await db.assessmentVersion.findUnique({ where: { id: policy.requiredAssessmentVersionId! } });
+    const required = await db.assessmentVersion.findUnique({ where: { id: policy.requiredAssessmentVersionId! }, select: { id: true, assessmentKey: true, locale: true } });
     if (!required) return { eligible: false, reason: 'MAIN_ASSESSMENT_REQUIRED', nextAction: 'COMPLETE_ASSESSMENT' };
 
     let requiredVersionId = required.id;

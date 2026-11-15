@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { PATIENT_CACHE_LIMIT, PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, peekPatientCache } from "./patient-request";
+import { createApiClient, createSessionAwareFetch, DEFAULT_REQUEST_TIMEOUT_MS } from "@sabz-zendegi/api-client";
+import { PATIENT_CACHE_LIMIT, PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache } from "./patient-request";
 
 describe("patient request cache", () => {
   beforeEach(() => {
@@ -90,6 +91,40 @@ describe("patient request cache", () => {
     await patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => Promise.resolve("catalog"));
     expect(peekPatientCache("articles")).toBe("catalog");
     vi.setSystemTime(new Date(Date.now() + PATIENT_CATALOG_TTL_MS));
+    expect(peekPatientCache("articles")).toBeUndefined();
+  });
+
+  it("joins concurrent retries, aborts the shared request at the deadline and allows a new request", async () => {
+    vi.useFakeTimers();
+    const fetch = vi.fn<typeof globalThis.fetch>().mockImplementation(input => {
+      const { signal } = input as Request;
+      return new Promise((_, reject) => signal.addEventListener("abort", () => reject(signal.reason), { once: true }));
+    });
+    const transport = createSessionAwareFetch(fetch);
+    transport.setAccessTokenProvider(async () => "rotated-token");
+    const client = createApiClient({ baseUrl: "https://api.example.test", fetch: transport.fetch });
+    const load = (signal: AbortSignal) => client.GET("/v1/patients/me/journey", {
+      headers: { authorization: "Bearer old-token" }, signal,
+    });
+    const first = patientSessionData("journey", 0, load);
+    const aborted = expect(first).rejects.toMatchObject({ name: "AbortError" });
+    expect(patientSessionData("journey", 0, load)).toBe(first);
+    await vi.advanceTimersByTimeAsync(DEFAULT_REQUEST_TIMEOUT_MS);
+    await aborted;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    const request = fetch.mock.calls[0]?.[0] as Request;
+    expect(request.headers.get("authorization")).toBe("Bearer rotated-token");
+    expect(request.signal.aborted).toBe(true);
+    await expect(patientSessionData("journey", 0, async () => "new")).resolves.toBe("new");
+  });
+
+  it("aborts old requests and clears cached data when the session is cleared", async () => {
+    await patientSessionData("articles", PATIENT_CATALOG_TTL_MS, async () => "private");
+    const pending = patientSessionData("journey", 0, signal => new Promise((_, reject) => {
+      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+    }));
+    clearPatientRequestCache();
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
     expect(peekPatientCache("articles")).toBeUndefined();
   });
 

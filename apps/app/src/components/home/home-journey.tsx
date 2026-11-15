@@ -19,10 +19,10 @@ import {
 import { getAssessmentResult } from '@/lib/assessment-api';
 import { HomeOrderProgress } from './home-order-progress';
 import { toP } from '@/lib/format';
-import { homePendingAction, homeMizajData } from '@/lib/home-status';
+import { homePendingAction, homeMizajData, loadHomeAssessmentSnapshot, subscribeHomeRefresh } from '@/lib/home-status';
 import { MizajChart, mizajPercentages } from '@/components/assessments/mizaj-chart';
 import type { PatientJourney } from '@/lib/patient-journey-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { LoadingState, SkeletonBox } from '@/components/shared/skeletons';
 import { RefreshIndicator } from '@/components/shared/heartbeat-loader';
 
@@ -271,12 +271,14 @@ function AssessmentCarousel({ children }: { children: ReactNode }) {
   );
 }
 
-function AssessmentStatus({ data, token }: { data: PatientJourney; token: string }) {
+function AssessmentStatus({ data }: { data: PatientJourney }) {
   const latest = data.home.latestAssessment!;
-  const result = usePatientResource(
-    useCallback(() => getAssessmentResult(token, latest.id), [token, latest.id]),
+  const result = useSessionPatientResource(
+    `assessment-result:${latest.id}`,
+    useCallback((token, signal) => loadHomeAssessmentSnapshot(latest.summary, () => getAssessmentResult(token, latest.id, signal)), [latest.id, latest.summary]),
+    0, latest.summary,
   );
-  const chart = homeMizajData(result.data?.resultSnapshot);
+  const chart = homeMizajData(result.data);
   const percentages = chart ? mizajPercentages(chart.scores, chart.dimensions) : [];
   const distribution = chart
     ? chart.dimensions.map((dimension, index) => ({
@@ -285,7 +287,7 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
         percent: percentages[index] / 10,
       }))
     : [];
-  const ranked = [...distribution].sort((left, right) => right.percent - left.percent);
+  const ranks = chart?.ranks ?? [];
   const scoreColors = [
     'var(--dp-success)',
     'var(--dp-brand-tint)',
@@ -334,7 +336,7 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
               {result.loading ? (
                 <MizajChart variant="home" isLoading />
               ) : chart ? (
-                <MizajChart {...chart} variant="home" />
+                <MizajChart scores={chart.scores} dimensions={chart.dimensions} variant="home" />
               ) : (
                 <div className="home-assessment-chart-empty" role="status">
                   نمودار نتیجه در دسترس نیست
@@ -374,10 +376,10 @@ function AssessmentStatus({ data, token }: { data: PatientJourney; token: string
               ))}
             </div>
           ) : (
-            ranked.length > 0 && (
+            ranks.some(Boolean) && (
               <div className="home-assessment-primary-types">
-                {ranked.slice(0, 2).map((item, index) => (
-                  <span className="home-assessment-type home-assessment-type--result" key={item.id}>
+                {ranks.map((item, index) => item && (
+                  <span className="home-assessment-type home-assessment-type--result" key={index}>
                     <small>مزاج {index === 0 ? 'اول' : 'دوم'}</small>
                     <strong>{item.title}</strong>
                   </span>
@@ -454,13 +456,11 @@ function AssessmentStatusSkeleton() {
 
 function ActionRow({
   action,
-  token,
 }: {
   action: PatientJourney['home']['actions'][number];
-  token: string;
 }) {
   if (action.code === 'TRACK_ORDER' && action.resourceId) {
-    return <HomeOrderProgress orderId={action.resourceId} token={token} />;
+    return <HomeOrderProgress orderId={action.resourceId} />;
   }
   const item = homePendingAction(action);
   const Icon =
@@ -502,10 +502,8 @@ function ActionRow({
 
 function PendingActions({
   actions,
-  token,
 }: {
   actions: PatientJourney['home']['actions'];
-  token: string;
 }) {
   const [expanded, setExpanded] = useState(false);
   if (actions.length === 0) return null;
@@ -530,7 +528,6 @@ function PendingActions({
           <ActionRow
             key={`${action.code}:${action.resourceId ?? ''}`}
             action={action}
-            token={token}
           />
         ))}
       </div>
@@ -550,11 +547,10 @@ function PendingActions({
 }
 
 type HomeJourneyProps = {
-  journey: ReturnType<typeof usePatientResource<PatientJourney>>;
-  token: string;
+  journey: ReturnType<typeof useSessionPatientResource<PatientJourney>>;
 };
 
-export function HomeJourneyOverview({ journey, token }: HomeJourneyProps) {
+export function HomeJourneyOverview({ journey }: HomeJourneyProps) {
   const data = journey.data;
   if (journey.loading)
     return (
@@ -586,7 +582,7 @@ export function HomeJourneyOverview({ journey, token }: HomeJourneyProps) {
       </Hero>
     );
   return data.home.latestAssessment ? (
-    <AssessmentStatus key={data.home.latestAssessment.id} data={data} token={token} />
+    <AssessmentStatus key={data.home.latestAssessment.id} data={data} />
   ) : (
     <Hero
       label="وضعیت شما"
@@ -600,22 +596,8 @@ export function HomeJourneyOverview({ journey, token }: HomeJourneyProps) {
   );
 }
 
-export function HomeJourney({ journey, token }: HomeJourneyProps) {
-  const reload = journey.refresh;
-  useEffect(() => {
-    const visible = () => {
-      if (document.visibilityState === 'visible') void reload();
-    };
-    const restored = (event: PageTransitionEvent) => {
-      if (event.persisted) void reload();
-    };
-    document.addEventListener('visibilitychange', visible);
-    window.addEventListener('pageshow', restored);
-    return () => {
-      document.removeEventListener('visibilitychange', visible);
-      window.removeEventListener('pageshow', restored);
-    };
-  }, [reload]);
+export function HomeJourney({ journey }: HomeJourneyProps) {
+  useEffect(() => subscribeHomeRefresh(journey.refresh), [journey.refresh]);
 
   const data = journey.data;
   if (journey.loading || !data?.home) return null;
@@ -638,12 +620,12 @@ export function HomeJourney({ journey, token }: HomeJourneyProps) {
       )}
       {first ? (
         <section aria-label="قدم بعدی">
-          <ActionRow action={first} token={token} />
+          <ActionRow action={first} />
         </section>
       ) : null}
       {visit && !featuredIsVisit ? <NextVisit visit={visit} /> : null}
       {!data.onboarding.isComplete && <SetupProgress steps={data.home.setupSteps} />}
-      <PendingActions actions={rest} token={token} />
+      <PendingActions actions={rest} />
     </>
   );
 }

@@ -4,7 +4,7 @@ import { LoadingState } from '@/components/shared/skeletons';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthSession } from '@/components/auth/session-gate';
+import { accessTokenForSession, useAuthSession } from '@/components/auth/session-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import {
   followUpErrorMessage,
@@ -14,6 +14,7 @@ import {
   type PatientNotification,
 } from '@/lib/follow-up-api';
 import { notificationPresentation } from '@/lib/notification-presentation';
+import { patientCacheKey, patientSessionData } from '@/lib/patient-request';
 import { toP } from '@/lib/format';
 
 export function NotificationCenter({
@@ -24,7 +25,7 @@ export function NotificationCenter({
   onUpdated?: () => void;
 }) {
   const router = useRouter();
-  const { authentication } = useAuthSession();
+  const { authentication, sessionKey } = useAuthSession();
   const [items, setItems] = useState<PatientNotification[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -35,7 +36,8 @@ export function NotificationCenter({
     const request = ++readGeneration.current;
     setRefreshing(true);
     setError(null);
-    void listNotifications(authentication.accessToken)
+    void patientSessionData(patientCacheKey(sessionKey, 'notifications'), 0,
+      signal => listNotifications(accessTokenForSession(sessionKey), signal))
       .then(
         (value) => {
           if (request === readGeneration.current) setItems(value.items);
@@ -47,7 +49,7 @@ export function NotificationCenter({
       .finally(() => {
         if (request === readGeneration.current) setRefreshing(false);
       });
-  }, [authentication.accessToken]);
+  }, [sessionKey]);
   useEffect(() => {
     const requests = readGeneration;
     setItems(null);

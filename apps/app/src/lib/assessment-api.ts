@@ -53,8 +53,8 @@ export const listAssessmentHistory = (accessToken: string, page = 1, state?: "IN
 export const getAssessmentGuidance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentGuidanceDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/guidance", { headers: authorization(accessToken), params: { path: { id } } }));
 export const getAssessmentProvenance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentProvenanceResponseDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/provenance", { headers: authorization(accessToken), params: { path: { id } } }));
 
-export const getAssessmentResult = (accessToken: string, id: string) => expectData<AssessmentSubmission>(
-  apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } } }),
+export const getAssessmentResult = (accessToken: string, id: string, signal?: AbortSignal) => expectData<AssessmentSubmission>(
+  apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } }, signal }),
 );
 
 export const getBookingEligibility = (accessToken: string) => expectData<BookingEligibility>(

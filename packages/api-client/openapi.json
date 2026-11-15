@@ -47225,6 +47225,42 @@
           "state"
         ]
       },
+      "JourneyAssessmentSummaryDto": {
+        "type": "object",
+        "properties": {
+          "algorithmId": {
+            "type": "string",
+            "nullable": true
+          },
+          "primary": {
+            "type": "string",
+            "nullable": true
+          },
+          "secondary": {
+            "type": "string",
+            "nullable": true
+          },
+          "scores": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "dimensionTitles": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "algorithmId",
+          "scores",
+          "dimensionTitles"
+        ]
+      },
       "JourneyLatestAssessmentDto": {
         "type": "object",
         "properties": {
@@ -47238,6 +47274,15 @@
           "completedAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "summary": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JourneyAssessmentSummaryDto"
+              }
+            ]
           }
         },
         "required": [

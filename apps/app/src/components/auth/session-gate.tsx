@@ -6,12 +6,12 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useSyncExternalStore,
 } from "react";
 
 import {
   AuthSessionManager,
+  authSessionKey,
   type Authentication,
   type AuthSessionSnapshot,
 } from "@/auth/session";
@@ -21,6 +21,21 @@ import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const sessionManager = new AuthSessionManager(authApiClient);
+let currentSessionKey: string | null = null;
+sessionManager.subscribe(() => {
+  const snapshot = sessionManager.getSnapshot();
+  const nextKey = snapshot.status === "authenticated" ? authSessionKey(snapshot.authentication) : null;
+  if (currentSessionKey !== nextKey) clearPatientRequestCache();
+  currentSessionKey = nextKey;
+});
+
+export function accessTokenForSession(sessionKey: string): string {
+  const snapshot = sessionManager.getSnapshot();
+  if (snapshot.status !== "authenticated" || currentSessionKey !== sessionKey) {
+    throw new Error("Patient session changed");
+  }
+  return snapshot.authentication.accessToken;
+}
 setAccessTokenProvider(async () => {
   const snapshot = await sessionManager.bootstrap();
   return snapshot.status === "authenticated"
@@ -30,6 +45,7 @@ setAccessTokenProvider(async () => {
 
 interface AuthSessionContextValue {
   authentication: Authentication;
+  sessionKey: string;
   logout: () => Promise<boolean>;
 }
 
@@ -62,29 +78,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     sessionManager.getSnapshot,
   );
 
-  const accessToken = snapshot.status === "authenticated" ? snapshot.authentication.accessToken : "";
-  const seenToken = useRef<string | null>(null);
-
   useEffect(() => {
     void sessionManager.bootstrap();
   }, []);
-
-  useEffect(() => {
-    if (seenToken.current === null) {
-      seenToken.current = accessToken;
-      return;
-    }
-    if (seenToken.current !== accessToken) {
-      clearPatientRequestCache();
-      seenToken.current = accessToken;
-    }
-  }, [accessToken]);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
     () =>
       snapshot.status === "authenticated"
         ? {
             authentication: snapshot.authentication,
+            sessionKey: authSessionKey(snapshot.authentication),
             logout: () => {
               clearPatientRequestCache();
               return sessionManager.logout();

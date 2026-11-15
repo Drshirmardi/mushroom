@@ -1,4 +1,4 @@
-import { withRequestTimeout } from '@sabz-zendegi/api-client';
+import { DEFAULT_REQUEST_TIMEOUT_MS, withRequestTimeout } from '@sabz-zendegi/api-client';
 
 export class PatientRequestError extends Error {
   constructor(
@@ -40,6 +40,7 @@ type CacheRecord = { expiresAt: number; value: unknown };
 
 const cachedValues = new Map<string, CacheRecord>();
 const cachedRequests = new Map<string, Promise<unknown>>();
+const sessionRequests = new Set<AbortController>();
 let cacheGeneration = 0;
 
 export function patientCacheKey(token: string, resource: string): string {
@@ -50,6 +51,8 @@ export function clearPatientRequestCache(): void {
   cacheGeneration += 1;
   cachedValues.clear();
   cachedRequests.clear();
+  for (const controller of sessionRequests) controller.abort();
+  sessionRequests.clear();
 }
 
 function remember(cacheKey: string, record: CacheRecord) {
@@ -73,11 +76,11 @@ export function patientCachedData<T>(
   ttlMs: number,
   factory: () => Promise<T>,
 ): Promise<T> {
-  if (ttlMs <= 0) return factory();
-
-  const fresh = peekPatientCache<T>(cacheKey);
-  if (fresh !== undefined) return Promise.resolve(fresh);
-  cachedValues.delete(cacheKey);
+  if (ttlMs > 0) {
+    const fresh = peekPatientCache<T>(cacheKey);
+    if (fresh !== undefined) return Promise.resolve(fresh);
+    cachedValues.delete(cacheKey);
+  }
 
   const current = cachedRequests.get(cacheKey);
   if (current) return current as Promise<T>;
@@ -86,7 +89,7 @@ export function patientCachedData<T>(
   const request = factory().then(
     (value) => {
       if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
-      if (generation === cacheGeneration)
+      if (ttlMs > 0 && generation === cacheGeneration)
         remember(cacheKey, { expiresAt: Date.now() + ttlMs, value });
       return value;
     },
@@ -97,6 +100,22 @@ export function patientCachedData<T>(
   );
   cachedRequests.set(cacheKey, request);
   return request;
+}
+
+export function patientSessionData<T>(key: string, ttlMs: number, load: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  return patientCachedData(key, ttlMs, async () => {
+    const controller = new AbortController();
+    sessionRequests.add(controller);
+    const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
+    try {
+      const value = await load(controller.signal);
+      controller.signal.throwIfAborted();
+      return value;
+    } finally {
+      clearTimeout(timeout);
+      sessionRequests.delete(controller);
+    }
+  });
 }
 
 export async function patientEmpty(

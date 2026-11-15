@@ -7,6 +7,19 @@ import {
 
 export type Authentication = components["schemas"]["AuthenticationResponseDto"];
 
+export function authSessionKey(authentication: Authentication): string {
+  const { accessToken, user } = authentication;
+  let sessionId = accessToken;
+  try {
+    const payload = accessToken.split('.')[1];
+    const { sid } = JSON.parse(atob(payload.replaceAll('-', '+').replaceAll('_', '/')));
+    if (typeof sid === 'string' && sid) sessionId = sid;
+  } catch {
+    // Opaque tokens remain isolated by token. This key never grants authorization.
+  }
+  return JSON.stringify([user.id, sessionId, [...user.roles].sort()]);
+}
+
 export type AuthSessionSnapshot =
   | { status: "checking"; authentication: null }
   | { status: "authenticated"; authentication: Authentication }

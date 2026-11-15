@@ -10,6 +10,15 @@ const completeProfile = { getOnboardingStatus: async () => ({ state: 'COMPLETE' 
 const requiredVersion = { id: 'version', assessmentKey: 'MAIN', locale: 'fa-IR' };
 
 describe('patient booking eligibility', () => {
+  it('reuses the patient already loaded by the journey', async () => {
+    const db = {
+      patientProfile: { findUnique: () => { throw new Error('patient must not be loaded again'); } },
+      bookingEligibilityPolicy: { findUnique: async () => ({ assessmentRequirement: 'NOT_REQUIRED' }) },
+    };
+    const service = new PatientBookingEligibilityService(db as never, completeProfile);
+    await expect(service.get('user', db as never, { state: 'COMPLETE' } as never, new Date(), { id: 'patient', clinicId: 'clinic' }))
+      .resolves.toEqual({ eligible: true, reason: 'ELIGIBLE', nextAction: null });
+  });
   it('blocks incomplete onboarding before any assessment lookup', async () => { const service = new PatientBookingEligibilityService({ patientProfile: { findUnique: () => { throw new Error('assessment data must not be read'); } } } as never, { getOnboardingStatus: async () => ({ state: 'IN_PROGRESS' }) } as never); await expect(service.get('user')).resolves.toEqual({ eligible: false, reason: 'PROFILE_INCOMPLETE', nextAction: 'COMPLETE_ONBOARDING' }); });
   it('allows a complete patient when the policy is disabled without reading submissions', async () => { const service = new PatientBookingEligibilityService({ patientProfile: { findUnique: async () => ({ id: 'patient', clinicId: 'clinic' }) }, bookingEligibilityPolicy: { findUnique: async () => ({ assessmentRequirement: 'NOT_REQUIRED' }) }, patientAssessmentSubmission: { findFirst: () => { throw new Error('score/submission must not be read'); } } } as never, { getOnboardingStatus: async () => ({ state: 'COMPLETE' }) } as never); await expect(service.get('user')).resolves.toEqual({ eligible: true, reason: 'ELIGIBLE', nextAction: null }); });
   it('returns a stable expired blocker without reading score', async () => { const service = new PatientBookingEligibilityService({ patientProfile: { findUnique: async () => ({ id: 'patient', clinicId: 'clinic' }) }, bookingEligibilityPolicy: { findUnique: async () => ({ assessmentRequirement: 'REQUIRED', requiredAssessmentVersionId: 'version', validityDays: 1, requireLatestPublishedVersion: false }) }, assessmentVersion: { findUnique: async () => ({ id: 'version', assessmentKey: 'MAIN', locale: 'fa-IR' }) }, patientAssessmentSubmission: { findFirst: async () => ({ completedAt: new Date(0), score: 100 }) } } as never, { getOnboardingStatus: async () => ({ state: 'COMPLETE' }) } as never); await expect(service.get('user')).resolves.toEqual({ eligible: false, reason: 'ASSESSMENT_EXPIRED', nextAction: 'RETAKE_ASSESSMENT' }); });

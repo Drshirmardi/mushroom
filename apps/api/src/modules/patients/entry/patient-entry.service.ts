@@ -19,10 +19,11 @@ export class PatientEntryService {
   constructor(private readonly prisma: PrismaService, private readonly assessments: PatientAssessmentsService, private readonly billing: BillingService) {}
 
   private async patient(userId: string, tx: Prisma.TransactionClient = this.prisma) {
-    const p = await tx.patientProfile.findUnique({ where: { userId }, include: {
+    const p = await tx.patientProfile.findUnique({ where: { userId }, select: {
+      id: true, clinicId: true,
       user: { select: { createdAt: true, userProfile: { select: { firstName: true, lastName: true, gender: true } } } },
-      clinic: { select: { entryPolicy: true } },
-      entry: { include: { submission: { select: { state: true, invalidatedAt: true } } } },
+      clinic: { select: { entryPolicy: { select: { enabled: true, enforcedFrom: true, assessmentVersionId: true, amountRial: true, allowDeferral: true, introduction: true } } } },
+      entry: { select: { amountRial: true, deferredAt: true, paidIntentId: true, birthDate: true, assessmentVersionId: true, submissionId: true, completedAt: true, submission: { select: { state: true, invalidatedAt: true } } } },
     } });
     if (!p) throw new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile not found.', details: {} });
     return p;

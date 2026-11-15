@@ -8217,12 +8217,22 @@ export interface components {
             /** @enum {string} */
             state: "COMPLETE" | "CURRENT" | "UPCOMING";
         };
+        JourneyAssessmentSummaryDto: {
+            algorithmId: string | null;
+            primary?: string | null;
+            secondary?: string | null;
+            scores: {
+                [key: string]: number;
+            } | null;
+            dimensionTitles: Record<string, never>[] | null;
+        };
         JourneyLatestAssessmentDto: {
             /** Format: uuid */
             id: string;
             title: string;
             /** Format: date-time */
             completedAt: string;
+            summary?: components["schemas"]["JourneyAssessmentSummaryDto"] | null;
         };
         JourneyHomeActionDto: {
             /** @enum {string} */

@@ -7,11 +7,14 @@ import { ArrowLeft, ShoppingBag } from 'lucide-react';
 import { getCommerceOrder } from '@/lib/commerce-catalog-api';
 import { toP } from '@/lib/format';
 import { orderStatusLabel } from '@/lib/order-labels';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { OrderProgress } from '@/components/store/order-progress';
 
-export function HomeOrderProgress({ orderId, token }: { orderId: string; token: string }) {
-  const resource = usePatientResource(useCallback(() => getCommerceOrder(token, orderId), [token, orderId]));
+export function HomeOrderProgress({ orderId }: { orderId: string }) {
+  const resource = useSessionPatientResource(
+    `order:${orderId}`,
+    useCallback((token, signal) => getCommerceOrder(token, orderId, signal), [orderId]),
+  );
   const order = resource.data;
   const paid = order && ['PAID', 'FULFILLMENT_PENDING', 'FULFILLING', 'READY_FOR_PICKUP', 'SHIPPED'].includes(order.status)
     && ['VERIFIED', 'PARTIALLY_REFUNDED'].includes(order.paymentStatus ?? '');

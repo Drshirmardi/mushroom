@@ -5,23 +5,22 @@ import { useCallback, useState } from 'react';
 import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { LoadingState } from '@/components/shared/skeletons';
-import { useAuthSession } from '@/components/auth/session-gate';
 
 import { getOwnedServices } from '@/lib/mezaj-services-api';
-import { usePatientResource } from '@/lib/use-patient-resource';
+import { useSessionPatientResource } from '@/lib/use-patient-resource';
 
 import { OwnedServiceCard } from './service-card';
 
 const PAGE_SIZE = 6;
 
 export function OwnedServices() {
-  const { authentication } = useAuthSession();
   const [page, setPage] = useState(1);
 
-  const resource = usePatientResource(
+  const resource = useSessionPatientResource(
+    `owned-services:${page}:${PAGE_SIZE}`,
     useCallback(
-      () => getOwnedServices(authentication.accessToken, page, PAGE_SIZE),
-      [authentication.accessToken, page],
+      (token, signal) => getOwnedServices(token, page, PAGE_SIZE, signal),
+      [page],
     ),
   );
 
