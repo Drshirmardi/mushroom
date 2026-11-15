@@ -6,6 +6,7 @@ export const routing = defineRouting({
     locales,
     defaultLocale: "fa",
     localePrefix: "as-needed",
+    localeDetection: false,
     localeCookie: { maxAge: 60 * 60 * 24 * 365 },
 });
 export function isLocale(value: string): value is Locale {

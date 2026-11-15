@@ -15,6 +15,7 @@ export const metadata: Metadata = {
         title: "دکتر شیرمردی | از شناخت تا مراقبت",
         description: "شناخت مزاج، تغذیه و اصلاح سبک زندگی با همراهی مجموعه دکتر شیرمردی.",
         type: "website",
+        images: [{ url: "/images/doctor-opengraph.jpg", width: 1200, height: 630 }],
     },
     twitter: {
         card: "summary_large_image",

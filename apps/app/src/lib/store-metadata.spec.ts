@@ -17,7 +17,10 @@ describe("public product metadata", () => {
   it("keeps the storefront usable when metadata lookup fails", async () => {
     vi.stubEnv("PUBLIC_API_URL", "https://api.example.test");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(Error("unavailable")));
-    expect((await generateMetadata({ params: Promise.resolve({ id: "p" }) })).title).toBe("محصولات سلامت | دکتر شیرمردی");
+    const metadata = await generateMetadata({ params: Promise.resolve({ id: "p" }) });
+    expect(metadata.title).toBe("محصولات سلامت | دکتر شیرمردی");
+    expect(metadata.openGraph?.images).toEqual(["/images/doctor-opengraph.jpg"]);
+    expect(metadata.twitter?.images).toEqual(["/images/doctor-opengraph.jpg"]);
   });
   it("does not guess a localhost API in production", async () => {
     vi.stubEnv("PUBLIC_API_URL", "");

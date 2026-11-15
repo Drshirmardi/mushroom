@@ -165,6 +165,7 @@ services:
       PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
     cpus: "${DEV_APP_CPUS:-0.75}"
 
