@@ -82,7 +82,11 @@ export const getCommerceProduct = (productId: string) =>
     apiClient.GET('/v1/commerce/products/{productId}', { params: { path: { productId } } }),
   );
 
-export const getCommerceRecommendations = (accessToken: string, submissionId?: string, signal?: AbortSignal) =>
+export const getCommerceRecommendations = (
+  accessToken: string,
+  submissionId?: string,
+  signal?: AbortSignal,
+) =>
   expectData<CommerceRecommendations>(
     apiClient.GET('/v1/patients/me/commerce/recommendations', {
       headers: authorization(accessToken),

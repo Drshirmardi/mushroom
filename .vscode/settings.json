@@ -45,6 +45,8 @@
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
   },
+  "prisma.schemaPath": "apps/api/prisma/schema.prisma",
+  "prisma.pinToPrisma6": false,
   "[python]": {
     "editor.tabSize": 4
   },
