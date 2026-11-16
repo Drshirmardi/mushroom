@@ -50,6 +50,7 @@ export class PrismaSessionRepository extends SessionRepository {
           userId: input.userId,
           refreshTokenHash: input.refreshTokenHash,
           verifiedPhone: input.verifiedPhone,
+          baleProviderUserId: input.baleProviderUserId,
           remembered: input.remembered,
           userAgent: limitUserAgent(input.userAgent),
           ipAddress: input.ipAddress,
