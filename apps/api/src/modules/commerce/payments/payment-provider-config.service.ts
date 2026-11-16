@@ -18,7 +18,7 @@ export class PaymentProviderConfigService {
     private readonly registry: PaymentProviderRegistry,
     private readonly crypto: PaymentCredentialCryptoService,
     private readonly sadadRuntime: SadadRuntimeConfigService,
-    private readonly runtimeConfig: ConfigService,
+    private readonly runtimeConfig?: ConfigService,
   ) {}
 
   async list() {
@@ -29,7 +29,7 @@ export class PaymentProviderConfigService {
 
   async createRevision(code: string, key: string | undefined, body: CreatePaymentProviderRevisionDto, context: Context) {
     const provider = this.registry.resolve(code);
-    if (body.isDefault && !body.enable) throw conflict();
+    if (body.isDefault && (!body.enable || code !== 'sadad')) throw conflict();
     const idempotencyKey = this.idempotencyKey(key);
     const clinic = await this.clinic();
     const runtimeReady = this.runtimeReady(code);
@@ -55,6 +55,7 @@ export class PaymentProviderConfigService {
 
   async update(code: string, body: UpdatePaymentProviderConfigDto, context: Context) {
     const provider = this.registry.resolve(code);
+    if (body.isDefault && code !== 'sadad') throw conflict();
     const clinic = await this.clinic();
     return this.prisma.$transaction(async (tx) => {
       let config = await tx.paymentProviderConfig.findUnique({ where: { clinicId_providerCode: { clinicId: clinic.id, providerCode: code } }, include: { activeRevision: true } });
@@ -80,7 +81,7 @@ export class PaymentProviderConfigService {
     });
   }
 
-  private runtimeReady(code: string) { return code === 'sadad' ? this.sadadRuntime.live : code === 'bale_wallet' && this.runtimeConfig.get('BALE_AUTH_ENABLED') === 'true' && Boolean(this.runtimeConfig.get<string>('BALE_BOT_TOKEN')) && Boolean(this.runtimeConfig.get<string>('BALE_WEBHOOK_SECRET')); }
+  private runtimeReady(code: string) { return code === 'sadad' ? this.sadadRuntime.live : code === 'bale_wallet' && this.runtimeConfig?.get('BALE_AUTH_ENABLED') === 'true' && Boolean(this.runtimeConfig?.get<string>('BALE_BOT_TOKEN')) && Boolean(this.runtimeConfig?.get<string>('BALE_WEBHOOK_SECRET')); }
   private async credential(tx: Prisma.TransactionClient, configId: string, code: string, value: Record<string, string>) { const normalized = this.normalizedCredential(code, value); const encrypted = this.crypto.encrypt(normalized); const latest = await tx.paymentProviderCredentialVersion.findFirst({ where: { configId }, orderBy: { versionNumber: 'desc' } }); const created = await tx.paymentProviderCredentialVersion.create({ data: { configId, versionNumber: (latest?.versionNumber ?? 0) + 1, encryptedPayload: Uint8Array.from(encrypted.ciphertext), encryptionNonce: Uint8Array.from(encrypted.nonce), authenticationTag: Uint8Array.from(encrypted.tag), encryptionKeyVersion: encrypted.keyVersion } }); await tx.paymentProviderCredentialVersion.updateMany({ where: { configId, id: { not: created.id }, status: 'ACTIVE' }, data: { status: 'RETIRED' } }); return created; }
   private normalizedCredential(code: string, value: Record<string, string>) { if (!value || typeof value !== 'object' || Array.isArray(value)) throw conflict(); if (code === 'bale_wallet') { const walletToken = value.walletToken?.trim(); if (Object.keys(value).join(',') !== 'walletToken' || !walletToken || walletToken.length > 4096) throw conflict(); return { walletToken }; } if (code !== 'sadad') throw conflict(); const merchantId = value.merchantId?.trim(); const terminalId = value.terminalId?.trim(); const terminalKey = value.terminalKey?.trim(); const keys = Object.keys(value).sort(); const decodedKey = terminalKey && /^[A-Za-z0-9+/]+={0,2}$/u.test(terminalKey) ? Buffer.from(terminalKey, 'base64') : null; if (!merchantId || !terminalId || !terminalKey || merchantId.length > 128 || terminalId.length > 128 || terminalKey.length > 4096 || keys.join(',') !== 'merchantId,terminalId,terminalKey' || decodedKey?.length !== 24) throw conflict(); return { merchantId, terminalId, terminalKey }; }
   private response(descriptor: { code: string; displayName: string; capabilities: Record<string, string> }, config?: { enabled: boolean; isDefault: boolean; providerUnit: string; goLiveReady: boolean; updatedAt: Date; activeRevision: { revisionNumber: number; credentialVersionId: string | null } | null }) { const configured = Boolean(config?.activeRevision?.credentialVersionId); return { code: descriptor.code, displayName: descriptor.displayName, configured, activationAvailable: configured && this.runtimeReady(descriptor.code), enabled: config?.enabled ?? false, isDefault: config?.isDefault ?? false, providerUnit: config?.providerUnit ?? 'UNCONFIRMED', goLiveReady: Boolean(config?.goLiveReady && this.runtimeReady(descriptor.code)), activeRevisionNumber: config?.activeRevision?.revisionNumber ?? null, capabilities: descriptor.capabilities, updatedAt: config?.updatedAt.toISOString() ?? null }; }
