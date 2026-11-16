@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { PaymentCredentialCryptoService } from './payment-credential-crypto.service';
@@ -17,6 +18,7 @@ export class PaymentProviderConfigService {
     private readonly registry: PaymentProviderRegistry,
     private readonly crypto: PaymentCredentialCryptoService,
     private readonly sadadRuntime: SadadRuntimeConfigService,
+    private readonly runtimeConfig: ConfigService,
   ) {}
 
   async list() {
@@ -31,7 +33,7 @@ export class PaymentProviderConfigService {
     const idempotencyKey = this.idempotencyKey(key);
     const clinic = await this.clinic();
     const runtimeReady = this.runtimeReady(code);
-    if ((body.enable || body.isDefault) && !runtimeReady) this.sadadRuntime.settings();
+    if ((body.enable || body.isDefault) && !runtimeReady) { if (code === 'sadad') this.sadadRuntime.settings(); throw conflict(); }
     return this.prisma.$transaction(async (tx) => {
       const config = await tx.paymentProviderConfig.upsert({ where: { clinicId_providerCode: { clinicId: clinic.id, providerCode: code } }, create: { clinicId: clinic.id, providerCode: code }, update: {} });
       await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${config.id}))`);
@@ -59,7 +61,7 @@ export class PaymentProviderConfigService {
       if (!config) throw missing();
       await tx.$executeRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${config.id}))`);
       config = await tx.paymentProviderConfig.findUniqueOrThrow({ where: { id: config.id }, include: { activeRevision: true } });
-      if ((body.enabled || body.isDefault) && !this.runtimeReady(code)) this.sadadRuntime.settings();
+      if ((body.enabled || body.isDefault) && !this.runtimeReady(code)) { if (code === 'sadad') this.sadadRuntime.settings(); throw conflict(); }
       const credentialVersionId = config.activeRevision?.credentialVersionId;
       if ((body.enabled || body.isDefault) && !credentialVersionId) throw conflict();
       if ((body.enabled || body.isDefault) && !config.goLiveReady) {
@@ -78,9 +80,9 @@ export class PaymentProviderConfigService {
     });
   }
 
-  private runtimeReady(code: string) { return code === 'sadad' && this.sadadRuntime.live; }
-  private async credential(tx: Prisma.TransactionClient, configId: string, code: string, value: { merchantId: string; terminalId: string; terminalKey: string }) { const normalized = this.normalizedCredential(code, value); const encrypted = this.crypto.encrypt(normalized); const latest = await tx.paymentProviderCredentialVersion.findFirst({ where: { configId }, orderBy: { versionNumber: 'desc' } }); const created = await tx.paymentProviderCredentialVersion.create({ data: { configId, versionNumber: (latest?.versionNumber ?? 0) + 1, encryptedPayload: Uint8Array.from(encrypted.ciphertext), encryptionNonce: Uint8Array.from(encrypted.nonce), authenticationTag: Uint8Array.from(encrypted.tag), encryptionKeyVersion: encrypted.keyVersion } }); await tx.paymentProviderCredentialVersion.updateMany({ where: { configId, id: { not: created.id }, status: 'ACTIVE' }, data: { status: 'RETIRED' } }); return created; }
-  private normalizedCredential(code: string, value: { merchantId: string; terminalId: string; terminalKey: string }) { if (code !== 'sadad' || !value || typeof value !== 'object') throw conflict(); const merchantId = value.merchantId?.trim(); const terminalId = value.terminalId?.trim(); const terminalKey = value.terminalKey?.trim(); const keys = Object.keys(value).sort(); const decodedKey = terminalKey && /^[A-Za-z0-9+/]+={0,2}$/u.test(terminalKey) ? Buffer.from(terminalKey, 'base64') : null; if (!merchantId || !terminalId || !terminalKey || merchantId.length > 128 || terminalId.length > 128 || terminalKey.length > 4096 || keys.join(',') !== 'merchantId,terminalId,terminalKey' || decodedKey?.length !== 24) throw conflict(); return { merchantId, terminalId, terminalKey }; }
+  private runtimeReady(code: string) { return code === 'sadad' ? this.sadadRuntime.live : code === 'bale_wallet' && this.runtimeConfig.get('BALE_AUTH_ENABLED') === 'true' && Boolean(this.runtimeConfig.get<string>('BALE_BOT_TOKEN')) && Boolean(this.runtimeConfig.get<string>('BALE_WEBHOOK_SECRET')); }
+  private async credential(tx: Prisma.TransactionClient, configId: string, code: string, value: Record<string, string>) { const normalized = this.normalizedCredential(code, value); const encrypted = this.crypto.encrypt(normalized); const latest = await tx.paymentProviderCredentialVersion.findFirst({ where: { configId }, orderBy: { versionNumber: 'desc' } }); const created = await tx.paymentProviderCredentialVersion.create({ data: { configId, versionNumber: (latest?.versionNumber ?? 0) + 1, encryptedPayload: Uint8Array.from(encrypted.ciphertext), encryptionNonce: Uint8Array.from(encrypted.nonce), authenticationTag: Uint8Array.from(encrypted.tag), encryptionKeyVersion: encrypted.keyVersion } }); await tx.paymentProviderCredentialVersion.updateMany({ where: { configId, id: { not: created.id }, status: 'ACTIVE' }, data: { status: 'RETIRED' } }); return created; }
+  private normalizedCredential(code: string, value: Record<string, string>) { if (!value || typeof value !== 'object' || Array.isArray(value)) throw conflict(); if (code === 'bale_wallet') { const walletToken = value.walletToken?.trim(); if (Object.keys(value).join(',') !== 'walletToken' || !walletToken || walletToken.length > 4096) throw conflict(); return { walletToken }; } if (code !== 'sadad') throw conflict(); const merchantId = value.merchantId?.trim(); const terminalId = value.terminalId?.trim(); const terminalKey = value.terminalKey?.trim(); const keys = Object.keys(value).sort(); const decodedKey = terminalKey && /^[A-Za-z0-9+/]+={0,2}$/u.test(terminalKey) ? Buffer.from(terminalKey, 'base64') : null; if (!merchantId || !terminalId || !terminalKey || merchantId.length > 128 || terminalId.length > 128 || terminalKey.length > 4096 || keys.join(',') !== 'merchantId,terminalId,terminalKey' || decodedKey?.length !== 24) throw conflict(); return { merchantId, terminalId, terminalKey }; }
   private response(descriptor: { code: string; displayName: string; capabilities: Record<string, string> }, config?: { enabled: boolean; isDefault: boolean; providerUnit: string; goLiveReady: boolean; updatedAt: Date; activeRevision: { revisionNumber: number; credentialVersionId: string | null } | null }) { const configured = Boolean(config?.activeRevision?.credentialVersionId); return { code: descriptor.code, displayName: descriptor.displayName, configured, activationAvailable: configured && this.runtimeReady(descriptor.code), enabled: config?.enabled ?? false, isDefault: config?.isDefault ?? false, providerUnit: config?.providerUnit ?? 'UNCONFIRMED', goLiveReady: Boolean(config?.goLiveReady && this.runtimeReady(descriptor.code)), activeRevisionNumber: config?.activeRevision?.revisionNumber ?? null, capabilities: descriptor.capabilities, updatedAt: config?.updatedAt.toISOString() ?? null }; }
   private async clinic() { const clinic = await this.prisma.clinic.findFirst({ where: { status: 'ACTIVE' }, select: { id: true } }); if (!clinic) throw new NotFoundException({ code: 'CLINIC_NOT_FOUND', message: 'The active clinic was not found.', details: {} }); return clinic; }
   private idempotencyKey(value: string | undefined) { const key = value?.trim(); if (!key || key.length > 240 || !/^[\x21-\x7e]+$/u.test(key)) throw conflict(); return key; }
