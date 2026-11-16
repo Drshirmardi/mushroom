@@ -20,7 +20,12 @@ import {
   type BillingIntent,
 } from '@/lib/wallet-billing-api';
 import { formatRial } from '@/lib/wallet-money';
-import { canOpenBaleInvoice, openBaleInvoice, openSadadOutsideMiniApp } from '@/lib/bale-payment';
+import {
+  canOpenBaleInvoice,
+  isBaleInvoiceActive,
+  openBaleInvoice,
+  openSadadOutsideMiniApp,
+} from '@/lib/bale-payment';
 import { billingPurposeLabel } from '@/lib/wallet-labels';
 import styles from './payment.module.css';
 
@@ -51,6 +56,7 @@ export function PaymentChooser({
   const router = useRouter();
   const [busy, setBusy] = useState<'wallet' | 'gateway' | 'bale' | 'cancel' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [baleInvoiceActive, setBaleInvoiceActive] = useState(isBaleInvoiceActive);
   const [topupOpen, setTopupOpen] = useState(false);
   const [walletConfirmation, setWalletConfirmation] = useState<{
     id: string;
@@ -113,6 +119,11 @@ export function PaymentChooser({
   const payViaBale = () =>
     run('bale', async () => {
       if (!nativeBale) return;
+      if (isBaleInvoiceActive()) {
+        setBaleInvoiceActive(true);
+        setError('یک فاکتور بله باز است؛ آن را تکمیل یا ببندید و سپس وضعیت پرداخت را دوباره بررسی کنید.');
+        return;
+      }
       if (baleKey.current?.intentId !== intent.id || (!bankAttempt && intent.attempts?.[0]?.status === 'FAILED')) baleKey.current = { intentId: intent.id, key: crypto.randomUUID() };
       const attempt = await createBaleAttempt(accessToken, intent.id, baleKey.current.key);
       if (!attempt.invoiceParams) {
@@ -121,12 +132,24 @@ export function PaymentChooser({
         onRefresh?.();
         return;
       }
-      if (!openBaleInvoice(attempt.invoiceParams, () => {
+      const openResult = openBaleInvoice(attempt.invoiceParams, () => {
+        setBaleInvoiceActive(false);
         void getBillingIntent(accessToken, intent.id).then((latest) => {
           if (latest.status === 'PAID' || latest.status === 'COMPENSATED') onPaid(latest);
           else { setError('وضعیت نهایی پرداخت از سرور در حال بررسی است.'); onRefresh?.(); }
         }).catch(() => { setError('ارتباط با سرور برای بررسی نتیجه ممکن نشد؛ صفحه را تازه کنید.'); onRefresh?.(); });
-      })) setError('این نسخه بله از پرداخت داخلی پشتیبانی نمی‌کند؛ پرداخت بانکی را انتخاب کنید.');
+      });
+      setBaleInvoiceActive(isBaleInvoiceActive());
+      if (openResult === 'already-active') {
+        setBaleInvoiceActive(true);
+        setError('یک فاکتور بله باز است؛ آن را تکمیل یا ببندید و سپس وضعیت پرداخت را دوباره بررسی کنید.');
+        onRefresh?.();
+      } else if (openResult === 'unsupported') {
+        setError('این نسخه بله از پرداخت داخلی پشتیبانی نمی‌کند؛ پرداخت بانکی را انتخاب کنید.');
+      } else if (openResult === 'failed') {
+        setError('صفحهٔ پرداخت بله باز نشد. دوباره تلاش کنید یا درگاه بانکی را انتخاب کنید.');
+        onRefresh?.();
+      }
     });
 
   const payViaGateway = () =>
@@ -174,7 +197,9 @@ export function PaymentChooser({
         >
           {bankAttempt.status === 'REDIRECT_READY'
             ? 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
-              ? 'فاکتور پرداخت بله آماده است؛ می‌توانید آن را ادامه دهید یا پیش از تأیید پرداخت، درگاه بانکی را انتخاب کنید.'
+              ? baleInvoiceActive
+                ? 'پنجرهٔ پرداخت بله باز است؛ پرداخت را همان‌جا ادامه دهید یا ببندید تا وضعیت آن بررسی شود.'
+                : 'فاکتور پرداخت بله آماده است؛ می‌توانید آن را باز کنید یا پیش از تأیید پرداخت، درگاه بانکی را انتخاب کنید.'
               : 'یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود.'
             : 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
               ? 'پرداخت بله در حال تأیید نهایی است؛ تا تعیین نتیجه، روش دیگری را انتخاب نکنید.'
@@ -205,11 +230,11 @@ export function PaymentChooser({
         <h2>روش پرداخت</h2>
         {nativeBale && (
           <button type="button" className={`wallet-method ${styles.method}`}
-            disabled={busy !== null || !bale?.available} onClick={() => void payViaBale()}>
+            disabled={busy !== null || !bale?.available || baleInvoiceActive} onClick={() => void payViaBale()}>
             <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
             <span className="wallet-method__body">
               <span className="wallet-method__title">پرداخت با کیف پول بله</span>
-              <span className="wallet-method__hint">پرداخت مستقیم در محیط بله، بدون خروج از مینی‌اپ.</span>
+              <span className="wallet-method__hint">{baleInvoiceActive ? 'فاکتور بله باز است؛ پس از بستن آن می‌توانید دوباره تلاش کنید.' : 'پرداخت مستقیم در محیط بله، بدون خروج از مینی‌اپ.'}</span>
             </span>
             {busy === 'bale' ? <HeartbeatLoader /> : <ChevronLeft size={18} aria-hidden="true" />}
           </button>
