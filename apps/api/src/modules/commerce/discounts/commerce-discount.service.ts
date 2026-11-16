@@ -35,7 +35,7 @@ export class CommerceDiscountService {
   async reserveCheckout(tx: Transaction, inputValue: { prepared: { id: string; code: string; amountToman: bigint } | null; patientId: string; orderId: string; expiresAt: Date | null }) { if (!inputValue.prepared) return null; return tx.commerceDiscountReservation.create({ data: { discountId: inputValue.prepared.id, patientId: inputValue.patientId, orderId: inputValue.orderId, discountAmountToman: inputValue.prepared.amountToman, expiresAt: inputValue.expiresAt } }); }
 
   async releaseOrderReservation(tx: Transaction, orderId: string) { return this.transition(tx, orderId, 'RELEASED'); }
-  async consumeOrderReservation(tx: Transaction, orderId: string) { return this.transition(tx, orderId, 'CONSUMED'); }
+  async consumeOrderReservation(tx: Transaction, orderId: string) { return (await tx.commerceDiscountReservation.updateMany({ where: { orderId, status: { in: ['ACTIVE', 'EXPIRED'] } }, data: { status: 'CONSUMED' } })).count === 1; }
   async expireOrderReservation(tx: Transaction, orderId: string) { return this.transition(tx, orderId, 'EXPIRED'); }
 
   private async transition(tx: Transaction, orderId: string, status: DiscountReservationStatus) { const reservation = await tx.commerceDiscountReservation.findUnique({ where: { orderId } }); if (!reservation || reservation.status !== 'ACTIVE') return false; const updated = await tx.commerceDiscountReservation.updateMany({ where: { id: reservation.id, status: 'ACTIVE' }, data: { status } }); return updated.count === 1; }

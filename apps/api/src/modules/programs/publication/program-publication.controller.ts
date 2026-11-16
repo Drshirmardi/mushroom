@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, Headers, HttpCode, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Header, Headers, HttpCode, HttpException, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
@@ -7,6 +7,7 @@ import { ApiErrorResponse } from '../../../common/errors/api-error-response.deco
 import { ProgramDefinitionRateGuard } from '../definitions/program-definition.controller';
 import { ProgramCommercialConfigDto, ProgramCommercialPreviewDto, ProgramPublicationPageDto, ProgramPublicationQueryDto, ProgramPublicationResponseDto, ProgramPublicationSetupDto, PublishProgramOfferingDto } from './program-publication.dto';
 import { ProgramPublicationService } from './program-publication.service';
+import { ProgramBulkPreviewDto, ProgramBulkPreviewResponseDto, ProgramBulkPublishDto, ProgramBulkPublishResponseDto } from './program-publication.dto';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
 @ApiTags('Program commercial publication') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @RequirePermissions(PERMISSIONS.CONTENT_MANAGE) @UseGuards(ProgramDefinitionRateGuard)
@@ -14,6 +15,29 @@ const uuid = () => new ParseUUIDPipe({ version: '4' });
 @Controller('admin/program-offerings')
 export class ProgramPublicationController {
   constructor(private readonly programs: ProgramPublicationService) {}
+  @Post('bulk-preview') @HttpCode(200) @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'adminProgramOfferingBulkPreview' }) @ApiOkResponse({ type: ProgramBulkPreviewResponseDto })
+  async bulkPreview(@Body() body: ProgramBulkPreviewDto, @Req() r: AuthenticatedRequest) {
+    const items = [];
+    for (const configuration of body.items) {
+      try { items.push({ programDefinitionId: configuration.programDefinitionId, preview: await this.programs.preview(configuration, context(r)) }); }
+      catch (error) { items.push({ programDefinitionId: configuration.programDefinitionId, code: this.itemError(error) }); }
+    }
+    return { items };
+  }
+  @Post('bulk-publish') @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'adminProgramOfferingBulkPublish' }) @ApiCreatedResponse({ type: ProgramBulkPublishResponseDto })
+  async bulkPublish(@Body() body: ProgramBulkPublishDto, @Req() r: AuthenticatedRequest) {
+    const items = [];
+    for (const item of body.items) {
+      try { items.push({ programDefinitionId: item.configuration.programDefinitionId, publication: await this.programs.publish(item.configuration, item.key, context(r)) }); }
+      catch (error) { items.push({ programDefinitionId: item.configuration.programDefinitionId, code: this.itemError(error) }); }
+    }
+    return { items };
+  }
+  private itemError(error: unknown) {
+    if (!(error instanceof HttpException) || error.getStatus() >= 500 || [401, 403].includes(error.getStatus())) throw error;
+    const response = error.getResponse();
+    return typeof response === 'object' && 'code' in response ? String(response.code) : 'PROGRAM_PUBLICATION_INVALID';
+  }
   @Get('setup/:id') @Header('Cache-Control', 'private, no-store') @ApiParam({ name: 'id', format: 'uuid' }) @ApiOperation({ operationId: 'adminProgramOfferingSetup', summary: 'Read saved program price and exact active purchase terms for the current clinic and locale' }) @ApiOkResponse({ type: ProgramPublicationSetupDto })
   setup(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.programs.setup(id.toLowerCase(), context(r)); }
   @Post('preview') @HttpCode(200) @Header('Cache-Control', 'private, no-store') @ApiOperation({ operationId: 'adminProgramOfferingPreview', summary: 'Preview exact price/access/terms and clinical prerequisites without publishing or charging' }) @ApiOkResponse({ type: ProgramCommercialPreviewDto })

@@ -110,7 +110,7 @@ export class AssessmentProtocolService {
 
   private async source(tx: Prisma.TransactionClient, clinicId: string, id: string) { const source = await tx.assessmentVersion.findFirst({ where: { id, clinicId, OR: [{ status: { in: ['PUBLISHED', 'RETIRED'] } }, { status: 'DRAFT', structure: { path: ['schemaVersion'], equals: 3 } }] } }); if (!source) throw missing(); return source; }
   private async policy(tx: Prisma.TransactionClient, source: AssessmentVersion, id?: string) {
-    const where = { clinicId: source.clinicId, policyKey: 'ASSESSMENT_PROCESSING', locale: source.locale, ...(id ? { id } : { status: 'ACTIVE' as const }) };
+    const where = { clinicId: source.clinicId, policyKey: 'ASSESSMENT_PROCESSING', locale: source.locale, ...(id ? { id } : { status: 'ACTIVE' as const, assessmentOfferingVersionId: null }) };
     const policy = await tx.consentPolicyVersion.findFirst({ where }); if (id && !policy) throw missing(); return policy;
   }
   private sourceBlockers(source: AssessmentVersion, policy: ConsentPolicyVersion | null) {

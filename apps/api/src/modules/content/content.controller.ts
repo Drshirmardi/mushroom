@@ -6,11 +6,16 @@ import { Public } from '../../common/auth/public.decorator';
 import { RequirePermissions, RequireRoles } from '../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { ContentService } from './content.service';
-import { AdminBannerDto, AdminBannerListDto, PublicBannerListDto, CreateArticleDto, CreateBannerDto, CreateCategoryDto, UpdateArticleDto, UpdateBannerDto } from './content.dto';
+import { ArticlePreviewListDto, AdminBannerDto, AdminBannerListDto, PublicBannerListDto, CreateArticleDto, CreateBannerDto, CreateCategoryDto, UpdateArticleDto, UpdateBannerDto } from './content.dto';
 import { BannerMediaService } from './banner-media.service';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 @ApiTags('Content') @ApiBearerAuth('bearerAuth') @Controller()
 export class ContentController { constructor(private readonly content: ContentService, private readonly media: BannerMediaService) {}
+  @Get('patients/me/article-previews')
+  @RequireRoles('PATIENT')
+  @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
+  @ApiOkResponse({ type: ArticlePreviewListDto })
+  patientArticlePreviews() { return this.content.articlePreviews(); }
   @Get('patients/me/articles') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF) patientArticles() { return this.content.articles(false); }
   @Get('patients/me/articles/:slug') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF) patientArticle(@Param('slug') slug: string) { return this.content.articleBySlug(slug); }
   @Get('patients/me/banners') @RequireRoles('PATIENT') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF) patientBanners() { return this.content.banners(false); }

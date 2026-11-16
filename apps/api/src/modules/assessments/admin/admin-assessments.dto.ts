@@ -110,7 +110,7 @@ export class AssessmentTieBreakOptionDto {
 
 export class AssessmentTieBreakQuestionDto {
   @ApiProperty() id!: string;
-  @ApiProperty({ maxLength: 1000 }) title!: string;
+  @ApiProperty({ maxLength: 20000 }) title!: string;
   @ApiProperty({ type: [String], minItems: 2, maxItems: 4 }) tiedDimensions!: string[];
   @ApiProperty({ type: [AssessmentTieBreakOptionDto], minItems: 2, maxItems: 5 }) options!: AssessmentTieBreakOptionDto[];
 }
@@ -119,7 +119,7 @@ export class AssessmentScoringPreviewDto {
   @ApiProperty({ format: 'uuid' }) assessmentVersionId!: string;
   @ApiProperty({ pattern: '^[a-f0-9]{64}$' }) questionnaireContentHash!: string;
   @ApiProperty({ enum: ['DIMENSION_RANK', 'DIMENSION_TIEBREAK'] }) algorithmId!: string;
-  @ApiProperty({ enum: [1] }) algorithmVersion!: number;
+  @ApiProperty({ enum: [1, 2] }) algorithmVersion!: number;
   @ApiProperty({ enum: [true] }) educationalOnly!: true;
   @ApiProperty({ enum: ['UNREVIEWED'] }) reviewState!: string;
   @ApiProperty({ enum: ['INSUFFICIENT_DATA', 'PRIMARY_TIE', 'SECONDARY_TIE', 'SINGLE', 'PAIR', 'FOLLOW_UP_REQUIRED', 'FOLLOW_UP_UNAVAILABLE'] }) status!: string;
@@ -129,6 +129,6 @@ export class AssessmentScoringPreviewDto {
   @ApiProperty({ type: String, nullable: true }) secondary!: string | null;
   @ApiProperty({ type: [String] }) tiedDimensions!: string[];
   @ApiProperty({ type: AssessmentDraftResultProfileDto, nullable: true, description: 'Unreviewed educational display profile; absent for ties/insufficient evidence.' }) profile!: AssessmentDraftResultProfileDto | null;
-  @ApiPropertyOptional({ type: AssessmentTieBreakQuestionDto, nullable: true, description: 'Only the exact server-selected tie-break question; never a second follow-up.' }) followUp?: AssessmentTieBreakQuestionDto | null;
-  @ApiPropertyOptional({ description: 'Whether the single allowed follow-up has already been answered.' }) followUpUsed?: boolean;
+  @ApiPropertyOptional({ type: AssessmentTieBreakQuestionDto, nullable: true, description: 'Only the next server-selected question on the permitted path.' }) followUp?: AssessmentTieBreakQuestionDto | null;
+  @ApiPropertyOptional({ description: 'Whether any permitted follow-up has been answered.' }) followUpUsed?: boolean;
 }

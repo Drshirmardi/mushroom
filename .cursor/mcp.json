@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "Prisma": {
+      "command": "cmd",
+      "args": ["/c", "corepack", "pnpm", "--dir", "apps/api", "exec", "prisma", "mcp"]
+    }
+  }
+}

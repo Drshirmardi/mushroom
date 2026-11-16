@@ -1,17 +1,30 @@
-import { withRequestTimeout } from "@sabz-zendegi/api-client";
+import { DEFAULT_REQUEST_TIMEOUT_MS, withRequestTimeout } from '@sabz-zendegi/api-client';
 
 export class PatientRequestError extends Error {
-  constructor(public readonly status: number, public readonly code: string | null) {
-    super(code ?? "PATIENT_REQUEST_FAILED");
+  constructor(
+    public readonly status: number,
+    public readonly code: string | null,
+    public readonly retryAfterMs = 0,
+  ) {
+    super(code ?? 'PATIENT_REQUEST_FAILED');
   }
 }
 
-export async function patientData<T>(request: Promise<{ data?: T; error?: unknown; response: Response }>): Promise<T> {
+export async function patientData<T>(
+  request: Promise<{ data?: T; error?: unknown; response: Response }>,
+): Promise<T> {
   try {
     const { data, error, response } = await withRequestTimeout(request);
     if (response.ok && data !== undefined) return data;
-    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
-    throw new PatientRequestError(response.status, code);
+    const code =
+      error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+        ? error.code
+        : null;
+    throw new PatientRequestError(
+      response.status,
+      code,
+      retryAfterMs(response.headers.get('Retry-After')),
+    );
   } catch (error) {
     if (error instanceof PatientRequestError) throw error;
     throw new PatientRequestError(0, null);
@@ -20,12 +33,107 @@ export async function patientData<T>(request: Promise<{ data?: T; error?: unknow
 
 export const patientAuthorization = (token: string) => ({ authorization: `Bearer ${token}` });
 
-export async function patientEmpty(request: Promise<{ error?: unknown; response: Response }>): Promise<void> {
+export const PATIENT_CATALOG_TTL_MS = 15_000;
+export const PATIENT_CACHE_LIMIT = 12;
+
+type CacheRecord = { expiresAt: number; value: unknown };
+
+const cachedValues = new Map<string, CacheRecord>();
+const cachedRequests = new Map<string, Promise<unknown>>();
+const sessionRequests = new Set<AbortController>();
+let cacheGeneration = 0;
+
+export function patientCacheKey(token: string, resource: string): string {
+  return `${resource}\0${token}`;
+}
+
+export function clearPatientRequestCache(): void {
+  cacheGeneration += 1;
+  cachedValues.clear();
+  cachedRequests.clear();
+  for (const controller of sessionRequests) controller.abort();
+  sessionRequests.clear();
+}
+
+function remember(cacheKey: string, record: CacheRecord) {
+  cachedValues.delete(cacheKey);
+  cachedValues.set(cacheKey, record);
+  while (cachedValues.size > PATIENT_CACHE_LIMIT) {
+    const oldest = cachedValues.keys().next().value;
+    if (oldest === undefined) break;
+    cachedValues.delete(oldest);
+  }
+}
+
+export function peekPatientCache<T>(cacheKey: string): T | undefined {
+  const hit = cachedValues.get(cacheKey);
+  if (!hit || hit.expiresAt <= Date.now()) return undefined;
+  return hit.value as T;
+}
+
+export function patientCachedData<T>(
+  cacheKey: string,
+  ttlMs: number,
+  factory: () => Promise<T>,
+  refresh = false,
+): Promise<T> {
+  if (ttlMs > 0) {
+    const fresh = refresh ? undefined : peekPatientCache<T>(cacheKey);
+    if (fresh !== undefined) return Promise.resolve(fresh);
+    cachedValues.delete(cacheKey);
+  }
+
+  const current = cachedRequests.get(cacheKey);
+  if (current) return current as Promise<T>;
+
+  const generation = cacheGeneration;
+  const request = factory().then(
+    (value) => {
+      if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
+      if (ttlMs > 0 && generation === cacheGeneration)
+        remember(cacheKey, { expiresAt: Date.now() + ttlMs, value });
+      return value;
+    },
+    (error: unknown) => {
+      if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
+      throw error;
+    },
+  );
+  cachedRequests.set(cacheKey, request);
+  return request;
+}
+
+export function patientSessionData<T>(key: string, ttlMs: number, load: (signal: AbortSignal) => Promise<T>, refresh = false): Promise<T> {
+  return patientCachedData(key, ttlMs, async () => {
+    const controller = new AbortController();
+    sessionRequests.add(controller);
+    const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
+    try {
+      const value = await load(controller.signal);
+      controller.signal.throwIfAborted();
+      return value;
+    } finally {
+      clearTimeout(timeout);
+      sessionRequests.delete(controller);
+    }
+  }, refresh);
+}
+
+export async function patientEmpty(
+  request: Promise<{ error?: unknown; response: Response }>,
+): Promise<void> {
   try {
     const { response, error } = await withRequestTimeout(request);
     if (response.ok) return;
-    const code = error && typeof error === "object" && "code" in error && typeof error.code === "string" ? error.code : null;
-    throw new PatientRequestError(response.status, code);
+    const code =
+      error && typeof error === 'object' && 'code' in error && typeof error.code === 'string'
+        ? error.code
+        : null;
+    throw new PatientRequestError(
+      response.status,
+      code,
+      retryAfterMs(response.headers.get('Retry-After')),
+    );
   } catch (error) {
     if (error instanceof PatientRequestError) throw error;
     throw new PatientRequestError(0, null);
@@ -33,14 +141,29 @@ export async function patientEmpty(request: Promise<{ error?: unknown; response:
 }
 
 export function patientErrorMessage(error: unknown): string {
-  if (error instanceof PatientRequestError && error.code === "COUPLE_POLICY_UNAVAILABLE") return "رضایت‌نامهٔ اتصال زوجین هنوز توسط کلینیک فعال نشده است. پس از فعال‌شدن آن می‌توانید اتصال همراه را ادامه دهید.";
-  const status = error && typeof error === "object" && "status" in error && typeof error.status === "number" ? error.status : 0;
-  if (status === 0) return "ارتباط با سرویس برقرار نشد؛ دوباره تلاش کنید. نتیجهٔ درخواست قبلی هنوز مشخص نیست.";
-  if (status === 401) return "نشست شما نیاز به تمدید دارد؛ صفحه را تازه‌سازی کنید.";
-  if (status === 403) return "اجازهٔ انجام این درخواست را ندارید.";
-  if (status === 404) return "این مورد در دسترس نیست یا دسترسی شما به آن تغییر کرده است.";
-  if (status === 409) return "وضعیت اطلاعات یا شرایط تغییر کرده است؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.";
-  if (status === 429) return "تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.";
-  if (status === 400 || status === 422) return "اطلاعات و شرایط لازم را بررسی کنید؛ این درخواست در وضعیت فعلی قابل انجام نیست.";
-  return "درخواست انجام نشد؛ دوباره تلاش کنید.";
+  if (error instanceof PatientRequestError && error.code === 'COUPLE_POLICY_UNAVAILABLE')
+    return 'رضایت‌نامهٔ اتصال زوجین هنوز توسط کلینیک فعال نشده است. پس از فعال‌شدن آن می‌توانید اتصال همراه را ادامه دهید.';
+  const status =
+    error && typeof error === 'object' && 'status' in error && typeof error.status === 'number'
+      ? error.status
+      : 0;
+  if (status === 0)
+    return 'ارتباط با سرویس برقرار نشد؛ دوباره تلاش کنید. نتیجهٔ درخواست قبلی هنوز مشخص نیست.';
+  if (status === 401) return 'نشست شما نیاز به تمدید دارد؛ صفحه را تازه‌سازی کنید.';
+  if (status === 403) return 'شما دسترسی لازم برای انجام این درخواست را ندارید.';
+  if (status === 404) return 'این مورد در دسترس نیست یا دسترسی شما به آن تغییر کرده است.';
+  if (status === 409)
+    return 'وضعیت اطلاعات یا شرایط تغییر کرده است؛ اطلاعات تازه را دریافت و دوباره بررسی کنید.';
+  if (status === 429) return 'تعداد درخواست‌ها زیاد است؛ کمی بعد دوباره تلاش کنید.';
+  if (status === 400 || status === 422)
+    return 'اطلاعات و شرایط لازم را بررسی کنید؛ این درخواست در وضعیت فعلی قابل انجام نیست.';
+  return 'درخواست انجام نشد؛ دوباره تلاش کنید.';
+}
+
+export function retryAfterMs(value: string | null, now = Date.now()): number {
+  if (!value) return 0;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(value);
+  return Number.isFinite(date) ? Math.max(0, date - now) : 0;
 }

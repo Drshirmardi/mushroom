@@ -4,7 +4,7 @@ import type { AuthenticatedRequest } from '../../../common/auth/access-token.gua
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
-import { AssessmentOfferingListQueryDto, AssessmentOfferingPageResponseDto, AssessmentOfferingVersionResponseDto, CreateAssessmentOfferingVersionDto } from './assessment-offerings.dto';
+import { AssessmentOfferingListQueryDto, AssessmentOfferingPageResponseDto, AssessmentOfferingVersionResponseDto, CreateAssessmentOfferingVersionDto, CreateInlineAssessmentOfferingDto } from './assessment-offerings.dto';
 import { AssessmentOfferingsService } from './assessment-offerings.service';
 
 @ApiTags('Assessment Offering Drafts') @ApiBearerAuth('bearerAuth')
@@ -18,6 +18,11 @@ export class AssessmentOfferingsController {
   @ApiCreatedResponse({ type: AssessmentOfferingVersionResponseDto })
   @ApiErrorResponse(409, 'Offering identity or idempotency key conflicts.') @ApiErrorResponse(422, 'Draft configuration is inconsistent.')
   create(@Body() body: CreateAssessmentOfferingVersionDto, @Headers('idempotency-key') key: string | undefined, @Req() request: AuthenticatedRequest) { return this.offerings.create(body, key, this.context(request)); }
+  @Post('inline-versions') @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'adminAssessmentInlineOfferingCreate', summary: 'Atomically save offering and its inline purpose-specific documents; does not activate purchases' })
+  @ApiHeader({ name: 'Idempotency-Key', required: true, schema: { type: 'string', maxLength: 200 } })
+  @ApiCreatedResponse({ type: AssessmentOfferingVersionResponseDto })
+  inline(@Body() body: CreateInlineAssessmentOfferingDto, @Headers('idempotency-key') key: string | undefined, @Req() r: AuthenticatedRequest) { return this.offerings.createInline(body, key, this.context(r)); }
   @Get() @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ operationId: 'adminAssessmentOfferingsList', summary: 'List clinic-owned assessment offering draft versions' })
   @ApiOkResponse({ type: AssessmentOfferingPageResponseDto })

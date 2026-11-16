@@ -1,3 +1,4 @@
+import { normalizeSadadCallbackUrl } from '../../../config/sadad-callback-url';
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { SadadRedirectProfile } from './sadad-payment-provider.adapter';
@@ -13,9 +14,10 @@ export class SadadRuntimeConfigService {
 
   settings() {
     if (!this.live) throw blocked();
-    const publicApiUrl = this.config.getOrThrow<string>('PUBLIC_API_URL');
-    const returnUrl = this.config.getOrThrow<string>('SADAD_RETURN_URL');
-    if (new URL('/v1/payments/providers/sadad/callback', publicApiUrl).toString() !== returnUrl) throw blocked();
+    let returnUrl: string;
+    try {
+      returnUrl = normalizeSadadCallbackUrl(this.config.getOrThrow<string>('SADAD_RETURN_URL'));
+    } catch { throw blocked(); }
     return {
       returnUrl,
       redirectProfile: this.config.getOrThrow<SadadRedirectProfile>('SADAD_REDIRECT_PROFILE'),

@@ -19,12 +19,13 @@ function declaration(value: unknown): MedicalDeclaration {
 export function intakeDraft(snapshot: MedicalIntake['snapshot'], birthDate: string | null): IntakeDraft {
   return { birthDate: (snapshot?.birthDate ?? birthDate ?? '').slice(0, 10), sexAtBirth: snapshot?.sexAtBirth ?? null, heightCm: snapshot?.heightCm == null ? '' : String(snapshot.heightCm), weightKg: snapshot?.weightKg == null ? '' : String(snapshot.weightKg), bloodType: snapshot?.bloodType ?? '', sleepDurationBand: snapshot?.sleepDurationBand ?? '', exerciseFrequency: snapshot?.exerciseFrequency ?? '', stressLevel: snapshot?.stressLevel ?? '', tobaccoUse: snapshot?.tobaccoUse ?? '', allergyReport: declaration(snapshot?.allergyReport), chronicConditionReport: declaration(snapshot?.chronicConditionReport), currentMedicationReport: declaration(snapshot?.currentMedicationReport) };
 }
-export function intakeIssue(draft: IntakeDraft, complete: boolean): string | null {
+export function intakeIssue(draft: IntakeDraft, complete: boolean, scope: 'all' | 'health' = 'all'): string | null {
   const reports = [draft.allergyReport, draft.chronicConditionReport, draft.currentMedicationReport];
   if (complete && !draft.birthDate) return 'تاریخ تولد در مشخصات ثبت‌نام موجود نیست؛ ابتدا مشخصات خود را تکمیل کنید.';
   if (complete && reports.some(item => !item.status)) return 'لطفاً به هر سه سؤال سلامت پاسخ دهید؛ «نمی‌دانم» هم یک پاسخ معتبر است.';
   if (reports.some(item => item.status === 'PRESENT' && !item.items.some(value => value.trim()))) return 'برای مواردی که «بله» انتخاب کرده‌اید، نام دارو، بیماری یا حساسیت را بنویسید.';
   if (reports.some(item => item.items.filter(value => value.trim()).length > 50 || item.items.some(value => value.trim().length > 200))) return 'هر مورد حداکثر ۲۰۰ نویسه و هر پاسخ حداکثر ۵۰ مورد می‌تواند داشته باشد.';
+  if (scope === 'health') return null;
   if (draft.heightCm && (!Number.isInteger(Number(draft.heightCm)) || Number(draft.heightCm) < 30 || Number(draft.heightCm) > 300)) return 'قد را بین ۳۰ تا ۳۰۰ سانتی‌متر، بدون اعشار وارد کنید.';
   if (draft.weightKg && (!Number.isFinite(Number(draft.weightKg)) || Number(draft.weightKg) < 2 || Number(draft.weightKg) > 500)) return 'وزن را بین ۲ تا ۵۰۰ کیلوگرم وارد کنید.';
   return null;

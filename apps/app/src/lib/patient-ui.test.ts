@@ -41,8 +41,8 @@ const cardProps = { product, saved: false, inCart: false, busy: false, onFavorit
 describe("Store ProductCard presentation contract", () => {
   it("preserves product destination, real price value and imagery source", () => {
     const html = renderToStaticMarkup(createElement(ProductCard, cardProps));
-    expect(html.match(/href="\/store\/products\/synthetic-product\?sku=synthetic-sku"/g)).toHaveLength(3);
-    expect(html).toContain('class="store-product__details"');
+    expect(html.match(/href="\/store\/products\/synthetic-product\?sku=synthetic-sku"/g)).toHaveLength(2);
+    expect(html).not.toContain('class="store-product__details"');
     expect(html).toContain('dir="ltr"'); expect(html).toContain("۱۲۵٬۰۰۰");
     expect(html).not.toContain("افزودن به سبد");
   });
@@ -64,6 +64,19 @@ describe("Store ProductCard presentation contract", () => {
   });
   it("does not invent a purchasable SKU for an empty product", () => {
     expect(renderToStaticMarkup(createElement(ProductCard, { ...cardProps, product: { ...product, skus: [] } }))).toBe("");
+  });
+  it("keeps the installment frame out of the card until the API sends it", () => {
+    const plain = renderToStaticMarkup(createElement(ProductCard, cardProps));
+    expect(plain).not.toContain("store-product__installment");
+    expect(plain).not.toContain("قسط");
+    const offered = renderToStaticMarkup(createElement(ProductCard, {
+      ...cardProps,
+      product: { ...product, installmentCount: 4, installmentAmountToman: "1450000" } as CommerceProduct,
+    }));
+    expect(offered).toContain("store-product__installment");
+    expect(offered).toContain("قسط");
+    expect(offered).toContain("۱٬۴۵۰٬۰۰۰");
+    expect(offered).toContain("تومانی");
   });
 });
 
@@ -195,16 +208,21 @@ const approvedProduct: CommerceProduct = {
 };
 
 describe("Store real product content sections (Phase B1C)", () => {
-  it("links navigation only to sections with real product content", () => {
+  it("renders real product sections in document order without duplicate navigation chips", () => {
     const html = renderToStaticMarkup(createElement(ProductContentSections, { product: approvedProduct }));
+    let lastIndex = -1;
     for (const id of ["product-about", "product-ingredients", "product-usage", "product-warnings", "product-contraindications"]) {
-      expect(html).toContain(`href="#${id}"`);
-      expect(html).toContain(`id="${id}"`);
+      const index = html.indexOf(`id="${id}"`);
+      expect(index).toBeGreaterThan(lastIndex);
+      lastIndex = index;
     }
+    expect(html).not.toContain('<nav');
+    expect(html).not.toContain('store-content-nav');
     const singleSection = renderToStaticMarkup(createElement(ProductContentSections, {
       product: { ...product, content: null, description: "توضیح واقعی" },
     }));
-    expect(singleSection).not.toContain("<nav");
+    expect(singleSection).toContain('id="product-about"');
+    expect(singleSection).not.toContain('<nav');
   });
 
   it("renders every nonempty approved field and nothing else", () => {

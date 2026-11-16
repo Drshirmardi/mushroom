@@ -1,5 +1,5 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createPaymentProviderRevision, paymentProviderCallbackUrl, PaymentProviderApiError, updatePaymentProviderConfig } from "./commerce-payment-provider-api";
 
@@ -10,6 +10,7 @@ const response = (body: unknown, status = 201) => new Response(JSON.stringify(bo
 
 describe("payment provider API", () => {
   beforeEach(() => fetchMock.mockReset());
+  afterEach(() => vi.unstubAllGlobals());
 
   it("sends all three Sadad credential fields as a write-only revision", async () => {
     fetchMock.mockResolvedValueOnce(response({ code: "sadad", displayName: "سداد", configured: true, enabled: false, isDefault: false, providerUnit: "UNCONFIRMED", goLiveReady: false, activeRevisionNumber: 1, capabilities: {}, updatedAt: null }));
@@ -32,6 +33,13 @@ describe("payment provider API", () => {
     const request = fetchMock.mock.calls[0]?.[0] as Request;
     expect([request.method, new URL(request.url).pathname, request.headers.get("authorization")]).toEqual(["PATCH", "/v1/admin/commerce/payment-providers/sadad", "Bearer token"]);
     await expect(request.json()).resolves.toEqual({ enabled: false });
+  });
+
+  it("shows the configured main-domain Sadad return URL without changing other providers", () => {
+    const callback = "https://drshirmardi.com/v1/payments/providers/sadad/callback";
+    vi.stubGlobal("window", { __MUSHROOM_RUNTIME_CONFIG__: { sadadReturnUrl: callback } });
+    expect(paymentProviderCallbackUrl("sadad")).toBe(callback);
+    expect(paymentProviderCallbackUrl("other")).toBe("https://api.example.test/v1/payments/providers/other/callback");
   });
 
   it("builds the provider callback from the public API origin", () => {

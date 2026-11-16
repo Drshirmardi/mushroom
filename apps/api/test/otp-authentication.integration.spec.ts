@@ -9,6 +9,7 @@ describe.skipIf(!databaseUrl)('OTP authentication persistence', () => {
   let prisma: PrismaService;
   let useCase: OtpAuthenticationUseCase;
   let deliveredCode = '';
+  let phoneOwnershipVerified = false;
 
   beforeAll(async () => {
     prisma = new PrismaService(new ConfigService({ DATABASE_URL: databaseUrl }));
@@ -21,7 +22,7 @@ describe.skipIf(!databaseUrl)('OTP authentication persistence', () => {
     if (!clinic) await prisma.clinic.create({ data: { name: 'OTP integration clinic', status: 'ACTIVE' } });
     const delivery = { sendAuthenticationCode: async (challengeId: string, _phone: string, code: string) => { deliveredCode = code; await prisma.otpChallenge.update({ where: { id: challengeId }, data: { status: 'ACCEPTED' } }); return { outcome: 'ACCEPTED' as const }; } };
     const limiter = { consume: async () => true };
-    const sessions = { execute: async ({ user, remember }: { user: { id: string; phone: string; roles: string[] }; remember: boolean }) => ({ user, accessToken: 'test-access', refreshToken: 'test-refresh', refreshExpiresAt: new Date(), remember }) };
+    const sessions = { execute: async ({ user, remember, phoneVerified }: { user: { id: string; phone: string; roles: string[] }; remember: boolean; phoneVerified?: boolean }) => { phoneOwnershipVerified = phoneVerified === true; return { user, accessToken: 'test-access', refreshToken: 'test-refresh', refreshExpiresAt: new Date(), remember }; } };
     useCase = new OtpAuthenticationUseCase(prisma, delivery as never, limiter as never, sessions as never, new ConfigService({ OTP_PEPPER: 'integration-otp-pepper-with-more-than-thirty-two-bytes' }));
   });
 
@@ -40,6 +41,7 @@ describe.skipIf(!databaseUrl)('OTP authentication persistence', () => {
     expect(deliveredCode).toMatch(/^\d{6}$/u);
     const authenticated = await useCase.verify(challenge.challengeId, deliveredCode, { ipAddress: '127.0.0.1', requestId: 'otp-test' });
     expect(authenticated.user.roles).toContain('PATIENT');
+    expect(phoneOwnershipVerified).toBe(true);
     const user = await prisma.user.findUniqueOrThrow({ where: { phone: '+989123456789' }, include: { credential: true, patientProfile: true } });
     expect(user.credential).toBeNull();
     expect(user.patientProfile).not.toBeNull();

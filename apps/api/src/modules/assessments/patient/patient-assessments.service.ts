@@ -9,7 +9,7 @@ import { AssessmentAnswerError, ASSESSMENT_SCORING_IDENTITY, scoreAssessment } f
 import type { PatientAssessmentHistoryQueryDto } from './patient-assessments.dto';
 import { isTieBreakStructure } from '../domain/assessment-engine-definition';
 import { previewTieBreakDraft, projectTieBreakQuestionnaire, validateTieBreakAnswers, type TieBreakDraft } from '../domain/assessment-tiebreak-draft';
-import { accessibleAssessmentWhere, processableAssessmentGrants } from '../access/assessment-access.policy';
+import { accessibleAssessmentWhere, ownedAssessmentGrantWhere, processableAssessmentGrants } from '../access/assessment-access.policy';
 import { AssessmentAccessService } from '../access/assessment-access.service';
 
 interface AuditContext { actorUserId: string; actorSessionId: string; requestId: string; ipAddress: string }
@@ -28,13 +28,13 @@ export class PatientAssessmentsService {
       const where = { ...accessibleAssessmentWhere, patientId: patient.id, assessmentVersion: { clinicId: patient.clinicId }, ...(query.state ? { state: query.state } : {}) };
       const [rows, total] = await Promise.all([
         tx.patientAssessmentSubmission.findMany({ where, orderBy: [{ startedAt: 'desc' }, { id: 'desc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize,
-          select: { id: true, accessGrantId: true, assessmentVersionId: true, attemptNumber: true, revision: true, state: true, startedAt: true, updatedAt: true, completedAt: true, invalidatedAt: true,
+          select: { accessGrant: { select: { educationalCoupleParticipant: { select: { session: { select: { marriageRequest: { select: { id: true, clinicId: true } } } } } } } }, id: true, accessGrantId: true, assessmentVersionId: true, attemptNumber: true, revision: true, state: true, startedAt: true, updatedAt: true, completedAt: true, invalidatedAt: true,
             assessmentVersion: { select: { assessmentKey: true, versionNumber: true, locale: true, title: true, status: true } } } }),
         tx.patientAssessmentSubmission.count({ where }),
       ]);
       const processable = await processableAssessmentGrants(tx, rows.flatMap(row => row.accessGrantId ? [row.accessGrantId] : []));
       await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.HISTORY_READ, patient.id, context, 'PATIENT_ASSESSMENT_HISTORY');
-      return { items: rows.map(({ assessmentVersion: version, invalidatedAt, accessGrantId, ...row }) => ({ ...row, assessmentKey: version.assessmentKey,
+      return { items: rows.map(({ assessmentVersion: version, invalidatedAt, accessGrantId, accessGrant, ...row }) => ({ ...row, marriageRequestId: accessGrant?.educationalCoupleParticipant?.session.marriageRequest?.clinicId === patient.clinicId ? accessGrant.educationalCoupleParticipant.session.marriageRequest.id : null, assessmentKey: version.assessmentKey,
         versionNumber: version.versionNumber, locale: version.locale, title: version.title,
         resumeAvailable: row.state === 'IN_PROGRESS' && invalidatedAt === null && version.status !== 'DRAFT' && (!accessGrantId || processable.has(accessGrantId)),
       })), page: query.page, pageSize: query.pageSize, total };
@@ -78,16 +78,13 @@ export class PatientAssessmentsService {
   }
 
   async list(userId: string) {
-    const patient = await this.patient(userId, this.prisma);
-    const items = await this.prisma.assessmentVersion.findMany({
-      where: { clinicId: patient.clinicId, status: AssessmentVersionStatus.PUBLISHED, offeringVersions: { none: { commercialPublications: { some: {} } } } },
-      orderBy: [{ assessmentKey: 'asc' }, { versionNumber: 'desc' }],
-    });
-    return { items: items.map(item => ({ id: item.id, assessmentKey: item.assessmentKey, versionNumber: item.versionNumber, locale: item.locale, title: item.title, structure: isTieBreakStructure(item.structure) ? projectTieBreakQuestionnaire(item.structure, {}) : item.structure as Record<string, unknown> })) };
+    await this.patient(userId,this.prisma);
+    // Public acquisition uses priced offerings; the one free attempt belongs to initial entry.
+    return {items: []};
   }
 
-  async start(versionId: string, userId: string, context: AuditContext) {
-    return this.prisma.$transaction(async tx => {
+  async start(versionId: string, userId: string, context: AuditContext, entryPatientId?: string, transaction?: Prisma.TransactionClient) {
+    const work = async (tx: Prisma.TransactionClient) => {
       const patient = await this.patient(userId, tx);
       await this.lock(tx, `assessment:start:${patient.id}:${versionId}`);
       await this.access.processingQuestionnaire(tx, versionId, patient, context);
@@ -110,22 +107,38 @@ export class PatientAssessmentsService {
         await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.SUBMISSION_READ, active.id, context);
         return this.response(active);
       }
-      if (await tx.assessmentOfferingPublication.count({ where: { offeringVersion: { assessmentVersionId: versionId } } })) throw new ConflictException({ code: 'ASSESSMENT_PAYMENT_REQUIRED', message: 'Start this assessment through its owned paid access.', details: {} });
+      if (!entryPatientId) {
+        // The owned initial entry is the only free attempt origin. Reuse it when it is
+        // already exactly bound to this source, instead of reopening a public free start.
+        const entry = await tx.patientEntry.findUnique({
+          where: { patientId: patient.id },
+          select: { clinicId: true, assessmentVersionId: true, submissionId: true, completedAt: true },
+        });
+        if (entry?.clinicId === patient.clinicId && entry.assessmentVersionId === versionId && entry.submissionId === null && entry.completedAt === null) {
+          const consumed = await tx.patientAssessmentSubmission.count({ where: { entryPatientId: patient.id } });
+          if (consumed === 0) entryPatientId = patient.id;
+        }
+      }
+      const [visibility] = await tx.$queryRaw<{ visible: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${versionId}::uuid) AS visible`);
+      if (!visibility?.visible && !entryPatientId) throw notFound();
+      if (!entryPatientId) throw new ConflictException({code:'ASSESSMENT_PAYMENT_REQUIRED',message:'Start a new public attempt through a paid offering.',details:{}});
+      if (!entryPatientId && await tx.assessmentOfferingVersion.count({ where: { assessmentVersionId: versionId, OR: [{ commercialPublications: { some: {} } }, { adminPublication: { isNot: null } }] } })) throw new ConflictException({ code: 'ASSESSMENT_PAYMENT_REQUIRED', message: 'Start this assessment through its exact owned access and acceptance.', details: {} });
       const max = await tx.patientAssessmentSubmission.aggregate({
         where: { patientId: patient.id, assessmentVersionId: versionId }, _max: { attemptNumber: true },
       });
       const submission = await tx.patientAssessmentSubmission.create({
-        data: { patientId: patient.id, assessmentVersionId: versionId, attemptNumber: (max._max.attemptNumber ?? 0) + 1, answers: {} },
+        data: { entryPatientId, patientId: patient.id, assessmentVersionId: versionId, attemptNumber: (max._max.attemptNumber ?? 0) + 1, answers: {} },
       });
       await this.audit(tx, ASSESSMENT_AUDIT_ACTIONS.SUBMISSION_STARTED, submission.id, context);
       return this.response(submission);
-    });
+    };
+    return transaction ? work(transaction) : this.prisma.$transaction(work);
   }
 
   async startPaid(grantId: string, userId: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(userId, tx);
-      const pointer = await tx.assessmentAccessGrant.findFirst({ where: { id: grantId, patientId: patient.id, clinicId: patient.clinicId, processingConsent: { withdrawnAt: null }, purchase: { intent: { status: 'PAID', purpose: 'ASSESSMENT' } } }, select: { assessmentVersionId: true } });
+      const pointer = await tx.assessmentAccessGrant.findFirst({ where: { ...ownedAssessmentGrantWhere, id: grantId, patientId: patient.id, clinicId: patient.clinicId }, select: { assessmentVersionId: true } });
       if (!pointer) throw submissionNotFound();
       await this.lock(tx, `assessment:start:${patient.id}:${pointer.assessmentVersionId}`);
       const existing = await tx.patientAssessmentSubmission.findFirst({ where: { ...accessibleAssessmentWhere, accessGrantId: grantId, patientId: patient.id, invalidatedAt: null } });
@@ -228,7 +241,7 @@ export class PatientAssessmentsService {
             ...ASSESSMENT_SCORING_IDENTITY, questionnaireContentHash: submission.assessmentVersion.contentHash, answerPayloadHash: payloadHash }) as unknown as Prisma.InputJsonValue,
         },
       });
-      if (submission.assessmentVersion.assessmentKey === 'MEZAJ' && (!dimensional || evaluation.resultBand !== null)) {
+      if ((dimensional && evaluation.resultBand !== null) || (!dimensional && submission.assessmentVersion.assessmentKey === 'MEZAJ')) {
         await tx.mezajResult.create({ data: {
           patientId: patient.id, assessmentVersionId: completed.assessmentVersionId, assessmentSubmissionId: completed.id,
           resultBandSnapshot: evaluation.resultBand === null ? Prisma.JsonNull : evaluation.resultBand as Prisma.InputJsonValue,

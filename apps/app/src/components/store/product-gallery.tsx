@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileImage } from "lucide-react";
+import { StoreIcon } from "./store-icon";
 import { toP } from "../../lib/format";
 import { ProductImage } from "./product-image";
 
 function Counter({ index, total }: { index: number; total: number }) {
   return <div className="store-gallery__counter" aria-hidden="true">
-    <FileImage size={13} />
+    <StoreIcon name="image" size={13} />
     <span>{toP(index + 1)}</span>
     <span className="store-gallery__divider" />
     <span className="store-gallery__track">

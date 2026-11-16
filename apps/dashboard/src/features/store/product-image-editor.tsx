@@ -64,6 +64,7 @@ function EditorBody({ controller, product, onClose, embedded, onEditorStateChang
       {state.message && <p role={state.phase === "ready" ? "status" : "alert"} className={`rounded-xl p-3 text-sm leading-6 ${state.phase === "ready" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-950"}`}>{state.message}</p>}
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={busy || state.phase === "loading"} onClick={() => void controller.load()} className={secondary}><RefreshCw size={16} />دریافت وضعیت تازه</button>
+        {state.phase === "unresolved" && <p className="w-full text-xs leading-6 text-muted-foreground">فایل انتخاب‌شده حفظ شده است. وضعیت را دریافت یا همان درخواست را تکرار کنید؛ می‌توانید پنجره را هم ببندید. بستن پنجره به معنی لغو عملیات سرور نیست.</p>}
         {state.phase === "unresolved" && <button type="button" onClick={() => void controller.retry()} className={primary}>تکرار همان عملیات</button>}
       </div>
     </div>

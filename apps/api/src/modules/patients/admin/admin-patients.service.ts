@@ -15,6 +15,8 @@ type Tx = Prisma.TransactionClient;
 type MedicalPolicy = { id: string; clinicId: string; contentHash: string };
 const medicalPolicyScope = { policyKey: 'MEDICAL_INTAKE_PROCESSING', locale: 'fa-IR', status: ConsentPolicyStatus.ACTIVE };
 const medicalConsentScope = { withdrawnAt: null, policyVersion: { policyKey: medicalPolicyScope.policyKey, locale: medicalPolicyScope.locale } };
+// Match String.prototype.trim() in the onboarding evaluator, including Unicode whitespace.
+const onboardingWhitespace = '\t\n\v\f\r \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff';
 
 const patientNotFound = (): NotFoundException => new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile was not found.', details: {} });
 const consentRequired = (): ForbiddenException => new ForbiddenException({ code: 'CONSENT_REQUIRED', message: 'A current consent grant is required for medical intake access.', details: {} });
@@ -47,19 +49,32 @@ export class AdminPatientsService {
         { user: { userProfile: { is: { lastName: { contains: search, mode: 'insensitive' } } } } },
       ],
     } : {};
-    const [total, patients, policies] = await this.prisma.$transaction([
-      this.prisma.patientProfile.count({ where }),
-      this.prisma.patientProfile.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (query.page - 1) * query.pageSize, take: query.pageSize, include: { user: { include: { userProfile: true } }, medicalIntake: { include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } }, consentRecords: { where: medicalConsentScope } } }),
-      this.prisma.consentPolicyVersion.findMany({ where: medicalPolicyScope, select: { id: true, clinicId: true, contentHash: true } }),
-    ], { isolationLevel: 'RepeatableRead' });
+    const { total, patients, policies, revisions } = await this.prisma.$transaction(async tx => {
+      const [total, patients, policies] = await Promise.all([
+        tx.patientProfile.count({ where }),
+        tx.patientProfile.findMany({ where, orderBy: { createdAt: 'desc' }, skip: (query.page - 1) * query.pageSize, take: query.pageSize, include: { entry: { select: { birthDate: true } }, user: { include: { userProfile: true } }, medicalIntake: { select: { id: true, currentRevisionNumber: true, completedRevisionNumber: true, submissionState: true } }, consentRecords: { where: medicalConsentScope } } }),
+        tx.consentPolicyVersion.findMany({ where: medicalPolicyScope, select: { id: true, clinicId: true, contentHash: true } }),
+      ]);
+      const current = patients.flatMap(({ medicalIntake: intake }) => intake && intake.currentRevisionNumber > 0
+        ? [{ intakeId: intake.id, revisionNumber: intake.currentRevisionNumber }]
+        : []);
+      const revisions = current.length ? await tx.patientMedicalIntakeRevision.findMany({
+        where: { OR: current },
+        select: { intakeId: true, birthDate: true, sexAtBirth: true, allergyReport: true,
+          chronicConditionReport: true, currentMedicationReport: true, completedConsentRecordId: true },
+      }) : [];
+      return { total, patients, policies, revisions };
+    }, { isolationLevel: 'RepeatableRead' });
+    const revisionByIntake = new Map(revisions.map(revision => [revision.intakeId, revision]));
+
     return {
       items: patients.map((patient) => {
-        const revision = patient.medicalIntake?.revisions[0] ?? null;
+        const revision = patient.medicalIntake ? revisionByIntake.get(patient.medicalIntake.id) ?? null : null;
         const currentPolicies = policies.filter(policy => policy.clinicId === patient.clinicId);
         const activeConsent = this.activeMedicalConsent(patient.consentRecords, currentPolicies);
         const evaluation = evaluateOnboarding({
           firstName: patient.user.userProfile?.firstName, lastName: patient.user.userProfile?.lastName,
-          birthDate: revision?.birthDate?.toISOString().slice(0, 10), sexAtBirth: revision?.sexAtBirth,
+          birthDate: (patient.entry?.birthDate ?? revision?.birthDate)?.toISOString().slice(0, 10), sexAtBirth: revision?.sexAtBirth,
           allergyReport: revision?.allergyReport as MedicalDeclaration | null, chronicConditionReport: revision?.chronicConditionReport as MedicalDeclaration | null, currentMedicationReport: revision?.currentMedicationReport as MedicalDeclaration | null,
           activeCurrentConsent: Boolean(activeConsent), activeConsentRecordId: activeConsent?.id ?? null,
           completedConsentRecordId: revision?.completedConsentRecordId ?? null, hasConsentDecision: patient.consentRecords.length > 0,
@@ -73,35 +88,27 @@ export class AdminPatientsService {
   }
 
   async summary() {
-    const clinic = await this.prisma.clinic.findFirst({ where: { status: ClinicStatus.ACTIVE } });
+    const clinic = await this.prisma.clinic.findFirst({ where: { status: ClinicStatus.ACTIVE }, select: { id: true, timeZone: true } });
     if (!clinic) throw new ServiceUnavailableException({ code: 'CONSENT_POLICY_NOT_AVAILABLE', message: 'No active clinic is configured.', details: {} });
     const now = new Date();
     const date = new Intl.DateTimeFormat('en-CA', { timeZone: clinic.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
     const part = (type: string) => date.find((item) => item.type === type)?.value;
     const localMidnight = new Date(`${part('year')}-${part('month')}-${part('day')}T00:00:00.000Z`);
-    const newPatientsToday = await this.prisma.patientProfile.count({ where: { clinicId: clinic.id, createdAt: { gte: localMidnight } } });
-    // This reads every canonical row from PostgreSQL rather than reusing a client list page.
-    let page = 1;
-    let total = 0;
-    let complete = 0;
-    do {
-      const batch = await this.list({ page, pageSize: 50, query: undefined });
-      total = batch.total;
-      complete += batch.items.filter((item) => item.onboardingState === 'COMPLETE').length;
-      page += 1;
-    } while ((page - 1) * 50 < total);
-    return { asOf: now, timeZone: clinic.timeZone, newPatientsToday, onboardingCompletePatients: complete, onboardingIncompletePatients: total - complete };
+    // The summary counts onboarding across clinics and new patients in the active clinic.
+    const [newPatientsToday, [onboarding]] = await Promise.all([
+      this.prisma.patientProfile.count({ where: { clinicId: clinic.id, createdAt: { gte: localMidnight } } }),
+      this.onboardingCounts(),
+    ]);
+    return { asOf: now, timeZone: clinic.timeZone, newPatientsToday, onboardingCompletePatients: Number(onboarding.complete), onboardingIncompletePatients: Number(onboarding.total - onboarding.complete) };
   }
 
   async report(query: PatientReportingQueryDto) {
     const clinic = await this.reportingClinic(query.clinicId); const range = this.reportingRange(query.from, query.to, clinic.timeZone); const asOf = new Date();
-    const [newPatients, patients, policies] = await this.prisma.$transaction([
+    const [newPatients, [onboarding]] = await this.prisma.$transaction([
       this.prisma.patientProfile.count({ where: { clinicId: clinic.id, createdAt: { gte: range.start, lt: range.end } } }),
-      this.prisma.patientProfile.findMany({ where: { clinicId: clinic.id }, include: { user: { include: { userProfile: true } }, medicalIntake: { include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } }, consentRecords: { where: medicalConsentScope } } }),
-      this.prisma.consentPolicyVersion.findMany({ where: { clinicId: clinic.id, ...medicalPolicyScope }, select: { id: true, clinicId: true, contentHash: true } }),
+      this.onboardingCounts(clinic.id),
     ], { isolationLevel: 'RepeatableRead' });
-    const complete = patients.filter((patient) => this.reportingOnboardingComplete(patient, policies)).length;
-    return { clinicId: clinic.id, timeZone: clinic.timeZone, from: range.from, to: range.to, asOf, sourceStatus: 'current' as const, newPatients, onboardingComplete: complete, onboardingIncomplete: patients.length - complete };
+    return { clinicId: clinic.id, timeZone: clinic.timeZone, from: range.from, to: range.to, asOf, sourceStatus: 'current' as const, newPatients, onboardingComplete: Number(onboarding.complete), onboardingIncomplete: Number(onboarding.total - onboarding.complete) };
   }
 
   async create(body: CreateAdminPatientDto, context: AuditContext) {
@@ -121,14 +128,14 @@ export class AdminPatientsService {
 
   async get(patientId: string, context: AuditContext) {
     return this.prisma.$transaction(async tx => {
-      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { where: { accessGrantId: null }, include: { assessmentVersion: true }, orderBy: { startedAt: 'desc' } } } });
+      const patient = await tx.patientProfile.findUnique({ where: { id: patientId }, include: { user: { include: { userProfile: true } }, assessmentSubmissions: { where: { accessGrantId: null, OR: [{ entryPatientId: null }, { entryOrigin: { paidIntentId: null } }] }, select: { id: true, assessmentVersionId: true, assessmentVersion: { select: { title: true } }, state: true, score: true, resultSnapshot: true, completedAt: true }, orderBy: { startedAt: 'desc' } } } });
       if (!patient) throw patientNotFound();
       const { policy: activePolicy, consent } = await this.currentMedicalAuthorization(tx, patientId, patient.clinicId);
       const medicalIntake = await tx.patientMedicalIntake.findUnique({ where: { patientId }, include: { revisions: { orderBy: { revisionNumber: 'desc' }, take: 1 } } });
       const revision = medicalIntake?.revisions[0] ?? null;
       const medical = revision && consent ? await this.readMedical(tx, patient.id, revision, context) : { status: revision ? 'CONSENT_REQUIRED' : 'NOT_STARTED', value: null };
       const assessments = patient.assessmentSubmissions.map((submission) => ({ submissionId: submission.id, assessmentVersionId: submission.assessmentVersionId, assessmentTitle: submission.assessmentVersion.title, state: submission.state, score: submission.score?.toString() ?? null, resultSnapshot: submission.resultSnapshot, completedAt: submission.completedAt }));
-      if (assessments.length) await Promise.all(assessments.map((assessment) => tx.auditEvent.create({ data: { action: 'ADMIN_ASSESSMENT_SUBMISSION_READ', actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId: assessment.submissionId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { source: 'ADMIN_PATIENT_DETAIL' } } })));
+      if (assessments.length) await tx.auditEvent.createMany({ data: assessments.map((assessment) => ({ action: 'ADMIN_ASSESSMENT_SUBMISSION_READ', actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'PATIENT_ASSESSMENT_SUBMISSION', subjectId: assessment.submissionId, requestId: context.requestId.slice(0, 128), ipAddress: context.ipAddress, metadata: { source: 'ADMIN_PATIENT_DETAIL' } })) });
       return { patientId: patient.id, profile: { displayName: displayName(patient.user.userProfile), phone: patient.user.phone, accountStatus: patient.user.status, firstName: patient.user.userProfile?.firstName ?? null, lastName: patient.user.userProfile?.lastName ?? null, email: patient.user.userProfile?.email ?? null, cityName: patient.user.userProfile?.cityName ?? null }, consent: { active: Boolean(consent), policyVersionId: activePolicy?.id ?? null, consentRecordId: consent?.id ?? null }, intake: { assignedSchemaVersion: medicalIntake?.assignedSchemaVersion ?? null, currentRevision: medicalIntake?.currentRevisionNumber ?? 0, provenance: 'PATIENT_SELF_REPORTED', ...medical }, assessments };
     }, { timeout: 15_000 });
   }
@@ -196,7 +203,42 @@ export class AdminPatientsService {
   private validReportingDate(value: string) { const date = new Date(`${value}T00:00:00.000Z`); if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'Date is invalid.', details: {} }); }
   private localDay(value: Date, timeZone: string) { const parts = new Intl.DateTimeFormat('en-CA-u-ca-gregory-nu-latn', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(value); const part = (kind: string) => parts.find((item) => item.type === kind)?.value; return `${part('year')}-${part('month')}-${part('day')}`; }
   private zonedMidnight(year: number, month: number, day: number, timeZone: string) { let value = Date.UTC(year, month - 1, day); for (let attempt = 0; attempt < 3; attempt += 1) { const parts = new Intl.DateTimeFormat('en-CA-u-ca-gregory-nu-latn', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(value)); const part = (kind: string) => Number(parts.find((item) => item.type === kind)?.value); value += Date.UTC(year, month - 1, day) - Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second')); } return new Date(value); }
-  private reportingOnboardingComplete(patient: { user: { userProfile: { firstName: string | null; lastName: string | null } | null }; medicalIntake: { submissionState: 'DRAFT' | 'COMPLETE'; currentRevisionNumber: number; completedRevisionNumber: number | null; revisions: Revision[] } | null; consentRecords: { id: string; policyVersionId: string; contentHash: string }[] }, policies: MedicalPolicy[]) { const revision = patient.medicalIntake?.revisions[0] ?? null; const activeConsent = this.activeMedicalConsent(patient.consentRecords, policies); return evaluateOnboarding({ firstName: patient.user.userProfile?.firstName, lastName: patient.user.userProfile?.lastName, birthDate: revision?.birthDate?.toISOString().slice(0, 10), sexAtBirth: revision?.sexAtBirth, allergyReport: revision?.allergyReport as MedicalDeclaration | null, chronicConditionReport: revision?.chronicConditionReport as MedicalDeclaration | null, currentMedicationReport: revision?.currentMedicationReport as MedicalDeclaration | null, activeCurrentConsent: Boolean(activeConsent), activeConsentRecordId: activeConsent?.id ?? null, completedConsentRecordId: revision?.completedConsentRecordId ?? null, hasConsentDecision: patient.consentRecords.length > 0, consentPolicyAvailable: policies.length > 0, submissionState: patient.medicalIntake?.submissionState ?? null, currentRevision: patient.medicalIntake?.currentRevisionNumber ?? 0, completedRevision: patient.medicalIntake?.completedRevisionNumber ?? null }).state === 'COMPLETE'; }
+  private onboardingCounts(clinicId?: string) {
+    const scope = clinicId === undefined ? Prisma.empty : Prisma.sql`WHERE patient.clinic_id = ${clinicId}::uuid`;
+    // Match evaluateOnboarding for legacy JSON scalars as well as medical declaration objects.
+    const declarationAnswered = (column: Prisma.Sql) => Prisma.sql`
+      CASE jsonb_typeof(${column})
+        WHEN 'null' THEN false
+        WHEN 'string' THEN btrim(${column} #>> '{}', ${onboardingWhitespace}) <> ''
+        ELSE ${column} IS NOT NULL
+      END
+    `;
+    // Keep the completion criteria in sync with evaluateOnboarding.
+    return this.prisma.$queryRaw<[{ total: bigint; complete: bigint }]>(Prisma.sql`
+      SELECT COUNT(*) AS total,
+             COUNT(*) FILTER (WHERE
+               btrim(profile.first_name, ${onboardingWhitespace}) <> ''
+               AND btrim(profile.last_name, ${onboardingWhitespace}) <> ''
+               AND COALESCE(entry.birth_date, latest.birth_date) IS NOT NULL
+               AND ${declarationAnswered(Prisma.sql`latest.allergy_report`)}
+               AND ${declarationAnswered(Prisma.sql`latest.chronic_condition_report`)}
+               AND ${declarationAnswered(Prisma.sql`latest.current_medication_report`)}
+             ) AS complete
+      FROM patient_profiles AS patient
+      LEFT JOIN user_profiles AS profile ON profile.user_id = patient.user_id
+      LEFT JOIN patient_entries AS entry ON entry.patient_id = patient.id
+      LEFT JOIN patient_medical_intakes AS intake ON intake.patient_id = patient.id
+        AND intake.submission_state = 'COMPLETE'
+        AND intake.current_revision_number > 0
+        AND intake.current_revision_number = intake.completed_revision_number
+      LEFT JOIN LATERAL (
+        SELECT birth_date, allergy_report, chronic_condition_report, current_medication_report
+        FROM patient_medical_intake_revisions
+        WHERE intake_id = intake.id AND revision_number = intake.current_revision_number
+      ) AS latest ON true
+      ${scope}
+    `);
+  }
   private correctionOperationHash(expectedRevision: number, correctionReason: string, patch: Record<string, unknown>): string { return this.payloadHash({ expectedRevision, correctionReason, patch }); }
   private payloadHash(value: unknown): string { return createHash('sha256').update(JSON.stringify(value, (_key, item) => item instanceof Date ? item.toISOString() : item)).digest('hex'); }
 }

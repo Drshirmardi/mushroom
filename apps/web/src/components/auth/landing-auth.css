@@ -25,7 +25,7 @@
     pointer-events: none; overflow: clip;
 }
 .landing-auth-panel {
-    font-family: "IRANYekanX", sans-serif;
+    font-family: var(--web-font), sans-serif;
     font-size: 16px; font-weight: 400; line-height: 1.75;
     color-scheme: light;
     --auth-green: var(--primary); --auth-muted: var(--muted-foreground); --digit-width: clamp(34px, 10vw, 48px);
@@ -43,7 +43,7 @@
 .landing-auth-panel button:focus-visible { outline: 2px solid var(--auth-green); outline-offset: 4px; }
 .landing-auth-handle { position: absolute; top: 0; left: calc(50% - 50px); width: 100px; height: 44px; display: grid; place-items: center; touch-action: none; background: transparent; border: 0; }
 .landing-auth-handle span { width: 42px; height: 4px; border-radius: 4px; background: var(--border); }
-.landing-auth-close { position: absolute; top: 14px; left: 14px; inset-inline-start: auto; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--muted-foreground); background: transparent; border: 0; }
+.landing-auth-close { position: absolute; top: 14px; left: 14px; right: auto; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--muted-foreground); background: transparent; border: 0; }
 .landing-auth-close:hover { background: var(--secondary); }
 .landing-auth-heading { text-align: center; }
 .landing-auth-heading h2 { margin: 0; font-family: inherit; font-size: 24px; font-weight: 500; line-height: 1.5; letter-spacing: normal; color: var(--foreground); }
@@ -62,6 +62,10 @@
 .landing-auth-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 90%, black); transform: translateY(-1px); }
 .landing-auth-footnote { display: flex; gap: 8px; align-items: center; justify-content: center; color: var(--auth-muted); font-size: 14px; margin: 24px 0 0; }
 .landing-phone-form .landing-auth-primary, .landing-phone-form .landing-auth-footnote { margin: 0; }
+.landing-auth-switch { align-self: center; min-height: 44px; padding: 4px 8px; border: 0; background: transparent; color: var(--auth-green); font-size: 14px; font-weight: 500; }
+.landing-auth-switch:hover:not(:disabled) { text-decoration: underline; text-underline-offset: 4px; }
+.landing-password-toggle { flex: 0 0 auto; width: 44px; height: 44px; display: grid; place-items: center; margin-inline-end: 2px; border: 0; border-radius: 50%; background: transparent; color: var(--auth-muted); }
+.landing-password-toggle:hover { background: var(--secondary); color: var(--foreground); }
 .landing-otp-scene { position: relative; height: 260px; direction: ltr; overflow: hidden; }
 .landing-otp-rotor { position: absolute; inset: 0; pointer-events: none; }
 .landing-otp-digit {
@@ -120,3 +124,15 @@
     .landing-auth-dialog *, .landing-auth-dialog *::before, .landing-auth-dialog *::after { animation: none !important; transition: none !important; }
     .is-success .landing-success-check svg { stroke-dashoffset: 0; }
 }
+
+.invitation-login { min-height: 70dvh; display: grid; place-items: center; padding: 2rem 1rem; }
+.invitation-login > section { width: 100%; max-width: 28rem; min-width: 0; }
+.invitation-login-context { margin-block-end: 1.5rem; line-height: 1.9; overflow-wrap: anywhere; }
+
+.invitation-login h1 { margin-block-end: 1rem; font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 600; line-height: 1.6; }
+
+.invitation-login { --auth-green: var(--primary); --auth-muted: var(--muted-foreground); --digit-width: clamp(34px, 10vw, 48px); font-family: var(--web-font), sans-serif; color-scheme: light; }
+.invitation-login button, .invitation-login input { font: inherit; }
+.invitation-login button { cursor: pointer; }
+.invitation-login button:disabled { cursor: default; opacity: .48; }
+.invitation-login button:focus-visible { outline: 2px solid var(--auth-green); outline-offset: 4px; }

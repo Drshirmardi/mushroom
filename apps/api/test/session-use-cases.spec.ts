@@ -1,3 +1,4 @@
+import { SessionIssuerUseCase } from '../src/modules/identity/application/session-issuer.use-case';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -72,6 +73,11 @@ describe('session authentication use cases', () => {
     consume.mockResolvedValue(true);
   });
 
+  it.each([false,true])('records phone ownership only for verified authentication: %s',async phoneVerified=>{
+    const issuer=new SessionIssuerUseCase(sessions,refreshTokens,accessTokens,()=>now);
+    await issuer.execute({user,remember:false,phoneVerified,ipAddress:'127.0.0.1',requestId});
+    expect(createSession).toHaveBeenCalledWith(expect.objectContaining({userId:user.id,verifiedPhone:phoneVerified?user.phone:undefined}));
+  });
   it.each([
     [false, SESSION_LIFETIME_MS.standard],
     [true, SESSION_LIFETIME_MS.remembered],

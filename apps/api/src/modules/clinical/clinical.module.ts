@@ -1,3 +1,6 @@
+import { VisitCareController } from './visit-care.controller';
+import { VisitCareService } from './visit-care.service';
+import { PatientPrescriptionsController } from './patient-prescriptions.controller';
 import { CustomProgramBoundaryService } from './custom-program-boundary.service';
 import { Module } from '@nestjs/common';
 
@@ -23,5 +26,5 @@ import { PatientTreatmentProgressController } from './patient-treatment-progress
 import { TreatmentProgressService } from './treatment-progress.service';
 import { OutboxModule } from '../outbox/outbox.module';
 
-@Module({ imports: [OutboxModule], controllers: [PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, AdminTreatmentReportingController, PatientTreatmentPlansController, AdminTreatmentTasksController, PatientTreatmentActivityController, AdminTreatmentProgressController, PatientTreatmentProgressController], providers: [CustomProgramBoundaryService, EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService], exports: [CustomProgramBoundaryService, EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService] })
+@Module({ imports: [OutboxModule], controllers: [VisitCareController, PatientPrescriptionsController, PatientClinicalController, AdminClinicalWorkspaceController, AdminPrescriptionsController, AdminTreatmentPlansController, AdminTreatmentReportingController, PatientTreatmentPlansController, AdminTreatmentTasksController, PatientTreatmentActivityController, AdminTreatmentProgressController, PatientTreatmentProgressController], providers: [VisitCareService, CustomProgramBoundaryService, EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService], exports: [CustomProgramBoundaryService, EncounterLifecycleService, ClinicalNotesService, ClinicalReconciliationService, PatientClinicalHistoryService, ClinicalAccessAuditService, ClinicalResourceAccessService, AdminClinicalWorkspaceService, PrescriptionService, TreatmentPlanService, TreatmentActivityService, TreatmentProgressService] })
 export class ClinicalModule {}

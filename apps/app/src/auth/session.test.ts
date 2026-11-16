@@ -1,7 +1,7 @@
 import { createApiClient, type components } from "@sabz-zendegi/api-client";
 import { describe, expect, it, vi } from "vitest";
 
-import { AuthSessionManager } from "./session";
+import { AuthSessionManager, authSessionKey } from "./session";
 
 type Authentication = components["schemas"]["AuthenticationResponseDto"];
 
@@ -20,6 +20,14 @@ function jsonResponse(body: unknown, status: number) {
 }
 
 describe("app auth session", () => {
+  it("keeps the same request scope on rotation and separates sessions and accounts", () => {
+    const token = (sid: string, exp: number) => `header.${btoa(JSON.stringify({ sid, exp }))}.signature`;
+    const first = { ...authentication, accessToken: token("session-a", 100) };
+    const rotated = { ...authentication, accessToken: token("session-a", 200) };
+    expect(authSessionKey(rotated)).toBe(authSessionKey(first));
+    expect(authSessionKey({ ...rotated, accessToken: token("session-b", 200) })).not.toBe(authSessionKey(first));
+    expect(authSessionKey({ ...rotated, user: { ...authentication.user, id: "other" } })).not.toBe(authSessionKey(first));
+  });
   it("bootstraps concurrent callers with one credentialed, bodyless refresh", async () => {
     let finishRequest: ((response: Response) => void) | undefined;
     const pendingResponse = new Promise<Response>((resolve) => {
@@ -173,4 +181,16 @@ describe("app auth session", () => {
     await expect(manager.logout()).resolves.toBe(false);
     expect(manager.getSnapshot()).toEqual({ status: "authenticated", authentication });
   });
+  it("adopts an externally authenticated Bale session without a refresh or web login", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const manager = new AuthSessionManager(
+      createApiClient({ baseUrl: "https://api.example.test", fetch }),
+      () => 1_000,
+    );
+    manager.acceptAuthentication(authentication);
+    expect(manager.getSnapshot()).toEqual({ status: "authenticated", authentication });
+    await expect(manager.bootstrap()).resolves.toEqual({ status: "authenticated", authentication });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
 });

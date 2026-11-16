@@ -33,6 +33,10 @@ export default function HomeSlider() {
 
                 grabCursor
 
+                touchReleaseOnEdges
+
+                touchStartPreventDefault={false}
+
                 speed={700}
 
                 spaceBetween={16}

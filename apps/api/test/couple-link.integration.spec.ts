@@ -47,11 +47,12 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('adult couple
     const p = await patient(); const response = await request(p, 'GET', 'couple-link-policy'); expect(response.statusCode).toBe(503); expect(response.json().code).toBe('COUPLE_POLICY_UNAVAILABLE');
     await policy(); const ready = await request(p, 'GET', 'couple-link-policy'); expect(ready.statusCode).toBe(200); expect(ready.json()).toMatchObject({ id: policyId, policyKey: 'COUPLES_ACCOUNT_LINKING' });
   });
-  it('requires explicit consent and blocks missing/under18 self-reported age', async () => {
+  it('requires explicit consent and blocks under18 self-reported age from intake or initial entry', async () => {
     const today = new Date(new Date().toISOString().slice(0, 10));
     const eighteenthBirthday = new Date(Date.UTC(today.getUTCFullYear() - 18, today.getUTCMonth(), today.getUTCDate()));
     const younger = new Date(eighteenthBirthday.getTime() + 86400000);
-    for (const p of [await patient(null), await patient(younger)]) { const response = await request(p, 'POST', 'couple-sessions', consent()); expect(response.statusCode).toBe(422); expect(response.json().code).toBe('COUPLE_PARTICIPANT_INELIGIBLE'); }
+    const entryOnly = await patient(null); await db.patientEntry.update({ where: { patientId: entryOnly.patientId }, data: { birthDate: younger } });
+    for (const p of [await patient(younger), entryOnly]) { const response = await request(p, 'POST', 'couple-sessions', consent()); expect(response.statusCode).toBe(422); expect(response.json().code).toBe('COUPLE_PARTICIPANT_INELIGIBLE'); }
     const adult = await patient(eighteenthBirthday); expect((await request(adult, 'POST', 'couple-sessions', { ...consent(), consentAccepted: false })).statusCode).toBe(400); await session(adult);
   });
   it('creates a single initiator and replays parallel session creation once', async () => {

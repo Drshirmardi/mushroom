@@ -40,7 +40,11 @@ export class SelfProfileController {
     @Req() request: AuthenticatedRequest,
     @Body() body: UpdateSelfProfileDto,
   ) {
-    return this.profiles.update(request.auth.userId, body);
+    return this.profiles.update(request.auth.userId, body, {
+      actorSessionId: request.auth.sessionId,
+      requestId: request.id,
+      ipAddress: request.ip,
+    });
   }
 
   @Get('onboarding-status')

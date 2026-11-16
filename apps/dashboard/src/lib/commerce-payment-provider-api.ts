@@ -17,6 +17,10 @@ export const createPaymentProviderRevision = (accessToken: string, providerCode:
 export const updatePaymentProviderConfig = (accessToken: string, providerCode: string, body: components["schemas"]["UpdatePaymentProviderConfigDto"]) => result<PaymentProviderConfig>(apiClient.PATCH("/v1/admin/commerce/payment-providers/{providerCode}", { headers: headers(accessToken), params: { path: { providerCode } }, body }));
 
 export function paymentProviderCallbackUrl(providerCode: string, publicApiUrl = apiBaseUrl): string {
+  if (providerCode === "sadad" && typeof window !== "undefined") {
+    const configured = window.__MUSHROOM_RUNTIME_CONFIG__?.sadadReturnUrl;
+    if (configured) return configured;
+  }
   const url = new URL(`/v1/payments/providers/${encodeURIComponent(providerCode)}/callback`, publicApiUrl);
   return url.toString();
 }

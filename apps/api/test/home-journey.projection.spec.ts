@@ -49,4 +49,10 @@ describe('Home setup, status and pending action projection', () => {
     s.onboarding.isComplete = true;
     expect(homeJourney(s, sources()).actions[0].code).toBe('REVIEW_BOOKING_REQUIREMENTS');
   });
+  it('keeps the paid order visible after urgent actions without duplicating unpaid order tracking', () => {
+    const s = summary(); s.pendingOrders.items = [{ id: 'unpaid', totalAmountToman: '500', currency: 'TOMAN' }];
+    const result = homeJourney(s, { ...sources(), appointmentId: 'visit', payment: { id: 'payment', purpose: 'ORDER', amountRial: 5000n, orderId: 'unpaid' }, fulfillmentOrderId: 'paid', unusedGrantId: 'grant' });
+    expect(result.actions.slice(0, 3).map(item => [item.code, item.resourceId])).toEqual([['OPEN_APPOINTMENT', 'visit'], ['CONTINUE_PAYMENT', 'payment'], ['TRACK_ORDER', 'paid']]);
+    expect(result.actions.filter(item => item.code === 'TRACK_ORDER')).toHaveLength(1);
+  });
 });

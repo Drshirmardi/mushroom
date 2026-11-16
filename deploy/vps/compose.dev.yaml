@@ -29,7 +29,7 @@ services:
     volumes: [postgres_data:/var/lib/postgresql/data]
     ports: []
     restart: unless-stopped
-    cpus: "${DEV_POSTGRES_CPUS:-0.50}"
+    cpus: "${DEV_POSTGRES_CPUS:-1.00}"
     mem_limit: "${DEV_POSTGRES_MEMORY:-512m}"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
@@ -42,12 +42,16 @@ services:
     build:
       context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"
       dockerfile: deploy/vps/Dockerfile.dev
+      args:
+        DEBIAN_MIRROR: https://mirror.famaserver.com/debian
+        DEBIAN_SECURITY_MIRROR: https://security.debian.org/debian-security
     user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
     working_dir: /workspace
     security_opt: [no-new-privileges:true]
     cap_drop: [ALL]
     environment:
       <<: *node-environment
+      SADAD_RETURN_URL: "${SADAD_RETURN_URL:-}"
       DEV_INSTALL_DEPENDENCIES: "${DEV_INSTALL_DEPENDENCIES:-false}"
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
       DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"
@@ -56,6 +60,9 @@ services:
       DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
       DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
       DEV_WRITE_RUNTIME_CONFIG: "${DEV_WRITE_RUNTIME_CONFIG:-false}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
@@ -78,6 +85,14 @@ services:
     environment:
       <<: *node-environment
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      # Optional Bale mini-app auth: disabled until a private bot token and webhook secret are provisioned.
+      BALE_AUTH_ENABLED: "${BALE_AUTH_ENABLED:-false}"
+      BALE_BOT_TOKEN: "${BALE_BOT_TOKEN:-}"
+      BALE_WEBHOOK_SECRET: "${BALE_WEBHOOK_SECRET:-}"
+      BALE_BOT_TOKEN_FILE: "${BALE_BOT_TOKEN_FILE:-/run/optional-secrets/bale_bot_token}"
+      BALE_WEBHOOK_SECRET_FILE: "${BALE_WEBHOOK_SECRET_FILE:-/run/optional-secrets/bale_webhook_secret}"
+      ANALYTICS_SERVER_ENABLED: "${ANALYTICS_SERVER_ENABLED:-false}"
+      GA4_API_SECRET_FILE: "${GA4_API_SECRET_FILE:-/run/optional-secrets/ga4_api_secret}"
       JWT_ACCESS_ISSUER: "${JWT_ACCESS_ISSUER:-sabz-zendegi-api}"
       JWT_ACCESS_AUDIENCE: "${JWT_ACCESS_AUDIENCE:-sabz-zendegi-frontends}"
       COMMERCE_RESERVATION_TTL_MINUTES: "${COMMERCE_RESERVATION_TTL_MINUTES:-20}"
@@ -101,6 +116,10 @@ services:
       SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION: "${SMS_CREDENTIAL_ENCRYPTION_KEY_VERSION:-v1}"
       SMS_TRANSPORT_MODE: "${SMS_TRANSPORT_MODE:-disabled}"
       SMS_REQUEST_TIMEOUT_MS: "${SMS_REQUEST_TIMEOUT_MS:-5000}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       SADAD_TRANSPORT_MODE: "${SADAD_TRANSPORT_MODE:-disabled}"
       SADAD_REQUEST_TIMEOUT_MS: "${SADAD_REQUEST_TIMEOUT_MS:-5000}"
@@ -133,6 +152,9 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "web"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       PUBLIC_DASHBOARD_URL: "${PUBLIC_DASHBOARD_URL:?set the public dev dashboard URL}"
@@ -144,8 +166,12 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "app"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
     ports: ["${APP_PORT:?set the isolated dev app binding}:3001"]
     cpus: "${DEV_APP_CPUS:-0.75}"
 
@@ -154,6 +180,9 @@ services:
     command: ["bash", "deploy/vps/dev-service.sh", "dashboard"]
     environment:
       <<: *node-environment
+      PUBLIC_GA4_MEASUREMENT_ID: "${PUBLIC_GA4_MEASUREMENT_ID:-}"
+      PUBLIC_ANALYTICS_CONSENT: "${PUBLIC_ANALYTICS_CONSENT:-denied}"
+      PUBLIC_ANALYTICS_DEBUG: "${PUBLIC_ANALYTICS_DEBUG:-false}"
       PUBLIC_API_URL: "${PUBLIC_API_URL:?set the public dev API URL}"
       PUBLIC_WEB_URL: "${PUBLIC_WEB_URL:?set the public dev web URL}"
       PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"

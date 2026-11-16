@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { Logger } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -38,6 +39,17 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('reviewed pro
   it('canonical same-key concurrent retries create one version and changed payload conflicts',async()=>{const payload=body([await education()]),key=randomUUID(),rs=await Promise.all(Array.from({length:6},(_,i)=>req('POST','admin/program-definitions/versions',admin,i%2?Object.fromEntries(Object.entries(payload).reverse()):payload,key)));expect(rs.map(r=>r.statusCode)).toEqual(Array(6).fill(201));expect(new Set(rs.map(r=>r.json().id)).size).toBe(1);const row=rs[0].json();expect(await db.auditEvent.count({where:{subjectId:row.id,action:'PROGRAM_DEFINITION_CREATED'}})).toBe(1);expect((await req('POST','admin/program-definitions/versions',admin,{...payload,title:'Changed'},key)).statusCode).toBe(409);expect((await req('POST','admin/program-definitions/versions',admin,{...payload,title:' '+payload.title+' '},key)).json().id).toBe(row.id);},15_000);
   it('concurrent new commands allocate consecutive immutable versions and retain stable program kind',async()=>{const payload=body([await education()]),rs=await Promise.all(Array.from({length:6},()=>req('POST','admin/program-definitions/versions',admin,payload)));expect(rs.map(r=>r.statusCode)).toEqual(Array(6).fill(201));expect(rs.map(r=>r.json().versionNumber).sort()).toEqual([1,2,3,4,5,6]);const ds=await offering();expect((await req('POST','admin/program-definitions/versions',admin,{...payload,kind:'CUSTOM_PROFESSIONAL_PLAN',doctorServiceId:ds.id})).statusCode).toBe(422);const next=await create({...payload,body:'New synthetic version.'});expect(next.versionNumber).toBe(7);expect((await req('GET',`admin/program-definitions/${rs[0].json().id}`)).json().body).toBe(payload.body);},15_000);
   it('rejects malformed, unsafe, conflicting source/kind and privileged medical/payment overrides',async()=>{const reference=await education(),payload=body([reference]),ds=await offering();for(const patch of[{contentReferences:[reference,reference]},{kind:'THERAPEUTIC_DIET'},{doctorServiceId:ds.id},{kind:'CUSTOM_PROFESSIONAL_PLAN'},{safety:{...safety,limitations:' '}},{body:' '},{patientId:randomUUID()},{priceAmount:10},{status:'APPROVED'},{approvedByUserId:doctor.userId},{serviceSnapshot:{}},{contentReferences:[{...reference,contentHash:'0'.repeat(64)}]},{contentReferences:[{id:randomUUID(),contentHash:reference.contentHash}]}]){const r=await req('POST','admin/program-definitions/versions',admin,{...payload,...patch});expect([400,422],r.body).toContain(r.statusCode);}expect((await req('POST','admin/program-definitions/versions',admin,payload,null)).statusCode).toBe(422);},15_000);
+  it('rejects whitespace-only supplied safety notes on ready definitions without requiring all optional notes',async()=>{
+    const payload=body();
+    for(const field of ['intendedAudience','limitations','seekProfessionalCare'] as const){
+      const r=await req('POST','admin/program-definitions/versions',admin,{...payload,safety:{...safety,[field]:' \t '}});
+      expect(r.statusCode,`${field}: ${r.body}`).toBe(422);
+    }
+    const contraindications=await req('POST','admin/program-definitions/versions',admin,{...payload,safety:{...safety,contraindications:[' \t ']}});
+    expect(contraindications.statusCode,contraindications.body).toBe(422);
+    const partial=await req('POST','admin/program-definitions/versions',admin,{...payload,safety:{intendedAudience:'Educational audience'}});
+    expect(partial.statusCode,partial.body).toBe(201);
+  },15_000);
   it('requires current real administrator scope for authoring and denies patient/doctor/missing clinic/role',async()=>{const payload=body([await education()]);for(const who of[patient,doctor,await actor('ADMIN',false),await actor('ADMIN',true,false)]){expect((await req('POST','admin/program-definitions/versions',who,payload)).statusCode).toBe(403);expect((await req('GET','admin/program-definitions',who)).statusCode).toBe(403);}expect((await app.inject({method:'GET',url:'/v1/admin/program-definitions'})).statusCode).toBe(401);},15_000);
   it('only a live linked active published same-clinic physician can review and approve',async()=>{const row=await create();for(const who of[admin,patient,await actor('DOCTOR',false),await actor('DOCTOR',true,false),await actor('DOCTOR',true,true,false)]){expect((await approve(row,who)).statusCode).toBe(403);expect((await req('GET',`clinical/program-definitions/${row.id}`,who)).statusCode).toBe(403);}const inactive=await actor('DOCTOR');await db.doctorProfile.update({where:{id:inactive.doctorId},data:{isActive:false}});expect((await approve(row,inactive)).statusCode).toBe(403);},15_000);
   it('approves the exact hash with explicit safety acknowledgement once under concurrent retries',async()=>{const row=await create();expect((await req('POST',`clinical/program-definitions/${row.id}/approve`,doctor,{contentHash:'0'.repeat(64),reviewedProgramAndSafety:true,noAutomaticTherapyActivation:true})).statusCode).toBe(409);for(const patch of[{reviewedProgramAndSafety:false},{noAutomaticTherapyActivation:false},{patientId:randomUUID()}])expect((await req('POST',`clinical/program-definitions/${row.id}/approve`,doctor,{contentHash:row.contentHash,reviewedProgramAndSafety:true,noAutomaticTherapyActivation:true,...patch})).statusCode).toBe(400);const rs=await Promise.all(Array.from({length:6},()=>approve(row)));expect(rs.map(r=>r.statusCode)).toEqual(Array(6).fill(201));expect(rs[0].json()).toMatchObject({status:'APPROVED',usable:true,commercialReady:false});expect(await db.auditEvent.count({where:{subjectId:row.id,action:'PROGRAM_DEFINITION_APPROVED'}})).toBe(1);},15_000);
@@ -74,4 +86,47 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('reviewed pro
   },20_000);
   it('SQL retains immutable definitions and rejects forged approval/session/safety/source scope',async()=>{const row=await create(),stored=await db.programDefinitionVersion.findUniqueOrThrow({where:{id:row.id}});await expect(db.programDefinitionVersion.update({where:{id:row.id},data:{body:'Forged edit'}})).rejects.toThrow();await expect(db.programDefinitionVersion.delete({where:{id:row.id}})).rejects.toThrow();await expect(db.programDefinitionVersion.update({where:{id:row.id},data:{status:'APPROVED',approvedAt:new Date(),approvedByUserId:admin.userId,approvedDoctorId:doctor.doctorId,approvedSessionId:admin.sessionId}})).rejects.toThrow();const clone=async(patch:object)=>db.$executeRaw(Prisma.sql`INSERT INTO program_definition_versions SELECT (jsonb_populate_record(NULL::program_definition_versions,to_jsonb(p)||${JSON.stringify({id:randomUUID(),idempotency_key:randomUUID(),version_number:stored.versionNumber+1,...patch})}::jsonb)).* FROM program_definition_versions p WHERE p.id=${row.id}::uuid`);for(const patch of[{created_session_id:patient.sessionId},{safety:{}},{content_references:[{}]},{content_references:[{id:randomUUID(),contentHash:'0'.repeat(64)}]},{status:'APPROVED'},{kind:'CUSTOM_PROFESSIONAL_PLAN',doctor_service_id:null,service_snapshot:null}])await expect(clone(patch)).rejects.toThrow();expect((await db.programDefinitionVersion.findUniqueOrThrow({where:{id:row.id}})).status).toBe('DRAFT');},15_000);
   it('audit failure returns no curriculum and rolls back creation, approval and revocation',async()=>{const payload=body([await education()]),draft=await create(payload);await db.$executeRawUnsafe(`CREATE FUNCTION program_definition_test_audit_fail() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action LIKE 'PROGRAM_DEFINITION_%' THEN RAISE EXCEPTION 'synthetic program audit failure'; END IF; RETURN NEW; END $$`);const fail=()=>db.$executeRawUnsafe('CREATE TRIGGER program_definition_test_audit_fail BEFORE INSERT ON audit_events FOR EACH ROW EXECUTE FUNCTION program_definition_test_audit_fail()'),clear=()=>db.$executeRawUnsafe('DROP TRIGGER program_definition_test_audit_fail ON audit_events');try{await fail();const createFailure=await req('POST','admin/program-definitions/versions',admin,{...payload,body:'Failed version.'});expect(createFailure.statusCode).toBe(500);expect(await db.programDefinitionVersion.count({where:{programKey:payload.programKey}})).toBe(1);const read=await req('GET',`admin/program-definitions/${draft.id}`);expect(read.statusCode).toBe(500);expect(read.body).not.toContain('Private synthetic curriculum');expect((await approve(draft)).statusCode).toBe(500);expect((await db.programDefinitionVersion.findUniqueOrThrow({where:{id:draft.id}})).status).toBe('DRAFT');await clear();expect((await approve(draft)).statusCode).toBe(201);await fail();expect((await req('POST',`clinical/program-definitions/${draft.id}/revoke`,doctor)).statusCode).toBe(500);expect((await db.programDefinitionVersion.findUniqueOrThrow({where:{id:draft.id}})).status).toBe('APPROVED');await clear();expect((await req('POST',`clinical/program-definitions/${draft.id}/revoke`,doctor)).statusCode).toBe(201);}finally{await db.$executeRawUnsafe('DROP TRIGGER IF EXISTS program_definition_test_audit_fail ON audit_events');await db.$executeRawUnsafe('DROP FUNCTION program_definition_test_audit_fail()');}},20_000);
+
+  it('captures one logical ready identity without filling incomplete medical draft fields', async () => {
+    const payload = body(), first = await create(payload);
+    const root = await db.programService.findUniqueOrThrow({ where: { clinicId_programKey_locale: { clinicId, programKey: first.programKey, locale: first.locale } } });
+    expect(root).toMatchObject({ audience: 'REVIEW_REQUIRED', publishedDefinitionId: null, sellingEnabled: false, discountPercent: 0 });
+    await expect(db.programService.update({ where: { id: root.id }, data: { publishedDefinitionId: first.id } })).rejects.toThrow();
+    const working = { title: 'Incomplete working draft' };
+    await db.programService.update({ where: { id: root.id }, data: { draft: working, revision: { increment: 1 } } });
+    await create({ ...payload, body: 'Second immutable content version' });
+    expect(await db.programService.count({ where: { clinicId, programKey: first.programKey } })).toBe(1);
+    expect((await db.programService.findUniqueOrThrow({ where: { id: root.id } })).draft).toEqual(working);
+    await expect(db.programService.update({ where: { id: root.id }, data: { programKey: 'FORGED_SERVICE_KEY' } })).rejects.toThrow();
+    await expect(db.programService.delete({ where: { id: root.id } })).rejects.toThrow();
+    await expect(db.programService.update({ where: { id: root.id }, data: { discountPercent: 101 } })).rejects.toThrow();
+    await expect(db.programService.update({ where: { id: root.id }, data: { archivedAt: new Date(), sellingEnabled: true } })).rejects.toThrow();
+  }, 15_000);
+  it('backfills logical identities without rewriting immutable definitions or financial evidence', async () => {
+    const snapshot = async (table: string) => (await db.$queryRawUnsafe<{ row: unknown }[]>(`SELECT to_jsonb(t) AS row FROM ${table} t ORDER BY t.id`)).map(r => r.row);
+    const tables = ['program_definition_versions', 'program_offering_publications', 'program_purchases', 'program_access_grants'];
+    const before = await Promise.all(tables.map(snapshot));
+    await db.$executeRawUnsafe('DROP TRIGGER program_service_capture_identity ON program_definition_versions');
+    await db.$executeRawUnsafe('DROP TABLE program_services');
+    await db.$executeRawUnsafe('DROP TABLE program_service_categories');
+    await db.$executeRawUnsafe('DROP FUNCTION program_service_capture_identity()');
+    await db.$executeRawUnsafe('DROP FUNCTION program_service_identity_guard()');
+    const sql = await readFile('prisma/migrations/20261107120000_program_service_identity/migration.sql', 'utf8');
+    // The migration contains multiple statements; use the PostgreSQL driver, not a prepared query.
+    const { Client } = await import('pg');
+    const connection = new Client({ connectionString: process.env.DATABASE_URL });
+    await connection.connect();
+    try {
+      await connection.query(sql);
+      // Restore the later additive discount constraint after replaying the historical backfill.
+      const latest = await readFile('prisma/migrations/20261107123000_program_discount_quotes/migration.sql', 'utf8');
+      const shape = /ALTER TABLE program_services ADD CONSTRAINT program_service_shape[\s\S]*?\n\);/.exec(latest)?.[0];
+      if (!shape) throw new Error('Latest service constraint missing');
+      await connection.query('ALTER TABLE program_services DROP CONSTRAINT program_service_shape;' + shape);
+    } finally { await connection.end(); }
+    expect(await Promise.all(tables.map(snapshot))).toEqual(before);
+    const [expected] = await db.$queryRaw<{ n: bigint }[]>(Prisma.sql`SELECT count(*) AS n FROM (SELECT DISTINCT clinic_id, program_key, locale FROM program_definition_versions WHERE kind='READY_EDUCATION') identities`);
+    expect(await db.programService.count()).toBe(Number(expected.n));
+  }, 20_000);
+
 });

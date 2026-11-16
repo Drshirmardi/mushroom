@@ -9,3 +9,7 @@ export const getPatientEntry = (token: string) => patientData(apiClient.GET('/v1
 export const saveEntryProfile = (token: string, body: EntryProfile) => patientData(apiClient.POST('/v1/patients/me/entry/profile', { headers: headers(token), body }));
 export const startEntryAssessment = (token: string) => patientData(apiClient.POST('/v1/patients/me/entry/start', { headers: headers(token) }));
 export const finishPatientEntry = (token: string) => patientData(apiClient.POST('/v1/patients/me/entry/complete', { headers: headers(token) }));
+
+export const createEntryPayment=(token:string,key:string)=>patientData(apiClient.POST('/v1/patients/me/entry/payment',{headers:headers(token),params:{header:{'Idempotency-Key':key}}}));
+export const deferEntry=(token:string)=>patientData(apiClient.POST('/v1/patients/me/entry/defer',{headers:headers(token)}));
+export const resumeEntry=(token:string)=>patientData(apiClient.POST('/v1/patients/me/entry/resume',{headers:headers(token)}));

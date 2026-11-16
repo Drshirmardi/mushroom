@@ -10,6 +10,8 @@ import { BillingIntentDto } from '../../billing/billing.dto';
 import { PatientAssessmentsService } from '../patient/patient-assessments.service';
 import { PatientAssessmentSubmissionResponseDto } from '../patient/patient-assessments.dto';
 import { AssessmentPurchaseService } from './assessment-purchase.service';
+import { AssessmentEducationalAccessService } from './assessment-educational-access.service';
+import { AssessmentFreeAccessDto, AssessmentFreeGrantDto, EducationalAssessmentOfferingDetailDto, EducationalAssessmentOfferingPageDto } from './assessment-purchase.dto';
 import { AssessmentConsentAcceptDto, AssessmentConsentRecordDto, AssessmentPurchaseIntentDto, AssessmentPurchasePageQueryDto, PatientAssessmentOfferingDetailDto, PatientAssessmentOfferingPageDto, PatientAssessmentPurchaseDto, PatientAssessmentPurchasePageDto } from './assessment-purchase.dto';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
@@ -18,7 +20,16 @@ const uuid = () => new ParseUUIDPipe({ version: '4' });
 @ApiErrorResponse(400, 'Invalid input.') @ApiErrorResponse(401, 'Active authentication required.') @ApiErrorResponse(403, 'Patient self access required.') @ApiErrorResponse(404, 'Owned or available assessment resource unavailable.') @ApiErrorResponse(409, 'Purchase, consent or source conflicts.') @ApiErrorResponse(422, 'Adult supported configuration required.')
 @Controller('patients/me')
 export class AssessmentPurchaseController {
-  constructor(private readonly purchases: AssessmentPurchaseService, private readonly billing: BillingService, private readonly assessments: PatientAssessmentsService) {}
+  constructor(private readonly purchases: AssessmentPurchaseService, private readonly billing: BillingService, private readonly assessments: PatientAssessmentsService, private readonly educational: AssessmentEducationalAccessService) {}
+  @Get('educational-assessment-offerings') @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'patientEducationalAssessmentOfferingsList' }) @ApiOkResponse({ type: EducationalAssessmentOfferingPageDto })
+  educationalCatalog(@Query() query: AssessmentPurchasePageQueryDto, @Req() r: AuthenticatedRequest) { return this.educational.catalog(query, context(r)); }
+  @Get('educational-assessment-offerings/:id') @Header('Cache-Control', 'private, no-store')
+  @ApiOperation({ operationId: 'patientEducationalAssessmentOfferingGet' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: EducationalAssessmentOfferingDetailDto })
+  educationalOffering(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.educational.offering(id, context(r)); }
+  @Post('educational-assessment-access') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.ASSESSMENTS_WRITE_SELF)
+  @ApiOperation({ operationId: 'patientEducationalAssessmentFreeAccessCreate', summary: 'Claim owned free access with exact scoped acceptance; creates no financial records' }) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiCreatedResponse({ type: AssessmentFreeGrantDto })
+  freeAccess(@Body() body: AssessmentFreeAccessDto, @Headers('idempotency-key') key: string | undefined, @Req() r: AuthenticatedRequest) { return this.educational.claim(body, key, context(r)); }
   @Get('assessment-offerings') @Header('Cache-Control', 'private, no-store')
   @ApiOperation({ operationId: 'patientPaidAssessmentOfferingsList' }) @ApiOkResponse({ type: PatientAssessmentOfferingPageDto })
   catalog(@Query() query: AssessmentPurchasePageQueryDto, @Req() r: AuthenticatedRequest) { return this.purchases.catalog(query, context(r)); }

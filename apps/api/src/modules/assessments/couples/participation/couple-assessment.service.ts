@@ -34,6 +34,7 @@ export class CoupleAssessmentService {
       await this.lock(tx, `couple-assessment-link:${link.id}:${body.publicationId.toLowerCase()}`);
       if (link.state !== 'LINKED' || link.participants.length !== 2 || link.participants.some(p => p.revokedAt !== null) || !await this.liveAdults(tx, link.participants.map(p => p.patientId), patient.clinicId, true)) throw invalid();
       const pointer = await tx.assessmentOfferingPublication.findFirst({ where: { id: body.publicationId, clinicId: patient.clinicId }, include: { offeringVersion: true } }); if (!pointer) throw missing();
+      if(!(await tx.$queryRaw<{visible:boolean}[]>(Prisma.sql`SELECT assessment_publicly_available(${pointer.offeringVersion.assessmentVersionId}::uuid) AS visible`))[0]?.visible)throw missing();
       await this.lock(tx, `assessment-publication:${patient.clinicId}:${pointer.offeringKey}`);
       await tx.$queryRaw(Prisma.sql`SELECT id FROM consent_policy_versions WHERE id=${pointer.termsPolicyVersionId}::uuid FOR SHARE`);
       const joint = await this.jointProtocols.usable(tx, patient.clinicId, pointer.offeringVersion.assessmentVersionId, body.jointProtocolId, true);

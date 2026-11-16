@@ -20,8 +20,14 @@ const values = {
   webUrl: process.env.PUBLIC_WEB_URL || '',
   appUrl: process.env.PUBLIC_APP_URL || '',
   dashboardUrl: process.env.PUBLIC_DASHBOARD_URL || '',
+  sadadReturnUrl: process.env.SADAD_RETURN_URL || '',
+  analyticsMeasurementId: process.env.PUBLIC_GA4_MEASUREMENT_ID || '',
+  analyticsConsent: process.env.PUBLIC_ANALYTICS_CONSENT || 'denied',
+  analyticsDebug: process.env.PUBLIC_ANALYTICS_DEBUG || 'false',
 };
 for (const [name, value] of Object.entries(values)) {
+  if (name.startsWith('analytics')) continue;
+  if (!value && name === 'sadadReturnUrl') continue;
   if (!value) throw new Error(`${name} is required for the shared dev runtime`);
   const url = new URL(value);
   if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
@@ -64,6 +70,7 @@ case "$command_name" in
       NODE_OPTIONS=--max-old-space-size=1536 \
         pnpm --filter @sabz-zendegi/api exec tsc -p tsconfig.build.json \
           --noCheck --declaration false --declarationMap false
+      pnpm --filter @sabz-zendegi/api catalog:build
       printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
     fi
     if [[ -f /run/mushroom-installation/first-run.json ]]; then
@@ -76,6 +83,11 @@ case "$command_name" in
     fi
     ;;
   api)
+    if [[ ${ANALYTICS_SERVER_ENABLED:-false} == true ]]; then
+      [[ -r ${GA4_API_SECRET_FILE:-} ]] || { printf 'Analytics secret file is not readable\n' >&2; exit 1; }
+      GA4_API_SECRET=$(<"$GA4_API_SECRET_FILE")
+      export GA4_API_SECRET
+    fi
     if [[ ${PRODUCT_MEDIA_STORAGE_MODE:-disabled} == arvancloud ]]; then
       [[ -r $ARVAN_ACCESS_KEY_ID_FILE && -r $ARVAN_SECRET_ACCESS_KEY_FILE ]] || {
         printf 'Development Arvan credentials are not readable\n' >&2
@@ -93,6 +105,21 @@ case "$command_name" in
       R2_ACCESS_KEY_ID=$(<"$R2_ACCESS_KEY_ID_FILE")
       R2_SECRET_ACCESS_KEY=$(<"$R2_SECRET_ACCESS_KEY_FILE")
       export R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY
+    fi
+    # Bale secrets are optional while disabled. Read mounted files only when enabled.
+    if [[ ${BALE_AUTH_ENABLED:-false} == true ]]; then
+      for name in BALE_BOT_TOKEN BALE_WEBHOOK_SECRET; do
+        if [[ -z ${!name:-} ]]; then
+          file_var="${name}_FILE"
+          file="${!file_var:-}"
+          [[ -n $file && -r $file ]] || {
+            printf '%s is not readable or configured\\n' "$file_var" >&2
+            exit 1
+          }
+          printf -v "$name" '%s' "$(<"$file")"
+          export "$name"
+        fi
+      done
     fi
     for secret in DATABASE_URL JWT_ACCESS_SECRET REFRESH_TOKEN_PEPPER OTP_PEPPER \
       PAYMENT_CREDENTIAL_ENCRYPTION_KEY PAYMENT_CREDENTIAL_DECRYPTION_KEYS \

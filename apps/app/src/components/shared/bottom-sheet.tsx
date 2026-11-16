@@ -1,83 +1,359 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { animate, motion, useMotionValue, useReducedMotion } from "motion/react";
-import { X } from "lucide-react";
-import type React from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import { Drawer } from '@base-ui/react/drawer';
+import { X } from 'lucide-react';
+import { cn } from '@/components/ui/utils';
 
-type BottomSheetProps = {
-  title?: string;
-  ariaLabel?: string;
-  onClose: () => void;
-  children: React.ReactNode;
+export type BottomSheetHandle = {
+  /** Close after an explicitly confirmed action. */
+  close: () => void;
 };
 
-/** Native modal supplies focus containment, background inertness and focus restoration. */
-export function BottomSheet({ title, ariaLabel, onClose, children }: BottomSheetProps) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const reduceMotion = useReducedMotion();
-  const y = useMotionValue(0);
-  const drag = useRef({ active: false, moved: false, startY: 0 });
+export type BottomSheetProps = {
+  title?: string;
+  ariaLabel?: string;
+  headingIcon?: ReactNode;
+  finalFocus?: RefObject<HTMLElement | null>;
+  onClose: () => void;
+  children: ReactNode;
+
+  size?: 'auto' | 'medium' | 'large';
+  dismissible?: boolean;
+  showHandle?: boolean;
+  showCloseButton?: boolean;
+  footer?: ReactNode;
+  className?: string;
+
+  /**
+   * Return false to prevent dismissal.
+   * Useful for dirty forms and pending payments.
+   */
+  onBeforeClose?: () => boolean;
+
+  /**
+   * Require another upward pull after reaching
+   * the bottom of a scrollable list.
+   */
+  overscrollToDismiss?: boolean;
+
+  /** Deprecated. Exit animation is now always enabled. */
+  animateExit?: boolean;
+};
+
+const sizes = {
+  auto: 'max-h-[min(76dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
+  medium: 'h-[min(52dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
+  large: 'h-[min(88dvh,calc(100dvh-var(--drawer-keyboard-inset,0px)-16px))]',
+} as const;
+
+type TouchStart = {
+  y: number;
+  atEnd: boolean;
+};
+
+export const BottomSheet = forwardRef<BottomSheetHandle, BottomSheetProps>(function BottomSheet(
+  {
+    title,
+    ariaLabel,
+    headingIcon,
+    finalFocus,
+    onClose,
+    children,
+    size = 'auto',
+    dismissible = true,
+    showHandle = true,
+    showCloseButton = true,
+    footer,
+    className,
+    onBeforeClose,
+    overscrollToDismiss = true,
+  },
+  ref,
+) {
+  // Begin closed so the entrance transition
+  // starts from below the viewport.
+  const [open, setOpen] = useState(false);
+
+  const openedRef = useRef(false);
+  const completedRef = useRef(false);
+  const touchStartRef = useRef<TouchStart | null>(null);
+
   useEffect(() => {
-    const element = dialog.current;
-    const previouslyFocused = document.activeElement;
-    if (element && !element.open) element.showModal();
-    return () => {
-      element?.close();
-      if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) previouslyFocused.focus();
-    };
+    const frame = requestAnimationFrame(() => {
+      openedRef.current = true;
+      setOpen(true);
+    });
+
+    return () => cancelAnimationFrame(frame);
   }, []);
-  const onPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
-    drag.current = { active: true, moved: false, startY: event.clientY };
-    event.currentTarget.setPointerCapture(event.pointerId);
+
+  const forceClose = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  useImperativeHandle(ref, () => ({ close: forceClose }), [forceClose]);
+
+  const requestClose = useCallback(() => {
+    if (!dismissible || !open) return;
+
+    if (onBeforeClose?.() === false) {
+      return;
+    }
+
+    setOpen(false);
+  }, [dismissible, onBeforeClose, open]);
+
+  const onScrollTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    touchStartRef.current = null;
+
+    if (!overscrollToDismiss || !dismissible || event.touches.length !== 1) {
+      return;
+    }
+
+    const target = event.target;
+
+    if (
+      target instanceof Element &&
+      target.closest('input, textarea, select, [contenteditable="true"]')
+    ) {
+      return;
+    }
+
+    const element = event.currentTarget;
+    const maxScroll = element.scrollHeight - element.clientHeight;
+
+    touchStartRef.current = {
+      y: event.touches[0].clientY,
+      atEnd: maxScroll > 8 && element.scrollTop >= maxScroll - 3,
+    };
   };
-  const onPointerMove = (event: React.PointerEvent<HTMLButtonElement>) => {
-    if (!drag.current.active) return;
-    const delta = Math.max(0, event.clientY - drag.current.startY);
-    if (delta > 6) drag.current.moved = true;
-    y.set(delta);
+
+  const onScrollTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+
+    if (!start?.atEnd || !open) return;
+
+    const touch = event.changedTouches[0];
+    if (!touch) return;
+
+    const upwardPull = start.y - touch.clientY;
+    const element = event.currentTarget;
+
+    const remaining = element.scrollHeight - element.clientHeight - element.scrollTop;
+
+    // A deliberate second pull, not simply arriving
+    // at the last item.
+    if (upwardPull >= 110 && remaining <= 3) {
+      requestClose();
+    }
   };
-  const endDrag = () => {
-    if (!drag.current.active) return;
-    drag.current.active = false;
-    if (y.get() > 90) onClose();
-    else if (reduceMotion) y.set(0);
-    else void animate(y, 0, { type: "spring", damping: 30, stiffness: 300 });
-  };
+
+  const accessibleTitle = title ?? ariaLabel ?? 'پنجره گزینه‌ها';
+
   return (
-    <dialog ref={dialog} className="patient-bottom-sheet patient-app-shell" aria-label={ariaLabel ?? title ?? "پنجرهٔ گزینه‌ها"} onCancel={event => { event.preventDefault(); onClose(); }}>
-    <motion.div className="fixed inset-0 z-50 flex flex-col justify-end" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <div className="absolute inset-0 bg-black/40" aria-hidden="true" onClick={onClose} />
-      <motion.div className="relative mx-auto w-full max-w-[720px] bg-white rounded-t-3xl px-4 pt-2 pb-[max(2rem,env(safe-area-inset-bottom))] max-h-[85dvh] overflow-y-auto overscroll-contain scrollbar-hide"
-        style={{ y }}
-        initial={reduceMotion ? false : { y: "100%" }} animate={{ y: 0 }} exit={reduceMotion ? { opacity: 0 } : { y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }}>
-        <button
-          type="button"
-          className="patient-bottom-sheet__handle mx-auto -mt-2 block min-h-11 cursor-grab px-16 pb-3 pt-4 active:cursor-grabbing"
-          style={{ touchAction: "none" }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
-          aria-label="بستن پنجره"
-          onClick={event => { if (event.detail === 0 || !drag.current.moved) onClose(); }}
-        >
-          <span className="block h-1 w-10 rounded-full bg-muted mx-auto" />
-        </button>
-        <div className="relative mb-4 flex min-h-11 items-center justify-center">
-          {title && <h2 className="patient-bottom-sheet__title min-w-0 px-12">{title}</h2>}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="بستن"
-            className="patient-bottom-sheet__close absolute end-0 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    <Drawer.Root
+      open={open}
+      modal
+      swipeDirection="down"
+      disablePointerDismissal={!dismissible}
+      onOpenChange={(nextOpen, details) => {
+        if (nextOpen) {
+          setOpen(true);
+          return;
+        }
+
+        if (!dismissible || onBeforeClose?.() === false) {
+          details.cancel();
+          return;
+        }
+
+        setOpen(false);
+      }}
+      onOpenChangeComplete={(nextOpen) => {
+        if (!nextOpen && openedRef.current && !completedRef.current) {
+          completedRef.current = true;
+          onClose();
+        }
+      }}
+    >
+      <Drawer.VirtualKeyboardProvider>
+        <Drawer.Portal>
+          <Drawer.Backdrop
+            className={cn(
+              'fixed inset-0 z-[100]',
+              'bg-slate-950/30',
+              'opacity-[calc(1-var(--drawer-swipe-progress,0))]',
+              'transition-opacity duration-[380ms]',
+              'ease-[cubic-bezier(0.22,1,0.36,1)]',
+              'data-[starting-style]:opacity-0',
+              'data-[ending-style]:opacity-0',
+              'data-[swiping]:duration-0',
+              'motion-reduce:transition-none',
+            )}
+          />
+
+          <Drawer.Viewport
+            className={cn(
+              'pointer-events-none',
+              'fixed inset-0 z-[101]',
+              'flex items-end justify-center',
+            )}
           >
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
-        {children}
-      </motion.div>
-    </motion.div>
-    </dialog>
+            <Drawer.Popup
+              dir="rtl"
+              finalFocus={finalFocus}
+              className={cn(
+                // App-specific theme variables
+                'patient-app-shell',
+
+                // Layout
+                'pointer-events-auto relative',
+                'mx-auto flex min-h-0 w-full flex-col',
+                'max-w-[var(--patient-frame-max)]',
+                sizes[size],
+
+                // Surface
+                'overflow-hidden',
+                'rounded-t-[28px]',
+                'border border-b-0',
+                'border-slate-200/60',
+                'bg-white text-foreground',
+                'shadow-[0_-12px_48px_-20px_color-mix(in srgb, var(--dp-text-high) 18%, transparent)]',
+                'outline-none',
+
+                // Base UI swipe position
+                'transform-[translateY(var(--drawer-swipe-movement-y,0px))]',
+
+                // Smooth entrance and exit
+                'transition-[transform]',
+                'duration-[480ms]',
+                'ease-[cubic-bezier(0.22,1,0.36,1)]',
+
+                // Enter from below
+                'data-[starting-style]:transform-[translateY(100%)]',
+
+                // Exit below
+                'data-[ending-style]:transform-[translateY(100%)]',
+
+                // Follow finger immediately
+                'data-[swiping]:transition-none',
+
+                // Accessibility
+                'motion-reduce:transition-none',
+
+                className,
+              )}
+            >
+              {showHandle && (
+                <div
+                  aria-hidden="true"
+                  className={cn(
+                    'flex shrink-0 justify-center',
+                    'cursor-grab select-none',
+                    'touch-none active:cursor-grabbing',
+                    'px-5 pt-3 pb-2',
+                  )}
+                >
+                  <span className="block h-1 w-9 rounded-full bg-slate-300" />
+                </div>
+              )}
+
+              <Drawer.Content className="flex min-h-0 flex-1 flex-col">
+                <header
+                  className={cn(
+                    'relative flex min-h-14',
+                    'shrink-0 items-center justify-center',
+                    'px-14 py-2',
+                    headingIcon && 'flex-col gap-3',
+                  )}
+                >
+                  {headingIcon && <div aria-hidden="true" className="text-(--dp-brand)">{headingIcon}</div>}
+                  <Drawer.Title
+                    className={cn(
+                      'text-center text-base',
+                      'font-semibold leading-7',
+                      'tracking-tight text-foreground',
+                      !title && 'sr-only',
+                    )}
+                  >
+                    {accessibleTitle}
+                  </Drawer.Title>
+
+                  <Drawer.Description className="sr-only">
+                    {ariaLabel ?? accessibleTitle}
+                  </Drawer.Description>
+
+                  {showCloseButton && dismissible && (
+                    <button
+                      type="button"
+                      onClick={requestClose}
+                      aria-label="بستن پنجره"
+                      className={cn(
+                        'absolute end-4 top-1/2',
+                        '-translate-y-1/2',
+                        'flex size-9 items-center justify-center',
+                        'rounded-full text-slate-400',
+                        'transition-colors duration-200',
+                        'hover:bg-slate-100',
+                        'hover:text-slate-700',
+                        'active:bg-slate-200',
+                        'focus-visible:outline-2',
+                        'focus-visible:outline-offset-2',
+                        'focus-visible:outline-primary',
+                      )}
+                    >
+                      <X size={19} strokeWidth={1.8} aria-hidden="true" />
+                    </button>
+                  )}
+                </header>
+
+                {/* Scrollable body: swipe is NOT ignored */}
+                <div
+                  onTouchStart={onScrollTouchStart}
+                  onTouchEnd={onScrollTouchEnd}
+                  onTouchCancel={() => {
+                    touchStartRef.current = null;
+                  }}
+                  className={cn(
+                    'min-h-0 flex-1',
+                    'overflow-x-hidden overflow-y-auto',
+                    'overscroll-contain',
+                    'px-5 pt-2',
+                    footer ? 'pb-5' : 'pb-[max(24px,env(safe-area-inset-bottom))]',
+                    '[scrollbar-width:none]',
+                    '[&::-webkit-scrollbar]:hidden',
+                  )}
+                >
+                  {children}
+                </div>
+
+                {footer && (
+                  <footer
+                    className={cn(
+                      'shrink-0 border-t border-border/60',
+                      'bg-background px-5 pt-4',
+                      'pb-[max(16px,env(safe-area-inset-bottom))]',
+                    )}
+                  >
+                    {footer}
+                  </footer>
+                )}
+              </Drawer.Content>
+            </Drawer.Popup>
+          </Drawer.Viewport>
+        </Drawer.Portal>
+      </Drawer.VirtualKeyboardProvider>
+    </Drawer.Root>
   );
-}
+});

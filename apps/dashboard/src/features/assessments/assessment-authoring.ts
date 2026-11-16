@@ -1,4 +1,5 @@
 export type Row = Record<string, unknown>;
+export const QUESTION_TEXT_MAX_LENGTH = 20_000;
 export const row = (value: unknown): Row => value !== null && typeof value === "object" && !Array.isArray(value) ? value as Row : {};
 export const rows = (value: unknown): Row[] => Array.isArray(value) ? value.map(row) : [];
 export const text = (value: unknown) => typeof value === "string" ? value : "";
@@ -46,6 +47,7 @@ export function validateAuthoring(structure: Row): string[] {
       const subject = `سؤال ${q + 1} بخش ${s + 1}`;
       checkId(question.id, subject);
       if (!label(question).trim()) errors.push(`متن ${subject} خالی است.`);
+      if (dimension && label(question).length > QUESTION_TEXT_MAX_LENGTH) errors.push(`متن ${subject} حداکثر ۲۰٬۰۰۰ نویسه دارد.`);
       if (typeof question.required !== "boolean" || !(text(question.type) in questionTypes)) errors.push(`نوع یا الزام ${subject} پشتیبانی نمی‌شود.`);
       if (dimension && question.type !== "SINGLE_CHOICE") errors.push("مدل ابعادی فقط سؤال تک‌انتخابی دارد.");
       if (["SINGLE_CHOICE", "MULTIPLE_CHOICE"].includes(text(question.type))) {

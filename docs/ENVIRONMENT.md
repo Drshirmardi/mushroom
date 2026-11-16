@@ -95,7 +95,7 @@ chmod 600 "$HOME/mushroom/dev/runtime.env"
 |---|---|---:|---|
 | `SADAD_TRANSPORT_MODE` | `disabled` یا `live` | `disabled` | gate تماس واقعی PaymentRequest/Verify. فعال‌سازی adapter در داشبورد همچنان جداست. |
 | `SADAD_REQUEST_TIMEOUT_MS` | عدد صحیح ۱۰۰۰ تا ۳۰۰۰۰ | `5000` | timeout درخواست‌های سداد. |
-| `SADAD_RETURN_URL` | HTTPS URL دقیق با مسیر callback | `https://dev-api.roxco.ir/v1/payments/providers/sadad/callback` | callback ثبت‌شده نزد بانک؛ query و fragment ممنوع است. |
+| `SADAD_RETURN_URL` | HTTPS URL دقیق با مسیر callback | `https://dev-api.roxco.ir/v1/payments/providers/sadad/callback` | callback ثبت‌شده نزد بانک؛ دامنه می‌تواند مستقل از PUBLIC_API_URL باشد؛ credentials، query و fragment ممنوع است. |
 | `SADAD_RESULT_URL` | HTTPS URL با مسیر `/store/order-success` | `https://dev-app.roxco.ir/store/order-success` | مقصد کاربر بعد از callback و Verify سرور. |
 | `SADAD_REDIRECT_PROFILE` | یکی از `PDF_PURCHASE`، `PHP_VPG_PURCHASE`، `DOTNET_PURCHASE_INDEX` یا خالی | خالی | شکل redirect تأییدشده برای پذیرنده. در حالت live اجباری است. |
 | `PAYMENT_CREDENTIAL_ENCRYPTION_KEY_VERSION` | شناسه ۱ تا ۶۴ کاراکتر | `v1` | نسخه کلید فعال رمزنگاری credential پذیرنده. |

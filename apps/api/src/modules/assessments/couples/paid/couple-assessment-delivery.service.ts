@@ -27,6 +27,7 @@ export class CoupleAssessmentDeliveryService {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx), publication = await this.publications.currentPublication(tx, patient.clinicId, id);
       if (!publication || publication.offeringVersion.kind !== 'COUPLES') throw new NotFoundException({ code: 'ASSESSMENT_PURCHASE_NOT_FOUND', message: 'Available coupled offering not found.', details: {} });
+      if(!(await tx.$queryRaw<{visible:boolean}[]>(Prisma.sql`SELECT assessment_publicly_available(${publication.offeringVersion.assessmentVersionId}::uuid) AS visible`))[0]?.visible)throw missing();
       const joint = await this.jointProtocols.usable(tx, patient.clinicId, publication.offeringVersion.assessmentVersionId);
       const [age] = await tx.$queryRaw<{ adult: boolean }[]>(Prisma.sql`SELECT couple_patient_is_adult(${patient.id}::uuid) AS adult`);
       const blockers = [...(!age?.adult ? ['ADULT_BIRTH_DATE_REQUIRED'] : []), ...(!joint || joint.protocolReviewId !== publication.protocolReviewId ? ['JOINT_CONFIGURATION_UNAVAILABLE'] : [])];
@@ -36,7 +37,7 @@ export class CoupleAssessmentDeliveryService {
   }
 
   async owned(id: string, ctx: Context) { return this.prisma.$transaction(async tx => { const patient = await this.patient(tx, ctx); await this.context(tx, id, patient); return patient; }); }
-  async home(tx: Tx, patient: { id: string; clinicId: string }) {
+  async home(tx: Tx, patient: { id: string; clinicId: string }, detailed = true) {
     type HomeRow = { id: string; title: string; paymentState: string; ownAccessGrantId: string | null; ownSubmissionId: string | null; ownAssessmentState: string | null; ownStartAvailable: boolean; jointResultState: string; jointResultId: string | null };
     const selection = Prisma.sql`
       SELECT s.id,offer.title,COALESCE(receipt.status,'UNPAID') AS "paymentState",g.id AS "ownAccessGrantId",attempt.id AS "ownSubmissionId",CASE WHEN g.id IS NULL THEN NULL ELSE COALESCE(attempt.state::text,'NOT_STARTED') END AS "ownAssessmentState",
@@ -52,7 +53,7 @@ export class CoupleAssessmentDeliveryService {
       LEFT JOIN couple_assessment_joint_results result ON result.session_id=s.id
       CROSS JOIN LATERAL(SELECT couple_assessment_paid_sharing_allowed(s.id) AS allowed OFFSET 0) sharing
       WHERE s.clinic_id=${patient.clinicId}::uuid AND owner.clinic_id=s.clinic_id AND clinic.status='ACTIVE' AND u.status='ACTIVE' AND EXISTS(SELECT 1 FROM user_roles ur JOIN roles r ON r.id=ur.role_id WHERE ur.user_id=u.id AND r.code='PATIENT')`;
-    const rows = await tx.$queryRaw<HomeRow[]>(Prisma.sql`${selection} ORDER BY s.created_at DESC,s.id DESC LIMIT 6`);
+    const rows = detailed ? await tx.$queryRaw<HomeRow[]>(Prisma.sql`${selection} ORDER BY s.created_at DESC,s.id DESC LIMIT 6`) : [];
     // Select a pending category independently of the capped historical preview.
     const [pending] = await tx.$queryRaw<HomeRow[]>(Prisma.sql`SELECT * FROM (${selection}) available WHERE "ownStartAvailable" OR "ownAssessmentState"='IN_PROGRESS' OR "jointResultState"='READY_TO_GENERATE' OR "paymentState"='PENDING' ORDER BY id DESC LIMIT 1`);
     const [ready] = await tx.$queryRaw<{ id: string }[]>(Prisma.sql`SELECT s.id FROM couple_assessment_sessions s JOIN couple_assessment_participants self ON self.session_id=s.id AND self.patient_id=${patient.id}::uuid WHERE s.clinic_id=${patient.clinicId}::uuid AND couple_assessment_paid_sharing_allowed(s.id) AND NOT EXISTS(SELECT 1 FROM couple_assessment_joint_results WHERE session_id=s.id) AND EXISTS(SELECT 1 FROM assessment_purchases p JOIN billing_intents i ON i.assessment_purchase_id=p.id WHERE p.couple_assessment_session_id=s.id AND i.status='PAID' AND (SELECT count(*) FROM assessment_access_grants g JOIN patient_assessment_submissions completed ON completed.access_grant_id=g.id WHERE g.purchase_id=p.id AND completed.state='COMPLETE' AND completed.invalidated_at IS NULL)=2) ORDER BY s.created_at DESC,s.id DESC LIMIT 1`);

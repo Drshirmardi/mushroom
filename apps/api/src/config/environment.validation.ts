@@ -1,4 +1,5 @@
 import { isIP } from 'node:net';
+import { normalizeSadadCallbackUrl } from './sadad-callback-url';
 
 import * as Joi from 'joi';
 import { productMediaEnvironment } from './product-media.config';
@@ -88,8 +89,7 @@ const sadadReturnUrlSchema = Joi.string()
   .custom((value, helpers) => {
     if (!value) return value;
     try {
-      const url = new URL(value);
-      return url.protocol === 'https:' && url.pathname === '/v1/payments/providers/sadad/callback' && !url.search && !url.hash ? url.toString() : helpers.error('any.invalid');
+      return normalizeSadadCallbackUrl(value);
     } catch { return helpers.error('any.invalid'); }
   })
   .messages({ 'any.invalid': 'must be an HTTPS URL ending exactly in /v1/payments/providers/sadad/callback with no query or fragment' });
@@ -146,6 +146,18 @@ export const environmentValidationSchema = Joi.object({
     then: trustedProxySchema.required(),
     otherwise: trustedProxySchema.allow('').default(''),
   }),
+  BALE_AUTH_ENABLED: Joi.string().valid('true', 'false').default('false'),
+  BALE_BOT_TOKEN: Joi.string().max(256).pattern(/^\d+:[A-Za-z0-9_-]+$/u).when('BALE_AUTH_ENABLED', {
+    is: 'true', then: Joi.required(), otherwise: Joi.string().allow('').default(''),
+  }),
+  BALE_WEBHOOK_SECRET: Joi.string().min(43).max(256).pattern(/^[A-Za-z0-9_-]+$/u).when('BALE_AUTH_ENABLED', {
+    is: 'true', then: Joi.required(), otherwise: Joi.string().allow('').default(''),
+  }),
+  ANALYTICS_SERVER_ENABLED: Joi.string().valid('true', 'false').default('false'),
+  PUBLIC_ANALYTICS_CONSENT: Joi.string().valid('granted', 'denied').default('denied'),
+  PUBLIC_ANALYTICS_DEBUG: Joi.string().valid('true', 'false').default('false'),
+  PUBLIC_GA4_MEASUREMENT_ID: Joi.string().max(64).pattern(/^G-[A-Z0-9]+$/).allow('').when('ANALYTICS_SERVER_ENABLED', { is: 'true', then: Joi.invalid('').required(), otherwise: Joi.string().default('') }),
+  GA4_API_SECRET: Joi.string().max(256).allow('').when('ANALYTICS_SERVER_ENABLED', { is: 'true', then: Joi.invalid('').required(), otherwise: Joi.optional() }),
   LOG_LEVEL: Joi.string().valid('fatal', 'error', 'warn', 'info', 'debug', 'trace').default('info'),
   BILLING_BOOKING_HOLD_MINUTES: Joi.number().integer().min(1).max(30).default(10),
   COMMERCE_RESERVATION_TTL_MINUTES: Joi.number().integer().min(1).max(1_440).default(20),

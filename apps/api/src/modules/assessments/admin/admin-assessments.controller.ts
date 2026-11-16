@@ -1,3 +1,4 @@
+import { AssessmentDistributionDto } from './assessment-distribution.dto';
 import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 
@@ -13,6 +14,13 @@ import { AssessmentDraftPresetDto, AssessmentListQueryDto, AssessmentListRespons
 @Controller('admin/assessments')
 export class AdminAssessmentsController {
   constructor(private readonly assessments: AdminAssessmentsService) {}
+
+  @Get(':id/distribution') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
+  @ApiOperation({ operationId: 'adminAssessmentDistributionGet' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: AssessmentDistributionDto })
+  distribution(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) { return this.assessments.distribution(id); }
+  @Patch(':id/distribution') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE)
+  @ApiOperation({ operationId: 'adminAssessmentDistributionUpdate' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: AssessmentDistributionDto })
+  updateDistribution(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: AssessmentDistributionDto, @Req() r: AuthenticatedRequest) { return this.assessments.updateDistribution(id, body.publiclyAvailable, this.context(r)); }
 
   @Get('draft-presets/mizaj') @RequirePermissions(PERMISSIONS.ASSESSMENTS_MANAGE) @Header('Cache-Control', 'no-store')
   @ApiOperation({ operationId: 'adminAssessmentsMizajDraftPreset', summary: 'Get the unreviewed Mizaj authoring preset; not a patient questionnaire' }) @ApiOkResponse({ type: AssessmentDraftPresetDto })

@@ -5,6 +5,7 @@ import { PaymentAttemptOrchestrationService } from './payment-attempt-orchestrat
 import { PaymentCredentialCryptoService } from './payment-credential-crypto.service';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { buildSadadRedirect, toSadadRial } from './sadad-payment-provider.adapter';
+import { buildSadadStartUrl } from './sadad-browser-start';
 import { SadadRuntimeConfigService } from './sadad-runtime-config.service';
 import { PaymentGatewayDiagnosticsService } from './payment-gateway-diagnostics.service';
 
@@ -70,7 +71,7 @@ export class PaymentAttemptService {
   }
 
   private response(attempt: { id: string; providerOrderId: bigint; status: string; commerceAmountToman: bigint; providerAmount: bigint | null; providerUnit: string; providerToken: string | null }, providerCode: string, profile: Parameters<typeof buildSadadRedirect>[0] | null) {
-    return { id: attempt.id, providerOrderId: attempt.providerOrderId.toString(), providerCode, status: attempt.status, commerceAmountToman: attempt.commerceAmountToman.toString(), providerAmount: attempt.providerAmount?.toString() ?? null, providerUnit: attempt.providerUnit, redirectUrl: attempt.status === 'REDIRECT_READY' && attempt.providerToken && profile ? buildSadadRedirect(profile, attempt.providerToken) : null };
+    return { id: attempt.id, providerOrderId: attempt.providerOrderId.toString(), providerCode, status: attempt.status, commerceAmountToman: attempt.commerceAmountToman.toString(), providerAmount: attempt.providerAmount?.toString() ?? null, providerUnit: attempt.providerUnit, redirectUrl: attempt.status === 'REDIRECT_READY' && attempt.providerToken && profile ? buildSadadStartUrl(this.sadadRuntime.settings().returnUrl, attempt.providerToken) : null };
   }
 
   private async patient(userId: string) { const patient = await this.prisma.patientProfile.findUnique({ where: { userId }, select: { id: true } }); if (!patient) throw new NotFoundException({ code: 'PATIENT_PROFILE_NOT_FOUND', message: 'Patient profile was not found.', details: {} }); return patient; }

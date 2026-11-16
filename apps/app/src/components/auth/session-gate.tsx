@@ -1,4 +1,5 @@
 "use client";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
 
 import {
   createContext,
@@ -10,14 +11,36 @@ import {
 
 import {
   AuthSessionManager,
+  authSessionKey,
   type Authentication,
   type AuthSessionSnapshot,
 } from "@/auth/session";
-import { authApiClient, loginUrl, setAccessTokenProvider } from "@/lib/api";
+import { authApiClient, marriageLoginUrl, setAccessTokenProvider } from "@/lib/api";
+import { clearPatientRequestCache } from "@/lib/patient-request";
 import { RefreshCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const sessionManager = new AuthSessionManager(authApiClient);
+let currentSessionKey: string | null = null;
+sessionManager.subscribe(() => {
+  const snapshot = sessionManager.getSnapshot();
+  const nextKey = snapshot.status === "authenticated" ? authSessionKey(snapshot.authentication) : null;
+  if (currentSessionKey !== nextKey) clearPatientRequestCache();
+  currentSessionKey = nextKey;
+});
+
+/** After API verification, use exactly the same session and guards as web/OTP. */
+export function acceptBaleAuthentication(authentication: Authentication): void {
+  sessionManager.acceptAuthentication(authentication);
+}
+
+export function accessTokenForSession(sessionKey: string): string {
+  const snapshot = sessionManager.getSnapshot();
+  if (snapshot.status !== "authenticated" || currentSessionKey !== sessionKey) {
+    throw new Error("Patient session changed");
+  }
+  return snapshot.authentication.accessToken;
+}
 setAccessTokenProvider(async () => {
   const snapshot = await sessionManager.bootstrap();
   return snapshot.status === "authenticated"
@@ -27,6 +50,7 @@ setAccessTokenProvider(async () => {
 
 interface AuthSessionContextValue {
   authentication: Authentication;
+  sessionKey: string;
   logout: () => Promise<boolean>;
 }
 
@@ -37,14 +61,14 @@ function SessionStatus({ status, retry }: { status: "checking" | "anonymous" | "
   const unavailable = status === "unavailable";
   return (
     <main className="patient-app-shell session-screen" data-state={status}>
-      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true">
+      <section className="session-screen__content" role={unavailable ? "alert" : "status"} aria-atomic="true" aria-busy={!unavailable}>
         {unavailable ? <>
           <div className="session-screen__illustration" aria-hidden="true"><WifiOff size={28} strokeWidth={1.5} /></div>
           <h1>یه کوچولو به مشکل خوردیم</h1>
           <p>فعلاً نتونستیم اطلاعات حسابت رو بگیریم. یه بار دیگه امتحان کن؛ اگه نشد، اینترنتت رو هم چک کن.</p>
           <Button onClick={retry}><RefreshCw size={18} aria-hidden="true" />دوباره امتحان کنیم</Button>
         </> : <>
-          <div className="session-screen__dots" aria-hidden="true"><span /><span /><span /></div>
+          <HeartbeatLoader size="screen" />
           <span className="sr-only">{status === "anonymous" ? "در حال باز کردن صفحهٔ ورود…" : "در حال آماده‌سازی…"}</span>
         </>}
       </section>
@@ -60,7 +84,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    void sessionManager.bootstrap();
+    // /bale first exchanges signed initData; a pre-existing cookie must not
+    // silently authorize a different Bale user.
+    if (window.location.pathname !== '/bale') void sessionManager.bootstrap();
   }, []);
 
   const contextValue = useMemo<AuthSessionContextValue | null>(
@@ -68,7 +94,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       snapshot.status === "authenticated"
         ? {
             authentication: snapshot.authentication,
-            logout: () => sessionManager.logout(),
+            sessionKey: authSessionKey(snapshot.authentication),
+            logout: () => {
+              clearPatientRequestCache();
+              return sessionManager.logout();
+            },
           }
         : null,
     [snapshot],
@@ -88,7 +118,10 @@ export function SessionGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (snapshot?.status === "anonymous") {
-      window.location.replace(loginUrl);
+      const target = window.sessionStorage.getItem('mushroom:bale-miniapp') === '1'
+        ? '/bale'
+        : marriageLoginUrl();
+      window.location.replace(target);
     }
   }, [snapshot?.status]);
 

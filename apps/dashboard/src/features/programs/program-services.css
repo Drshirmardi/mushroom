@@ -98,3 +98,21 @@
 .program-dialog .program-section-nav { margin-block: var(--program-size-5); }
 .program-dialog .program-editor > div[id] { padding-block: var(--program-size-4) var(--program-size-6); }
 @media(width >= 48rem) { .program-dialog { width: calc(100% - var(--program-size-8)); max-height: calc(100dvh - var(--program-size-8)); } }
+
+.program-markdown { width: 100%; min-width: 0; max-width: var(--program-size-reading-width); overflow-wrap: anywhere; }
+.program-markdown > :first-child { margin-top: 0; }
+.program-markdown h2 { margin-block: var(--program-size-6) var(--program-size-3); color: var(--program-ink); }
+.program-markdown h3, .program-markdown h4 { margin-block: var(--program-size-5) var(--program-size-2); color: var(--program-ink); font-size: var(--program-size-4); font-weight: 650; line-height: 1.8; }
+.program-markdown p { margin-block: var(--program-size-4); white-space: pre-line; line-height: 2.1; }
+.program-markdown ul, .program-markdown ol { margin-block: var(--program-size-4); padding-inline-start: var(--program-size-6); line-height: 2; }
+.program-markdown li { padding-inline-start: var(--program-size-1); overflow-wrap: anywhere; }
+.program-markdown strong { color: var(--program-ink); }
+.program-markdown a { color: var(--program-accent); text-decoration: underline; text-underline-offset: 0.2em; overflow-wrap: anywhere; }
+.program-markdown img { display: block; max-width: 100%; height: auto; }
+.program-markdown pre { max-width: 100%; overflow-x: auto; padding: var(--program-size-4); background: var(--program-soft); border-radius: var(--program-size-3); }
+.program-markdown blockquote { margin-block: var(--program-size-5); border-inline-start: 3px solid var(--program-line); padding-inline-start: var(--program-size-4); color: var(--program-muted); }
+.program-markdown-table { max-width: 100%; margin-block: var(--program-size-5); overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid var(--program-line); border-radius: var(--program-size-3); }
+.program-markdown-table:focus-visible { outline: 2px solid var(--program-accent); outline-offset: 2px; }
+.program-markdown-table table { width: max-content; min-width: 100%; border-collapse: collapse; text-align: start; font-size: var(--program-size-text-sm); }
+.program-markdown-table :is(th,td) { padding: var(--program-size-3); border: 1px solid var(--program-line); vertical-align: top; overflow-wrap: anywhere; }
+.program-markdown-table th { background: var(--program-soft); color: var(--program-ink); font-weight: 650; }

@@ -8,7 +8,9 @@ export async function completeTestPatientEntry(prisma: PrismaService, userId: st
   const data = { firstName: profile?.firstName?.trim() || 'Synthetic', lastName: profile?.lastName?.trim() || 'Patient', gender: profile?.gender === 'MALE' ? 'MALE' : 'FEMALE' } as const;
   await prisma.userProfile.upsert({ where: { userId }, create: { userId, ...data }, update: data });
   if (!await prisma.patientEntry.findUnique({ where: { patientId: patient.id } })) {
-    await prisma.patientEntry.create({ data: { patientId: patient.id, clinicId: patient.clinicId, birthDate: new Date('1990-01-01T00:00:00Z'), completedAt: new Date() } });
+    // Leave completion and assessment binding open: protected-feature fixtures may need
+    // this same row as the exact owned initial-entry origin for one assessment attempt.
+    await prisma.patientEntry.create({ data: { patientId: patient.id, clinicId: patient.clinicId, birthDate: new Date('1990-01-01T00:00:00Z') } });
   }
 }
 

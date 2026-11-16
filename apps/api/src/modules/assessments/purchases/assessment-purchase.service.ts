@@ -9,6 +9,7 @@ import type { PreparedTarget } from '../../billing/billing-target.registry';
 import { ASSESSMENT_COMMERCIAL_POLICY, AssessmentPublicationService } from '../publication/assessment-publication.service';
 import { AssessmentProtocolService } from '../protocol/assessment-protocol.service';
 import type { AssessmentConsentAcceptDto, AssessmentPurchasePageQueryDto } from './assessment-purchase.dto';
+import { AssessmentAdminPurchaseService } from './assessment-admin-purchase.service';
 
 export const purchaseMissing = () => new NotFoundException({ code: 'ASSESSMENT_PURCHASE_NOT_FOUND', message: 'Owned assessment purchase or available offering was not found.', details: {} });
 export const purchaseConflict = () => new ConflictException({ code: 'ASSESSMENT_PURCHASE_CONFLICT', message: 'The exact assessment tariff, consent or purchase state changed.', details: {} });
@@ -19,12 +20,12 @@ type Snapshot = { schemaVersion: 1; purchaseId: string; publicationId: string; p
 
 @Injectable()
 export class AssessmentPurchaseService {
-  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly publications: AssessmentPublicationService, private readonly protocols: AssessmentProtocolService, private readonly billing: BillingService) {}
+  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly publications: AssessmentPublicationService, private readonly protocols: AssessmentProtocolService, private readonly billing: BillingService, private readonly adminPurchases: AssessmentAdminPurchaseService) {}
 
   async catalog(query: AssessmentPurchasePageQueryDto, ctx: Context) {
     return this.prisma.$transaction(async tx => {
       const patient = await this.patient(tx, ctx);
-      const where: Prisma.AssessmentOfferingPublicationWhereInput = { clinicId: patient.clinicId, status: 'ACTIVE', ...(query.offeringKey ? { offeringKey: query.offeringKey } : {}), ...(query.kind ? { offeringVersion: { kind: query.kind } } : {}) };
+      const where: Prisma.AssessmentOfferingPublicationWhereInput = { clinicId: patient.clinicId, status: 'ACTIVE', offeringVersion: { priceMode:'PAID',assessmentVersion: { OR: [{ distribution: { is: null } }, { distribution: { publiclyAvailable: true } }] } }, ...(query.offeringKey ? { offeringKey: query.offeringKey } : {}), ...(query.kind ? { offeringVersion: { priceMode:'PAID',kind: query.kind, assessmentVersion: { OR: [{ distribution: { is: null } }, { distribution: { publiclyAvailable: true } }] } } } : {}) };
       const [rows, total] = await Promise.all([tx.assessmentOfferingPublication.findMany({ where, include: { offeringVersion: true }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: query.pageSize, skip: (query.page - 1) * query.pageSize }), tx.assessmentOfferingPublication.count({ where })]);
       await this.audit(tx, 'ASSESSMENT_CATALOG_READ', patient.id, ctx); return { items: rows.map(row => this.tariff(row)), total, page: query.page, pageSize: query.pageSize };
     }, { isolationLevel: 'RepeatableRead' });
@@ -78,6 +79,8 @@ export class AssessmentPurchaseService {
   }
 
   async prepare(patient: PatientProfile, input: Record<string, string>): Promise<PreparedTarget> {
+    if (input.educationalCoupleSessionId) return this.adminPurchases.prepare(patient, input);
+    if (await this.adminPurchases.hasPublication(input.publicationId!, patient.clinicId)) return this.adminPurchases.prepare(patient, input);
     return this.prisma.$transaction(async tx => {
       const row = await this.publications.currentPublication(tx, patient.clinicId, input.publicationId!); if (!row) throw purchaseMissing(); if (row.publicationHash !== input.publicationHash) throw purchaseConflict();
       const source = await tx.assessmentVersion.findUniqueOrThrow({ where: { id: row.offeringVersion.assessmentVersionId }, select: { structure: true } }); if (this.supportBlockers(row, source.structure).length) throw invalid();
@@ -89,6 +92,7 @@ export class AssessmentPurchaseService {
     });
   }
   async reserve(tx: Prisma.TransactionClient, patient: PatientProfile, prepared: PreparedTarget) {
+    if ((prepared.snapshot as { publicationAuthority?: string }).publicationAuthority === 'ADMIN_PUBLISHED') return this.adminPurchases.reserve(tx, patient, prepared);
     const snapshot = prepared.snapshot as unknown as Snapshot;
     await lockFinancial(tx, `assessment-purchase:${patient.id}:${snapshot.assessmentVersionId}`);
     const row = await this.lockedPublication(tx, patient.clinicId, snapshot.publicationId, false); if (!row || row.publicationHash !== snapshot.publicationHash || row.offeringVersion.assessmentVersionId !== snapshot.assessmentVersionId || row.offeringVersion.amountRial !== prepared.amountRial) throw purchaseConflict();
@@ -108,6 +112,8 @@ export class AssessmentPurchaseService {
     if (!intent.assessmentPurchaseId) return false;
     const [time] = await tx.$queryRaw<{ expired: boolean }[]>(Prisma.sql`SELECT ${intent.expiresAt}::timestamptz IS NULL OR ${intent.expiresAt}::timestamptz<=CURRENT_TIMESTAMP AS expired`); if (time!.expired) return false;
     const purchase = await tx.assessmentPurchase.findFirst({ where: { id: intent.assessmentPurchaseId, patientId: intent.patientId, clinicId: intent.clinicId } }); if (!purchase || purchase.amountRial !== intent.amountRial) return false;
+    if (purchase.adminPublicationId) return this.adminPurchases.canSettle(tx, intent, purchase);
+    if (!purchase.publicationId) return false;
     const row = await this.lockedPublication(tx, intent.clinicId, purchase.publicationId, true); if (!row || row.publicationHash !== purchase.publicationHash) return false;
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     if (!await this.patientProof(tx, patient, false) || !await this.consents(tx, patient, row, purchase, false) || !await this.adult(tx, patient.id)) return false;
@@ -117,7 +123,7 @@ export class AssessmentPurchaseService {
 
   async list(query: AssessmentPurchasePageQueryDto, ctx: Context) {
     return this.prisma.$transaction(async tx => {
-      const patient = await this.patient(tx, ctx); const where: Prisma.AssessmentPurchaseWhereInput = { patientId: patient.id, clinicId: patient.clinicId, ...((query.offeringKey || query.kind) ? { publication: { ...(query.offeringKey ? { offeringKey: query.offeringKey } : {}), ...(query.kind ? { offeringVersion: { kind: query.kind } } : {}) } } : {}) };
+      const patient = await this.patient(tx, ctx); const where: Prisma.AssessmentPurchaseWhereInput = { patientId: patient.id, clinicId: patient.clinicId, ...((query.offeringKey || query.kind) ? { OR: [{ publication: { ...(query.offeringKey ? { offeringKey: query.offeringKey } : {}), ...(query.kind ? { offeringVersion: { priceMode:'PAID',kind: query.kind, assessmentVersion: { OR: [{ distribution: { is: null } }, { distribution: { publiclyAvailable: true } }] } } } : {}) } }, { adminPublication: { offeringVersion: { ...(query.offeringKey ? { offeringKey: query.offeringKey } : {}), ...(query.kind ? { kind: query.kind } : {}) } } }] } : {}) };
       const [rows, total] = await Promise.all([tx.assessmentPurchase.findMany({ where, include: purchaseRead, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], take: query.pageSize, skip: (query.page - 1) * query.pageSize }), tx.assessmentPurchase.count({ where })]);
       await this.audit(tx, 'ASSESSMENT_PURCHASE_HISTORY_READ', patient.id, ctx); return { items: rows.map(row => this.purchase(row)), total, page: query.page, pageSize: query.pageSize };
     }, { isolationLevel: 'RepeatableRead' });
@@ -125,7 +131,7 @@ export class AssessmentPurchaseService {
   async get(id: string, ctx: Context) {
     return this.prisma.$transaction(async tx => { const patient = await this.patient(tx, ctx); const row = await tx.assessmentPurchase.findFirst({ where: { id, patientId: patient.id, clinicId: patient.clinicId }, include: purchaseRead }); if (!row) throw purchaseMissing(); await this.audit(tx, 'ASSESSMENT_PURCHASE_READ', id, ctx); return this.purchase(row); }, { isolationLevel: 'RepeatableRead' });
   }
-  private purchase(row: Prisma.AssessmentPurchaseGetPayload<{ include: typeof purchaseRead }>) { return { id: row.id, publicationId: row.publicationId, title: (row.snapshot as unknown as Snapshot).title, amountRial: row.amountRial.toString(), currency: row.currency, createdAt: row.createdAt,
+  private purchase(row: Prisma.AssessmentPurchaseGetPayload<{ include: typeof purchaseRead }>) { return { managementHref: row.educationalCoupleSessionId ? `/assessment/couples/educational/${row.educationalCoupleSessionId}` : row.adminPublicationId ? `/assessment/educational/${row.adminPublicationId}` : `/assessment/offerings/${row.publicationId}`, accessMode: 'PAID' as const, id: row.id, publicationId: (row.publicationId ?? row.adminPublicationId)!, title: (row.snapshot as unknown as Snapshot).title, amountRial: row.amountRial.toString(), currency: row.currency, createdAt: row.createdAt,
     intent: row.intent ? this.billing.view(row.intent) : null, grants: row.grants.filter(g => g.patientId === row.patientId).map(g => ({ id: g.id, submissionId: g.submission?.id ?? null, accessAvailable: g.processingConsent.withdrawnAt === null && row.intent?.status === 'PAID', grantedAt: g.grantedAt })) }; }
   private async patient(tx: Prisma.TransactionClient, ctx: Context) { const clinicId = await this.authority.scope(tx, 'patient', ctx); const patient = await tx.patientProfile.findUniqueOrThrow({ where: { userId: ctx.actorUserId } }); if (patient.clinicId !== clinicId) throw purchaseMissing(); await this.patientProof(tx, patient); return patient; }
   private async patientProof(tx: Prisma.TransactionClient, patient: PatientProfile, strict = true) {
@@ -135,6 +141,7 @@ export class AssessmentPurchaseService {
   private async adult(tx: Prisma.TransactionClient, patientId: string) { await tx.$queryRaw(Prisma.sql`SELECT i.id FROM patient_medical_intakes i JOIN patient_medical_intake_revisions r ON r.intake_id=i.id AND r.revision_number=i.current_revision_number WHERE i.patient_id=${patientId}::uuid FOR SHARE OF i,r`); const [row] = await tx.$queryRaw<{ adult: boolean }[]>(Prisma.sql`SELECT couple_patient_is_adult(${patientId}::uuid) AS adult`); return row!.adult; }
   private async lockedPublication(tx: Prisma.TransactionClient, clinicId: string, id: string, quoted: boolean) {
     const pointer = await tx.assessmentOfferingPublication.findFirst({ where: { id, clinicId }, include: { offeringVersion: true } }); if (!pointer) return null;
+    if (!quoted && pointer && !(await tx.$queryRaw<{ visible: boolean }[]>(Prisma.sql`SELECT assessment_publicly_available(${pointer.offeringVersion.assessmentVersionId}::uuid) AS visible`))[0]?.visible) return null;
     await lockFinancial(tx, `assessment-publication:${clinicId}:${pointer.offeringKey}`); await lockFinancial(tx, `assessment-protocol:${sourceId(pointer)}`);
     await tx.$queryRaw(Prisma.sql`SELECT id FROM assessment_offering_versions WHERE id=${pointer.offeringVersionId}::uuid FOR SHARE`); await tx.$queryRaw(Prisma.sql`SELECT id FROM assessment_versions WHERE id=${sourceId(pointer)}::uuid FOR SHARE`);
     const review = await tx.assessmentProtocolReview.findUniqueOrThrow({ where: { id: pointer.protocolReviewId } });

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { generateMetadata } from "../app/(public)/store/products/[id]/layout";
+import { generateMetadata } from "../app/(shell)/(public)/store/products/[id]/layout";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
@@ -9,7 +9,7 @@ describe("public product metadata", () => {
     const request = vi.fn().mockResolvedValue(new Response(JSON.stringify({ title: "محصول سلامت", shortDescription: "توضیح منتشرشده", image: { contentPath: "/v1/commerce/products/p/images/i" } })));
     vi.stubGlobal("fetch", request);
     const metadata = await generateMetadata({ params: Promise.resolve({ id: "p" }) });
-    expect(metadata.title).toBe("محصول سلامت | سبز زندگی");
+    expect(metadata.title).toBe("محصول سلامت | دکتر شیرمردی");
     expect(metadata.description).toBe("توضیح منتشرشده");
     expect(metadata.openGraph?.images).toEqual([{ url: "https://api.example.test/v1/commerce/products/p/images/i" }]);
     expect(request.mock.calls[0][1].headers).toBeUndefined();
@@ -17,7 +17,10 @@ describe("public product metadata", () => {
   it("keeps the storefront usable when metadata lookup fails", async () => {
     vi.stubEnv("PUBLIC_API_URL", "https://api.example.test");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(Error("unavailable")));
-    expect((await generateMetadata({ params: Promise.resolve({ id: "p" }) })).title).toBe("محصولات سلامت | سبز زندگی");
+    const metadata = await generateMetadata({ params: Promise.resolve({ id: "p" }) });
+    expect(metadata.title).toBe("محصولات سلامت | دکتر شیرمردی");
+    expect(metadata.openGraph?.images).toEqual(["/images/doctor-opengraph.jpg"]);
+    expect(metadata.twitter?.images).toEqual(["/images/doctor-opengraph.jpg"]);
   });
   it("does not guess a localhost API in production", async () => {
     vi.stubEnv("PUBLIC_API_URL", "");

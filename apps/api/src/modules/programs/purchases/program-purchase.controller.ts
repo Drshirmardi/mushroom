@@ -8,6 +8,7 @@ import { BillingService } from '../../billing/billing.service';
 import { BillingIntentDto } from '../../billing/billing.dto';
 import { ProgramDefinitionRateGuard } from '../definitions/program-definition.controller';
 import { ProgramPurchaseService } from './program-purchase.service';
+import { ProgramOfferingCardQueryDto, ReadyOfferingCardPageDto } from '../publication/program-offering-card.dto';
 import { PatientProgramContentDto, PatientProgramOfferingDto, PatientProgramOfferingPageDto, PatientProgramPurchaseDto, PatientProgramPurchasePageDto, ProgramConsentAcceptDto, ProgramConsentRecordDto, ProgramPurchaseIntentDto, ProgramPurchaseQueryDto } from './program-purchase.dto';
 const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, actorSessionId: r.auth.sessionId, requestId: r.id, ipAddress: r.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
@@ -19,6 +20,9 @@ export class ProgramPurchaseController {
   @Get('program-offerings') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
   @ApiOperation({ operationId: 'patientProgramOfferingsList' }) @ApiOkResponse({ type: PatientProgramOfferingPageDto })
   catalog(@Query() q: ProgramPurchaseQueryDto, @Req() r: AuthenticatedRequest) { return this.purchases.catalog(q, context(r)); }
+  @Get('program-offering-cards') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
+  @ApiOperation({ operationId: 'patientProgramOfferingCardsList' }) @ApiOkResponse({ type: ReadyOfferingCardPageDto })
+  catalogCards(@Query() q: ProgramOfferingCardQueryDto, @Req() r: AuthenticatedRequest) { return this.purchases.catalogCards(q, context(r)); }
   @Get('program-offerings/:id') @Header('Cache-Control', 'private, no-store') @RequirePermissions(PERMISSIONS.CONTENT_READ_SELF)
   @ApiOperation({ operationId: 'patientProgramOfferingGet' }) @ApiParam({ name: 'id', format: 'uuid' }) @ApiOkResponse({ type: PatientProgramOfferingDto })
   offering(@Param('id', uuid()) id: string, @Req() r: AuthenticatedRequest) { return this.purchases.offering(id, context(r)); }

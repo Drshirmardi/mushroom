@@ -7,6 +7,19 @@ import {
 
 export type Authentication = components["schemas"]["AuthenticationResponseDto"];
 
+export function authSessionKey(authentication: Authentication): string {
+  const { accessToken, user } = authentication;
+  let sessionId = accessToken;
+  try {
+    const payload = accessToken.split('.')[1];
+    const { sid } = JSON.parse(atob(payload.replaceAll('-', '+').replaceAll('_', '/')));
+    if (typeof sid === 'string' && sid) sessionId = sid;
+  } catch {
+    // Opaque tokens remain isolated by token. This key never grants authorization.
+  }
+  return JSON.stringify([user.id, sessionId, [...user.roles].sort()]);
+}
+
 export type AuthSessionSnapshot =
   | { status: "checking"; authentication: null }
   | { status: "authenticated"; authentication: Authentication }
@@ -40,6 +53,13 @@ export class AuthSessionManager {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   };
+
+  /** Adopt an identity verified by the API; do not persist the access token. */
+  acceptAuthentication(authentication: Authentication): AuthSessionSnapshot {
+    this.accessTokenExpiresAt = this.now() + authentication.expiresIn * 1000;
+    this.refreshRetryAfter = 0;
+    return this.update({ status: "authenticated", authentication });
+  }
 
   async bootstrap(): Promise<AuthSessionSnapshot> {
     if (

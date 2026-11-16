@@ -142,6 +142,8 @@ export function walletErrorMessage(error: unknown): string {
       return "وضعیت این پرداخت تغییر کرده است؛ صفحه را تازه‌سازی کنید.";
     case "BILLING_PAYMENT_PENDING":
       return "یک پرداخت بانکی برای این مورد در جریان است؛ تا مشخص‌شدن نتیجهٔ آن پرداخت دیگری امکان‌پذیر نیست.";
+    case "COMMERCE_INVENTORY_INSUFFICIENT":
+      return "موجودی یکی از کالاهای این سفارش کافی نیست. سفارش و مبلغ آن حفظ شده‌اند؛ پس از موجودشدن کالا می‌توانید همین سفارش را پرداخت کنید.";
     case "BILLING_HOLD_EXPIRED":
       return "مهلت رزرو این مورد به پایان رسیده است؛ لطفاً دوباره زمان یا خرید را آغاز کنید.";
     case "BILLING_INTENT_NOT_FOUND":

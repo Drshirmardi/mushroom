@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { previewTieBreakDraft, projectTieBreakQuestionnaire, TIEBREAK_ALGORITHM, validateTieBreakAnswers, validateTieBreakPublication, validateTieBreakDraft, type TieBreakDraft } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
 import { validateAssessmentStructure } from '../src/modules/assessments/domain/assessment-structure-validation';
+import { ASSESSMENT_STRUCTURE_MAX_BYTES, QUESTION_TEXT_MAX_LENGTH, validateDimensionDraft } from '../src/modules/assessments/domain/assessment-dimension-draft';
 
 function draft(): TieBreakDraft {
   const base = structuredClone(MIZAJ_DRAFT_PRESET.structure);
@@ -17,6 +18,35 @@ function addQuestion(value: TieBreakDraft, candidates: number[]) {
 }
 
 describe('11 main answers plus at most one exact tie-break draft', () => {
+  it.each(['', ' ', '\n', '\r\n', '\t'])('accepts the pasted owner question with surrounding whitespace %j without changing content', whitespace => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    const sentence = 'آیا میزان علاقمندی شما به خوردن شیرینی بیشتر است یا ترشی؟';
+    value.followUps[0]!.title = `${whitespace}${sentence}${whitespace}`;
+    value.sections[0]!.questions[0]!.title = `${whitespace}${sentence}${whitespace}`;
+    value.followUps[0]!.options[0]!.title = `${whitespace}پاسخ${whitespace}`;
+    value.resultProfiles[0]!.summary = `${whitespace}توضیح نتیجه${whitespace}`;
+    const before = structuredClone(value);
+    expect(validateTieBreakDraft(value)).toEqual(before);
+    expect(value).toEqual(before);
+  });
+  it.each(['', ' ', '\n\t\r\n'])('still rejects blank-only question text %j', title => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    value.followUps[0]!.title = title;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    value.followUps[0]!.title = 'سؤال';
+    value.sections[0]!.questions[0]!.title = title;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
+  it.each([' ', '\n', '\r\n', '\t'])('keeps whitespace invalid in main and follow-up identifiers %j', whitespace => {
+    const value = draft(); addQuestion(value, [0, 1]);
+    const main = value.sections[0]!.questions[0]!;
+    const before = main.id;
+    main.id += whitespace;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    main.id = before;
+    value.followUps[0]!.id += whitespace;
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
   it('preserves the source draft, requires eleven main questions and cannot use the scalar publisher', () => {
     const value = draft(); const before = structuredClone(value);
     expect(validateTieBreakDraft(value)).toEqual(before);
@@ -72,6 +102,40 @@ describe('11 main answers plus at most one exact tie-break draft', () => {
 });
 
 describe('11+1 publication and patient projection', () => {
+  it('accepts long Persian main and follow-up questions through draft, publication and patient projection', () => {
+    const value = draft();
+    const longText = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    for (const section of value.sections) for (const question of section.questions) question.title = longText;
+    for (let first = 0; first < 4; first++) for (let second = first + 1; second < 4; second++) {
+      addQuestion(value, [first, second]);
+      Object.assign(value.followUps.at(-1)!, { id: `long${first}${second}`, title: longText });
+    }
+    expect(Buffer.byteLength(JSON.stringify(value), 'utf8')).toBeGreaterThan(131072);
+    expect(validateTieBreakDraft(value)).toBe(value);
+    expect(validateTieBreakPublication(value)).toBe(value);
+    const payload = answers(value, [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3]);
+    const projection = projectTieBreakQuestionnaire(value, payload);
+    expect(projection.sections.flatMap(section => section.questions)).toHaveLength(12);
+    expect(projection.sections.flatMap(section => section.questions).every(question => question.text === longText)).toBe(true);
+    value.sections[0]!.questions[0]!.title += 'س';
+    expect(() => validateTieBreakDraft(value)).toThrow();
+    value.sections[0]!.questions[0]!.title = longText;
+    value.followUps[0]!.title += 'س';
+    expect(() => validateTieBreakPublication(value)).toThrow();
+  });
+  it('keeps a total byte budget for Persian content and supports long legacy dimension questions', () => {
+    const legacy = structuredClone(MIZAJ_DRAFT_PRESET.structure);
+    for (const question of legacy.sections[0]!.questions) question.title = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    expect(validateDimensionDraft(legacy)).toBe(legacy);
+    const value = draft();
+    for (const ids of [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3], [0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3], [0, 1, 2, 3]]) {
+      addQuestion(value, ids);
+      Object.assign(value.followUps.at(-1)!, { id: `large${value.followUps.length}`, title: 'س'.repeat(QUESTION_TEXT_MAX_LENGTH) });
+    }
+    for (const question of value.sections[0]!.questions) question.title = 'س'.repeat(QUESTION_TEXT_MAX_LENGTH);
+    expect(Buffer.byteLength(JSON.stringify(value), 'utf8')).toBeGreaterThan(ASSESSMENT_STRUCTURE_MAX_BYTES);
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
   it('requires all six distinct pair cases before allowing physician publication review', () => {
     const value = draft();
     expect(() => validateTieBreakPublication(value)).toThrow();
@@ -109,5 +173,53 @@ describe('11+1 publication and patient projection', () => {
     const noTie = answers(value, Array(11).fill(0));
     expect(projectTieBreakQuestionnaire(value, noTie).sections.flatMap(s => s.questions)).toHaveLength(11);
     expect(() => projectTieBreakQuestionnaire(value, { ...noTie, clarify: 'choice0' })).toThrow();
+  });
+});
+
+
+describe('version two secondary elimination', () => {
+  function fixture() {
+    const value = draft(); value.scoring.algorithmVersion = 2;
+    const ids = value.scoring.dimensions.map(item => item.id);
+    const last = value.sections.flatMap(section => section.questions)[10]!;
+    last.options[0]!.scores = {};
+    value.followUps = [{ id: 'firstTie', title: 'First synthetic question', tiedDimensions: ids.slice(1), options: [
+      { id: 'yes', title: 'Direct', dimensionId: ids[1]! }, { id: 'no', title: 'Continue', dimensionId: null },
+    ], steps: [{ id: 'secondTie', title: 'Second synthetic question', tiedDimensions: ids.slice(2), options: [
+      { id: 'left', title: 'Left', dimensionId: ids[2]! }, { id: 'right', title: 'Right', dimensionId: ids[3]! },
+    ] }] }];
+    return { value, ids, payload: answers(value, [0,0,0,0,1,1,2,2,3,3,0]) };
+  }
+  it('finishes immediately or asks exactly the next question while preserving counts and primary', () => {
+    const { value, ids, payload } = fixture();
+    expect(previewTieBreakDraft(value, payload).followUp?.id).toBe('firstTie');
+    expect(previewTieBreakDraft(value, { ...payload, firstTie: 'yes' })).toMatchObject({ status: 'PAIR', primary: ids[0], secondary: ids[1], algorithmVersion: 2 });
+    expect(previewTieBreakDraft(value, { ...payload, firstTie: 'no' }).followUp?.id).toBe('secondTie');
+    const complete = previewTieBreakDraft(value, { ...payload, firstTie: 'no', secondTie: 'right' });
+    expect(complete).toMatchObject({ status: 'PAIR', primary: ids[0], secondary: ids[3] });
+    expect(complete.scores).toEqual(previewTieBreakDraft(value, payload).scores);
+    expect(projectTieBreakQuestionnaire(value, { ...payload, firstTie: 'no' }).sections.flatMap(section => section.questions).map(item => item.id)).toContain('secondTie');
+    expect(() => previewTieBreakDraft(value, { ...payload, secondTie: 'left' })).toThrow();
+    expect(() => previewTieBreakDraft(value, { ...payload, firstTie: 'yes', secondTie: 'left' })).toThrow();
+  });
+  it('rejects incomplete chains, repeated question ids, and wrong remaining candidates', () => {
+    const { value } = fixture();
+    const bad = structuredClone(value); bad.followUps[0]!.steps = [];
+    expect(() => validateTieBreakDraft(bad)).toThrow();
+    value.followUps[0]!.steps![0]!.id = 'firstTie';
+    expect(() => validateTieBreakDraft(value)).toThrow();
+  });
+});
+
+
+describe('four-candidate authoring path', () => {
+  it('accepts three elimination questions and rejects a nonshrinking step', () => {
+    const value = draft(); value.scoring.algorithmVersion = 2;
+    const ids = value.scoring.dimensions.map(item => item.id);
+    const nodes = ids.slice(0,-1).map((dimensionId,index) => ({ id: `step${index}`, title: 'Synthetic', tiedDimensions: ids.slice(index), options: [{ id: 'yes', title: 'Direct', dimensionId }, { id: 'no', title: 'Other', dimensionId: index === 2 ? ids[3]! : null }] }));
+    value.followUps = [{ ...nodes[0]!, steps: nodes.slice(1) }];
+    expect(validateTieBreakDraft(value)).toEqual(value);
+    value.followUps[0]!.steps![0]!.tiedDimensions = ids;
+    expect(() => validateTieBreakDraft(value)).toThrow();
   });
 });

@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { createHmac, createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { Injectable, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -7,6 +7,12 @@ type Encrypted = { ciphertext: Buffer; nonce: Buffer; tag: Buffer; keyVersion: s
 @Injectable()
 export class SmsCredentialCryptoService {
   constructor(private readonly config: ConfigService) {}
+
+  phoneFingerprints(phone: string): string[] {
+    const current = this.current();
+    const versions = [current.version, ...this.config.get<string>('SMS_CREDENTIAL_DECRYPTION_KEYS', '').split(',').filter(Boolean).map(item => item.slice(0, item.indexOf(':')))];
+    return [...new Set(versions)].map(version => createHmac('sha256', this.key(version)).update(`marriage-invitation:${phone}`).digest('hex'));
+  }
 
   encrypt(value: Record<string, string>): Encrypted {
     const { key, version } = this.current();

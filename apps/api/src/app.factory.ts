@@ -66,12 +66,14 @@ export async function createApiApplication(): Promise<NestFastifyApplication> {
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
-    exposedHeaders: ['ETag', 'x-request-id'],
+    exposedHeaders: ['ETag', 'x-request-id', 'Retry-After'],
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.setGlobalPrefix('v1');
   const openApiConfig = new DocumentBuilder()
+    .addGlobalParameters({ in: 'header', name: 'X-Marriage-Request-Id', required: false, description: 'Invitation context locator; grants no access without server identity and resource checks.', schema: { type: 'string', format: 'uuid' } })
+    .addGlobalParameters({ in: 'header', name: 'X-Analytics-Context', required: false, description: 'Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.', schema: { type: 'string', maxLength: 1024 } })
     .setTitle('Sabz Zendegi API')
     .setDescription('REST API for Sabz Zendegi clinic services.')
     .setVersion('1.0.0')

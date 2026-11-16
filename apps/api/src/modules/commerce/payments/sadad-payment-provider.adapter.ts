@@ -1,3 +1,4 @@
+import { normalizeSadadCallbackUrl } from '../../../config/sadad-callback-url';
 import { createCipheriv } from 'node:crypto';
 import { Injectable, Optional, ServiceUnavailableException, UnprocessableEntityException } from '@nestjs/common';
 import type { PaymentProviderPort, ProviderCallback, ProviderCreateInput, ProviderCreateResult, ProviderVerifyResult } from './payment-provider.port';
@@ -181,9 +182,7 @@ const credential = (input: Record<string, string>) => {
 const returnUrl = (value: string | undefined) => {
   if (!value) throw invalid();
   try {
-    const url = new URL(value);
-    if (url.protocol !== 'https:' || url.pathname !== '/v1/payments/providers/sadad/callback' || url.search || url.hash) throw invalid();
-    return url.toString();
+    return normalizeSadadCallbackUrl(value);
   } catch { throw invalid(); }
 };
 
@@ -193,8 +192,9 @@ const redirectProfile = (value: string | undefined): SadadRedirectProfile => {
 };
 
 export const parseSadadFormCallback = (input: Record<string, unknown>): ProviderCallback => {
-  const allowed = ['OrderId', 'Token', 'ResCode'] as const;
-  const values = Object.fromEntries(allowed.map((field) => [field, input[field]]));
+  // Live VPG forms use lowercase token; retain the documented Token spelling too.
+  if (input.token !== undefined && input.Token !== undefined && input.token !== input.Token) throw invalid();
+  const values = { OrderId: input.OrderId, Token: input.Token ?? input.token, ResCode: input.ResCode };
   if (Object.values(values).some((value) => typeof value !== 'string' || value.length === 0 || value.length > CALLBACK_MAX_FIELD_LENGTH) || !/^\d+$/u.test(values.OrderId as string)) throw invalid();
   return { providerOrderId: positiveInt64(BigInt(values.OrderId as string)), token: values.Token as string, resultCode: resultCodeField(values, 'ResCode') };
 };

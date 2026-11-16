@@ -1,6 +1,7 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient } from "@/lib/api";
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from "@/lib/patient-request";
 
 export type PatientDoctor = components["schemas"]["PatientDoctorListItemDto"];
 export type PatientDoctorDetail = components["schemas"]["PatientDoctorDetailDto"];
@@ -26,9 +27,9 @@ async function expectData<T>(request: Promise<{ data?: T; error?: unknown; respo
   }
 }
 
-export const listPatientDoctors = (accessToken: string) => expectData<components["schemas"]["PatientDoctorPageResponseDto"]>(
-  apiClient.GET("/v1/directory/doctors", { headers: authorization(accessToken) }),
-);
+export const listPatientDoctors = (accessToken: string, filters?: { query?: string; visitMode?: "ONLINE" | "IN_PERSON"; page?: number }) => patientCachedData(patientCacheKey(accessToken, filters ? `doctors:${JSON.stringify(filters)}` : "doctors"), PATIENT_CATALOG_TTL_MS, () => expectData<components["schemas"]["PatientDoctorPageResponseDto"]>(
+  apiClient.GET("/v1/directory/doctors", { headers: authorization(accessToken), ...(filters ? { params: { query: filters } } : {}) }),
+));
 
 export const getPatientDoctor = (accessToken: string, doctorId: string) => expectData<PatientDoctorDetail>(
   apiClient.GET("/v1/directory/doctors/{doctorId}", { headers: authorization(accessToken), params: { path: { doctorId } } }),

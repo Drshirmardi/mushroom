@@ -89,6 +89,7 @@ describe('identity security boundaries', () => {
       paths: expect.arrayContaining([
         'req.headers.authorization',
         'req.headers.cookie',
+        'req.headers["x-analytics-context"]',
         'req.headers["set-cookie"]',
         'res.headers["set-cookie"]',
         'req.body.password',

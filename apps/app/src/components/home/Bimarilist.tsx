@@ -13,7 +13,7 @@ export default function Illnesses() {
                         className="
                             mt-1
                             text-xs
-                            text-[#686c79]
+                            text-[var(--dp-text-medium)]
                         "
                     >
                         بهترین‌ روش های درمان این بیماری ها اینجاست!

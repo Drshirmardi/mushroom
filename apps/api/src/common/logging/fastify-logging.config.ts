@@ -19,14 +19,28 @@ export const createRequestId = (headers: IncomingHttpHeaders): string => {
     : randomUUID();
 };
 
+/** The webhook path contains a bearer secret because Bale's documented setWebhook has only a URL. */
+export const redactBaleWebhookUrl = (url: string): string =>
+  url.replace(/(\/v1\/integrations\/bale\/webhook\/)[^/?#]+/gu, '$1[REDACTED]');
+
 export const createFastifyLoggingOptions = (
   logLevel: string,
 ) => ({
   logger: {
     level: logLevel,
+    serializers: {
+      req: (request: { method?: string; url?: string; hostname?: string; remoteAddress?: string; remotePort?: number }) => ({
+        method: request.method,
+        url: redactBaleWebhookUrl(request.url ?? ''),
+        hostname: request.hostname,
+        remoteAddress: request.remoteAddress,
+        remotePort: request.remotePort,
+      }),
+    },
     redact: {
       paths: [
         'req.headers.authorization',
+        'req.headers["x-analytics-context"]',
         'req.headers["x-chat-policy-key"]',
         'req.headers.cookie',
         'req.headers["set-cookie"]',
@@ -45,6 +59,9 @@ export const createFastifyLoggingOptions = (
         'req.body.withdrawalReason',
         'req.body.refreshToken',
         'req.body.accessToken',
+        'req.body.initData',
+        'req.body.ticket',
+        'req.body.message.contact.phone_number',
       ],
       censor: '[REDACTED]',
     },

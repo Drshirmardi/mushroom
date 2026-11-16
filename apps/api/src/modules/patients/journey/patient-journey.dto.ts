@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PatientBookingEligibilityResponseDto } from '../../assessments/patient/patient-booking-eligibility.dto';
 import { CoupleSessionSummaryDto } from '../../assessments/couples/couple-link.dto';
 
@@ -140,10 +140,18 @@ export class JourneySetupStepDto {
   @ApiProperty({ enum: ['PROFILE', 'HEALTH', 'CONFIRM'] }) code!: 'PROFILE' | 'HEALTH' | 'CONFIRM';
   @ApiProperty({ enum: ['COMPLETE', 'CURRENT', 'UPCOMING'] }) state!: 'COMPLETE' | 'CURRENT' | 'UPCOMING';
 }
+export class JourneyAssessmentSummaryDto {
+  @ApiProperty({ type: String, nullable: true }) algorithmId!: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) primary?: string | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) secondary?: string | null;
+  @ApiProperty({ type: Object, nullable: true, additionalProperties: { type: 'number' } }) scores!: Record<string, number> | null;
+  @ApiProperty({ type: [Object], nullable: true }) dimensionTitles!: { id: string; title: string }[] | null;
+}
 export class JourneyLatestAssessmentDto {
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() title!: string;
   @ApiProperty({ format: 'date-time' }) completedAt!: Date;
+  @ApiPropertyOptional({ type: JourneyAssessmentSummaryDto, nullable: true }) summary?: JourneyAssessmentSummaryDto | null;
 }
 export const HOME_ACTIONS = [...JOURNEY_ACTIONS, 'OPEN_COUPLE_LINK', 'TRACK_ORDER'] as const;
 export class JourneyHomeActionDto {
@@ -176,4 +184,12 @@ export class PatientJourneyResponseDto {
   @ApiProperty({ type: JourneyPlansDto }) treatmentPlans!: JourneyPlansDto;
   @ApiProperty({ type: JourneyCoupleLinksDto }) coupleLinks!: JourneyCoupleLinksDto;
   @ApiProperty({ description: 'Shopping is independent of medical onboarding' }) storeAvailable!: boolean;
+}
+
+export class PatientHomeResponseDto {
+  @ApiProperty({ type: [JourneySetupStepDto], minItems: 3, maxItems: 3 }) setupSteps!: JourneySetupStepDto[];
+  @ApiProperty() isOnboardingComplete!: boolean;
+  @ApiProperty({ type: JourneyLatestAssessmentDto, nullable: true }) latestAssessment!: JourneyLatestAssessmentDto | null;
+  @ApiProperty({ type: JourneyAppointmentDto, nullable: true }) nextAppointment!: JourneyAppointmentDto | null;
+  @ApiProperty({ type: [JourneyHomeActionDto], maxItems: 12 }) actions!: JourneyHomeActionDto[];
 }

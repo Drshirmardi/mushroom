@@ -24,6 +24,8 @@ export interface BillingTarget {
   prepare(patient: PatientProfile, input: Record<string, string>): Promise<PreparedTarget>;
   reserve(tx: Tx, patient: PatientProfile, prepared: PreparedTarget): Promise<BillingReservationEffect>;
   lock(tx: Tx, intent: BillingIntent): Promise<void>;
+  preparePayment?(tx: Tx, intent: BillingIntent): Promise<boolean>;
+  cancel?(tx: Tx, intent: BillingIntent): Promise<void>;
   canSettle(tx: Tx, intent: BillingIntent): Promise<boolean>;
   settle(tx: Tx, intent: BillingIntent, context: FinancialContext, journalId?: string, gatewayAttemptId?: string): Promise<BillingSettlementEffect>;
   refund(tx: Tx, intent: BillingIntent, amountRial: bigint, refundId: string): Promise<void>;

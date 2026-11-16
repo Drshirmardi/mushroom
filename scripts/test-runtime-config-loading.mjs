@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 
 for (const application of ['web', 'app', 'dashboard']) {
   const layout = readFileSync(`apps/${application}/src/app/layout.tsx`, 'utf8');
-  if (layout.includes('next/script') || layout.includes('beforeInteractive')) {
+  if (/<Script\b[^>]*src=["']\/runtime-config\.js["']/.test(layout)) {
     throw new Error(`${application} must not schedule runtime config through next/script`);
   }
   const head = layout.indexOf('<head>');

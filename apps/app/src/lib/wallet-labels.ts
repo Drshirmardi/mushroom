@@ -6,10 +6,12 @@
  */
 
 const PURPOSE_LABELS: Record<string, string> = {
+  ENTRY_ASSESSMENT: "آزمون ورود اولیه",
   TOPUP: "شارژ کیف پول",
   ORDER: "پرداخت سفارش",
   APPOINTMENT: "پرداخت نوبت",
   ASSESSMENT: "پرداخت ارزیابی",
+  MARRIAGE_REQUEST: "پیش‌پرداخت تست دو نفره",
   PROGRAM: "پرداخت برنامه",
 };
 
@@ -86,6 +88,6 @@ export function intentResultView(intent: ResultIntent): IntentResultView {
   if (intent.status === "CANCELLED" || intent.status === "EXPIRED") return "closed";
   const attempts = intent.attempts ?? [];
   if (attempts.some((attempt) => isAmbiguousAttempt(attempt.status))) return "ambiguous";
-  if (attempts.some((attempt) => attempt.status === "FAILED")) return "failed";
+  if (attempts[0]?.status === "FAILED") return "failed";
   return "pending";
 }

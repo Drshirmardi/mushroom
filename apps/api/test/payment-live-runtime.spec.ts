@@ -38,12 +38,26 @@ describe('Sadad live runtime wiring', () => {
   it('requires an explicit live deployment and exposes only validated operational settings', () => {
     expect(() => runtime({ SADAD_TRANSPORT_MODE: 'disabled' }).settings()).toThrowError(expect.objectContaining({ response: expect.objectContaining({ code: 'SADAD_GO_LIVE_BLOCKED' }) }));
     expect(runtime(liveValues).settings()).toEqual({ returnUrl: liveValues.SADAD_RETURN_URL, resultUrl: liveValues.SADAD_RESULT_URL, redirectProfile: liveValues.SADAD_REDIRECT_PROFILE, timeoutMs: 4000 });
-    expect(() => runtime({ ...liveValues, SADAD_RETURN_URL: 'https://wrong.example.test/v1/payments/providers/sadad/callback' }).settings()).toThrowError(expect.objectContaining({ response: expect.objectContaining({ code: 'SADAD_GO_LIVE_BLOCKED' }) }));
+    expect(() => runtime({ ...liveValues, SADAD_RETURN_URL: 'http://wrong.example.test/v1/payments/providers/sadad/callback' }).settings()).toThrowError(expect.objectContaining({ response: expect.objectContaining({ code: 'SADAD_GO_LIVE_BLOCKED' }) }));
+  });
+
+  it('uses the explicit merchant main-domain callback independently of the API origin', () => {
+    const returnUrl = 'https://drshirmardi.com/v1/payments/providers/sadad/callback';
+    expect(runtime({ ...liveValues, SADAD_RETURN_URL: returnUrl }).settings().returnUrl).toBe(returnUrl);
+  });
+
+  it.each([
+    'https://user:password@example.test/v1/payments/providers/sadad/callback',
+    'https://example.test/v1/payments/providers/sadad/callback?next=evil',
+    'https://example.test/v1/payments/providers/sadad/callback#fragment',
+    'https://example.test/other', 'not-a-url', '',
+  ])('blocks an invalid callback %s even when bypassing startup validation', (returnUrl) => {
+    expect(() => runtime({ ...liveValues, SADAD_RETURN_URL: returnUrl }).settings()).toThrowError(expect.objectContaining({ response: expect.objectContaining({ code: 'SADAD_GO_LIVE_BLOCKED' }) }));
   });
 
   it('creates a real provider-bound attempt only from an enabled/default ready configuration', async () => {
     const active = service();
-    await expect(active.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).resolves.toMatchObject({ id: 'attempt-id', redirectUrl: 'https://sadad.shaparak.ir/VPG/Purchase?Token=provider-token' });
+    await expect(active.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).resolves.toMatchObject({ id: 'attempt-id', redirectUrl: 'https://dev-api.example.test/v1/payments/providers/sadad/start#provider-token' });
     expect(active.orchestration.createAttempt).toHaveBeenCalledWith(expect.objectContaining({ patientId: 'patient-id', orderId: 'order-id', providerConfigRevisionId: 'revision-id', providerAmount: 1_000n, providerUnit: 'RIAL', returnUrl: liveValues.SADAD_RETURN_URL, redirectProfile: liveValues.SADAD_REDIRECT_PROFILE, requestTimeoutMs: 4_000 }));
     const inactive = service({ config: null });
     await expect(inactive.instance.createForOrder('user-id', 'order-id', 'idempotency-key')).rejects.toMatchObject({ response: { code: 'SADAD_GO_LIVE_BLOCKED' } });

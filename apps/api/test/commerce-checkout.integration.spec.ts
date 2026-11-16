@@ -57,7 +57,8 @@ describe('commerce checkout and clinic shipping rate (PostgreSQL API integration
     const snapshot = await prisma.commerceOrderSnapshot.findUniqueOrThrow({ where: { orderId: order.id as string } }); await expect(prisma.commerceOrderSnapshot.update({ where: { id: snapshot.id }, data: { integrityHash: '0'.repeat(64) } })).rejects.toThrow(/immutable/u);
     const retainedCart = await app.inject({ method: 'GET', url: '/v1/patients/me/cart', headers: headers(first.token) });
     expect(retainedCart.statusCode).toBe(200);
-    expect(retainedCart.json()).toMatchObject({ items: [{ quantity: 2, sku: { id: commerceSku.id } }] });
+    expect(retainedCart.json()).toMatchObject({ items: [] });
+    await app.inject({ method: 'PUT', url: '/v1/patients/me/cart', headers: headers(first.token), payload: { skuId: commerceSku.id, quantity: 2 } });
     const insufficient = await app.inject({ method: 'POST', url: '/v1/patients/me/orders', headers: headers(first.token, `reserved-${randomUUID()}`), payload: { shippingMethod: 'PICKUP' } });
     expect(insufficient.statusCode).toBe(409); expect(insufficient.json().code).toBe('COMMERCE_INVENTORY_INSUFFICIENT');
     await app.inject({ method: 'PUT', url: '/v1/patients/me/cart', headers: headers(first.token), payload: { skuId: commerceSku.id, quantity: 0 } });

@@ -1,3 +1,4 @@
+import { AnalyticsService } from '../analytics/analytics.service';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -8,12 +9,12 @@ import { FinancialContext, Tx, financialAudit, financialConflict, financialKey, 
 
 @Injectable()
 export class BillingService {
-  constructor(private readonly prisma: PrismaService, private readonly wallet: WalletService, private readonly targets: BillingTargetRegistry) {}
+  constructor(private readonly prisma: PrismaService, private readonly wallet: WalletService, private readonly targets: BillingTargetRegistry, private readonly analytics: AnalyticsService) {}
 
-  async create(userId: string, purpose: 'TOPUP' | 'ORDER' | 'APPOINTMENT' | 'ASSESSMENT' | 'PROGRAM', input: Record<string, string>, rawKey: string | undefined, context: FinancialContext) {
+  async create(userId: string, purpose: 'TOPUP' | 'ORDER' | 'APPOINTMENT' | 'ASSESSMENT' | 'PROGRAM' | 'ENTRY_ASSESSMENT' | 'MARRIAGE_REQUEST', input: Record<string, string>, rawKey: string | undefined, context: FinancialContext) {
     const patient = await this.wallet.patient(userId); const key = financialKey(rawKey); const hash = fingerprint({ patientId: patient.id, purpose, input });
     const actorUserId = context.actorUserId;
-    if (['ASSESSMENT', 'PROGRAM'].includes(purpose) && (actorUserId !== patient.userId || !context.actorSessionId)) throw financialConflict();
+    if (['ASSESSMENT', 'PROGRAM', 'ENTRY_ASSESSMENT', 'MARRIAGE_REQUEST'].includes(purpose) && (actorUserId !== patient.userId || !context.actorSessionId)) throw financialConflict();
     const previous = await this.prisma.billingIntent.findUnique({ where: { actorUserId_idempotencyKey: { actorUserId, idempotencyKey: key } } });
     if (previous) { if (previous.fingerprint !== hash || previous.patientId !== patient.id) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.view(previous); }
     const prepared: PreparedTarget = purpose === 'TOPUP' ? { amountRial: money(input.amountToman), snapshot: {} } : await this.targets.get(purpose).prepare(patient, input);
@@ -77,11 +78,14 @@ export class BillingService {
       if (intent.purpose === 'TOPUP' || intent.status !== 'PENDING') throw financialConflict();
       await this.targets.get(intent.purpose).lock(tx, intent);
       await this.assertNoPending(tx, intent);
-      if (!(await this.targets.get(intent.purpose).canSettle(tx, intent))) throw financialConflict('BILLING_HOLD_EXPIRED');
+      const target = this.targets.get(intent.purpose);
+      if (target.preparePayment && !await target.preparePayment(tx, intent)) throw financialConflict('COMMERCE_INVENTORY_INSUFFICIENT');
+      if (!(await target.canSettle(tx, intent))) throw financialConflict('BILLING_HOLD_EXPIRED');
       const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
       const journal = await this.wallet.post(tx, patient, -intent.amountRial, 'PAYMENT', `intent:${id}:debit`, context);
       const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'WALLET' }, context, journal.id);
       const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'PAID', method: 'WALLET', paidAt: new Date(), ...billingSettlementFields(intent.purpose, settlement) } });
+      await this.analytics.paid(tx, updated);
       await financialAudit(tx, context, 'BILLING_WALLET_PAID', id, { amountRial: intent.amountRial.toString(), journalId: journal.id });
       const response = this.view(updated);
       await tx.walletCommand.create({ data: { actorUserId: userId, idempotencyKey: key, fingerprint: hash, response } });
@@ -106,6 +110,7 @@ export class BillingService {
       if (intent.purpose !== 'TOPUP') await this.targets.get(intent.purpose).lock(tx, intent);
       await this.assertNoPending(tx, intent);
       if (intent.holdId) await tx.appointmentHold.update({ where: { id: intent.holdId }, data: { releasedAt: new Date() } });
+      if (intent.purpose !== 'TOPUP') await this.targets.get(intent.purpose).cancel?.(tx, intent);
       const updated = await tx.billingIntent.update({ where: { id }, data: { status: 'CANCELLED' } });
       await financialAudit(tx, context, 'BILLING_INTENT_CANCELLED', id, {});
       const response = this.view(updated);
@@ -131,10 +136,11 @@ export class BillingService {
     const context: FinancialContext = { actorUserId: intent.actorUserId, actorSessionId: null, requestId: `billing-verify:${attempt.id}`, ipAddress: null };
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     let canSettle = intent.status === 'PENDING' && eligibilityValid;
-    if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); canSettle = canSettle && await this.targets.get(intent.purpose).canSettle(tx, intent); }
+    if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); const target = this.targets.get(intent.purpose); canSettle = canSettle && (!target.preparePayment || await target.preparePayment(tx, intent)) && await target.canSettle(tx, intent); }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { reference: proof.referenceId, traceNumber: proof.traceNumber, verifiedAt: new Date() } });
     let settlementFields: { appointmentId?: string } = {};
     if (intent.purpose === 'TOPUP' || !canSettle) {
+      if (!canSettle && intent.status === 'PENDING' && intent.purpose === 'ORDER') await this.targets.get(intent.purpose).cancel?.(tx, intent);
       await this.wallet.post(tx, patient, intent.amountRial, canSettle ? 'TOPUP' : 'LATE_PAYMENT_CREDIT', `gateway:${attempt.id}:credit`, context);
     } else {
       const settlement = await this.targets.get(intent.purpose).settle(tx, { ...intent, method: 'GATEWAY' }, context, undefined, attempt.id);
@@ -142,6 +148,7 @@ export class BillingService {
     }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { status: 'VERIFIED', resultCode: proof.resultCode, compensated: !canSettle } });
     const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...settlementFields } });
+    await this.analytics.paid(tx, updated);
     await financialAudit(tx, context, 'BILLING_GATEWAY_SETTLED', intent.id, { amountRial: intent.amountRial.toString(), compensated: !canSettle });
     return this.view(updated);
   }
@@ -155,7 +162,7 @@ export class BillingService {
 
   async refundInTransaction(tx: Tx, context: FinancialContext, id: string, amountRial: bigint, reason: string, key: string) {
     const intent = await this.lockIntent(tx, id); const hash = fingerprint({ amountRial: amountRial.toString(), reason });
-    if (intent.purpose === 'ASSESSMENT') throw financialConflict('ASSESSMENT_REFUND_NOT_ALLOWED');
+    if (['ASSESSMENT','ENTRY_ASSESSMENT'].includes(intent.purpose)) throw financialConflict('ASSESSMENT_REFUND_NOT_ALLOWED');
     if (intent.purpose === 'PROGRAM') throw financialConflict('PROGRAM_REFUND_NOT_ALLOWED');
     const old = await tx.billingRefund.findUnique({ where: { intentId_idempotencyKey: { intentId: id, idempotencyKey: key } } });
     if (old) { if (old.fingerprint !== hash) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.refundView(old); }
@@ -164,9 +171,9 @@ export class BillingService {
     if (amountRial + (held._sum.amountRial ?? 0n) > intent.amountRial) throw financialConflict('BILLING_REFUND_EXCEEDS_PAYMENT');
     const refundId = randomUUID();
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
-    const journal = intent.method === 'WALLET' ? await this.wallet.post(tx, patient, amountRial, 'REFUND', `refund:${refundId}`, context) : null;
+    const journal = (intent.method === 'WALLET' || intent.purpose === 'MARRIAGE_REQUEST') ? await this.wallet.post(tx, patient, amountRial, 'REFUND', `refund:${refundId}`, context) : null;
     const refund = await tx.billingRefund.create({ data: { id: refundId, intentId: id, amountRial, reason, idempotencyKey: key, fingerprint: hash, status: journal ? 'COMPLETED' : 'MANUAL_REQUIRED', journalId: journal?.id, completedAt: journal ? new Date() : null } });
-    if (journal) await this.targets.get(intent.purpose).refund(tx, intent, amountRial, refund.id);
+    if (journal) { await this.targets.get(intent.purpose).refund(tx, intent, amountRial, refund.id); await this.analytics.refund(tx, intent, refund.id, amountRial); }
     await financialAudit(tx, context, 'BILLING_REFUND_CREATED', refund.id, { amountRial: amountRial.toString(), status: refund.status });
     return this.refundView(refund);
   }
@@ -182,6 +189,7 @@ export class BillingService {
       if (current.status !== 'MANUAL_REQUIRED' || intent.method !== 'GATEWAY') throw financialConflict();
       const updated = await tx.billingRefund.update({ where: { id: refundId }, data: { status: 'COMPLETED', evidenceReference: reference, completedAt: new Date() } });
       await this.targets.get(intent.purpose).refund(tx, intent, current.amountRial, refundId);
+      await this.analytics.refund(tx, intent, refundId, current.amountRial);
       await financialAudit(tx, context, 'BILLING_REFUND_COMPLETED', refundId, { hasEvidence: true });
       return this.refundView(updated);
     });
@@ -208,6 +216,6 @@ export class BillingService {
     });
   }
 
-  view(intent: BillingIntent) { return { id: intent.id, purpose: intent.purpose, status: intent.status, method: intent.method, amountRial: intent.amountRial.toString(), currency: 'IRR', orderId: intent.orderId, appointmentId: intent.appointmentId, expiresAt: intent.expiresAt?.toISOString() ?? null, paidAt: intent.paidAt?.toISOString() ?? null, createdAt: intent.createdAt.toISOString(), ...(intent.purpose === 'ASSESSMENT' ? { assessmentPurchaseId: intent.assessmentPurchaseId } : {}), ...(intent.purpose === 'PROGRAM' ? { programPurchaseId: intent.programPurchaseId } : {}) }; }
+  view(intent: BillingIntent) { return { id: intent.id, purpose: intent.purpose, status: intent.status, method: intent.method, amountRial: intent.amountRial.toString(), currency: 'IRR', orderId: intent.orderId, appointmentId: intent.appointmentId, expiresAt: intent.expiresAt?.toISOString() ?? null, paidAt: intent.paidAt?.toISOString() ?? null, createdAt: intent.createdAt.toISOString(), ...(intent.purpose === 'APPOINTMENT' ? { doctorId: (intent.snapshot as { doctorId?: string })?.doctorId } : {}), ...(intent.purpose === 'ASSESSMENT' ? { assessmentPurchaseId: intent.assessmentPurchaseId } : {}), ...(intent.purpose === 'PROGRAM' ? { programPurchaseId: intent.programPurchaseId } : {}), ...(intent.purpose === 'MARRIAGE_REQUEST' ? { marriagePublicationId: (intent.snapshot as { publicationId?: string })?.publicationId ?? null } : {}) }; }
   private refundView(row: { id: string; status: string; amountRial: bigint; completedAt: Date | null }) { return { id: row.id, status: row.status, amountRial: row.amountRial.toString(), completedAt: row.completedAt?.toISOString() ?? null }; }
 }

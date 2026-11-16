@@ -21,7 +21,7 @@ export class BillingReportingService {
   }
   async reconciliation(actor: string, query: BillingPageQuery) {
     const clinicId = await this.clinic(actor);
-    const where = { intent: { clinicId }, status: { in: ['CREATED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } };
+    const where = { intent: { clinicId }, status: { in: ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } };
     const [total, rows] = await this.prisma.$transaction([this.prisma.billingGatewayAttempt.count({ where }), this.prisma.billingGatewayAttempt.findMany({ where, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize, select: { id: true, intentId: true, providerOrderId: true, resultCode: true, status: true, amountRial: true, reference: true, traceNumber: true, verifiedAt: true, createdAt: true } })]);
     return { page: query.page, pageSize: query.pageSize, total, items: rows.map(row => ({ ...row, providerOrderId: row.providerOrderId.toString(), amountRial: row.amountRial.toString() })) };
   }

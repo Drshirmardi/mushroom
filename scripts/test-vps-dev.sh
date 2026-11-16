@@ -29,6 +29,10 @@ cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
 cp "$repo_root/deploy/ejabberd/compose.yaml" "$dev_root/chat.compose.yaml"
 cp "$repo_root/deploy/ejabberd/compose.database.yaml" "$dev_root/chat.database.yaml"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
+mkdir -p "$workspace/apps/api/scripts" "$workspace/raw-data/markdown"
+cp "$repo_root/apps/api/scripts/build-program-catalog.mjs" "$workspace/apps/api/scripts/"
+printf '{}\n' >"$workspace/raw-data/services.catalog.json"
+printf 'Synthetic source\n' >"$workspace/raw-data/markdown/service.md"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
   "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$workspace/apps/api/"
@@ -131,6 +135,8 @@ if [[ " $* " == *' run --rm --no-deps bootstrap '* ]]; then
   if [[ ${DEV_COMPILE_API:-false} == true ]]; then
     mkdir -p "$FAKE_WORKSPACE/apps/api/dist"
     : >"$FAKE_WORKSPACE/apps/api/dist/main.js"
+    mkdir -p "$FAKE_WORKSPACE/apps/api/dist/resources"
+    printf '{}\n' >"$FAKE_WORKSPACE/apps/api/dist/resources/program-catalog.json"
     printf '%s\n' "$DEV_API_SOURCE_HASH" >"$FAKE_WORKSPACE/apps/api/dist/.source.sha256"
   fi
   if [[ ${DEV_WRITE_RUNTIME_CONFIG:-false} == true ]]; then
@@ -238,6 +244,54 @@ grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
 ! grep -q 'synthetic-arvan-rotated-secret' "$docker_log" \
   || fail 'Arvan secret leaked into deployment arguments'
 
+printf '\nPUBLIC_GA4_MEASUREMENT_ID=G-TEST123\nPUBLIC_ANALYTICS_CONSENT=granted\nPUBLIC_ANALYTICS_DEBUG=true\nANALYTICS_SERVER_ENABLED=true\n' >>"$dev_root/runtime.env"
+printf 'synthetic-ga-secret' >"$dev_root/secrets/ga4_api_secret"
+: >"$docker_log"
+run_deploy aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Analytics configuration did not recreate the API runtime'
+printf 'synthetic-ga-rotated-secret' >"$dev_root/secrets/ga4_api_secret"
+: >"$docker_log"
+run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Analytics secret rotation did not recreate the API runtime'
+! grep -q 'synthetic-ga-' "$docker_log" || fail 'Analytics secret leaked into deployment arguments'
+
+# Bale enablement, bot-token replacement and webhook-secret rotation must recreate the API
+# without rebuilding artifacts or exposing credentials in docker commands.
+cat >>"$dev_root/runtime.env" <<EOF
+BALE_AUTH_ENABLED=true
+BALE_BOT_USERNAME=health_test_bot
+EOF
+printf '123456789:syntheticBaleTestToken123' >"$dev_root/secrets/bale_bot_token"
+printf '%s' 'initial-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
+: >"$docker_log"
+run_deploy dddddddddddddddddddddddddddddddddddddddd
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale activation did not recreate the API runtime'
+! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
+  || fail 'Bale activation unnecessarily ran bootstrap'
+! grep -q 'syntheticBaleTestToken' "$docker_log" || fail 'Bale bot token leaked into deployment args'
+
+printf '123456789:rotatedSyntheticBaleToken123' >"$dev_root/secrets/bale_bot_token"
+: >"$docker_log"
+run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale token rotation did not recreate the API runtime'
+
+printf '%s' 'rotated-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
+: >"$docker_log"
+run_deploy ffffffffffffffffffffffffffffffffffffffff
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Bale webhook-secret rotation did not recreate the API runtime'
+! grep -q 'rotated-bale-webhook-secret' "$docker_log" || fail 'Bale webhook secret leaked into deployment args'
+
+sed -i 's/^BALE_AUTH_ENABLED=.*/BALE_AUTH_ENABLED=false/' "$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy 1111111111111111111111111111111111111111
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'Disabling Bale did not recreate the API runtime'
+
 printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
 : >"$docker_log"
 run_deploy 8888888888888888888888888888888888888888
@@ -267,6 +321,18 @@ printf '\n' >>"$workspace/apps/api/src/main.ts"
 run_deploy dddddddddddddddddddddddddddddddddddddddd
 grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
   || fail 'API-only change did not run only the API compiler stage'
+
+for catalog_input in raw-data/markdown/service.md raw-data/services.catalog.json apps/api/scripts/build-program-catalog.mjs; do
+  printf '\n' >>"$workspace/$catalog_input"
+  : >"$docker_log"
+  run_deploy dddddddddddddddddddddddddddddddddddddddd
+  grep -q 'bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
+    || fail "catalog input change did not rebuild private bundle: $catalog_input"
+done
+rm -- "$workspace/apps/api/dist/resources/program-catalog.json"
+: >"$docker_log"
+run_deploy dddddddddddddddddddddddddddddddddddddddd
+grep -q 'bootstrap.*compile=true' "$docker_log" || fail 'missing catalog bundle did not force rebuild'
 grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
   || fail 'API-only change did not recreate the API runtime'
 
@@ -324,6 +390,15 @@ run_deploy 1111111111111111111111111111111111111111
 wait "$lock_holder"
 ! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
   || fail 'serialized unchanged sync unnecessarily ran bootstrap'
+
+# A callback-only runtime change must refresh the public dashboard config too.
+printf '\nSADAD_RETURN_URL=https://merchant.example.test/v1/payments/providers/sadad/callback\n' >>"$dev_root/runtime.env"
+: >"$docker_log"
+run_deploy a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1
+grep -q 'run --rm --no-deps bootstrap.*config=true' "$docker_log" \
+  || fail 'callback-only change did not regenerate dashboard runtime configuration'
+grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
+  || fail 'callback-only change did not recreate API runtime'
 
 cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
 sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \

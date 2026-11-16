@@ -7,6 +7,39 @@ import { formatRial } from './wallet-money';
 const object = (value: unknown): Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 const text = (value: unknown) => typeof value === 'string' ? value.trim() : '';
 
+export function subscribeHomeRefresh(refresh: () => unknown): () => void {
+  let lastRefresh = Date.now();
+  const refreshIfDue = () => {
+    const now = Date.now();
+    if (now - lastRefresh < 60_000) return;
+    lastRefresh = now;
+    void refresh();
+  };
+  const onVisibility = () => {
+    if (document.visibilityState === 'visible') refreshIfDue();
+  };
+  const onPageShow = (event: PageTransitionEvent) => {
+    if (event.persisted) refreshIfDue();
+  };
+  document.addEventListener('visibilitychange', onVisibility);
+  window.addEventListener('pageshow', onPageShow);
+  return () => {
+    document.removeEventListener('visibilitychange', onVisibility);
+    window.removeEventListener('pageshow', onPageShow);
+  };
+}
+
+/** Percentages come only from the saved dimension result, never from its rank. */
+export function homeMizajData(snapshot: unknown) {
+  const value = object(snapshot);
+  if (value.algorithmId !== 'DIMENSION_TIEBREAK') return null;
+  const scores = Object.fromEntries(Object.entries(object(value.scores)).filter((entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1])));
+  const dimensions = Array.isArray(value.dimensionTitles) ? value.dimensionTitles.map(object).map(item => ({ id: text(item.id), title: text(item.title) })).filter(item => item.id && item.title) : [];
+  if (!dimensions.length) return null;
+  const ranks = [value.primary, value.secondary].map(id => dimensions.find(dimension => dimension.id === text(id)) ?? null);
+  return { scores, dimensions, ranks };
+}
+
 /** Only show authored result text; no inferred diagnosis, score or synthetic progress. */
 export function homeResultSummary(snapshot: unknown) {
   const value = object(snapshot);
@@ -22,8 +55,8 @@ export function homeResultSummary(snapshot: unknown) {
 export function homePendingAction(action: PatientJourney['home']['actions'][number]) {
   const { code, resourceId } = action;
   const id = encodeURIComponent(resourceId ?? '');
-  if (code === 'TRACK_ORDER') return { href: `/store/order-tracking?orderId=${id}`, title: 'پیگیری سفارش فروشگاه', description: 'سفارش در انتظار پرداخت است؛ آخرین وضعیت را بررسی کنید.' };
-  if (code === 'OPEN_COUPLE_LINK') return { href: `/assessment/couples/links/${id}`, title: 'تکمیل اتصال همراه', description: 'وضعیت دعوت و رضایت مستقل همراه را بررسی کنید.' };
+  if (code === 'TRACK_ORDER') return { href: `/store/order-tracking?orderId=${id}`, title: 'پیگیری سفارش فروشگاه', description: 'مراحل آماده‌سازی و تحویل سفارش را پیگیری کنید.' };
+  if (code === 'OPEN_COUPLE_LINK') return { href: `/assessment/couples/links/${id}`, title: 'پیگیری دعوت قدیمی', description: 'وضعیت اتصال و رضایت نفر دوم را بررسی کنید.' };
   const link = journeyActionLink({ code, resourceId });
   if (code === 'CONTINUE_PAYMENT' && action.amountRial !== null) return {
     href: link.href, title: billingPurposeLabel(action.paymentPurpose ?? ''),

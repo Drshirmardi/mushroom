@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import { Prisma } from '../../../generated/prisma/client';
 import { PrismaService } from '../../../database/prisma/prisma.service';
+import { settleOrderCart } from './settle-order-cart';
 import { CommerceInventoryService } from '../inventory/commerce-inventory.service';
 import { CommerceDiscountService } from '../discounts/commerce-discount.service';
 import type { CheckoutCommerceOrderDto, CreateCommerceAddressDto, UpdateCommerceAddressDto, UpdateCourierShippingRateDto } from './commerce-checkout.dto';
@@ -150,17 +151,17 @@ export class CommerceCheckoutService {
           patientId: patient.id, status: 'PENDING_PAYMENT', payment: null,
           snapshot: { is: { payload: { path: ['checkoutCartKey'], equals: checkoutCartKey } } },
           OR: [{ billingIntent: null }, { billingIntent: { is: { status: 'PENDING', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } } }],
-          reservations: { some: {}, every: { status: 'ACTIVE', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } },
         }, include: this.orderInclude, orderBy: { createdAt: 'desc' } });
-        if (reusable) return this.order(reusable);
+        if (reusable) { await settleOrderCart(tx, reusable.id); return this.order(reusable); }
         const preparedDiscount = await this.discounts.prepareCheckout(tx, { clinicId: patient.clinicId, patientId: patient.id, discountCode, subtotalAmountToman: subtotal });
         const discountAmountToman = preparedDiscount?.amountToman ?? 0n;
         const discountedLines = this.applyDiscount(lines, subtotal, discountAmountToman);
         const total = subtotal + tax - discountAmountToman + shipping.amountToman;
         const payload = { version: 1, checkoutCartKey, cartEntries, lines: discountedLines.map((line) => ({ skuId: line.skuId, skuCode: line.skuCodeSnapshot, productTitle: line.productTitleSnapshot, quantity: line.quantity, unitPriceToman: line.unitPriceToman.toString(), unitTaxToman: line.unitTaxToman.toString(), discountAmountToman: line.discountAmountToman.toString(), lineTotalToman: line.lineTotalToman.toString() })), discount: { code: preparedDiscount?.code ?? null, amountToman: discountAmountToman.toString() }, shipping: { method: checkout.shippingMethod, amountToman: shipping.amountToman.toString(), address: shipping.address }, totals: { subtotalAmountToman: subtotal.toString(), taxAmountToman: tax.toString(), discountAmountToman: discountAmountToman.toString(), shippingAmountToman: shipping.amountToman.toString(), totalAmountToman: total.toString() } };
         const order = await tx.commerceOrder.create({ data: { clinicId: patient.clinicId, patientId: patient.id, idempotencyKey: key, shippingMethod: checkout.shippingMethod, shippingAddressSnapshot: shipping.address === null ? Prisma.DbNull : shipping.address as Prisma.InputJsonValue, shippingDetailSnapshot: { sourceAddressId: shipping.address?.id ?? null, shippingRateId: shipping.rateId, method: checkout.shippingMethod, discountCode: preparedDiscount?.code ?? null }, subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman, shippingAmountToman: shipping.amountToman, totalAmountToman: total, lines: { create: discountedLines }, snapshot: { create: { subtotalAmountToman: subtotal, taxAmountToman: tax, discountAmountToman, shippingAmountToman: shipping.amountToman, totalAmountToman: total, payload: payload as Prisma.InputJsonValue, integrityHash: createHash('sha256').update(JSON.stringify(payload)).digest('hex') } }, }, include: this.orderInclude });
-        const reservations = await this.inventory.reserveCheckout(tx, { clinicId: patient.clinicId, orderId: order.id, lines: discountedLines.map((line) => ({ skuId: line.skuId!, quantity: line.quantity })) });
-        await this.discounts.reserveCheckout(tx, { prepared: preparedDiscount, patientId: patient.id, orderId: order.id, expiresAt: reservations[0]?.expiresAt ?? null });
+        await this.inventory.reserveCheckout(tx, { clinicId: patient.clinicId, orderId: order.id, lines: discountedLines.map((line) => ({ skuId: line.skuId!, quantity: line.quantity })) });
+        await this.discounts.reserveCheckout(tx, { prepared: preparedDiscount, patientId: patient.id, orderId: order.id, expiresAt: null });
+        await settleOrderCart(tx, order.id);
         await this.audit(tx, 'COMMERCE_ORDER_CHECKED_OUT', 'COMMERCE_ORDER', order.id, context, { shippingMethod: checkout.shippingMethod, discountCode: preparedDiscount?.code ?? null, totalAmountToman: order.totalAmountToman.toString(), lineCount: order.lines.length });
         return this.order(order);
       });

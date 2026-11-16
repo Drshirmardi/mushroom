@@ -49,12 +49,12 @@ export const submitAssessment = (accessToken: string, id: string, idempotencyKey
 );
 
 export const getAssessmentQuestionnaire = (accessToken: string, id: string) => expectData<AssessmentQuestionnaire>(apiClient.GET("/v1/assessment-submissions/{id}/questionnaire", { headers: authorization(accessToken), params: { path: { id } } }));
-export const listAssessmentHistory = (accessToken: string, page = 1) => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20 } } }));
+export const listAssessmentHistory = (accessToken: string, page = 1, state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20, state } } }));
 export const getAssessmentGuidance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentGuidanceDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/guidance", { headers: authorization(accessToken), params: { path: { id } } }));
 export const getAssessmentProvenance = (accessToken: string, id: string) => expectData<components["schemas"]["PatientAssessmentProvenanceResponseDto"]>(apiClient.GET("/v1/assessment-submissions/{id}/provenance", { headers: authorization(accessToken), params: { path: { id } } }));
 
-export const getAssessmentResult = (accessToken: string, id: string) => expectData<AssessmentSubmission>(
-  apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } } }),
+export const getAssessmentResult = (accessToken: string, id: string, signal?: AbortSignal) => expectData<AssessmentSubmission>(
+  apiClient.GET("/v1/assessment-submissions/{id}/result", { headers: authorization(accessToken), params: { path: { id } }, signal }),
 );
 
 export const getBookingEligibility = (accessToken: string) => expectData<BookingEligibility>(
@@ -70,4 +70,9 @@ export function assessmentErrorMessage(error: unknown) {
   if (error.code === "ASSESSMENT_SUBMISSION_IMMUTABLE") return "این ارزیابی قبلاً تکمیل شده و قابل تغییر نیست.";
   if (error.status === 409) return "پاسخ‌ها یا وضعیت آزمون تغییر کرده است. پیش از ادامه، نسخهٔ ذخیره‌شده را دوباره دریافت کنید؛ پاسخ‌های فعلی خودکار جایگزین نمی‌شوند.";
   return "درخواست ارزیابی انجام نشد؛ دوباره تلاش کنید.";
+}
+
+export async function getCurrentMezaj(accessToken:string) {
+  try{return await expectData<components['schemas']['MezajResultResponseDto']>(apiClient.GET('/v1/patients/me/mezaj',{headers:authorization(accessToken),cache:'no-store'}));}
+  catch(error){if(error instanceof AssessmentRequestError&&error.status===404)return null;throw error;}
 }

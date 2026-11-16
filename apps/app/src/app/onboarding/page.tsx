@@ -1,4 +1,7 @@
 "use client";
+import { AsyncButton } from "@/components/shared/async-button";
+import { HeartbeatLoader } from "@/components/shared/heartbeat-loader";
+import { LoadingState } from "@/components/shared/skeletons";
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -34,7 +37,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const field = <K extends keyof IntakeDraft>(key: K, value: IntakeDraft[K]) => { setDraft(current => ({ ...current, [key]: value })); setError(null); setNotice(null); };
   const move = (next: number) => {
     if (busy) return;
-    const issue = next > step ? intakeIssue(draft, step === 0) : null;
+    const issue = next > step ? intakeIssue(draft, step === 0, step === 0 ? 'health' : 'all') : null;
     if (issue) { setError(issue); return; }
     setStep(next); setError(null); setNotice(null);
     requestAnimationFrame(() => heading.current?.focus());
@@ -42,7 +45,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const save = async (complete: boolean) => {
     if (pending.current) return;
     const issue = intakeIssue(draft, complete);
-    if (issue) { setError(issue); if (complete) setStep(intakeIssue({ ...draft, heightCm: '', weightKg: '' }, true) ? 0 : 1); return; }
+    if (issue) { setError(issue); setStep(intakeIssue(draft, complete, 'health') ? 0 : 1); requestAnimationFrame(() => heading.current?.focus()); return; }
     pending.current = true; setBusy(true); setError(null); setNotice(null);
     try {
       const saved = await saveMedicalIntake(token, intakeBody(draft, revision));
@@ -56,7 +59,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
   const date = draft.birthDate ? new Intl.DateTimeFormat('fa-IR', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(draft.birthDate + 'T00:00:00Z')) : 'ثبت نشده';
   const gender = data.profile.gender === 'FEMALE' ? 'زن' : data.profile.gender === 'MALE' ? 'مرد' : 'ثبت نشده';
   return <main className={styles.page} dir="rtl">
-    <header className={styles.topbar}><Link href="/" className={styles.back}><ArrowRight size={18} aria-hidden="true" />بازگشت به برنامه</Link><span className={styles.brand}><HeartPulse size={20} aria-hidden="true" />پروندهٔ سلامت</span></header>
+    <header className={styles.topbar}><button type="button" className={styles.back} disabled={busy} onClick={() => router.push(new URLSearchParams(window.location.search).get('from') === 'medical' ? '/profile/medical' : '/')}><ArrowRight size={18} aria-hidden="true" />بازگشت</button><span className={styles.brand}><HeartPulse size={20} aria-hidden="true" />پروندهٔ سلامت</span></header>
     <div className={styles.layout}>
       <aside className={styles.sidebar}><span className={styles.eyebrow}>یک قدم برای شناخت بهتر شما</span><h2>سلامت شما،<br />با نگاه به خود شما.</h2><p>پاسخ‌های شما کمک می‌کنند اطلاعات پرونده‌تان کامل‌تر باشد. فقط دربارهٔ وضعیت خودتان پاسخ دهید.</p><ol className={styles.steps} aria-label="مراحل اطلاعات سلامت">{steps.map((label, index) => <li key={label} aria-current={step === index ? 'step' : undefined} data-active={step === index} data-done={index < step}><span className={styles.stepNumber}>{index < step ? <Check size={16} aria-hidden="true" /> : toP(index + 1)}</span><span>{label}{index === 1 && <small>اختیاری</small>}</span></li>)}</ol><div className={styles.note}><ShieldCheck size={20} aria-hidden="true" /><p>این پاسخ‌ها گزارش خود شما هستند و جایگزین تشخیص و نظر پزشک نیستند.</p></div></aside>
       <div className={styles.workspace}>
@@ -69,7 +72,7 @@ function Form({ data, token }: { data: Loaded; token: string }) {
             {step === 1 && <div className={styles.optional}><div className={styles.measurements}>{([['heightCm', 'قد', 'سانتی‌متر', 30, 300], ['weightKg', 'وزن', 'کیلوگرم', 2, 500]] as const).map(([key, label, unit, min, max]) => <div key={key}><label htmlFor={key}>{label}<small>اختیاری</small></label><div className={styles.unitInput}><input id={key} type="number" inputMode="decimal" min={min} max={max} step={key === 'weightKg' ? '0.01' : '1'} value={draft[key]} placeholder="—" disabled={busy} onChange={event => field(key, event.target.value)} /><span>{unit}</span></div></div>)}</div>{optionalFields.map(item => <div key={item.key}><label htmlFor={item.key}>{item.label}<small>اختیاری</small></label><select id={item.key} value={draft[item.key]} disabled={busy} onChange={event => field(item.key, event.target.value as IntakeDraft[typeof item.key])}>{item.options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>)}</div>}
             {step === 2 && <section className={styles.review} aria-label="مرور پاسخ‌ها"><div className={styles.reviewTitle}><h2>اطلاعات سلامت</h2><button type="button" onClick={() => move(0)} disabled={busy}>ویرایش</button></div><dl>{reports.map(item => <div key={item.key}><dt>{item.label}</dt><dd>{draft[item.key].status === 'NONE' ? 'ندارم' : draft[item.key].status === 'UNKNOWN' ? 'نمی‌دانم' : draft[item.key].items.map(v => v.trim()).filter(Boolean).join('، ')}</dd></div>)}</dl><div className={styles.reviewTitle}><h2>سبک زندگی</h2><button type="button" onClick={() => move(1)} disabled={busy}>ویرایش</button></div><dl>{draft.heightCm && <div><dt>قد</dt><dd>{toP(draft.heightCm)} سانتی‌متر</dd></div>}{draft.weightKg && <div><dt>وزن</dt><dd>{toP(draft.weightKg)} کیلوگرم</dd></div>}{optionalFields.filter(item => draft[item.key]).map(item => <div key={item.key}><dt>{item.label}</dt><dd>{item.options.find(([value]) => value === draft[item.key])?.[1]}</dd></div>)}</dl>{!draft.heightCm && !draft.weightKg && !optionalFields.some(item => draft[item.key]) && <p className={styles.muted}>اطلاعات اختیاری وارد نشده است.</p>}</section>}
           </div>
-          <footer className={styles.actions}><div>{step > 0 && <button type="button" className={styles.previous} disabled={busy} onClick={() => move(step - 1)}><ArrowRight size={16} aria-hidden="true" />قبلی</button>}<button type="button" className={styles.save} disabled={busy} onClick={() => void save(false)}>ذخیره و ادامه در فرصتی دیگر</button></div><button type="submit" className={styles.primary} disabled={busy}>{busy ? <><LoaderCircle size={17} className={styles.spin} aria-hidden="true" />در حال ذخیره…</> : <>{step === 2 ? 'ثبت اطلاعات سلامت' : step === 1 ? 'ادامه و مرور پاسخ‌ها' : 'ادامه'}<ArrowLeft size={17} aria-hidden="true" /></>}</button></footer>
+          <footer className={styles.actions}><div>{step > 0 && <button type="button" className={styles.previous} disabled={busy} onClick={() => move(step - 1)}><ArrowRight size={16} aria-hidden="true" />قبلی</button>}<AsyncButton type="button" className={styles.save} disabled={busy} onClick={() => save(false)}>ذخیره و ادامه در فرصتی دیگر</AsyncButton></div><button type="submit" className={styles.primary} disabled={busy} aria-busy={Boolean(busy)}>{busy ? <><HeartbeatLoader />{<><LoaderCircle size={17} className={styles.spin} aria-hidden="true" />در حال ذخیره…</>}</> : <>{step === 2 ? 'ثبت اطلاعات سلامت' : step === 1 ? 'ادامه و مرور پاسخ‌ها' : 'ادامه'}<ArrowLeft size={17} aria-hidden="true" /></>}</button></footer>
         </form>
       </div>
     </div>
@@ -90,5 +93,5 @@ export default function OnboardingPage() {
   }, [authentication.user.id, retry]);
   const current = resource?.userId === authentication.user.id ? resource : null;
   if (current?.data) return <Form key={authentication.user.id} data={current.data} token={authentication.accessToken} />;
-  return <main className={styles.loading} dir="rtl"><HeartPulse size={32} aria-hidden="true" /><h1>پروندهٔ سلامت شما</h1>{current?.error ? <><p role="alert">{current.error}</p><button onClick={() => { setResource(null); setRetry(value => value + 1); }}>تلاش دوباره</button><Link href="/">بازگشت به برنامه</Link></> : <p role="status">در حال دریافت اطلاعات ثبت‌شده…</p>}</main>;
+  return <main className={styles.loading} dir="rtl"><HeartPulse size={32} aria-hidden="true" /><h1>پروندهٔ سلامت شما</h1>{current?.error ? <><p role="alert">{current.error}</p><button onClick={() => { setResource(null); setRetry(value => value + 1); }}>تلاش دوباره</button><Link href="/">بازگشت به برنامه</Link></> : <LoadingState label="در حال دریافت اطلاعات ثبت‌شده…" variant="form" />}</main>;
 }

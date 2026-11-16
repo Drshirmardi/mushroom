@@ -20,6 +20,16 @@ export class ContentService {
   private async audit(tx: Prisma.TransactionClient, action: string, subjectId: string, context: Context, metadata: object) { await tx.auditEvent.create({ data: { action, actorUserId: context.actorUserId, actorSessionId: context.actorSessionId, subjectType: 'CONTENT', subjectId, requestId: context.requestId, ipAddress: context.ipAddress, metadata: metadata as Prisma.InputJsonValue } }); }
   async categories() { const clinic = await this.clinic(); return { items: await this.prisma.articleCategory.findMany({ where: { clinicId: clinic.id }, orderBy: { name: 'asc' } }) }; }
   async createCategory(body: { name: string; slug: string }, context: Context) { const clinic = await this.clinic(); try { return await this.prisma.$transaction(async tx => { const item = await tx.articleCategory.create({ data: { clinicId: clinic.id, name: this.text(body.name, 'name', 120)!, slug: this.slug(body.slug)! } }); await this.audit(tx, 'CONTENT_CATEGORY_CREATED', item.id, context, {}); return item; }); } catch (error) { if ((error as { code?: string }).code === 'P2002') throw conflict(); throw error; } }
+  async articlePreviews() {
+    const clinic = await this.clinic();
+    const items = await this.prisma.article.findMany({
+      where: { clinicId: clinic.id, publicationStatus: ContentPublicationStatus.PUBLISHED, publishedAt: { not: null } },
+      orderBy: { updatedAt: 'desc' },
+      take: 2,
+      select: { id: true, slug: true, title: true },
+    });
+    return { items };
+  }
   async articles(admin = true) { const clinic = await this.clinic(); return { items: await this.prisma.article.findMany({ where: { clinicId: clinic.id, ...(admin ? {} : { publicationStatus: ContentPublicationStatus.PUBLISHED, publishedAt: { not: null } }) }, include: { category: true }, orderBy: { updatedAt: 'desc' } }).then(items => items.map(item => this.article(item))) }; }
   async articleBySlug(slug: string, admin = false) { const clinic = await this.clinic(); const item = await this.prisma.article.findFirst({ where: { clinicId: clinic.id, slug, ...(admin ? {} : { publicationStatus: ContentPublicationStatus.PUBLISHED, publishedAt: { not: null } }) }, include: { category: true } }); if (!item) throw missing('ARTICLE'); return this.article(item); }
   async createArticle(body: any, context: Context) { const clinic = await this.clinic(); const cover = this.media(body.cover); try { return await this.prisma.$transaction(async tx => { await this.category(tx, clinic.id, body.categoryId); const item = await tx.article.create({ data: { clinicId: clinic.id, categoryId: body.categoryId, slug: this.slug(body.slug)!, title: this.text(body.title, 'title', 240)!, summary: this.text(body.summary, 'summary', 500) ?? null, body: this.text(body.body, 'body', 100000)!, ...this.publication(status(body.publicationStatus)), ...(cover ? { coverObjectKey: cover.objectKey, coverContentType: cover.contentType, coverSizeBytes: cover.sizeBytes } : {}) }, include: { category: true } }); await this.audit(tx, 'CONTENT_ARTICLE_CREATED', item.id, context, { publicationStatus: item.publicationStatus }); return this.article(item); }); } catch (error) { if ((error as { code?: string }).code === 'P2002') throw conflict(); throw error; } }

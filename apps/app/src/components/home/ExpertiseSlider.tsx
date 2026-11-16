@@ -109,7 +109,7 @@ export default function ExpertiseSlider() {
                         className="
                             mt-1
                             text-xs
-                            text-[#686c79]
+                            text-[var(--dp-text-medium)]
                         "
                     >
                         مشاوره متنی و تلفنی فوری
@@ -125,7 +125,7 @@ export default function ExpertiseSlider() {
                         mt-2
                         text-sm
                         font-medium
-                        text-[#006a40]
+                        text-[var(--dp-success)]
                     "
                 >
                     همه تخصص‌ها
@@ -144,6 +144,7 @@ export default function ExpertiseSlider() {
                     flex
                     gap-4
                     overflow-x-auto
+                    overscroll-x-contain
                     pb-2
                     pr-1
                     pl-2

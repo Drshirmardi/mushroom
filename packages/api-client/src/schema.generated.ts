@@ -274,6 +274,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/bale/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate signed Bale identity and exchange it for a patient session if linked */
+        post: operations["baleExchange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Begin one-time contact confirmation via the Bale bot */
+        post: operations["baleContactRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Finish a server-verified Bale contact flow; never trusts the browser phone */
+        post: operations["baleContactComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/bale/contact/link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Link an existing patient after fresh OTP phone verification */
+        post: operations["baleContactLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/integrations/bale/webhook/{secret}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs */
+        post: operations["baleWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/appointments/{appointmentId}/conversation": {
         parameters: {
             query?: never;
@@ -472,6 +557,54 @@ export interface paths {
         put?: never;
         /** Issue an authorized short-lived ejabberd session for one consultation */
         post: operations["chatAppointmentEngineSessionCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/appointments/{appointmentId}/care/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["visitCareProductsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/appointments/{appointmentId}/care/cart-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["visitCareCartAdd"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientPrescriptionsList"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -707,7 +840,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["adminPrescriptionHistory"];
         put?: never;
         /** Save an append-only prescription draft revision */
         post: operations["adminPrescriptionsSaveDraft"];
@@ -746,6 +879,22 @@ export interface paths {
         put?: never;
         /** Create an authorized treatment-plan definition */
         post: operations["adminTreatmentPlansCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/treatment-plans/{planId}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["adminTreatmentDraftReplace"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1334,6 +1483,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/entry/payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/defer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryDefer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/entry/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEntryResume"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/entry/complete": {
         parameters: {
             query?: never;
@@ -1821,92 +2018,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/patients/me/journey": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get derived patient Home state and next action */
-        get: operations["patientJourneyGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/couple-assessments/{id}/billing-intents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Pay as an independently consenting participant for exactly the two owned beneficiaries */
-        post: operations["patientCoupleAssessmentBillingIntentCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/couple-assessments/{id}/paid-state": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read only own engine references and authorized minimal partner completion coordination */
-        get: operations["patientCoupleAssessmentPaidState"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/couple-assessments/{id}/joint-result": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Read currently mutually authorized approved joint education; no individual responses or bands */
-        get: operations["patientCoupleJointResultGet"];
-        put?: never;
-        /** Persist exact approved joint education after both private engine completions and mutual consent */
-        post: operations["patientCoupleJointResultGenerate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/couple-assessment-offerings/{publicationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Resolve safe approved configuration references for explicit couple participation; never accept consent or expose pair definitions */
-        get: operations["patientCoupleAssessmentOfferingPreview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/patients/me/wallet": {
         parameters: {
             query?: never;
@@ -2254,6 +2365,109 @@ export interface paths {
         put?: never;
         /** Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful */
         post: operations["adminBillingAttemptResolveFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/journey": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get derived patient Home state and next action */
+        get: operations["patientJourneyGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the patient home screen */
+        get: operations["patientHomeGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pay as an independently consenting participant for exactly the two owned beneficiaries */
+        post: operations["patientCoupleAssessmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/paid-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read only own engine references and authorized minimal partner completion coordination */
+        get: operations["patientCoupleAssessmentPaidState"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessments/{id}/joint-result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read currently mutually authorized approved joint education; no individual responses or bands */
+        get: operations["patientCoupleJointResultGet"];
+        put?: never;
+        /** Persist exact approved joint education after both private engine completions and mutual consent */
+        post: operations["patientCoupleJointResultGenerate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/couple-assessment-offerings/{publicationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resolve safe approved configuration references for explicit couple participation; never accept consent or expose pair definitions */
+        get: operations["patientCoupleAssessmentOfferingPreview"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2821,6 +3035,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/assessments/{id}/distribution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminAssessmentDistributionGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["adminAssessmentDistributionUpdate"];
+        trace?: never;
+    };
     "/v1/admin/assessments/draft-presets/mizaj": {
         parameters: {
             query?: never;
@@ -3098,6 +3328,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/assessment-offerings/inline-versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Atomically save offering and its inline purpose-specific documents; does not activate purchases */
+        post: operations["adminAssessmentInlineOfferingCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/assessment-offerings": {
         parameters: {
             query?: never;
@@ -3358,6 +3605,38 @@ export interface paths {
         };
         /** List visible clinic services */
         get: operations["patientDirectoryServicesList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/doctors/{doctorId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminDoctorImagePreview"];
+        put: operations["adminDoctorImageUpload"];
+        post?: never;
+        delete: operations["adminDoctorImageRemove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/directory/doctors/{doctorId}/image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientDoctorImageGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4037,6 +4316,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/program-offerings/bulk-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramOfferingBulkPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-offerings/bulk-publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramOfferingBulkPublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/program-offerings/setup/{id}": {
         parameters: {
             query?: never;
@@ -4128,6 +4439,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["patientProgramOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/program-offering-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientProgramOfferingCardsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4289,6 +4616,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["patientCustomProgramOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/custom-program-offering-cards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientCustomProgramOfferingCardsList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4548,6 +4891,22 @@ export interface paths {
         };
         /** List authorized patient health observations */
         get: operations["adminHealthObservationsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/article-previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ContentController_patientArticlePreviews"];
         put?: never;
         post?: never;
         delete?: never;
@@ -5406,6 +5765,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/payments/providers/sadad/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Render a merchant-origin document before navigating to the fixed Sadad payment page; token is supplied only in the browser fragment */
+        get: operations["sadadPaymentBrowserStart"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payments/providers/sadad/callback": {
         parameters: {
             query?: never;
@@ -5834,6 +6210,231 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/marriage-requests/settings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/settings/{id}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriagePrepaidBillingIntent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/settings/{id}/refund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriagePrepaymentRefund"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageRequestsList"];
+        put?: never;
+        post: operations["patientMarriageRequestCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientMarriageRequestGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestDecline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/replace": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestReplace"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageRequestCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/marriage-requests/{id}/sms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientMarriageInvitationSms"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-assessment-offerings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEducationalAssessmentOfferingsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-assessment-offerings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEducationalAssessmentOfferingGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-assessment-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Claim owned free access with exact scoped acceptance; creates no financial records */
+        post: operations["patientEducationalAssessmentFreeAccessCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/assessment-offerings": {
         parameters: {
             query?: never;
@@ -5965,6 +6566,327 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/patients/me/educational-couple-assessments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEducationalCouplesList"];
+        put?: never;
+        post: operations["patientEducationalCoupleCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEducationalCoupleGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEducationalCoupleAccept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}/sharing-withdrawal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEducationalCoupleSharingWithdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}/free-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEducationalCoupleFreeAccessCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}/billing-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientEducationalCoupleBillingCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/educational-couple-assessments/{id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientEducationalCoupleResult"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramCatalogList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCatalogPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-catalog/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCatalogApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramCategoryList"];
+        put?: never;
+        post: operations["adminProgramCategoryCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramCategorySave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramServiceList"];
+        put?: never;
+        post: operations["adminProgramServiceCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminProgramServiceGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceSaveDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Capture the complete working draft for physician review; never auto-approve or publish */
+        post: operations["adminProgramServiceSubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-services/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramServiceRestore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-service-publications/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramDraftPublicationPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/program-service-publications/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminProgramDraftPublicationApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -5986,7 +6908,7 @@ export interface components {
              * @example UNAUTHORIZED
              * @enum {string}
              */
-            code: "PATIENT_ENTRY_REQUIRED" | "ENTRY_UNAVAILABLE" | "ENTRY_CONFLICT" | "ENTRY_PROFILE_INVALID" | "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND" | "CUSTOM_PROGRAM_DELIVERY_CONFLICT" | "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN" | "CUSTOM_PROGRAM_PLAN_IMMUTABLE" | "CUSTOM_PROGRAM_NOT_FOUND" | "CUSTOM_PROGRAM_CONFLICT" | "COUPLE_JOINT_RESULT_UNAVAILABLE" | "ASSESSMENT_CARE_NOT_FOUND" | "ASSIGNED_CONSULTATION_NOT_FOUND" | "PROGRAM_DEFINITION_NOT_FOUND" | "PROGRAM_DEFINITION_CONFLICT" | "PROGRAM_DEFINITION_INVALID" | "PROGRAM_RATE_LIMITED" | "PROGRAM_PUBLICATION_NOT_FOUND" | "PROGRAM_PUBLICATION_CONFLICT" | "PROGRAM_PUBLICATION_INVALID" | "ASSESSMENT_CARE_CONFLICT" | "COUPLE_JOINT_RESULT_NOT_READY" | "COUPLE_ASSESSMENT_NOT_FOUND" | "COUPLE_ASSESSMENT_INVALID" | "COUPLE_ASSESSMENT_CONFLICT" | "COUPLE_PROTOCOL_NOT_FOUND" | "COUPLE_PROTOCOL_INVALID" | "COUPLE_PROTOCOL_CONFLICT" | "ASSESSMENT_PURCHASE_NOT_FOUND" | "ASSESSMENT_PURCHASE_INVALID" | "ASSESSMENT_PURCHASE_CONFLICT" | "ASSESSMENT_PAYMENT_REQUIRED" | "ASSESSMENT_ACCESS_UNAVAILABLE" | "ASSESSMENT_REFUND_NOT_ALLOWED" | "ASSESSMENT_PUBLICATION_NOT_FOUND" | "ASSESSMENT_PUBLICATION_CONFLICT" | "ASSESSMENT_PUBLICATION_INVALID" | "ASSESSMENT_PROTOCOL_NOT_FOUND" | "ASSESSMENT_PROTOCOL_CONFLICT" | "ASSESSMENT_PROTOCOL_INVALID" | "ASSESSMENT_GUIDANCE_NOT_FOUND" | "ASSESSMENT_GUIDANCE_INVALID" | "ASSESSMENT_GUIDANCE_CONFLICT" | "GUIDANCE_NOT_FOUND" | "GUIDANCE_CONFLICT" | "GUIDANCE_INVALID" | "COUPLE_SESSION_NOT_FOUND" | "COUPLE_INVITATION_NOT_FOUND" | "COUPLE_INVITATION_UNAVAILABLE" | "COUPLE_PARTICIPANT_INELIGIBLE" | "COUPLE_POLICY_UNAVAILABLE" | "COUPLE_CONSENT_POLICY_CHANGED" | "COUPLE_STATE_CONFLICT" | "COUPLE_RATE_LIMITED" | "ASSESSMENT_OFFERING_NOT_FOUND" | "ASSESSMENT_OFFERING_INVALID" | "ASSESSMENT_OFFERING_CONFLICT" | "WALLET_INSUFFICIENT_FUNDS" | "WALLET_VERSION_CONFLICT" | "WALLET_FROZEN" | "BILLING_INPUT_INVALID" | "BILLING_INTENT_NOT_FOUND" | "BILLING_STATE_CONFLICT" | "BILLING_PAYMENT_PENDING" | "BILLING_HOLD_EXPIRED" | "BILLING_REFUND_EXCEEDS_PAYMENT" | "BILLING_REFUND_REQUIRED" | "BILLING_RATE_LIMITED" | "APPOINTMENT_PAYMENT_REQUIRED" | "APPOINTMENT_REPRICE_REQUIRED" | "COMMERCE_CONTENT_REVISION_CONFLICT" | "COMMERCE_CONTENT_INVALID" | "COMMERCE_CONTENT_SOURCE_REQUIRED" | "COMMERCE_IMAGE_INVALID" | "COMMERCE_IMAGE_TOO_LARGE" | "COMMERCE_IMAGE_BUSY" | "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" | "COMMERCE_IMAGE_REVISION_CONFLICT" | "COMMERCE_IMAGE_OPERATION_PENDING" | "COMMERCE_IMAGE_OPERATION_EXPIRED" | "COMMERCE_IMAGE_NOT_FOUND" | "COMMERCE_IMAGE_RATE_LIMITED" | "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "REFRESH_CONCURRENT_RETRY" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "ASSESSMENT_ANSWERS_INVALID" | "ASSESSMENT_CLINIC_UNAVAILABLE" | "ASSESSMENT_NOT_FOUND" | "ASSESSMENT_STRUCTURE_INVALID" | "ASSESSMENT_PREVIEW_CONFLICT" | "ASSESSMENT_RELEASE_NOT_READY" | "ASSESSMENT_FOLLOW_UP_REQUIRED" | "ASSESSMENT_DELETE_NOT_ALLOWED" | "ASSESSMENT_DELETE_CONFLICT" | "ASSESSMENT_DELETE_REFERENCED" | "ASSESSMENT_SUBMISSION_IMMUTABLE" | "ASSESSMENT_SUBMISSION_REVISION_CONFLICT" | "ASSESSMENT_SUBMISSION_NOT_FOUND" | "ASSESSMENT_VERSION_ALREADY_PUBLISHED" | "ASSESSMENT_VERSION_IMMUTABLE" | "ASSESSMENT_VERSION_NOT_FOUND" | "ASSESSMENT_VERSION_NOT_PUBLISHED" | "AUDIT_QUERY_INVALID" | "CLINICAL_AUDIT_UNAVAILABLE" | "CLINICAL_NOTE_AMENDMENT_REASON_REQUIRED" | "CLINICAL_NOTE_CONTENT_REQUIRED" | "CLINICAL_NOTE_FORBIDDEN" | "CLINICAL_NOTE_PUBLICATION_NOT_ALLOWED" | "CLINICAL_NOTE_REVISION_CONFLICT" | "CLINICAL_NOTE_SIGNING_NOT_ALLOWED" | "CLINICAL_RECONCILIATION_CONTENT_INVALID" | "CLINICAL_RECONCILIATION_FORBIDDEN" | "CLINICAL_RECONCILIATION_SOURCE_INVALID" | "CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED" | "CLINICAL_RECORD_KIND_INVALID" | "CLINICAL_RECORD_REVISION_CONFLICT" | "CLINICAL_RECORD_SIGNING_NOT_ALLOWED" | "CLINICAL_RESOURCE_FORBIDDEN" | "CLINICAL_SUMMARY_FORBIDDEN" | "COMMERCE_REVENUE_RANGE_INVALID" | "CONTENT_CONFLICT" | "CONTENT_INVALID" | "BANNER_NOT_FOUND" | "CONTENT_MEDIA_UNAVAILABLE" | "CONTENT_REVISION_CONFLICT" | "CONTENT_RATE_LIMITED" | "ENCOUNTER_INVALID_TRANSITION" | "HEALTH_OBSERVATION_FORBIDDEN" | "HEALTH_OBSERVATION_INVALID" | "MEZAJ_RESULT_NOT_FOUND" | "NOTIFICATION_NOT_FOUND" | "PAYMENT_ATTEMPT_INVALID" | "PRESCRIPTION_AMENDMENT_REASON_REQUIRED" | "PRESCRIPTION_AUDIT_CONTEXT_REQUIRED" | "PRESCRIPTION_ISSUE_NOT_ALLOWED" | "PRESCRIPTION_MEDICATION_REQUIRED" | "PRESCRIPTION_RESOURCE_FORBIDDEN" | "PRESCRIPTION_REVISION_CONFLICT" | "REQUIRED_ASSESSMENT_VERSION_INVALID" | "REQUIRED_ASSESSMENT_VERSION_MISSING" | "OTP_DISABLED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_ATTEMPTS_EXHAUSTED" | "OTP_RATE_LIMITED" | "OTP_RESEND_COOLDOWN" | "OTP_DELIVERY_UNAVAILABLE" | "OTP_ACCOUNT_PROVISIONING_UNAVAILABLE" | "IDEMPOTENCY_KEY_INVALID" | "SMS_TRANSPORT_DISABLED" | "SMS_PROVIDER_UNAVAILABLE" | "SMS_CREDENTIAL_KEY_UNAVAILABLE" | "SMS_PROVIDER_ACTIVATION_BLOCKED" | "SMS_PROVIDER_CAPABILITY_UNSUPPORTED" | "SMS_PROVIDER_CONFIGURATION_INVALID" | "SMS_PROVIDER_NOT_CONFIGURED" | "SMS_PROVIDER_NOT_FOUND" | "SMS_TEST_RATE_LIMITED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "PAYMENT_CALLBACK_RATE_LIMITED" | "CHAT_FORBIDDEN" | "CHAT_ENGINE_UNAVAILABLE" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "PROGRAM_PURCHASE_NOT_FOUND" | "PROGRAM_PURCHASE_CONFLICT" | "PROGRAM_ACCESS_UNAVAILABLE" | "PROGRAM_REFUND_NOT_ALLOWED" | "INTERNAL_SERVER_ERROR";
+            code: "BALE_ACCOUNT_UNSUPPORTED" | "PATIENT_ENTRY_REQUIRED" | "ENTRY_UNAVAILABLE" | "ENTRY_CONFLICT" | "ENTRY_PROFILE_INVALID" | "CUSTOM_PROGRAM_DELIVERY_NOT_FOUND" | "CUSTOM_PROGRAM_DELIVERY_CONFLICT" | "CUSTOM_PROGRAM_CLINICAL_FORBIDDEN" | "CUSTOM_PROGRAM_PLAN_IMMUTABLE" | "CUSTOM_PROGRAM_NOT_FOUND" | "CUSTOM_PROGRAM_CONFLICT" | "COUPLE_JOINT_RESULT_UNAVAILABLE" | "ASSESSMENT_CARE_NOT_FOUND" | "ASSIGNED_CONSULTATION_NOT_FOUND" | "PROGRAM_DEFINITION_NOT_FOUND" | "PROGRAM_DEFINITION_CONFLICT" | "PROGRAM_DEFINITION_INVALID" | "PROGRAM_RATE_LIMITED" | "PROGRAM_PUBLICATION_NOT_FOUND" | "PROGRAM_PUBLICATION_CONFLICT" | "PROGRAM_PUBLICATION_INVALID" | "ASSESSMENT_CARE_CONFLICT" | "COUPLE_JOINT_RESULT_NOT_READY" | "COUPLE_ASSESSMENT_NOT_FOUND" | "COUPLE_ASSESSMENT_INVALID" | "COUPLE_ASSESSMENT_CONFLICT" | "COUPLE_PROTOCOL_NOT_FOUND" | "COUPLE_PROTOCOL_INVALID" | "COUPLE_PROTOCOL_CONFLICT" | "ASSESSMENT_PURCHASE_NOT_FOUND" | "ASSESSMENT_PURCHASE_INVALID" | "ASSESSMENT_PURCHASE_CONFLICT" | "ASSESSMENT_PAYMENT_REQUIRED" | "ASSESSMENT_ACCESS_UNAVAILABLE" | "ASSESSMENT_REFUND_NOT_ALLOWED" | "ASSESSMENT_PUBLICATION_NOT_FOUND" | "ASSESSMENT_PUBLICATION_CONFLICT" | "ASSESSMENT_PUBLICATION_INVALID" | "ASSESSMENT_PROTOCOL_NOT_FOUND" | "ASSESSMENT_PROTOCOL_CONFLICT" | "ASSESSMENT_PROTOCOL_INVALID" | "ASSESSMENT_GUIDANCE_NOT_FOUND" | "ASSESSMENT_GUIDANCE_INVALID" | "ASSESSMENT_GUIDANCE_CONFLICT" | "GUIDANCE_NOT_FOUND" | "GUIDANCE_CONFLICT" | "GUIDANCE_INVALID" | "COUPLE_SESSION_NOT_FOUND" | "COUPLE_INVITATION_NOT_FOUND" | "COUPLE_INVITATION_UNAVAILABLE" | "COUPLE_PARTICIPANT_INELIGIBLE" | "COUPLE_POLICY_UNAVAILABLE" | "COUPLE_CONSENT_POLICY_CHANGED" | "COUPLE_STATE_CONFLICT" | "COUPLE_RATE_LIMITED" | "ASSESSMENT_OFFERING_NOT_FOUND" | "ASSESSMENT_OFFERING_INVALID" | "ASSESSMENT_OFFERING_CONFLICT" | "WALLET_INSUFFICIENT_FUNDS" | "WALLET_VERSION_CONFLICT" | "WALLET_FROZEN" | "BILLING_INPUT_INVALID" | "BILLING_INTENT_NOT_FOUND" | "BILLING_STATE_CONFLICT" | "BILLING_PAYMENT_PENDING" | "BILLING_HOLD_EXPIRED" | "BILLING_REFUND_EXCEEDS_PAYMENT" | "BILLING_REFUND_REQUIRED" | "BILLING_RATE_LIMITED" | "APPOINTMENT_PAYMENT_REQUIRED" | "APPOINTMENT_REPRICE_REQUIRED" | "COMMERCE_CONTENT_REVISION_CONFLICT" | "COMMERCE_CONTENT_INVALID" | "COMMERCE_CONTENT_SOURCE_REQUIRED" | "COMMERCE_IMAGE_INVALID" | "COMMERCE_IMAGE_TOO_LARGE" | "COMMERCE_IMAGE_BUSY" | "COMMERCE_IMAGE_STORAGE_UNAVAILABLE" | "COMMERCE_IMAGE_REVISION_CONFLICT" | "COMMERCE_IMAGE_OPERATION_PENDING" | "COMMERCE_IMAGE_OPERATION_EXPIRED" | "COMMERCE_IMAGE_NOT_FOUND" | "COMMERCE_IMAGE_RATE_LIMITED" | "BAD_REQUEST" | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "CONFLICT" | "PAYLOAD_TOO_LARGE" | "UNSUPPORTED_MEDIA_TYPE" | "UNPROCESSABLE_ENTITY" | "TOO_MANY_REQUESTS" | "SERVICE_UNAVAILABLE" | "INVALID_PHONE_NUMBER" | "PHONE_ALREADY_REGISTERED" | "PASSWORD_TOO_SHORT" | "PASSWORD_TOO_LONG" | "PASSWORD_UNSUPPORTED_CHARACTERS" | "PASSWORD_BLOCKED" | "INVALID_CREDENTIALS" | "LOGIN_RATE_LIMITED" | "REGISTRATION_RATE_LIMITED" | "REFRESH_RATE_LIMITED" | "REFRESH_CONCURRENT_RETRY" | "INVALID_REFRESH_TOKEN" | "INVALID_CURRENT_PASSWORD" | "PASSWORD_UNCHANGED" | "ORIGIN_NOT_ALLOWED" | "ASSESSMENT_ANSWERS_INVALID" | "ASSESSMENT_CLINIC_UNAVAILABLE" | "ASSESSMENT_NOT_FOUND" | "ASSESSMENT_STRUCTURE_INVALID" | "ASSESSMENT_PREVIEW_CONFLICT" | "ASSESSMENT_RELEASE_NOT_READY" | "ASSESSMENT_FOLLOW_UP_REQUIRED" | "ASSESSMENT_DELETE_NOT_ALLOWED" | "ASSESSMENT_DELETE_CONFLICT" | "ASSESSMENT_DELETE_REFERENCED" | "ASSESSMENT_SUBMISSION_IMMUTABLE" | "ASSESSMENT_SUBMISSION_REVISION_CONFLICT" | "ASSESSMENT_SUBMISSION_NOT_FOUND" | "ASSESSMENT_VERSION_ALREADY_PUBLISHED" | "ASSESSMENT_VERSION_IMMUTABLE" | "ASSESSMENT_VERSION_NOT_FOUND" | "ASSESSMENT_VERSION_NOT_PUBLISHED" | "AUDIT_QUERY_INVALID" | "CLINICAL_AUDIT_UNAVAILABLE" | "CLINICAL_NOTE_AMENDMENT_REASON_REQUIRED" | "CLINICAL_NOTE_CONTENT_REQUIRED" | "CLINICAL_NOTE_FORBIDDEN" | "CLINICAL_NOTE_PUBLICATION_NOT_ALLOWED" | "CLINICAL_NOTE_REVISION_CONFLICT" | "CLINICAL_NOTE_SIGNING_NOT_ALLOWED" | "CLINICAL_RECONCILIATION_CONTENT_INVALID" | "CLINICAL_RECONCILIATION_FORBIDDEN" | "CLINICAL_RECONCILIATION_SOURCE_INVALID" | "CLINICAL_RECORD_AMENDMENT_REASON_REQUIRED" | "CLINICAL_RECORD_KIND_INVALID" | "CLINICAL_RECORD_REVISION_CONFLICT" | "CLINICAL_RECORD_SIGNING_NOT_ALLOWED" | "CLINICAL_RESOURCE_FORBIDDEN" | "CLINICAL_SUMMARY_FORBIDDEN" | "COMMERCE_REVENUE_RANGE_INVALID" | "CONTENT_CONFLICT" | "CONTENT_INVALID" | "BANNER_NOT_FOUND" | "CONTENT_MEDIA_UNAVAILABLE" | "CONTENT_REVISION_CONFLICT" | "CONTENT_RATE_LIMITED" | "ENCOUNTER_INVALID_TRANSITION" | "HEALTH_OBSERVATION_FORBIDDEN" | "HEALTH_OBSERVATION_INVALID" | "MEZAJ_RESULT_NOT_FOUND" | "NOTIFICATION_NOT_FOUND" | "PAYMENT_ATTEMPT_INVALID" | "PRESCRIPTION_AMENDMENT_REASON_REQUIRED" | "PRESCRIPTION_AUDIT_CONTEXT_REQUIRED" | "PRESCRIPTION_ISSUE_NOT_ALLOWED" | "PRESCRIPTION_MEDICATION_REQUIRED" | "PRESCRIPTION_RESOURCE_FORBIDDEN" | "PRESCRIPTION_REVISION_CONFLICT" | "REQUIRED_ASSESSMENT_VERSION_INVALID" | "REQUIRED_ASSESSMENT_VERSION_MISSING" | "OTP_DISABLED" | "OTP_INVALID" | "OTP_EXPIRED" | "OTP_ATTEMPTS_EXHAUSTED" | "OTP_RATE_LIMITED" | "OTP_RESEND_COOLDOWN" | "OTP_DELIVERY_UNAVAILABLE" | "OTP_ACCOUNT_PROVISIONING_UNAVAILABLE" | "IDEMPOTENCY_KEY_INVALID" | "SMS_TRANSPORT_DISABLED" | "SMS_PROVIDER_UNAVAILABLE" | "SMS_CREDENTIAL_KEY_UNAVAILABLE" | "SMS_PROVIDER_ACTIVATION_BLOCKED" | "SMS_PROVIDER_CAPABILITY_UNSUPPORTED" | "SMS_PROVIDER_CONFIGURATION_INVALID" | "SMS_PROVIDER_NOT_CONFIGURED" | "SMS_PROVIDER_NOT_FOUND" | "SMS_TEST_RATE_LIMITED" | "PATIENT_PROFILE_NOT_FOUND" | "PROFILE_FIELDS_INCOMPLETE" | "MEDICAL_INTAKE_INCOMPLETE" | "INVALID_MEDICAL_DECLARATION" | "CONSENT_POLICY_NOT_AVAILABLE" | "CONSENT_POLICY_STALE" | "CONSENT_REQUIRED" | "CONSENT_RECORD_NOT_ACTIVE" | "MEDICAL_INTAKE_REVISION_CONFLICT" | "IDEMPOTENCY_KEY_REUSED" | "IDEMPOTENCY_KEY_REQUIRED" | "BOOKING_INELIGIBLE" | "APPOINTMENT_SLOT_UNAVAILABLE" | "APPOINTMENT_SLOT_CONFLICT" | "APPOINTMENT_FORBIDDEN" | "APPOINTMENT_CHANGE_NOT_ALLOWED" | "APPOINTMENT_INVALID_TRANSITION" | "QUEUE_EMPTY" | "APPOINTMENT_DOCTOR_BUSY" | "CLINIC_NOT_FOUND" | "DOCTOR_NOT_FOUND" | "SPECIALTY_NOT_FOUND" | "SERVICE_NOT_FOUND" | "DOCTOR_SERVICE_NOT_FOUND" | "DIRECTORY_NAME_CONFLICT" | "DIRECTORY_RECORD_IN_USE" | "DIRECTORY_PUBLICATION_INVALID" | "DIRECTORY_INPUT_INVALID" | "DOCTOR_SERVICE_CONFLICT" | "DOCTOR_SERVICE_INPUT_INVALID" | "TIME_ZONE_INVALID" | "AVAILABILITY_RULE_NOT_FOUND" | "CLINIC_CLOSURE_NOT_FOUND" | "DOCTOR_AVAILABILITY_EXCEPTION_NOT_FOUND" | "AVAILABILITY_INTERVAL_OVERLAP" | "SCHEDULE_INTERVAL_INVALID" | "AVAILABILITY_QUERY_INVALID" | "TREATMENT_PLAN_RESOURCE_FORBIDDEN" | "TREATMENT_PLAN_NOT_EDITABLE" | "TREATMENT_PLAN_STATE_INVALID" | "TREATMENT_SESSION_POSITION_CONFLICT" | "TREATMENT_PLAN_TEXT_REQUIRED" | "TREATMENT_TASK_RESOURCE_FORBIDDEN" | "TREATMENT_TASK_PLAN_INACTIVE" | "TREATMENT_TASK_SCHEDULE_INVALID" | "TREATMENT_TASK_STATE_INVALID" | "TREATMENT_ADHERENCE_TASK_INVALID" | "TREATMENT_PROGRESS_RESOURCE_FORBIDDEN" | "COMMERCE_CATEGORY_NOT_FOUND" | "COMMERCE_PRODUCT_NOT_FOUND" | "COMMERCE_SKU_NOT_FOUND" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INPUT_INVALID" | "COMMERCE_NAME_CONFLICT" | "COMMERCE_LIFECYCLE_INVALID" | "COMMERCE_INVENTORY_INVALID" | "COMMERCE_INVENTORY_NOT_FOUND" | "COMMERCE_INVENTORY_INSUFFICIENT" | "COMMERCE_RESERVATION_STATE_INVALID" | "COMMERCE_DISCOUNT_NOT_FOUND" | "COMMERCE_DISCOUNT_INPUT_INVALID" | "COMMERCE_DISCOUNT_UNAVAILABLE" | "COMMERCE_DISCOUNT_USAGE_LIMIT_REACHED" | "COMMERCE_DISCOUNT_PATIENT_LIMIT_REACHED" | "COMMERCE_DISCOUNT_CODE_CONFLICT" | "COMMERCE_DISCOUNT_LIMIT_BELOW_USAGE" | "COMMERCE_ADDRESS_NOT_FOUND" | "COMMERCE_CART_EMPTY" | "COMMERCE_ORDER_NOT_FOUND" | "COMMERCE_ORDER_INPUT_INVALID" | "COMMERCE_RECEIPT_NOT_AVAILABLE" | "SHIPPING_METHOD_UNAVAILABLE" | "PAYMENT_PROVIDER_NOT_FOUND" | "PAYMENT_PROVIDER_CAPABILITY_UNSUPPORTED" | "PAYMENT_PROVIDER_CONFIGURATION_INVALID" | "PAYMENT_PROVIDER_CREDENTIAL_KEY_UNAVAILABLE" | "SADAD_GO_LIVE_BLOCKED" | "PAYMENT_ATTEMPT_NOT_FOUND" | "PAYMENT_ATTEMPT_NOT_PAYABLE" | "PAYMENT_VERIFICATION_FAILED" | "PAYMENT_VERIFICATION_MISMATCH" | "PAYMENT_RECONCILIATION_REQUIRED" | "PAYMENT_CALLBACK_RATE_LIMITED" | "PAYMENT_START_RATE_LIMITED" | "CHAT_FORBIDDEN" | "CHAT_ENGINE_UNAVAILABLE" | "CHAT_APPOINTMENT_NOT_ELIGIBLE" | "CHAT_WINDOW_CLOSED" | "CHAT_BLOCKED" | "CHAT_IDEMPOTENCY_CONFLICT" | "CHAT_CURSOR_INVALID" | "CHAT_CURSOR_FORBIDDEN" | "CHAT_SEQUENCE_INVALID" | "CHAT_TOKEN_EXPIRED" | "CHAT_CONNECTION_LIMITED" | "CHAT_RATE_LIMITED" | "CHAT_MESSAGE_TOO_LONG" | "CHAT_MODERATION_FORBIDDEN" | "COMMERCE_ORDER_TRANSITION_INVALID" | "COMMERCE_ORDER_CANCELLATION_BLOCKED" | "COMMERCE_TRACKING_URL_INVALID" | "COMMERCE_REFUND_NOT_FOUND" | "COMMERCE_REFUND_AMOUNT_INVALID" | "COMMERCE_REFUND_OVER_PAYMENT_AMOUNT" | "REFUND_MANUAL_EVIDENCE_REQUIRED" | "COMMERCE_RECONCILIATION_EVIDENCE_REQUIRED" | "HTTP_ERROR" | "PROGRAM_PURCHASE_NOT_FOUND" | "PROGRAM_PURCHASE_CONFLICT" | "PROGRAM_ACCESS_UNAVAILABLE" | "PROGRAM_REFUND_NOT_ALLOWED" | "INTERNAL_SERVER_ERROR";
             /** @example Request failed */
             message: string;
             /** @example 0d43e245-9b4f-48c6-b6d8-88c472d87890 */
@@ -6137,6 +7059,26 @@ export interface components {
             items: components["schemas"]["AuditViewerItemDto"][];
             nextCursor?: string | null;
         };
+        BaleInitDataDto: {
+            initData: string;
+        };
+        BaleFlowResponseDto: {
+            /** @enum {string} */
+            status: "AUTHENTICATED" | "CONTACT_REQUIRED" | "CONTACT_PENDING" | "ACCOUNT_LINK_REQUIRED";
+            authentication?: components["schemas"]["AuthenticationResponseDto"];
+            /** @description Server-verified phone required for linking an existing patient account. */
+            phone?: string;
+        };
+        BaleContactRequestResponseDto: {
+            /** @enum {string} */
+            status: "CONTACT_REQUIRED";
+            ticket: string;
+            expiresAt: string;
+        };
+        BaleContactTicketDto: {
+            initData: string;
+            ticket: string;
+        };
         ChatConversationResponseDto: {
             /** Format: date-time */
             closedAt?: string | null;
@@ -6258,6 +7200,77 @@ export interface components {
             historyUrl: string;
             /** @description Durable moderation changes must also be reconciled on reconnect. */
             visibilityUrl: string;
+        };
+        VisitProductDto: {
+            skuId: string;
+            code: string;
+            title: string;
+            variant: string | null;
+            priceToman: string;
+        };
+        VisitProductsDto: {
+            items: components["schemas"]["VisitProductDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        VisitCartAddDto: {
+            /** Format: uuid */
+            commandId: string;
+            /** Format: uuid */
+            skuId: string;
+            quantity: number;
+        };
+        VisitCartResultDto: {
+            skuId: string;
+            addedQuantity: number;
+            quantity: number;
+        };
+        PrescriptionItemResponseDto: {
+            /** Format: uuid */
+            id: string;
+            position: number;
+            medicationName: string;
+            doseText: string | null;
+            frequencyText: string | null;
+            durationText: string | null;
+            instructions: string | null;
+        };
+        PrescriptionRevisionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            revisionNumber: number;
+            /** Format: uuid */
+            previousRevisionId: string | null;
+            /** @enum {string} */
+            state: "DRAFT" | "ISSUED" | "VOIDED";
+            amendmentReasonCategory: string | null;
+            integrityHash: string | null;
+            /** Format: date-time */
+            authoredAt: string;
+            /** Format: uuid */
+            authoredByUserId: string | null;
+            /** Format: date-time */
+            issuedAt: string | null;
+            /** Format: uuid */
+            issuedByUserId: string | null;
+            items: components["schemas"]["PrescriptionItemResponseDto"][];
+        };
+        PrescriptionResponseDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            patientId: string;
+            currentRevision: number;
+            currentIssuedRevision: number | null;
+            latestIssuedRevision: number | null;
+            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
+        };
+        PrescriptionListResponseDto: {
+            patientDisplayName?: string | null;
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            /** Format: uuid */
+            nextCursor?: string | null;
         };
         PatientClinicalItemResponseDto: {
             /** Format: uuid */
@@ -6427,51 +7440,6 @@ export interface components {
             };
             amendmentReasonCategory?: string | null;
         };
-        PrescriptionItemResponseDto: {
-            /** Format: uuid */
-            id: string;
-            position: number;
-            medicationName: string;
-            doseText: string | null;
-            frequencyText: string | null;
-            durationText: string | null;
-            instructions: string | null;
-        };
-        PrescriptionRevisionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            revisionNumber: number;
-            /** Format: uuid */
-            previousRevisionId: string | null;
-            /** @enum {string} */
-            state: "DRAFT" | "ISSUED" | "VOIDED";
-            amendmentReasonCategory: string | null;
-            integrityHash: string | null;
-            /** Format: date-time */
-            authoredAt: string;
-            /** Format: uuid */
-            authoredByUserId: string | null;
-            /** Format: date-time */
-            issuedAt: string | null;
-            /** Format: uuid */
-            issuedByUserId: string | null;
-            items: components["schemas"]["PrescriptionItemResponseDto"][];
-        };
-        PrescriptionResponseDto: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            patientId: string;
-            currentRevision: number;
-            currentIssuedRevision: number | null;
-            latestIssuedRevision: number | null;
-            revision: components["schemas"]["PrescriptionRevisionResponseDto"] | null;
-        };
-        PrescriptionListResponseDto: {
-            items: components["schemas"]["PrescriptionResponseDto"][];
-            /** Format: uuid */
-            nextCursor?: string | null;
-        };
         PrescriptionItemDto: {
             medicationName: string;
             doseText?: string;
@@ -6482,6 +7450,14 @@ export interface components {
         CreatePrescriptionDto: {
             expectedRevision: number;
             items: components["schemas"]["PrescriptionItemDto"][];
+            /** Format: uuid */
+            appointmentId?: string;
+            /** Format: uuid */
+            commandId?: string;
+        };
+        PrescriptionHistoryResponseDto: {
+            items: components["schemas"]["PrescriptionResponseDto"][];
+            nextBefore: number | null;
         };
         SavePrescriptionDraftDto: {
             expectedRevision: number;
@@ -6579,11 +7555,24 @@ export interface components {
             instructions?: string;
         };
         CreateTreatmentPlanDto: {
+            /** Format: uuid */
+            commandId?: string;
             title?: string;
             medications?: components["schemas"]["TreatmentMedicationDto"][];
             sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
             exercisePlans?: components["schemas"]["ExercisePlanDto"][];
             nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+        };
+        ReplaceTreatmentDraftDto: {
+            /** Format: uuid */
+            commandId?: string;
+            title?: string;
+            medications?: components["schemas"]["TreatmentMedicationDto"][];
+            sessionPlans?: components["schemas"]["TreatmentSessionPlanDto"][];
+            exercisePlans?: components["schemas"]["ExercisePlanDto"][];
+            nutritionPlans?: components["schemas"]["NutritionPlanDto"][];
+            /** Format: date-time */
+            expectedUpdatedAt: string;
         };
         UpdateTreatmentPlanDto: {
             title?: string;
@@ -6775,10 +7764,15 @@ export interface components {
             providerCode?: Record<string, never> | null;
         };
         PatientEntryStatusDto: {
+            amountRial?: string;
+            allowDeferral?: boolean;
+            reminder?: boolean;
+            intentId?: string | null;
+            introduction?: string;
             required: boolean;
             assessmentRequired: boolean;
             /** @enum {string} */
-            phase: "PROFILE" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
+            phase: "PROFILE" | "PAYMENT" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
             /** Format: uuid */
             assessmentVersionId: string | null;
             assessmentTitle: string | null;
@@ -6799,7 +7793,66 @@ export interface components {
             /** Format: date */
             birthDate: string;
         };
+        BillingPaymentMethodDto: {
+            /** @enum {string} */
+            code: "WALLET" | "GATEWAY";
+            available: boolean;
+            balanceRial: string | null;
+        };
+        BillingAttemptStatusDto: {
+            id: string;
+            status: string;
+            reference: string | null;
+            traceNumber: string | null;
+            verifiedAt: string | null;
+        };
+        BillingRefundDto: {
+            id: string;
+            status: string;
+            amountRial: string;
+            completedAt: string | null;
+        };
+        BillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the APPOINTMENT target only
+             */
+            doctorId?: string;
+            /**
+             * Format: uuid
+             * @description Present for the PROGRAM target only
+             */
+            programPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the ASSESSMENT target only
+             */
+            assessmentPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the MARRIAGE_REQUEST target only
+             */
+            marriagePublicationId?: string | null;
+            methods?: components["schemas"]["BillingPaymentMethodDto"][];
+            id: string;
+            purpose: string;
+            status: string;
+            method: string | null;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            orderId: string | null;
+            appointmentId: string | null;
+            expiresAt: string | null;
+            paidAt: string | null;
+            createdAt: string;
+            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
+            refunds?: components["schemas"]["BillingRefundDto"][];
+        };
         EntryPolicyDto: {
+            amountRial?: string;
+            allowDeferral?: boolean;
+            introduction?: string | null;
             enabled: boolean;
             /** Format: uuid */
             assessmentVersionId: string | null;
@@ -6809,12 +7862,20 @@ export interface components {
             enforcedFrom: string | null;
         };
         EntryPolicyUpdateDto: {
+            amountRial?: string;
+            allowDeferral?: boolean;
+            introduction?: string | null;
             enabled: boolean;
             /** Format: uuid */
             assessmentVersionId: string | null;
             expectedRevision: number;
         };
         PatientAssessmentHistoryItemDto: {
+            /**
+             * Format: uuid
+             * @description Exact marriage request context for this owned attempt, if any.
+             */
+            marriageRequestId: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -6951,6 +8012,8 @@ export interface components {
             cityName?: string | null;
             /** @enum {string|null} */
             gender?: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate?: string | null;
             /** Format: date-time */
             updatedAt?: string | null;
         };
@@ -6962,6 +8025,8 @@ export interface components {
             cityName?: string | null;
             /** @enum {string|null} */
             gender?: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate?: string;
         };
         OnboardingStatusResponseDto: {
             /** @enum {string} */
@@ -7150,11 +8215,186 @@ export interface components {
             /** @enum {boolean} */
             noDiagnosisOrTherapeuticDiet: true;
         };
+        WalletSummaryDto: {
+            patientId: string;
+            /** @enum {string} */
+            currency: "IRR";
+            balanceRial: string;
+            version: number;
+            frozen: boolean;
+            /** Format: date-time */
+            asOf: string;
+        };
+        WalletTransactionDto: {
+            id: string;
+            kind: string;
+            deltaRial: string;
+            balanceAfterRial: string;
+            reference: string;
+            createdAt: string;
+            /** @description ADMIN projection only */
+            actorUserId?: string | null;
+            /** @description ADMIN projection only */
+            actorDisplayName?: string | null;
+            /** @description ADMIN projection only */
+            reason?: string | null;
+            /** @description ADMIN projection only */
+            balanceBeforeRial?: string;
+        };
+        WalletTransactionPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["WalletTransactionDto"][];
+        };
+        WalletAmountDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
+        };
+        BillingOrderIntentDto: {
+            /** Format: uuid */
+            orderId: string;
+        };
+        BillingAppointmentIntentDto: {
+            /** Format: uuid */
+            doctorServiceId: string;
+            /** Format: date-time */
+            startsAt: string;
+        };
+        BillingGatewayAttemptDto: {
+            id: string;
+            intentId: string;
+            status: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            redirectUrl: string | null;
+        };
+        WalletAdjustmentDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
+            /** @enum {string} */
+            type: "CREDIT" | "DEBIT" | "SET_BALANCE";
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletAdjustmentResultDto: {
+            patientId: string;
+            currency: string;
+            beforeRial: string;
+            balanceRial: string;
+            deltaRial: string;
+            version: number;
+            journalId: string | null;
+        };
+        WalletStatusDto: {
+            frozen: boolean;
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletStatusResultDto: {
+            frozen: boolean;
+            version: number;
+        };
+        AdminBillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the APPOINTMENT target only
+             */
+            doctorId?: string;
+            /**
+             * Format: uuid
+             * @description Present for the PROGRAM target only
+             */
+            programPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the ASSESSMENT target only
+             */
+            assessmentPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the MARRIAGE_REQUEST target only
+             */
+            marriagePublicationId?: string | null;
+            methods?: components["schemas"]["BillingPaymentMethodDto"][];
+            id: string;
+            purpose: string;
+            status: string;
+            method: string | null;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            orderId: string | null;
+            appointmentId: string | null;
+            expiresAt: string | null;
+            paidAt: string | null;
+            createdAt: string;
+            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
+            refunds?: components["schemas"]["BillingRefundDto"][];
+            /** Format: uuid */
+            patientId: string;
+        };
+        BillingIntentPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["AdminBillingIntentDto"][];
+        };
+        BillingReconciliationItemDto: {
+            id: string;
+            status: string;
+            reference: string | null;
+            traceNumber: string | null;
+            verifiedAt: string | null;
+            providerOrderId: string;
+            resultCode: string | null;
+            intentId: string;
+            amountRial: string;
+            createdAt: string;
+        };
+        BillingReconciliationPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["BillingReconciliationItemDto"][];
+        };
+        BillingSummaryDto: {
+            currency: string;
+            asOf: string;
+            walletLiabilityRial: string;
+            gatewayReceivedRial: string;
+            topupReceivedRial: string;
+            orderPaidRial: string;
+            appointmentPaidRial: string;
+            refundedRial: string;
+            administrativeCreditRial: string;
+            administrativeDebitRial: string;
+            ledgerMismatchCount: number;
+            source: string;
+        };
+        BillingRefundRequestDto: {
+            /** @description Exact integer IRR, including service-price remainders smaller than one TOMAN. */
+            amountRial: string;
+            reason: string;
+        };
+        BillingRefundCompleteDto: {
+            evidenceReference: string;
+        };
         JourneySetupStepDto: {
             /** @enum {string} */
             code: "PROFILE" | "HEALTH" | "CONFIRM";
             /** @enum {string} */
             state: "COMPLETE" | "CURRENT" | "UPCOMING";
+        };
+        JourneyAssessmentSummaryDto: {
+            algorithmId: string | null;
+            primary?: string | null;
+            secondary?: string | null;
+            scores: {
+                [key: string]: number;
+            } | null;
+            dimensionTitles: Record<string, never>[] | null;
         };
         JourneyLatestAssessmentDto: {
             /** Format: uuid */
@@ -7162,6 +8402,7 @@ export interface components {
             title: string;
             /** Format: date-time */
             completedAt: string;
+            summary?: components["schemas"]["JourneyAssessmentSummaryDto"] | null;
         };
         JourneyHomeActionDto: {
             /** @enum {string} */
@@ -7396,56 +8637,17 @@ export interface components {
             /** @description Shopping is independent of medical onboarding */
             storeAvailable: boolean;
         };
+        PatientHomeResponseDto: {
+            setupSteps: components["schemas"]["JourneySetupStepDto"][];
+            isOnboardingComplete: boolean;
+            latestAssessment: components["schemas"]["JourneyLatestAssessmentDto"] | null;
+            nextAppointment: components["schemas"]["JourneyAppointmentDto"] | null;
+            actions: components["schemas"]["JourneyHomeActionDto"][];
+        };
         CoupleAssessmentBillingIntentDto: {
             contextHash: string;
             /** Format: uuid */
             termsConsentRecordId: string;
-        };
-        BillingPaymentMethodDto: {
-            /** @enum {string} */
-            code: "WALLET" | "GATEWAY";
-            available: boolean;
-            balanceRial: string | null;
-        };
-        BillingAttemptStatusDto: {
-            id: string;
-            status: string;
-            reference: string | null;
-            traceNumber: string | null;
-            verifiedAt: string | null;
-        };
-        BillingRefundDto: {
-            id: string;
-            status: string;
-            amountRial: string;
-            completedAt: string | null;
-        };
-        BillingIntentDto: {
-            /**
-             * Format: uuid
-             * @description Present for the PROGRAM target only
-             */
-            programPurchaseId?: string | null;
-            /**
-             * Format: uuid
-             * @description Present for the ASSESSMENT target only
-             */
-            assessmentPurchaseId?: string | null;
-            methods?: components["schemas"]["BillingPaymentMethodDto"][];
-            id: string;
-            purpose: string;
-            status: string;
-            method: string | null;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            orderId: string | null;
-            appointmentId: string | null;
-            expiresAt: string | null;
-            paidAt: string | null;
-            createdAt: string;
-            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
-            refunds?: components["schemas"]["BillingRefundDto"][];
         };
         CoupleAssessmentPaidStateDto: {
             /** Format: uuid */
@@ -7504,162 +8706,6 @@ export interface components {
             jointProtocolHash: string | null;
             available: boolean;
             blockers: string[];
-        };
-        WalletSummaryDto: {
-            patientId: string;
-            /** @enum {string} */
-            currency: "IRR";
-            balanceRial: string;
-            version: number;
-            frozen: boolean;
-            /** Format: date-time */
-            asOf: string;
-        };
-        WalletTransactionDto: {
-            id: string;
-            kind: string;
-            deltaRial: string;
-            balanceAfterRial: string;
-            reference: string;
-            createdAt: string;
-            /** @description ADMIN projection only */
-            actorUserId?: string | null;
-            /** @description ADMIN projection only */
-            actorDisplayName?: string | null;
-            /** @description ADMIN projection only */
-            reason?: string | null;
-            /** @description ADMIN projection only */
-            balanceBeforeRial?: string;
-        };
-        WalletTransactionPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["WalletTransactionDto"][];
-        };
-        WalletAmountDto: {
-            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
-            amountToman: string;
-        };
-        BillingOrderIntentDto: {
-            /** Format: uuid */
-            orderId: string;
-        };
-        BillingAppointmentIntentDto: {
-            /** Format: uuid */
-            doctorServiceId: string;
-            /** Format: date-time */
-            startsAt: string;
-        };
-        BillingGatewayAttemptDto: {
-            id: string;
-            intentId: string;
-            status: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            redirectUrl: string | null;
-        };
-        WalletAdjustmentDto: {
-            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
-            amountToman: string;
-            /** @enum {string} */
-            type: "CREDIT" | "DEBIT" | "SET_BALANCE";
-            expectedVersion: number;
-            reason: string;
-        };
-        WalletAdjustmentResultDto: {
-            patientId: string;
-            currency: string;
-            beforeRial: string;
-            balanceRial: string;
-            deltaRial: string;
-            version: number;
-            journalId: string | null;
-        };
-        WalletStatusDto: {
-            frozen: boolean;
-            expectedVersion: number;
-            reason: string;
-        };
-        WalletStatusResultDto: {
-            frozen: boolean;
-            version: number;
-        };
-        AdminBillingIntentDto: {
-            /**
-             * Format: uuid
-             * @description Present for the PROGRAM target only
-             */
-            programPurchaseId?: string | null;
-            /**
-             * Format: uuid
-             * @description Present for the ASSESSMENT target only
-             */
-            assessmentPurchaseId?: string | null;
-            methods?: components["schemas"]["BillingPaymentMethodDto"][];
-            id: string;
-            purpose: string;
-            status: string;
-            method: string | null;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            orderId: string | null;
-            appointmentId: string | null;
-            expiresAt: string | null;
-            paidAt: string | null;
-            createdAt: string;
-            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
-            refunds?: components["schemas"]["BillingRefundDto"][];
-            /** Format: uuid */
-            patientId: string;
-        };
-        BillingIntentPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["AdminBillingIntentDto"][];
-        };
-        BillingReconciliationItemDto: {
-            id: string;
-            status: string;
-            reference: string | null;
-            traceNumber: string | null;
-            verifiedAt: string | null;
-            providerOrderId: string;
-            resultCode: string | null;
-            intentId: string;
-            amountRial: string;
-            createdAt: string;
-        };
-        BillingReconciliationPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["BillingReconciliationItemDto"][];
-        };
-        BillingSummaryDto: {
-            currency: string;
-            asOf: string;
-            walletLiabilityRial: string;
-            gatewayReceivedRial: string;
-            topupReceivedRial: string;
-            orderPaidRial: string;
-            appointmentPaidRial: string;
-            refundedRial: string;
-            administrativeCreditRial: string;
-            administrativeDebitRial: string;
-            ledgerMismatchCount: number;
-            source: string;
-        };
-        BillingRefundRequestDto: {
-            /** @description Exact integer IRR, including service-price remainders smaller than one TOMAN. */
-            amountRial: string;
-            reason: string;
-        };
-        BillingRefundCompleteDto: {
-            evidenceReference: string;
         };
         CoupleLinkPolicyDto: {
             /** Format: uuid */
@@ -7809,6 +8855,35 @@ export interface components {
             /** @enum {boolean} */
             linkedPartnerAcknowledged: true;
         };
+        MarriageRoleDto: {
+            /** @enum {string} */
+            id: "FIRST" | "SECOND";
+            title: string;
+            genders: ("MALE" | "FEMALE")[];
+            minimumAgeYears: number;
+        };
+        MarriageDefinitionDto: {
+            /** @enum {number} */
+            version: 1;
+            /** @enum {string} */
+            purpose: "MARRIAGE";
+            roles: components["schemas"]["MarriageRoleDto"][];
+            genericJointText: string;
+        };
+        AssessmentCouplePairTextDto: {
+            firstProfileId: string;
+            secondProfileId: string;
+            text: string;
+        };
+        AssessmentOfferingTextsDto: {
+            marriage?: components["schemas"]["MarriageDefinitionDto"];
+            pairTexts?: components["schemas"]["AssessmentCouplePairTextDto"][];
+            processing: string;
+            retention: string;
+            visibility: string;
+            terms?: string;
+            disclosure?: string;
+        };
         OfferingPolicyDraftDto: {
             minimumAgeYears?: number;
             quoteTtlSeconds?: number;
@@ -7821,6 +8896,11 @@ export interface components {
             resultVisibilityPolicyRef?: string;
         };
         CommercialTariffDto: {
+            /** Format: uuid */
+            adminPublicationId?: string | null;
+            /** @enum {string|null} */
+            publicationAuthority?: "ADMIN_PUBLISHED" | null;
+            authoringTexts?: components["schemas"]["AssessmentOfferingTextsDto"] | null;
             /** Format: uuid */
             id: string;
             offeringKey: string;
@@ -8230,6 +9310,9 @@ export interface components {
             onboardingComplete: number;
             onboardingIncomplete: number;
         };
+        AssessmentDistributionDto: {
+            publiclyAvailable: boolean;
+        };
         AssessmentDraftPresetDto: {
             /** @default MAIN */
             assessmentKey?: string;
@@ -8282,7 +9365,7 @@ export interface components {
             /** @enum {string} */
             algorithmId: "DIMENSION_RANK" | "DIMENSION_TIEBREAK";
             /** @enum {number} */
-            algorithmVersion: 1;
+            algorithmVersion: 1 | 2;
             /** @enum {boolean} */
             educationalOnly: true;
             /** @enum {string} */
@@ -8298,9 +9381,9 @@ export interface components {
             tiedDimensions: string[];
             /** @description Unreviewed educational display profile; absent for ties/insufficient evidence. */
             profile: components["schemas"]["AssessmentDraftResultProfileDto"] | null;
-            /** @description Only the exact server-selected tie-break question; never a second follow-up. */
+            /** @description Only the next server-selected question on the permitted path. */
             followUp?: components["schemas"]["AssessmentTieBreakQuestionDto"] | null;
-            /** @description Whether the single allowed follow-up has already been answered. */
+            /** @description Whether any permitted follow-up has been answered. */
             followUpUsed?: boolean;
         };
         AssessmentVersionResponseDto: {
@@ -8537,11 +9620,15 @@ export interface components {
             policyDraft?: components["schemas"]["OfferingPolicyDraftDto"];
         };
         AssessmentOfferingReadinessDto: {
-            /** @enum {boolean} */
-            ready: false;
+            ready: boolean;
             blockers: string[];
         };
         AssessmentOfferingVersionResponseDto: {
+            /** Format: uuid */
+            adminPublicationId?: string | null;
+            /** @enum {string|null} */
+            publicationAuthority?: "ADMIN_PUBLISHED" | null;
+            authoringTexts?: components["schemas"]["AssessmentOfferingTextsDto"] | null;
             /** Format: uuid */
             id: string;
             offeringKey: string;
@@ -8569,6 +9656,18 @@ export interface components {
             /** Format: date-time */
             retiredAt: string | null;
             releaseReadiness: components["schemas"]["AssessmentOfferingReadinessDto"];
+        };
+        CreateInlineAssessmentOfferingDto: {
+            expectedQuestionnaireHash?: string;
+            /** Format: uuid */
+            assessmentVersionId: string;
+            title: string;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            amountRial?: string;
+            texts: components["schemas"]["AssessmentOfferingTextsDto"];
         };
         AssessmentOfferingPageResponseDto: {
             items: components["schemas"]["AssessmentOfferingVersionResponseDto"][];
@@ -8606,7 +9705,7 @@ export interface components {
             displayName: string;
             biography?: Record<string, never> | null;
             yearsExperience?: Record<string, never> | null;
-            profileImageUrl?: Record<string, never> | null;
+            profileImageUrl?: string | null;
             languages: string[];
             education: string[];
             certifications: string[];
@@ -8795,7 +9894,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
-            description?: Record<string, never> | null;
+            description?: string | null;
         };
         PatientOfferingDto: {
             /** Format: uuid */
@@ -8813,8 +9912,8 @@ export interface components {
             /** Format: uuid */
             id: string;
             displayName: string;
-            profileImageUrl?: Record<string, never> | null;
-            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: string | null;
+            yearsExperience?: number | null;
             specialties: components["schemas"]["PatientSpecialtyDto"][];
             offerings: components["schemas"]["PatientOfferingDto"][];
         };
@@ -8834,11 +9933,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             displayName: string;
-            profileImageUrl?: Record<string, never> | null;
-            yearsExperience?: Record<string, never> | null;
+            profileImageUrl?: string | null;
+            yearsExperience?: number | null;
             specialties: components["schemas"]["PatientSpecialtyDto"][];
             offerings: components["schemas"]["PatientOfferingDto"][];
-            biography?: Record<string, never> | null;
+            biography?: string | null;
             languages: string[];
             education: string[];
             certifications: string[];
@@ -9310,6 +10409,12 @@ export interface components {
             /** @enum {boolean} */
             videoSupported: false;
         };
+        WorkingSafetyDto: {
+            intendedAudience?: string;
+            limitations?: string;
+            contraindications?: string[];
+            seekProfessionalCare?: string;
+        };
         ProgramContentReferenceDto: {
             /** Format: uuid */
             id: string;
@@ -9321,12 +10426,12 @@ export interface components {
             /** @enum {string} */
             kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
             title: string;
-            summary: string;
+            summary?: string;
             category: string;
             /** @description Exact plain educational curriculum or professional service specification; never execute as HTML. */
             body: string;
-            eligibilityDescription: string;
-            safety: components["schemas"]["GuidanceSafetyDto"];
+            eligibilityDescription?: string;
+            safety?: components["schemas"]["WorkingSafetyDto"];
             /** @default [] */
             contentReferences?: components["schemas"]["ProgramContentReferenceDto"][];
             /** Format: uuid */
@@ -9390,11 +10495,51 @@ export interface components {
             /** @enum {boolean} */
             noAutomaticTherapyActivation: true;
         };
-        ProgramStaticTermsDto: {
+        ProgramCommercialConfigDto: {
+            expectedServiceRevision?: number;
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+        };
+        ProgramBulkPreviewDto: {
+            items: components["schemas"]["ProgramCommercialConfigDto"][];
+        };
+        ProgramCommercialDefinitionDto: {
+            /** Format: uuid */
+            id: string;
+            programKey: string;
+            locale: string;
+            kind: string;
+            title: string;
+            contentHash: string;
+            status: string;
+            usable: boolean;
+        };
+        ProgramPurchaseTermsDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
+            versionNumber: number;
+            locale: string;
             title: string;
             body: string;
-            /** @enum {number} */
-            versionNumber: 1;
+            contentHash: string;
         };
         ProgramCommercialPolicyDto: {
             /** @enum {number} */
@@ -9404,7 +10549,64 @@ export interface components {
             /** @enum {string} */
             paymentPoint: "PRE_ACCESS_OR_REQUEST";
         };
+        ProgramCommercialPreviewDto: {
+            configuration: components["schemas"]["ProgramCommercialConfigDto"];
+            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
+            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
+            policy: components["schemas"]["ProgramCommercialPolicyDto"];
+            publicationHash: string | null;
+            expectedPublicationNumber: number;
+            configurationReady: boolean;
+            blockers: string[];
+            /** @enum {boolean} */
+            checkoutAvailable: false;
+        };
+        ProgramBulkPreviewItemResponseDto: {
+            programDefinitionId: string;
+            preview?: components["schemas"]["ProgramCommercialPreviewDto"];
+            code?: string;
+        };
+        ProgramBulkPreviewResponseDto: {
+            items: components["schemas"]["ProgramBulkPreviewItemResponseDto"][];
+        };
+        PublishProgramOfferingDto: {
+            expectedServiceRevision?: number;
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            programDefinitionId: string;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+            publicationHash: string;
+            expectedPublicationNumber: number;
+            /** @enum {boolean} */
+            reviewedTermsAndRetention: true;
+        };
+        ProgramBulkPublishItemDto: {
+            key: string;
+            configuration: components["schemas"]["PublishProgramOfferingDto"];
+        };
+        ProgramBulkPublishDto: {
+            items: components["schemas"]["ProgramBulkPublishItemDto"][];
+        };
         ProgramPublicationResponseDto: {
+            discountPercent: number;
+            /** Format: date-time */
+            discountStartsAt: string | null;
+            /** Format: date-time */
+            discountEndsAt: string | null;
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -9440,77 +10642,25 @@ export interface components {
             /** @enum {boolean} */
             checkoutAvailable: false;
         };
-        ProgramPurchaseTermsDto: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            policyKey: "PROGRAM_PURCHASE_TERMS" | "READY_PROGRAM_PURCHASE_TERMS";
-            versionNumber: number;
-            locale: string;
+        ProgramBulkPublishItemResponseDto: {
+            programDefinitionId: string;
+            publication?: components["schemas"]["ProgramPublicationResponseDto"];
+            code?: string;
+        };
+        ProgramBulkPublishResponseDto: {
+            items: components["schemas"]["ProgramBulkPublishItemResponseDto"][];
+        };
+        ProgramStaticTermsDto: {
             title: string;
             body: string;
-            contentHash: string;
+            /** @enum {number} */
+            versionNumber: 1;
         };
         ProgramPublicationSetupDto: {
             defaultTerms: components["schemas"]["ProgramStaticTermsDto"] | null;
             latestPublication: components["schemas"]["ProgramPublicationResponseDto"] | null;
             termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
             suggestedRetentionPolicyRef: string | null;
-        };
-        ProgramCommercialConfigDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId?: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef?: string | null;
-        };
-        ProgramCommercialDefinitionDto: {
-            /** Format: uuid */
-            id: string;
-            programKey: string;
-            locale: string;
-            kind: string;
-            title: string;
-            contentHash: string;
-            status: string;
-            usable: boolean;
-        };
-        ProgramCommercialPreviewDto: {
-            configuration: components["schemas"]["ProgramCommercialConfigDto"];
-            definition: components["schemas"]["ProgramCommercialDefinitionDto"];
-            termsPolicy: components["schemas"]["ProgramPurchaseTermsDto"] | null;
-            policy: components["schemas"]["ProgramCommercialPolicyDto"];
-            publicationHash: string | null;
-            expectedPublicationNumber: number;
-            configurationReady: boolean;
-            blockers: string[];
-            /** @enum {boolean} */
-            checkoutAvailable: false;
-        };
-        PublishProgramOfferingDto: {
-            /** Format: uuid */
-            programDefinitionId: string;
-            /** Format: uuid */
-            termsPolicyVersionId?: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            /** @enum {string} */
-            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
-            accessDurationDays?: number | null;
-            quoteTtlSeconds: number;
-            retentionPolicyRef?: string | null;
-            publicationHash: string;
-            expectedPublicationNumber: number;
-            /** @enum {boolean} */
-            reviewedTermsAndRetention: true;
         };
         ProgramPublicationPageDto: {
             items: components["schemas"]["ProgramPublicationResponseDto"][];
@@ -9532,6 +10682,9 @@ export interface components {
             acceptedAt: string;
         };
         PatientProgramOfferingDto: {
+            baseAmountRial: string;
+            discountPercent: number;
+            serviceId: string | null;
             id: string;
             programDefinitionId: string;
             versionNumber: number;
@@ -9563,6 +10716,22 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        ReadyOfferingCardDto: {
+            id: string;
+            title: string;
+            summary: string;
+            category: string;
+            amountRial: string;
+            baseAmountRial: string;
+            discountPercent: number;
+            /** @enum {string} */
+            accessMode: "DAYS" | "PERPETUAL";
+            accessDurationDays: number | null;
+        };
+        ReadyOfferingCardPageDto: {
+            nextCursor: string | null;
+            items: components["schemas"]["ReadyOfferingCardDto"][];
+        };
         ProgramConsentAcceptDto: {
             /** Format: uuid */
             policyVersionId: string;
@@ -9586,6 +10755,7 @@ export interface components {
             accessAvailable: boolean;
         };
         PatientProgramPurchaseDto: {
+            serviceId: string | null;
             /** @enum {string} */
             kind: "READY_EDUCATION" | "CUSTOM_PROFESSIONAL_PLAN";
             customRequestId: string | null;
@@ -9614,6 +10784,8 @@ export interface components {
             /** Format: date-time */
             endsAt: string | null;
             accessAvailable: boolean;
+            serviceId: string;
+            purchasedDefinitionId: string;
             purchaseId: string;
             programDefinitionId: string;
             versionNumber: number;
@@ -9641,6 +10813,9 @@ export interface components {
             pairs: string[];
         };
         MezajProgramCardDto: {
+            baseAmountRial: string;
+            discountPercent: number;
+            serviceId: string;
             programDefinitionId: string;
             publicationId: string;
             title: string;
@@ -9654,6 +10829,8 @@ export interface components {
             state: "BUY" | "PENDING" | "OWNED";
             accessGrantId: string | null;
             purchaseId: string | null;
+            /** @enum {string} */
+            matchType: "EXACT" | "PRIMARY" | "SECONDARY";
         };
         MezajProgramRecommendationsDto: {
             /** @enum {string} */
@@ -9666,6 +10843,7 @@ export interface components {
             items: components["schemas"]["MezajProgramCardDto"][];
         };
         OwnedProgramCardDto: {
+            serviceId: string | null;
             accessGrantId: string;
             purchaseId: string;
             title: string;
@@ -9717,6 +10895,22 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+        };
+        OfferingCardPhysicianDto: {
+            displayName: string;
+        };
+        CustomOfferingCardDto: {
+            id: string;
+            title: string;
+            summary: string;
+            category: string;
+            amountRial: string;
+            physician: components["schemas"]["OfferingCardPhysicianDto"];
+            requestSupported: boolean;
+        };
+        CustomOfferingCardPageDto: {
+            nextCursor: string | null;
+            items: components["schemas"]["CustomOfferingCardDto"][];
         };
         CustomProgramRequestCreateDto: {
             /** Format: uuid */
@@ -9918,6 +11112,15 @@ export interface components {
             items: components["schemas"]["HealthObservationResponseDto"][];
             /** Format: uuid */
             nextCursor?: Record<string, never> | null;
+        };
+        ArticlePreviewDto: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            title: string;
+        };
+        ArticlePreviewListDto: {
+            items: components["schemas"]["ArticlePreviewDto"][];
         };
         CreateCategoryDto: {
             name: string;
@@ -10696,6 +11899,163 @@ export interface components {
             services: components["schemas"]["PatientServiceDto"][];
             recommendConsultation: boolean;
         };
+        MarriagePrepaymentStatusDto: {
+            /** Format: uuid */
+            intentId: string;
+            /** @enum {string} */
+            status: "PENDING" | "PAID";
+            amountRial: string;
+        };
+        MarriageSettingsDto: {
+            /** Format: uuid */
+            publicationId: string;
+            title: string;
+            amountRial: string;
+            definition: components["schemas"]["MarriageDefinitionDto"];
+            eligibleRoles: string[];
+            linkingPolicy: components["schemas"]["CoupleLinkPolicyDto"];
+            termsPolicy?: components["schemas"]["CoupleLinkPolicyDto"];
+            prepayment?: components["schemas"]["MarriagePrepaymentStatusDto"] | null;
+        };
+        MarriagePrepaidBillingDto: {
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        MarriageRefundPrepaymentResultDto: {
+            success: boolean;
+            refundedAmountRial: string;
+        };
+        MarriageContinuationDto: {
+            profileRequired: boolean;
+            nextPath: string;
+        };
+        MarriageRequestDto: {
+            continuation: components["schemas"]["MarriageContinuationDto"];
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            status: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
+            isInitiator: boolean;
+            /** @description Original invitation destination masked for the requester only; null for recipient. */
+            recipientPhoneMasked: string | null;
+            initiatorName: string | null;
+            /** @enum {string|null} */
+            ownIneligibilityReason: "PROFILE_INCOMPLETE" | "GENDER_NOT_ALLOWED" | "AGE_BELOW_MINIMUM" | null;
+            ownEligible: boolean;
+            eligibilityNotConfirmed: boolean;
+            /** @enum {string} */
+            ownRole: "FIRST" | "SECOND";
+            service: components["schemas"]["MarriageSettingsDto"];
+            invitationPath: string;
+            /** Format: uuid */
+            educationalId: string | null;
+            /** @enum {string|null} */
+            smsStatus: "QUEUED" | "SENDING" | "ACCEPTED" | "FAILED" | "UNKNOWN" | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        MarriageRequestPageDto: {
+            items: components["schemas"]["MarriageRequestDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        MarriageRequestCreateDto: {
+            /** Format: uuid */
+            publicationId: string;
+            /** @enum {string} */
+            initiatorRole: "FIRST" | "SECOND";
+            recipientPhone: string;
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+            /** Format: uuid */
+            paidIntentId?: string;
+        };
+        MarriageRequestAcceptDto: {
+            /** Format: uuid */
+            consentPolicyVersionId: string;
+            /** @enum {boolean} */
+            consentAccepted: true;
+        };
+        EducationalAssessmentOfferingDto: {
+            /** @enum {string|null} */
+            servicePurpose?: "MARRIAGE" | null;
+            publicationHash: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            offeringVersionId: string;
+            title: string;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            amountRial: string | null;
+            currency: string;
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            /** @enum {string} */
+            publicationAuthority: "ADMIN_PUBLISHED";
+        };
+        EducationalAssessmentOfferingPageDto: {
+            items: components["schemas"]["EducationalAssessmentOfferingDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        EducationalAssessmentOfferingDetailDto: {
+            /** @enum {string|null} */
+            servicePurpose?: "MARRIAGE" | null;
+            publicationHash: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            offeringVersionId: string;
+            title: string;
+            /** @enum {string} */
+            kind: "INDIVIDUAL" | "COUPLES";
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            amountRial: string | null;
+            currency: string;
+            algorithmId: string | null;
+            algorithmVersion: number | null;
+            /** @enum {string} */
+            publicationAuthority: "ADMIN_PUBLISHED";
+            publicPurchaseAvailable?: boolean;
+            /** Format: uuid */
+            pendingIntentId?: string | null;
+            termsPolicy: components["schemas"]["CommercialTermsDto"] | null;
+            /** Format: uuid */
+            termsConsentId: string | null;
+            processingPolicy: components["schemas"]["ProtocolConsentDto"] | null;
+            /** Format: uuid */
+            processingConsentId: string | null;
+            /** Format: uuid */
+            accessGrantId: string | null;
+            /** Format: uuid */
+            submissionId: string | null;
+            accessSupported: boolean;
+            blockers: string[];
+        };
+        AssessmentFreeAccessDto: {
+            /** Format: uuid */
+            publicationId: string;
+            /** Format: uuid */
+            processingConsentRecordId: string;
+        };
+        AssessmentFreeGrantDto: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            accessMode: "FREE";
+            /** Format: uuid */
+            publicationId: string;
+            /** Format: date-time */
+            grantedAt: string;
+        };
         PatientAssessmentOfferingDto: {
             /** Format: uuid */
             id: string;
@@ -10778,6 +12138,10 @@ export interface components {
             grantedAt: string;
         };
         PatientAssessmentPurchaseDto: {
+            /** @description Owned consent and conditions page for the exact publication authority. */
+            managementHref: string;
+            /** @enum {string} */
+            accessMode: "PAID";
             /** Format: uuid */
             id: string;
             /** Format: uuid */
@@ -10797,6 +12161,290 @@ export interface components {
             page: number;
             pageSize: number;
         };
+        EducationalCoupleCreateDto: {
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            publicationHash: string;
+        };
+        EducationalCoupleDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            contextHash: string;
+            title: string;
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            participants: components["schemas"]["CoupleAssessmentParticipantDto"][];
+            /** Format: uuid */
+            ownAccessGrantId: string | null;
+            /** Format: uuid */
+            ownSubmissionId: string | null;
+            /** Format: uuid */
+            ownProcessingConsentRecordId: string | null;
+            mutualConsentComplete: boolean;
+            jointResultAvailable: boolean;
+            newAccessAvailable: boolean;
+        };
+        EducationalCouplePageDto: {
+            items: components["schemas"]["EducationalCoupleDto"][];
+            page: number;
+            pageSize: number;
+            total: number;
+        };
+        EducationalCoupleDetailDto: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            coupleSessionId: string;
+            /** Format: uuid */
+            publicationId: string;
+            contextHash: string;
+            title: string;
+            /** @enum {string} */
+            priceMode: "FREE" | "PAID";
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            participants: components["schemas"]["CoupleAssessmentParticipantDto"][];
+            /** Format: uuid */
+            ownAccessGrantId: string | null;
+            /** Format: uuid */
+            ownSubmissionId: string | null;
+            /** Format: uuid */
+            ownProcessingConsentRecordId: string | null;
+            mutualConsentComplete: boolean;
+            jointResultAvailable: boolean;
+            newAccessAvailable: boolean;
+            /** Format: uuid */
+            ownPendingIntentId: string | null;
+            paymentPending: boolean;
+            termsPolicy: components["schemas"]["CommercialTermsDto"] | null;
+            processingPolicy: components["schemas"]["ProtocolConsentDto"];
+            disclosurePolicy: components["schemas"]["ProtocolConsentDto"];
+        };
+        EducationalCoupleAcceptDto: {
+            contextHash: string;
+            /** Format: uuid */
+            processingConsentRecordId: string;
+            disclosureContentHash: string;
+            /** @enum {boolean} */
+            disclosureAccepted: true;
+            /** @enum {boolean} */
+            linkedPartnerAcknowledged: true;
+        };
+        EducationalCoupleBillingDto: {
+            contextHash: string;
+            /** Format: uuid */
+            termsConsentRecordId: string;
+        };
+        EducationalCoupleIndividualResultDto: {
+            /** @enum {string} */
+            roleId?: "FIRST" | "SECOND";
+            roleTitle?: string;
+            /** @enum {string} */
+            slot: "INITIATOR" | "PARTNER";
+            isSelf: boolean;
+            resultSnapshot: {
+                [key: string]: unknown;
+            };
+        };
+        EducationalCoupleResultDto: {
+            results: components["schemas"]["EducationalCoupleIndividualResultDto"][];
+            jointText: string | null;
+        };
+        CatalogEntrySummaryDto: {
+            /** @enum {string} */
+            catalogRole: "SERVICE" | "REFERENCE";
+            invalidReason?: string;
+            key: string;
+            title: string;
+            category: string;
+            /** @enum {string} */
+            audience: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            baseAmountRial: string;
+            reviewRequired: boolean;
+            sourceCount: number;
+        };
+        CatalogListDto: {
+            bundleHash: string;
+            items: components["schemas"]["CatalogEntrySummaryDto"][];
+        };
+        CatalogPreviewRequestDto: {
+            entries: string[];
+            fields?: ("title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs")[];
+        };
+        ProgramWorkingDraftDto: {
+            title?: string;
+            summary?: string;
+            body?: string;
+            category?: string;
+            eligibilityDescription?: string;
+            /** @enum {string} */
+            audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            pairs?: string[];
+            safety?: components["schemas"]["WorkingSafetyDto"];
+        };
+        CatalogPreviewItemDto: {
+            invalidReason?: string;
+            key: string;
+            serviceId: string | null;
+            expectedRevision: number | null;
+            /** @enum {string} */
+            state: "NEW" | "UNCHANGED" | "CHANGED" | "CONFLICT" | "ARCHIVED" | "INVALID";
+            conflicts: ("title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs")[];
+            current: components["schemas"]["ProgramWorkingDraftDto"] | null;
+            incoming: components["schemas"]["ProgramWorkingDraftDto"] | null;
+        };
+        CatalogPreviewResponseDto: {
+            id: string;
+            bundleHash: string;
+            /** Format: date-time */
+            expiresAt: string;
+            items: components["schemas"]["CatalogPreviewItemDto"][];
+        };
+        CatalogResolutionDto: {
+            /** @enum {string} */
+            field: "title" | "summary" | "body" | "eligibilityDescription" | "safety" | "category" | "audience" | "pairs";
+            /** @enum {string} */
+            choice: "SOURCE" | "DASHBOARD";
+        };
+        CatalogApplyItemDto: {
+            key: string;
+            resolutions?: components["schemas"]["CatalogResolutionDto"][];
+        };
+        CatalogApplyRequestDto: {
+            items: components["schemas"]["CatalogApplyItemDto"][];
+        };
+        CatalogApplyResultDto: {
+            key: string;
+            /** @enum {string} */
+            state: "APPLIED" | "UNCHANGED" | "SKIPPED" | "CONFLICT" | "INVALID";
+            serviceId: string | null;
+            code?: string;
+        };
+        CatalogApplyResponseDto: {
+            items: components["schemas"]["CatalogApplyResultDto"][];
+        };
+        ProgramCategoryResponseDto: {
+            id: string;
+            key: string;
+            name: string;
+            revision: number;
+            active: boolean;
+        };
+        ProgramCategoryListDto: {
+            items: components["schemas"]["ProgramCategoryResponseDto"][];
+        };
+        ProgramCategoryCreateDto: {
+            key: string;
+            name: string;
+        };
+        ProgramCategorySaveDto: {
+            expectedRevision: number;
+            name: string;
+            active: boolean;
+            reassignToId?: string;
+        };
+        ProgramServiceResponseDto: {
+            id: string;
+            programKey: string;
+            locale: string;
+            revision: number;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+            /** @enum {string} */
+            audience: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            categoryId: string | null;
+            publishedDefinitionId: string | null;
+            baseAmountRial: string | null;
+            discountPercent: number;
+            /** Format: date-time */
+            discountStartsAt: string | null;
+            /** Format: date-time */
+            discountEndsAt: string | null;
+            sellingEnabled: boolean;
+            /** Format: date-time */
+            archivedAt: string | null;
+        };
+        ProgramServicePageDto: {
+            items: components["schemas"]["ProgramServiceResponseDto"][];
+            total: number;
+            page: number;
+            pageSize: number;
+        };
+        ProgramServiceCreateDto: {
+            programKey: string;
+            locale: string;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+        };
+        ProgramDraftSaveDto: {
+            expectedRevision: number;
+            categoryId?: string | null;
+            draft: components["schemas"]["ProgramWorkingDraftDto"];
+        };
+        ProgramRevisionDto: {
+            expectedRevision: number;
+        };
+        DraftCommercialDto: {
+            /** @default 0 */
+            discountPercent?: number;
+            /** Format: date-time */
+            discountStartsAt?: string | null;
+            /** Format: date-time */
+            discountEndsAt?: string | null;
+            /** Format: uuid */
+            termsPolicyVersionId?: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            /** @enum {string} */
+            accessMode: "PERPETUAL" | "DAYS" | "ONE_DELIVERY";
+            accessDurationDays?: number | null;
+            quoteTtlSeconds: number;
+            retentionPolicyRef?: string | null;
+        };
+        DraftPublicationItemDto: {
+            serviceId: string;
+            expectedRevision: number;
+            configuration?: components["schemas"]["DraftCommercialDto"];
+        };
+        DraftPublicationPreviewRequestDto: {
+            items: components["schemas"]["DraftPublicationItemDto"][];
+        };
+        DraftPublicationResultDto: {
+            serviceId: string;
+            title: string;
+            ready: boolean;
+            code?: string;
+            published?: boolean;
+            configuration?: components["schemas"]["DraftCommercialDto"];
+            termsBody?: string;
+            summary?: string;
+            category?: string;
+            /** @enum {string} */
+            audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+            pairs?: string[];
+            contentChanged?: boolean;
+        };
+        DraftPublicationPreviewDto: {
+            id: string;
+            /** Format: date-time */
+            expiresAt: string;
+            items: components["schemas"]["DraftPublicationResultDto"][];
+        };
+        DraftPublicationApplyDto: {
+            serviceIds: string[];
+        };
+        DraftPublicationResultsDto: {
+            items: components["schemas"]["DraftPublicationResultDto"][];
+        };
     };
     responses: never;
     parameters: never;
@@ -10809,7 +12457,12 @@ export interface operations {
     HealthController_live: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10826,7 +12479,12 @@ export interface operations {
     HealthController_ready: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10843,7 +12501,12 @@ export interface operations {
     HealthController_chatReady: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10863,6 +12526,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -10934,6 +12601,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 challengeId: string;
@@ -11012,6 +12683,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 challengeId: string;
@@ -11087,6 +12762,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11158,6 +12837,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11222,6 +12905,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11282,6 +12969,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11323,6 +13014,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11364,7 +13059,12 @@ export interface operations {
                 limit?: components["schemas"]["Object"];
                 page?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11413,6 +13113,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -11462,7 +13166,12 @@ export interface operations {
     accountGetCurrent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11502,6 +13211,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11573,6 +13286,10 @@ export interface operations {
             header?: {
                 /** @description Browser-managed origin. When present, it must match the configured allowlist. */
                 Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -11648,7 +13365,12 @@ export interface operations {
                 /** @description Asia/Tehran local date. */
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11664,10 +13386,180 @@ export interface operations {
             };
         };
     };
+    baleExchange: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleInitDataDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleFlowResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactRequest: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleInitDataDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleContactRequestResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactComplete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleContactTicketDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    /** @description HttpOnly refresh cookie; its value is intentionally unavailable to JavaScript. */
+                    "Set-Cookie"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BaleFlowResponseDto"];
+                };
+            };
+            /** @description Browser origin is not allowed or the existing account is ineligible (BALE_ACCOUNT_UNSUPPORTED). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    baleContactLink: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Browser-managed origin. When present, it must match the configured allowlist. */
+                Origin?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BaleContactTicketDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Access is denied, fresh phone verification is required, or the account is ineligible (BALE_ACCOUNT_UNSUPPORTED). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    baleWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                secret: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     chatAppointmentConversationGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -11697,7 +13589,12 @@ export interface operations {
     chatConversationAccess: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -11718,7 +13615,12 @@ export interface operations {
     chatConversationClose: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -11744,7 +13646,12 @@ export interface operations {
                 direction?: "after" | "before" | "latest";
                 limit?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -11769,7 +13676,12 @@ export interface operations {
                 cursor?: string;
                 limit?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -11790,7 +13702,12 @@ export interface operations {
     chatMessageReportCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -11815,7 +13732,12 @@ export interface operations {
     chatConversationReportsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 conversationId: string;
             };
@@ -11836,7 +13758,12 @@ export interface operations {
     chatMessageVisibilityChange: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -11861,7 +13788,12 @@ export interface operations {
     chatRestrictedContentReview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 messageId: string;
             };
@@ -11882,7 +13814,12 @@ export interface operations {
     chatReportResolve: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 reportId: string;
             };
@@ -11907,7 +13844,12 @@ export interface operations {
     chatWaitingRoomGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -11928,7 +13870,12 @@ export interface operations {
     chatAppointmentEngineSessionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -11946,10 +13893,100 @@ export interface operations {
             };
         };
     };
+    visitCareProductsList: {
+        parameters: {
+            query?: {
+                page?: number;
+                query?: string;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitProductsDto"];
+                };
+            };
+        };
+    };
+    visitCareCartAdd: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                appointmentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitCartAddDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VisitCartResultDto"];
+                };
+            };
+        };
+    };
+    patientPrescriptionsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionListResponseDto"];
+                };
+            };
+        };
+    };
     patientClinicalTimeline: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11968,7 +14005,12 @@ export interface operations {
     patientClinicalHistory: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -11987,7 +14029,12 @@ export interface operations {
     patientClinicalAppointmentSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -12008,7 +14055,12 @@ export interface operations {
     adminClinicalWorkspaceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12029,7 +14081,12 @@ export interface operations {
     adminClinicalWorkspaceCreateNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 encounterId: string;
                 patientId: string;
@@ -12055,7 +14112,12 @@ export interface operations {
     adminClinicalWorkspaceSaveNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12081,7 +14143,12 @@ export interface operations {
     adminClinicalWorkspaceSignNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12107,7 +14174,12 @@ export interface operations {
     adminClinicalWorkspacePublishNote: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 noteId: string;
                 patientId: string;
@@ -12133,7 +14205,12 @@ export interface operations {
     adminClinicalWorkspaceReconcileRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12158,7 +14235,12 @@ export interface operations {
     adminClinicalWorkspaceReviseRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
                 patientId: string;
@@ -12185,7 +14267,12 @@ export interface operations {
     adminClinicalWorkspaceSignRecord: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 kind: "DIAGNOSIS" | "ALLERGY" | "CONDITION" | "MEDICATION_STATEMENT";
                 patientId: string;
@@ -12215,7 +14302,12 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12236,7 +14328,12 @@ export interface operations {
     adminPrescriptionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12261,7 +14358,12 @@ export interface operations {
     adminPrescriptionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -12280,10 +14382,44 @@ export interface operations {
             };
         };
     };
+    adminPrescriptionHistory: {
+        parameters: {
+            query?: {
+                before?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+                prescriptionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrescriptionHistoryResponseDto"];
+                };
+            };
+        };
+    };
     adminPrescriptionsSaveDraft: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -12309,7 +14445,12 @@ export interface operations {
     adminPrescriptionsIssue: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 prescriptionId: string;
@@ -12335,7 +14476,12 @@ export interface operations {
     adminTreatmentPlansList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12356,7 +14502,12 @@ export interface operations {
     adminTreatmentPlansCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -12378,10 +14529,46 @@ export interface operations {
             };
         };
     };
+    adminTreatmentDraftReplace: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+                planId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplaceTreatmentDraftDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TreatmentPlanResponseDto"];
+                };
+            };
+        };
+    };
     adminTreatmentPlansGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12403,7 +14590,12 @@ export interface operations {
     adminTreatmentPlansUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12429,7 +14621,12 @@ export interface operations {
     adminTreatmentPlanMedicationsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12455,7 +14652,12 @@ export interface operations {
     adminTreatmentPlanMedicationsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 medicationId: string;
                 patientId: string;
@@ -12482,7 +14684,12 @@ export interface operations {
     adminTreatmentPlanSessionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12508,7 +14715,12 @@ export interface operations {
     adminTreatmentPlanSessionsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12535,7 +14747,12 @@ export interface operations {
     adminTreatmentPlanExercisesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12561,7 +14778,12 @@ export interface operations {
     adminTreatmentPlanExercisesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exerciseId: string;
                 patientId: string;
@@ -12588,7 +14810,12 @@ export interface operations {
     adminTreatmentPlanNutritionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12614,7 +14841,12 @@ export interface operations {
     adminTreatmentPlanNutritionUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 nutritionId: string;
                 patientId: string;
@@ -12645,7 +14877,12 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12664,7 +14901,12 @@ export interface operations {
     patientTreatmentPlansList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12683,7 +14925,12 @@ export interface operations {
     patientTreatmentPlansGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 planId: string;
             };
@@ -12704,7 +14951,12 @@ export interface operations {
     adminTreatmentTasksList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12726,7 +14978,12 @@ export interface operations {
     adminTreatmentTasksCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12752,7 +15009,12 @@ export interface operations {
     adminTreatmentTasksReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12779,7 +15041,12 @@ export interface operations {
     adminTreatmentTasksCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12802,7 +15069,12 @@ export interface operations {
     patientTreatmentTasksList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12821,7 +15093,12 @@ export interface operations {
     patientTreatmentTasksComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 taskId: string;
             };
@@ -12844,6 +15121,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 medicationId: string;
@@ -12872,7 +15153,12 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
                 planId: string;
@@ -12897,7 +15183,12 @@ export interface operations {
                 cursor?: unknown;
                 limit?: unknown;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 planId: string;
             };
@@ -12918,7 +15209,12 @@ export interface operations {
     patientNotificationsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12935,7 +15231,12 @@ export interface operations {
     NotificationsController_read: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -12954,7 +15255,12 @@ export interface operations {
     NotificationsController_all: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12971,7 +15277,12 @@ export interface operations {
     NotificationsController_preferences: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -12988,7 +15299,12 @@ export interface operations {
     NotificationsController_preference: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13009,7 +15325,12 @@ export interface operations {
     adminNotificationsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13026,7 +15347,12 @@ export interface operations {
     adminSmsProvidersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13045,7 +15371,12 @@ export interface operations {
     adminSmsProviderRevisionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -13070,7 +15401,12 @@ export interface operations {
     adminSmsProviderStateUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -13095,7 +15431,12 @@ export interface operations {
     adminSmsProviderConnectionTest: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -13114,7 +15455,12 @@ export interface operations {
     adminSmsProviderMessageTest: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -13137,7 +15483,12 @@ export interface operations {
     adminOtpPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13156,7 +15507,12 @@ export interface operations {
     adminOtpPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13181,7 +15537,12 @@ export interface operations {
             query?: {
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13200,7 +15561,12 @@ export interface operations {
     patientEntryStatus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13219,7 +15585,12 @@ export interface operations {
     patientEntryProfileSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13242,7 +15613,85 @@ export interface operations {
     patientEntryStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    patientEntryPayment: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientEntryDefer: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientEntryStatusDto"];
+                };
+            };
+        };
+    };
+    patientEntryResume: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13261,7 +15710,12 @@ export interface operations {
     patientEntryComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13280,7 +15734,12 @@ export interface operations {
     adminEntryPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13299,7 +15758,12 @@ export interface operations {
     adminEntryPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13326,7 +15790,12 @@ export interface operations {
                 pageSize?: number;
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13345,7 +15814,12 @@ export interface operations {
     patientAssessmentQuestionnaireGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13375,7 +15849,12 @@ export interface operations {
     patientAssessmentProvenanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13405,7 +15884,12 @@ export interface operations {
     patientAssessmentsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13424,7 +15908,12 @@ export interface operations {
     patientAssessmentSubmissionStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -13454,7 +15943,12 @@ export interface operations {
     patientAssessmentSubmissionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13475,7 +15969,12 @@ export interface operations {
     patientAssessmentSubmissionSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13511,6 +16010,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -13553,7 +16056,12 @@ export interface operations {
     patientAssessmentSubmissionResult: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -13574,7 +16082,12 @@ export interface operations {
     patientMezajResultGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13593,7 +16106,12 @@ export interface operations {
     patientBookingEligibilityGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13612,7 +16130,12 @@ export interface operations {
     patientGetSelfProfile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13649,7 +16172,12 @@ export interface operations {
     patientUpdateSelfProfile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13699,7 +16227,12 @@ export interface operations {
     patientGetOnboardingStatus: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13740,7 +16273,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -13815,7 +16353,12 @@ export interface operations {
             query?: {
                 consentPolicyVersionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -13893,7 +16436,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -13970,6 +16518,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 assessmentVersionId: string;
@@ -14051,6 +16603,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 assessmentVersionId: string;
@@ -14133,7 +16689,12 @@ export interface operations {
             query?: {
                 consentPolicyVersionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -14193,7 +16754,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 assessmentVersionId: string;
             };
@@ -14252,6 +16818,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -14334,7 +16904,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14407,7 +16982,12 @@ export interface operations {
     adminGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14482,7 +17062,12 @@ export interface operations {
     adminGuidanceContentDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14562,7 +17147,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14635,7 +17225,12 @@ export interface operations {
     clinicalGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14710,7 +17305,12 @@ export interface operations {
     clinicalGuidanceContentApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14789,7 +17389,12 @@ export interface operations {
     clinicalGuidanceContentRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14864,7 +17469,12 @@ export interface operations {
     patientGuidanceContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -14918,10 +17528,648 @@ export interface operations {
             };
         };
     };
+    patientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    patientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    patientWalletTopupCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAmountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientOrderBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingOrderIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentCancel: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingWalletPay: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingGatewayAttemptCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminPatientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletAdjust: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAdjustmentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletAdjustmentResultDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletStatusSet: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletStatusDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletStatusResultDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                patientId?: string;
+                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT" | "MARRIAGE_REQUEST";
+                status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminBillingReconciliationList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingReconciliationPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingSummaryGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingSummaryDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundComplete: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptRetry: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptResolveFailed: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
     patientJourneyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -14973,11 +18221,75 @@ export interface operations {
             };
         };
     };
+    patientHomeGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientHomeResponseDto"];
+                };
+            };
+            /** @description Authentication is required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access is required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient profile was not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Sensitive audit is unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientCoupleAssessmentBillingIntentCreate: {
         parameters: {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -15066,7 +18378,12 @@ export interface operations {
     patientCoupleAssessmentPaidState: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15150,7 +18467,12 @@ export interface operations {
     patientCoupleJointResultGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -15236,6 +18558,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -15320,7 +18646,12 @@ export interface operations {
     patientCoupleAssessmentOfferingPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 publicationId: string;
             };
@@ -15374,546 +18705,15 @@ export interface operations {
             };
         };
     };
-    patientWalletGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletSummaryDto"];
-                };
-            };
-        };
-    };
-    patientWalletTransactionsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletTransactionPageDto"];
-                };
-            };
-        };
-    };
-    patientWalletTopupCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletAmountDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientOrderBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingOrderIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientAppointmentBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingIntentGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingIntentCancel: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingWalletPay: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingGatewayAttemptCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
-                };
-            };
-        };
-    };
-    adminPatientAppointmentBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletSummaryDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletTransactionsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletTransactionPageDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletAdjust: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletAdjustmentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletAdjustmentResultDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletStatusSet: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletStatusDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletStatusResultDto"];
-                };
-            };
-        };
-    };
-    adminBillingIntentsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-                patientId?: string;
-                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM";
-                status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentPageDto"];
-                };
-            };
-        };
-    };
-    adminBillingIntentGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminBillingIntentDto"];
-                };
-            };
-        };
-    };
-    adminBillingReconciliationList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingReconciliationPageDto"];
-                };
-            };
-        };
-    };
-    adminBillingSummaryGet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingSummaryDto"];
-                };
-            };
-        };
-    };
-    adminBillingRefundCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingRefundDto"];
-                };
-            };
-        };
-    };
-    adminBillingRefundComplete: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundCompleteDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingRefundDto"];
-                };
-            };
-        };
-    };
-    adminBillingAttemptRetry: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
-                };
-            };
-        };
-    };
-    adminBillingAttemptResolveFailed: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundCompleteDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
-                };
-            };
-        };
-    };
     patientCoupleLinkPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16007,7 +18807,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16100,6 +18905,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -16195,7 +19004,12 @@ export interface operations {
     patientCoupleSessionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16290,6 +19104,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -16387,7 +19205,12 @@ export interface operations {
     patientCoupleInvitationPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16482,7 +19305,12 @@ export interface operations {
     patientCoupleInvitationAccept: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16577,7 +19405,12 @@ export interface operations {
     patientCoupleConsentWithdraw: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16674,7 +19507,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -16758,6 +19596,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -16844,7 +19686,12 @@ export interface operations {
     patientCoupleAssessmentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -16930,6 +19777,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -17020,6 +19871,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -17107,7 +19962,12 @@ export interface operations {
                 offeringVersionId: string;
                 termsPolicyVersionId: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17185,7 +20045,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17260,6 +20125,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -17337,7 +20206,12 @@ export interface operations {
     adminAssessmentCommercialGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17412,7 +20286,12 @@ export interface operations {
     adminAssessmentCommercialRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17489,6 +20368,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -17571,7 +20454,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17644,7 +20532,12 @@ export interface operations {
     adminCoupleResultProtocolGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17719,7 +20612,12 @@ export interface operations {
     adminCoupleResultProtocolDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17799,7 +20697,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -17872,7 +20775,12 @@ export interface operations {
     clinicalCoupleResultProtocolGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -17947,7 +20855,12 @@ export interface operations {
     clinicalCoupleResultProtocolApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18026,7 +20939,12 @@ export interface operations {
     clinicalCoupleResultProtocolRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18101,7 +21019,12 @@ export interface operations {
     patientGetConsentPolicy: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18151,6 +21074,10 @@ export interface operations {
             header: {
                 /** @description Stable key for this acceptance attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -18223,6 +21150,10 @@ export interface operations {
             header: {
                 /** @description Stable key for this withdrawal attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 consentRecordId: string;
@@ -18281,7 +21212,12 @@ export interface operations {
     patientGetMedicalIntake: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18319,7 +21255,12 @@ export interface operations {
     patientSaveMedicalIntakeDraft: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18382,6 +21323,10 @@ export interface operations {
             header: {
                 /** @description Stable key for this completion attempt. */
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -18442,7 +21387,12 @@ export interface operations {
     adminPatientsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18488,7 +21438,12 @@ export interface operations {
     adminPatientsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18547,7 +21502,12 @@ export interface operations {
     adminPatientsOnboardingSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18584,7 +21544,12 @@ export interface operations {
     adminPatientsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -18641,7 +21606,12 @@ export interface operations {
     adminPatientsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -18713,6 +21683,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 patientId: string;
@@ -18796,7 +21770,12 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18812,10 +21791,71 @@ export interface operations {
             };
         };
     };
+    adminAssessmentDistributionGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDistributionDto"];
+                };
+            };
+        };
+    };
+    adminAssessmentDistributionUpdate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentDistributionDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentDistributionDto"];
+                };
+            };
+        };
+    };
     adminAssessmentsMizajDraftPreset: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18834,7 +21874,12 @@ export interface operations {
     adminAssessmentsScoringPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -18909,7 +21954,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "PUBLISHED" | "RETIRED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18946,7 +21996,12 @@ export interface operations {
     adminAssessmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -18978,7 +22033,12 @@ export interface operations {
     adminAssessmentsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19001,7 +22061,12 @@ export interface operations {
             query: {
                 expectedContentHash: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19049,7 +22114,12 @@ export interface operations {
     adminAssessmentsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19074,7 +22144,12 @@ export interface operations {
     adminAssessmentsDuplicate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19095,7 +22170,12 @@ export interface operations {
     adminAssessmentsPublish: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19116,7 +22196,12 @@ export interface operations {
     adminAssessmentsArchive: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19137,7 +22222,12 @@ export interface operations {
     adminBookingAssessmentPolicyGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19174,7 +22264,12 @@ export interface operations {
     adminBookingAssessmentPolicyUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19221,7 +22316,12 @@ export interface operations {
                 patientId?: string;
                 state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19249,7 +22349,12 @@ export interface operations {
     adminAssessmentSubmissionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19274,7 +22379,12 @@ export interface operations {
                 from?: string;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19296,7 +22406,12 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -19373,7 +22488,12 @@ export interface operations {
             query: {
                 submissionId: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -19460,7 +22580,12 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -19546,6 +22671,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 appointmentId: string;
@@ -19636,6 +22765,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 appointmentId: string;
@@ -19723,6 +22856,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -19761,6 +22898,35 @@ export interface operations {
             };
         };
     };
+    adminAssessmentInlineOfferingCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInlineAssessmentOfferingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentOfferingVersionResponseDto"];
+                };
+            };
+        };
+    };
     adminAssessmentOfferingsList: {
         parameters: {
             query?: {
@@ -19769,7 +22935,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19788,7 +22959,12 @@ export interface operations {
     adminAssessmentOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19809,7 +22985,12 @@ export interface operations {
     adminAssessmentOfferingRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -19830,7 +23011,12 @@ export interface operations {
     adminClinicGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19858,7 +23044,12 @@ export interface operations {
     adminClinicUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19897,7 +23088,12 @@ export interface operations {
                 query?: string;
                 specialtyId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19916,7 +23112,12 @@ export interface operations {
     adminDoctorsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -19939,7 +23140,12 @@ export interface operations {
     adminDoctorsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -19960,7 +23166,12 @@ export interface operations {
     adminDoctorsDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -19979,7 +23190,12 @@ export interface operations {
     adminDoctorsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -20010,7 +23226,12 @@ export interface operations {
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20029,7 +23250,12 @@ export interface operations {
     adminSpecialtiesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20052,7 +23278,12 @@ export interface operations {
     adminSpecialtiesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -20073,7 +23304,12 @@ export interface operations {
     adminSpecialtiesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -20092,7 +23328,12 @@ export interface operations {
     adminSpecialtiesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 specialtyId: string;
             };
@@ -20123,7 +23364,12 @@ export interface operations {
                 publicationStatus?: "UNPUBLISHED" | "PUBLISHED";
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20142,7 +23388,12 @@ export interface operations {
     adminServicesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20165,7 +23416,12 @@ export interface operations {
     adminServicesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -20186,7 +23442,12 @@ export interface operations {
     adminServicesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -20205,7 +23466,12 @@ export interface operations {
     adminServicesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 serviceId: string;
             };
@@ -20239,7 +23505,12 @@ export interface operations {
                 serviceId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20258,7 +23529,12 @@ export interface operations {
     adminDoctorServicesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20281,7 +23557,12 @@ export interface operations {
     adminDoctorServicesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -20302,7 +23583,12 @@ export interface operations {
     adminDoctorServicesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -20321,7 +23607,12 @@ export interface operations {
     adminDoctorServicesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -20346,14 +23637,19 @@ export interface operations {
     patientDirectoryDoctorsList: {
         parameters: {
             query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 query?: string;
                 serviceId?: string;
                 specialtyId?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20372,7 +23668,12 @@ export interface operations {
     patientDirectoryDoctorGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -20394,12 +23695,17 @@ export interface operations {
         parameters: {
             query?: {
                 doctorId?: string;
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
+                page?: number;
+                pageSize?: number;
                 query?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20415,6 +23721,113 @@ export interface operations {
             };
         };
     };
+    adminDoctorImagePreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+        };
+    };
+    adminDoctorImageUpload: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    adminDoctorImageRemove: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientDoctorImageGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                doctorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "image/webp": string;
+                };
+            };
+        };
+    };
     adminAvailabilityRulesList: {
         parameters: {
             query?: {
@@ -20425,7 +23838,12 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20444,7 +23862,12 @@ export interface operations {
     adminAvailabilityRulesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20467,7 +23890,12 @@ export interface operations {
     adminAvailabilityRulesGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -20488,7 +23916,12 @@ export interface operations {
     adminAvailabilityRulesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -20507,7 +23940,12 @@ export interface operations {
     adminAvailabilityRulesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 ruleId: string;
             };
@@ -20538,7 +23976,12 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20557,7 +24000,12 @@ export interface operations {
     adminClinicClosuresCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20580,7 +24028,12 @@ export interface operations {
     adminClinicClosuresGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -20601,7 +24054,12 @@ export interface operations {
     adminClinicClosuresDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -20620,7 +24078,12 @@ export interface operations {
     adminClinicClosuresUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 closureId: string;
             };
@@ -20654,7 +24117,12 @@ export interface operations {
                 to?: string;
                 visitMode?: "IN_PERSON" | "ONLINE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20673,7 +24141,12 @@ export interface operations {
     adminDoctorAvailabilityExceptionsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20696,7 +24169,12 @@ export interface operations {
     adminDoctorAvailabilityExceptionsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -20717,7 +24195,12 @@ export interface operations {
     adminDoctorAvailabilityExceptionsDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -20736,7 +24219,12 @@ export interface operations {
     adminDoctorAvailabilityExceptionsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 exceptionId: string;
             };
@@ -20766,7 +24254,12 @@ export interface operations {
                 pageSize?: number;
                 toDate: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorServiceId: string;
             };
@@ -20790,7 +24283,12 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20809,7 +24307,12 @@ export interface operations {
     patientAppointmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20846,7 +24349,12 @@ export interface operations {
     patientAppointmentsGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20870,7 +24378,12 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20891,7 +24404,12 @@ export interface operations {
     patientAppointmentsCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20916,7 +24434,12 @@ export interface operations {
     patientAppointmentsReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -20949,7 +24472,12 @@ export interface operations {
                 status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20968,7 +24496,12 @@ export interface operations {
     adminAppointmentsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -20996,7 +24529,12 @@ export interface operations {
                 pageSize?: components["schemas"]["Object"];
                 patientId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21015,7 +24553,12 @@ export interface operations {
     adminAppointmentsQueueList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21034,7 +24577,12 @@ export interface operations {
     adminAppointmentsDashboardSummary: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21053,7 +24601,12 @@ export interface operations {
     adminAppointmentDetail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21077,7 +24630,12 @@ export interface operations {
                 page?: components["schemas"]["Object"];
                 pageSize?: components["schemas"]["Object"];
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21098,7 +24656,12 @@ export interface operations {
     adminAppointmentsConfirm: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21119,7 +24682,12 @@ export interface operations {
     adminAppointmentsCancel: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21144,7 +24712,12 @@ export interface operations {
     adminAppointmentsReschedule: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21169,7 +24742,12 @@ export interface operations {
     adminAppointmentsCheckIn: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21190,7 +24768,12 @@ export interface operations {
     adminAppointmentsQueue: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21211,7 +24794,12 @@ export interface operations {
     adminAppointmentsStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21232,7 +24820,12 @@ export interface operations {
     adminAppointmentsComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21253,7 +24846,12 @@ export interface operations {
     adminAppointmentsNoShow: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21274,7 +24872,12 @@ export interface operations {
     adminAppointmentsCallNext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 doctorId: string;
             };
@@ -21301,7 +24904,12 @@ export interface operations {
                 limit?: number;
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21326,7 +24934,12 @@ export interface operations {
                 status?: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "QUEUED" | "IN_PROGRESS" | "COMPLETED" | "NO_SHOW" | "CANCELLED";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21408,7 +25021,12 @@ export interface operations {
     assignedConsultationContext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21492,7 +25110,12 @@ export interface operations {
     assignedConsultationStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21576,7 +25199,12 @@ export interface operations {
     assignedConsultationComplete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 appointmentId: string;
             };
@@ -21662,6 +25290,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -21753,7 +25385,12 @@ export interface operations {
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -21835,7 +25472,12 @@ export interface operations {
     adminProgramDefinitionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -21919,7 +25561,12 @@ export interface operations {
     adminProgramDefinitionDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22008,7 +25655,12 @@ export interface operations {
                 programKey?: string;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22090,7 +25742,12 @@ export interface operations {
     clinicalProgramDefinitionGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22174,7 +25831,12 @@ export interface operations {
     clinicalProgramDefinitionApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22262,7 +25924,12 @@ export interface operations {
     clinicalProgramDefinitionRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22343,10 +26010,197 @@ export interface operations {
             };
         };
     };
+    adminProgramOfferingBulkPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramBulkPreviewDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramBulkPreviewResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramOfferingBulkPublish: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramBulkPublishDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramBulkPublishResponseDto"];
+                };
+            };
+            /** @description Strict supported configuration required. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Current scoped administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program commercial source unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Source, command or publication revision conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Incomplete program commercial configuration. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Authenticated request limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     adminProgramOfferingSetup: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22430,7 +26284,12 @@ export interface operations {
     adminProgramOfferingPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22521,7 +26380,12 @@ export interface operations {
                 programKey?: string;
                 status?: "ACTIVE" | "RETIRED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22605,6 +26469,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -22691,7 +26559,12 @@ export interface operations {
     adminProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22775,7 +26648,12 @@ export interface operations {
     adminProgramOfferingRetire: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -22862,7 +26740,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -22932,10 +26815,96 @@ export interface operations {
             };
         };
     };
+    patientProgramOfferingCardsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReadyOfferingCardPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available program unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program source, quote, consent or access conflict. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23012,6 +26981,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -23091,6 +27064,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -23171,7 +27148,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23244,7 +27226,12 @@ export interface operations {
     patientProgramPurchaseGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23319,7 +27306,12 @@ export interface operations {
     patientProgramContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23394,7 +27386,12 @@ export interface operations {
     adminProgramMezajGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23415,7 +27412,12 @@ export interface operations {
     adminProgramMezajSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23442,7 +27444,12 @@ export interface operations {
             query?: {
                 submissionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23464,7 +27471,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23486,7 +27498,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23556,10 +27573,96 @@ export interface operations {
             };
         };
     };
+    patientCustomProgramOfferingCardsList: {
+        parameters: {
+            query?: {
+                cursor?: string;
+                limit?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomOfferingCardPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Own patient capability required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned request or available service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Custom service or care authorization changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Program request limit reached. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientCustomProgramOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23637,7 +27740,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -23712,6 +27820,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -23789,7 +27901,12 @@ export interface operations {
     patientCustomProgramRequestGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -23867,7 +27984,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -23944,6 +28066,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -24025,6 +28151,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -24103,6 +28233,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -24203,7 +28337,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -24296,7 +28435,12 @@ export interface operations {
     patientCustomProgramPlanGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
                 requestId: string;
@@ -24393,7 +28537,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -24484,7 +28633,12 @@ export interface operations {
     clinicalCustomProgramContext: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -24580,7 +28734,12 @@ export interface operations {
                 page?: number;
                 pageSize?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 requestId: string;
             };
@@ -24675,6 +28834,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 requestId: string;
@@ -24772,7 +28935,12 @@ export interface operations {
     clinicalCustomProgramPlanGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
                 requestId: string;
@@ -24868,6 +29036,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -24968,6 +29140,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -25072,7 +29248,12 @@ export interface operations {
                 metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25091,7 +29272,12 @@ export interface operations {
     patientHealthObservationCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25120,7 +29306,12 @@ export interface operations {
                 metric?: "PAIN" | "MOOD" | "SLEEP_HOURS" | "STRESS" | "ENERGY" | "WEIGHT";
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 patientId: string;
             };
@@ -25138,10 +29329,39 @@ export interface operations {
             };
         };
     };
+    ContentController_patientArticlePreviews: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticlePreviewListDto"];
+                };
+            };
+        };
+    };
     ContentController_patientArticles: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25158,7 +29378,12 @@ export interface operations {
     ContentController_patientArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 slug: string;
             };
@@ -25177,7 +29402,12 @@ export interface operations {
     ContentController_patientBanners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25194,7 +29424,12 @@ export interface operations {
     ContentController_categories: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25211,7 +29446,12 @@ export interface operations {
     ContentController_createCategory: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25232,7 +29472,12 @@ export interface operations {
     ContentController_articles: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25249,7 +29494,12 @@ export interface operations {
     ContentController_createArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25270,7 +29520,12 @@ export interface operations {
     ContentController_updateArticle: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -25293,7 +29548,12 @@ export interface operations {
     ContentController_banners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25312,7 +29572,12 @@ export interface operations {
     ContentController_createBanner: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25337,6 +29602,10 @@ export interface operations {
             query?: never;
             header?: {
                 "If-Match"?: string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -25365,6 +29634,10 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 bannerId: string;
@@ -25396,6 +29669,10 @@ export interface operations {
             header: {
                 "Idempotency-Key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 bannerId: string;
@@ -25415,7 +29692,12 @@ export interface operations {
     adminContentBannerImagePreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 bannerId: string;
             };
@@ -25434,7 +29716,12 @@ export interface operations {
     publicContentBanners: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25453,7 +29740,12 @@ export interface operations {
     publicContentBannerImage: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 bannerId: string;
             };
@@ -25472,7 +29764,12 @@ export interface operations {
     adminCommerceMezajCollectionsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25493,7 +29790,12 @@ export interface operations {
             query?: {
                 page?: number;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25512,7 +29814,12 @@ export interface operations {
     adminCommerceMezajCollectionSave: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 primary: "damavi" | "safravi" | "balgami" | "sodavi";
                 secondary: "damavi" | "safravi" | "balgami" | "sodavi";
@@ -25540,7 +29847,12 @@ export interface operations {
             query?: {
                 submissionId?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -25559,7 +29871,12 @@ export interface operations {
     adminProductContentGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -25616,7 +29933,12 @@ export interface operations {
     adminProductContentUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -25704,7 +30026,12 @@ export interface operations {
     adminProductContentApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -25792,7 +30119,12 @@ export interface operations {
     adminCommerceProductImageGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -25862,6 +30194,10 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 productId: string;
@@ -25984,6 +30320,10 @@ export interface operations {
             header: {
                 "idempotency-key": string;
                 "If-Match": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 productId: string;
@@ -26084,7 +30424,12 @@ export interface operations {
     adminCommerceProductImagePreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26151,7 +30496,12 @@ export interface operations {
     commerceProductImageContent: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 imageId: string;
                 productId: string;
@@ -26207,7 +30557,12 @@ export interface operations {
                 query?: string;
                 status?: "DRAFT" | "ACTIVE" | "ARCHIVED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26226,7 +30581,12 @@ export interface operations {
     adminCommerceProductsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26276,7 +30636,12 @@ export interface operations {
     adminCommerceCategoriesList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26295,7 +30660,12 @@ export interface operations {
     adminCommerceCategoriesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26318,7 +30688,12 @@ export interface operations {
     adminCommerceCategoriesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 categoryId: string;
             };
@@ -26343,7 +30718,12 @@ export interface operations {
     adminCommerceProductsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26404,7 +30784,12 @@ export interface operations {
     adminCommerceSkusCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26429,7 +30814,12 @@ export interface operations {
     adminCommerceSkusUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 skuId: string;
             };
@@ -26454,7 +30844,12 @@ export interface operations {
     adminCommerceInventoryUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 skuId: string;
             };
@@ -26484,7 +30879,12 @@ export interface operations {
                 pageSize?: number;
                 query?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26503,7 +30903,12 @@ export interface operations {
     patientCommerceProductGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 productId: string;
             };
@@ -26533,7 +30938,12 @@ export interface operations {
     patientCommerceCartGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26552,7 +30962,12 @@ export interface operations {
     patientCommerceCartUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26575,7 +30990,12 @@ export interface operations {
     patientCommerceWishlistGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26594,7 +31014,12 @@ export interface operations {
     patientCommerceWishlistUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26617,7 +31042,12 @@ export interface operations {
     adminCommerceCourierShippingRateGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26636,7 +31066,12 @@ export interface operations {
     adminCommerceCourierShippingRateUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26659,7 +31094,12 @@ export interface operations {
     patientCommerceDiscountPreview: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26682,7 +31122,12 @@ export interface operations {
     patientCommerceAddressesList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26701,7 +31146,12 @@ export interface operations {
     patientCommerceAddressesCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26724,7 +31174,12 @@ export interface operations {
     patientCommerceAddressesDelete: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 addressId: string;
             };
@@ -26743,7 +31198,12 @@ export interface operations {
     patientCommerceAddressesUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 addressId: string;
             };
@@ -26768,7 +31228,12 @@ export interface operations {
     patientCommerceShippingOptionsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26787,7 +31252,12 @@ export interface operations {
     patientCommerceOrdersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26806,7 +31276,12 @@ export interface operations {
     patientCommerceOrdersCheckout: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26829,7 +31304,12 @@ export interface operations {
     patientCommerceOrderReceiptGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -26850,7 +31330,12 @@ export interface operations {
     patientCommerceOrdersGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -26871,7 +31356,12 @@ export interface operations {
     patientCommerceOrderCancelPendingPayment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -26890,7 +31380,12 @@ export interface operations {
     adminCommerceDiscountsList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26909,7 +31404,12 @@ export interface operations {
     adminCommerceDiscountsCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -26932,7 +31432,12 @@ export interface operations {
     adminCommerceDiscountsUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 discountId: string;
             };
@@ -26964,7 +31469,12 @@ export interface operations {
                 status?: "CREATED" | "REDIRECT_READY" | "CALLBACK_RECEIVED" | "VERIFYING" | "VERIFIED" | "FAILED" | "EXPIRED" | "REQUIRES_RECONCILIATION";
                 until?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -26985,7 +31495,12 @@ export interface operations {
     adminPaymentGatewayRequestDetail: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
                 providerCode: string;
@@ -27008,7 +31523,12 @@ export interface operations {
     adminCommercePaymentProvidersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27027,7 +31547,12 @@ export interface operations {
     adminCommercePaymentProviderRevisionCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -27052,7 +31577,12 @@ export interface operations {
     adminCommercePaymentProviderUpdate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 providerCode: string;
             };
@@ -27077,7 +31607,12 @@ export interface operations {
     patientPaymentAttemptCreate: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27098,7 +31633,12 @@ export interface operations {
     patientPaymentAttemptGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
             };
@@ -27116,10 +31656,47 @@ export interface operations {
             };
         };
     };
+    sadadPaymentBrowserStart: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description HTML payment navigation document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+            /** @description Payment start rate limit exceeded. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     sadadPaymentCallback: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27127,9 +31704,14 @@ export interface operations {
             content: {
                 "application/x-www-form-urlencoded": {
                     OrderId: string;
-                    Token: string;
                     ResCode: string;
-                };
+                } & ({
+                    /** @description Live VPG callback token; must match Token if both are supplied. */
+                    token: string;
+                } | {
+                    /** @description Compatible documented token spelling. */
+                    Token: string;
+                });
             };
         };
         responses: {
@@ -27145,7 +31727,12 @@ export interface operations {
     adminCommerceOrdersList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27168,7 +31755,12 @@ export interface operations {
                 shippingMethod?: "PICKUP" | "COURIER";
                 status?: "PENDING_PAYMENT" | "PAYMENT_PROCESSING" | "PAID" | "FULFILLMENT_PENDING" | "READY_FOR_PICKUP" | "SHIPPED" | "DELIVERED" | "CANCELLATION_REQUESTED" | "RETURN_REQUESTED" | "CANCELLATION_REJECTED" | "RETURN_REJECTED" | "FULFILLING" | "FULFILLED" | "CANCELLED" | "PAYMENT_FAILED" | "REQUIRES_RECONCILIATION" | "REFUND_PENDING" | "REFUNDED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27187,7 +31779,12 @@ export interface operations {
     adminCommerceOrderGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27210,7 +31807,12 @@ export interface operations {
     adminCommerceReconciliationList: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27227,7 +31829,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_fulfillment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27250,7 +31857,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_tracking: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27273,7 +31885,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_cancelBeforePayment: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27292,7 +31909,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_cancellation: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27315,7 +31937,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_returns: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27338,7 +31965,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_rejection: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27357,7 +31989,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_returnRejection: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27376,7 +32013,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_refund: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 orderId: string;
             };
@@ -27399,7 +32041,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_refundAction: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 action: string;
                 refundId: string;
@@ -27423,7 +32070,12 @@ export interface operations {
     AdminCommerceOrderOperationsController_reconcile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 attemptId: string;
             };
@@ -27454,7 +32106,12 @@ export interface operations {
                 /** @description Clinic-local inclusive ISO date. */
                 to?: string;
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27483,7 +32140,12 @@ export interface operations {
                 segment?: "POTENTIAL" | "ONE_TIME" | "RETURNING" | "VIP";
                 sort?: "NET_SPEND" | "SUCCESSFUL_PURCHASE_COUNT" | "LAST_PURCHASE_AT" | "DISPLAY_NAME";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27504,6 +32166,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -27586,7 +32252,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27659,7 +32330,12 @@ export interface operations {
     adminAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -27734,7 +32410,12 @@ export interface operations {
     adminAssessmentGuidanceDraftRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -27814,7 +32495,12 @@ export interface operations {
                 pageSize?: number;
                 status?: "DRAFT" | "APPROVED" | "REVOKED";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -27887,7 +32573,12 @@ export interface operations {
     clinicalAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -27962,7 +32653,12 @@ export interface operations {
     clinicalAssessmentGuidanceApprove: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28041,7 +32737,12 @@ export interface operations {
     clinicalAssessmentGuidanceRevoke: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28116,7 +32817,12 @@ export interface operations {
     patientAssessmentGuidanceGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28170,6 +32876,586 @@ export interface operations {
             };
         };
     };
+    patientMarriageSettings: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageSettingsDto"];
+                };
+            };
+        };
+    };
+    patientMarriagePrepaidBillingIntent: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriagePrepaidBillingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientMarriagePrepaymentRefund: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRefundPrepaymentResultDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestsList: {
+        parameters: {
+            query?: {
+                direction?: "SENT" | "RECEIVED";
+                page?: number;
+                pageSize?: number;
+                status?: "PENDING" | "ACCEPTED" | "CANCELLED" | "REPLACED";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestPageDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestReview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestAccept: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestDecline: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestReplace: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarriageRequestCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageRequestCancel: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientMarriageInvitationSms: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarriageRequestDto"];
+                };
+            };
+        };
+    };
+    patientEducationalAssessmentOfferingsList: {
+        parameters: {
+            query?: {
+                kind?: "INDIVIDUAL" | "COUPLES";
+                offeringKey?: string;
+                page?: number;
+                pageSize?: number;
+                servicePurpose?: "MARRIAGE";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalAssessmentOfferingPageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalAssessmentOfferingGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalAssessmentOfferingDetailDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalAssessmentFreeAccessCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssessmentFreeAccessDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentFreeGrantDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned or available assessment resource unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Purchase, consent or source conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Adult supported configuration required. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
     patientPaidAssessmentOfferingsList: {
         parameters: {
             query?: {
@@ -28177,8 +33463,14 @@ export interface operations {
                 offeringKey?: string;
                 page?: number;
                 pageSize?: number;
+                servicePurpose?: "MARRIAGE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28251,7 +33543,12 @@ export interface operations {
     patientPaidAssessmentOfferingGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 publicationId: string;
             };
@@ -28328,6 +33625,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -28407,6 +33708,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path: {
                 id: string;
@@ -28484,6 +33789,10 @@ export interface operations {
             query?: never;
             header: {
                 "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
             };
             path?: never;
             cookie?: never;
@@ -28565,8 +33874,14 @@ export interface operations {
                 offeringKey?: string;
                 page?: number;
                 pageSize?: number;
+                servicePurpose?: "MARRIAGE";
             };
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -28639,7 +33954,12 @@ export interface operations {
     patientAssessmentPurchaseGet: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28714,7 +34034,12 @@ export interface operations {
     patientPaidAssessmentStart: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
             path: {
                 id: string;
             };
@@ -28782,6 +34107,1531 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCouplesList: {
+        parameters: {
+            query?: {
+                coupleSessionId?: string;
+                page?: number;
+                pageSize?: number;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCouplePageDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducationalCoupleCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCoupleDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCoupleDetailDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleAccept: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducationalCoupleAcceptDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCoupleDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleSharingWithdraw: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCoupleDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleFreeAccessCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssessmentFreeGrantDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleBillingCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EducationalCoupleBillingDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    patientEducationalCoupleResult: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationalCoupleResultDto"];
+                };
+            };
+            /** @description Active authentication required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Patient self access required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned educational couple context unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Independent acceptance or exact context conflicts. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Required private access audit unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogList: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogListDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogPreviewRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogPreviewResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCatalogApply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CatalogApplyRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CatalogApplyResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Owned preview unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Private catalog bundle unavailable. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategoryList: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryListDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategoryCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramCategoryCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramCategorySave: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramCategorySaveDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramCategoryResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Category changed or needs reassignment. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceList: {
+        parameters: {
+            query?: {
+                audience?: "SHARED" | "FEMALE" | "MALE" | "REVIEW_REQUIRED";
+                categoryId?: string;
+                page?: number;
+                pageSize?: number;
+                search?: string;
+                state?: "ACTIVE" | "ARCHIVED" | "ALL";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServicePageDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceCreate: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramServiceCreateDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceSaveDraft: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramDraftSaveDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceSubmit: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramDefinitionResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Working draft lacks required content or safety. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceArchive: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramServiceRestore: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProgramRevisionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProgramServiceResponseDto"];
+                };
+            };
+            /** @description Invalid input. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Active session required. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Same-clinic content administrator required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service unavailable. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+            /** @description Service revision changed. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponseDto"];
+                };
+            };
+        };
+    };
+    adminProgramDraftPublicationPreview: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftPublicationPreviewRequestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftPublicationPreviewDto"];
+                };
+            };
+        };
+    };
+    adminProgramDraftPublicationApply: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftPublicationApplyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftPublicationResultsDto"];
                 };
             };
         };

@@ -6,6 +6,7 @@ import { createApiApplication } from '../src/app.factory';
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
 import { Prisma } from '../src/generated/prisma/client';
+import { PATIENT_AUDIT_ACTIONS } from '../src/modules/patients/application/patient-audit';
 import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('admin medical purpose isolation (disposable PostgreSQL)',()=>{
@@ -65,6 +66,52 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('admin medica
   });
   it('onboarding summary counts only medical completion across clinics and independent consent purposes',async()=>{
     const before=await req('GET','admin/patients/onboarding-summary');expect(before.statusCode,before.body).toBe(200);const old=before.json();await fixture('PROGRAM_PURCHASE_TERMS');await fixture();const after=await req('GET','admin/patients/onboarding-summary');expect(after.statusCode,after.body).toBe(200);expect(after.json()).toMatchObject({onboardingCompletePatients:old.onboardingCompletePatients+2,onboardingIncompletePatients:old.onboardingIncompletePatients});
+  });
+  it('matches the list for incomplete names, declarations and the current intake revision', async () => {
+    const f = await fixture();
+    const profile = { userId: f.p.userId };
+    const revision = { id: f.revision.id };
+    await completeState(f, true);
+
+    await db.userProfile.update({ where: profile, data: { lastName: '\u00a0\u2003' } });
+    await completeState(f, false);
+    await db.userProfile.update({ where: profile, data: { lastName: 'Patient' } });
+
+    for (const allergyReport of [Prisma.DbNull, Prisma.JsonNull, '\u2003']) {
+      await db.patientMedicalIntakeRevision.update({ where: revision, data: { allergyReport } });
+      await completeState(f, false);
+    }
+    await db.patientMedicalIntakeRevision.update({ where: revision, data: { allergyReport: { status: 'NONE', items: [] } } });
+    await completeState(f, true);
+
+    await db.patientMedicalIntakeRevision.create({ data: {
+      intakeId: f.intake.id, revisionNumber: 2, assignedSchemaVersion: 1, revisionState: 'DRAFT',
+      reportedPatientId: f.patient.id, recordingMode: 'PATIENT_ENTRY', payloadHash: 'b'.repeat(64),
+    } });
+    // A later draft does not change the intake's current-revision pointer.
+    await completeState(f, true);
+    await db.patientMedicalIntake.update({ where: { id: f.intake.id }, data: {
+      currentRevisionNumber: 2, submissionState: 'DRAFT',
+    } });
+    await completeState(f, false);
+  });
+  it('keeps aggregates free of medical audit events and records detail reads and corrections', async () => {
+    const f = await fixture();
+    const audit = { subjectId: f.intake.id, subjectType: 'PATIENT_MEDICAL_INTAKE' };
+    const { ADMIN_MEDICAL_INTAKE_READ, ADMIN_MEDICAL_INTAKE_CORRECTED } = PATIENT_AUDIT_ACTIONS;
+
+    const summary = await req('GET', 'admin/patients/onboarding-summary');
+    expect(summary.statusCode, summary.body).toBe(200);
+    await completeState(f, true);
+    expect(await db.auditEvent.count({ where: audit })).toBe(0);
+
+    const read = await req('GET', detail(f));
+    expect(read.statusCode, read.body).toBe(200);
+    const write = await req('PATCH', `${detail(f)}/medical-intake`, admin, correction);
+    expect(write.statusCode, write.body).toBe(200);
+    await completeState(f, false);
+    expect(await db.auditEvent.count({ where: { ...audit, action: ADMIN_MEDICAL_INTAKE_READ, actorUserId: admin.userId } })).toBe(1);
+    expect(await db.auditEvent.count({ where: { ...audit, action: ADMIN_MEDICAL_INTAKE_CORRECTED, actorUserId: admin.userId } })).toBe(1);
   });
   it.each(['READ','CORRECT'])('committed withdrawal during observed %s consent-lock wait withholds medical data',async mode=>{
     const f=await fixture();let ready!:()=>void,release!:()=>void,pid=0;const locked=new Promise<void>(r=>{ready=r;}),gate=new Promise<void>(r=>{release=r;});

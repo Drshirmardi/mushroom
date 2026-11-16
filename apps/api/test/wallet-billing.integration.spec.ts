@@ -1,4 +1,6 @@
 import { Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createServer } from 'node:http';
 import { createHash, randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -13,11 +15,20 @@ import { PaymentProviderRegistry } from '../src/modules/commerce/payments/paymen
 import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments/payment-credential-crypto.service';
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
+import { parseSadadFormCallback } from '../src/modules/commerce/payments/sadad-payment-provider.adapter';
 import { CommerceCheckoutService } from '../src/modules/commerce/checkout/commerce-checkout.service';
+import { CommerceInventoryService } from '../src/modules/commerce/inventory/commerce-inventory.service';
 import { OrderBillingTarget } from '../src/modules/commerce/payments/order-billing.target';
 import { PatientAvailabilityService } from '../src/modules/scheduling/patient-availability.service';
 import { PatientAppointmentsService } from '../src/modules/appointments/patient-appointments.service';
 import { OutboxWorker } from '../src/modules/outbox/outbox.worker';
+import { AnalyticsWorker } from '../src/modules/analytics/analytics.worker';
+import { AnalyticsService } from '../src/modules/analytics/analytics.service';
+import { Ga4Transport } from '../src/modules/analytics/ga4.transport';
+import { OutboxService } from '../src/modules/outbox/outbox.service';
+import { AnalyticsInterceptor } from '../src/modules/analytics/analytics.interceptor';
+import { measurementPayload } from '../src/modules/analytics/analytics.protocol';
+import { lastValueFrom, of } from 'rxjs';
 import { createTestAccessToken } from './auth-test-support';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 
@@ -33,7 +44,7 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   const fake: PaymentProviderPort = {
     descriptor: { code: 'sadad', displayName: 'Synthetic test PSP', capabilities: { createPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', parseCallback: 'SUPPORTED_WHEN_GO_LIVE_READY', verifyPayment: 'SUPPORTED_WHEN_GO_LIVE_READY', sandbox: 'UNSUPPORTED', inquiry: 'UNSUPPORTED', webhook: 'UNSUPPORTED', refund: 'UNSUPPORTED', partialRefund: 'UNSUPPORTED' } },
     async createPayment(input) { creates++; const token = `synthetic-${input.providerOrderId}`; providerRequests.set(token, { amount: input.providerAmount, orderId: input.providerOrderId }); return { providerResultCode: '0', token, redirectUrl: `https://sadad.shaparak.ir/Purchase?Token=${token}` }; },
-    parseCallback(input) { const value = input as Record<string, string>; return { providerOrderId: BigInt(value.OrderId), token: value.Token, resultCode: value.ResCode }; },
+    parseCallback(input) { return parseSadadFormCallback(input as Record<string, unknown>); },
     async verifyPayment({ token }) { if (verifyTimeout) throw new Error('Synthetic timeout'); const input = providerRequests.get(token)!; return { resultCode: '100', providerOrderId: input.orderId, amount: input.amount, referenceId: `reference-${input.orderId}`, traceNumber: `trace-${input.orderId}` }; },
   };
   beforeAll(async () => {
@@ -73,13 +84,15 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const current = await wallet.summary(p.profile);
     return wallet.adjust(context(), p.profile.id, { type: 'CREDIT', amountToman, expectedVersion: current.version, reason: 'Synthetic admin funding' }, randomUUID());
   }
-  async function order(p: Awaited<ReturnType<typeof patient>>, price = 1000n) {
+  async function order(p: Awaited<ReturnType<typeof patient>>, price = 1000n, discountCode?: string, lineCount = 1) {
+    for (let index = 0; index < lineCount; index++) {
     const suffix = randomUUID();
     const category = await db.commerceCategory.create({ data: { clinicId, name: suffix, slug: suffix } });
     const product = await db.commerceProduct.create({ data: { clinicId, categoryId: category.id, title: 'Synthetic product', slug: suffix, status: 'ACTIVE' } });
     const sku = await db.commerceSku.create({ data: { clinicId, productId: product.id, code: suffix, currentPriceToman: price, currentTaxToman: 0n, isActive: true, inventoryItem: { create: { clinicId, onHandQuantity: 10 } } } });
-    await db.commerceCart.create({ data: { clinicId, patientId: p.profile.id, items: { create: { skuId: sku.id, quantity: 1 } } } });
-    return app.get(CommerceCheckoutService).checkout(p.userId, randomUUID(), { shippingMethod: 'PICKUP' }, context(p.userId));
+    await db.commerceCart.upsert({ where: { patientId: p.profile.id }, create: { clinicId, patientId: p.profile.id, items: { create: { skuId: sku.id, quantity: 1 } } }, update: { items: { create: { skuId: sku.id, quantity: 1 } } } });
+    }
+    return app.get(CommerceCheckoutService).checkout(p.userId, randomUUID(), { shippingMethod: 'PICKUP', ...(discountCode ? { discountCode } : {}) }, context(p.userId));
   }
   async function appointmentInput(p: Awaited<ReturnType<typeof patient>>) {
     const offering = await db.doctorService.findFirstOrThrow({ where: { clinicId, isActive: true, publicationStatus: 'PUBLISHED', priceAmount: { gt: 0 } } });
@@ -154,11 +167,73 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const other = await patient(); await expect(billing.get(other.userId, intent.id)).rejects.toThrow();
   });
 
+  it('verifies a lowercase-token VPG form and redirects to the result page with exactly one wallet credit', async () => {
+    const p = await patient();
+    const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '750' }, randomUUID(), context(p.userId));
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    const stored = await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
+    const form = new URLSearchParams({ OrderId: stored.providerOrderId.toString(), token: stored.providerToken!, ResCode: '0', SwitchResCode: '00', __RequestVerificationToken: 'synthetic-csrf', HashedCardNo: 'synthetic-ignored-card-hash', IsWalletPayment: 'false' });
+    const send = (payload: string) => app.inject({ method: 'POST', url: '/v1/payments/providers/sadad/callback', headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sadad.shaparak.ir' }, payload });
+    const wrong = new URLSearchParams(form); wrong.set('token', 'synthetic-wrong-token');
+    expect((await send(wrong.toString())).statusCode).toBe(409);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    const ambiguous = new URLSearchParams(form); ambiguous.set('Token', 'synthetic-conflicting-token');
+    expect((await send(ambiguous.toString())).statusCode).toBe(422);
+    const repeated = new URLSearchParams(form); repeated.append('token', stored.providerToken!);
+    expect((await send(repeated.toString())).statusCode).toBe(422);
+    for (let replay = 0; replay < 2; replay++) {
+      const response = await send(form.toString());
+      expect(response.statusCode).toBe(303);
+      expect(response.headers.location).toBe(`https://app.example.test/profile/wallet/payment-result?intentId=${intent.id}`);
+    }
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('7500');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+  });
+
+  it('serves the merchant browser page publicly through the real HTTP pipeline', async () => {
+    const response = await app.inject({ method: 'GET', url: '/v1/payments/providers/sadad/start' });
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('text/html');
+    expect(response.headers['referrer-policy']).toBe('origin');
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body).toContain('location.hash');
+  });
+
+  it('allows a fresh attempt only after server verification definitively rejects the prior token', async () => {
+    const p = await patient();
+    const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '100' }, randomUUID(), context(p.userId));
+    const before = creates;
+    const concurrent = await Promise.all(Array.from({ length: 6 }, () => gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(new Set(concurrent.map(value => value.id)).size).toBe(1);
+    expect(creates - before).toBe(1);
+    const first = concurrent[0];
+    const original = fake.verifyPayment;
+    fake.verifyPayment = async () => ({ resultCode: '101' });
+    try {
+      expect(await gateway.retry(admin.userId, first.id)).toMatchObject({ status: 'FAILED' });
+    } finally { fake.verifyPayment = original; }
+    const next = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect(next.id).not.toBe(first.id);
+    expect(creates - before).toBe(2);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    expect(await db.billingGatewayAttempt.count({ where: { intentId: intent.id } })).toBe(2);
+  });
+
   it('top-up attempts reuse their original token/revision and duplicate concurrent Verify has exactly one credit', async () => {
     const p = await patient(); const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '1234' }, randomUUID(), context(p.userId)); const key = randomUUID(); const before = creates;
     const first = await gateway.create(p.userId, intent.id, key, context(p.userId)); expect((await gateway.create(p.userId, intent.id, key, context(p.userId))).id).toBe(first.id); expect(creates - before).toBe(1);
+    const resumed = await Promise.all(Array.from({ length: 6 }, () => gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(resumed.every(value => value.id === first.id && value.redirectUrl === first.redirectUrl)).toBe(true);
+    expect(creates - before).toBe(1);
+    expect(new URL(first.redirectUrl!).pathname).toBe('/v1/payments/providers/sadad/start');
+    expect(await db.billingGatewayAttempt.count({ where: { intentId: intent.id } })).toBe(1);
+    const outsider = await patient();
+    await expect(gateway.create(outsider.userId, intent.id, randomUUID(), context(outsider.userId))).rejects.toThrow();
     verifyTimeout = true; await gateway.verify(first.id); verifyTimeout = false;
     expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: first.id } })).status).toBe('REQUIRES_RECONCILIATION'); expect((await wallet.summary(p.profile)).balanceRial).toBe('0');
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: first.id, status: 'REQUIRES_RECONCILIATION', redirectUrl: null });
+    expect(creates - before).toBe(1);
     await Promise.all(Array.from({ length: 8 }, () => gateway.verify(first.id)));
     expect((await wallet.summary(p.profile)).balanceRial).toBe('12340'); expect(await db.walletJournal.count({ where: { reference: `gateway:${first.id}:credit` } })).toBe(1);
     expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: first.id } })).revisionId).toBe(revisionId);
@@ -172,6 +247,9 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
   it('pending bank payment blocks wallet; the generic bank order produces a real order receipt with its own proof', async () => {
     const p = await patient(); await credit(p, '2000'); const checkout = await order(p); const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
     const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: attempt.id, redirectUrl: attempt.redirectUrl });
+    const review = await app.get(BillingReportingService).reconciliation(admin.userId, { page: 1, pageSize: 100 });
+    expect(review.items.some(value => value.id === attempt.id && value.status === 'REDIRECT_READY')).toBe(true);
     await expect(billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))).rejects.toMatchObject({ response: { code: 'BILLING_PAYMENT_PENDING' } });
     await gateway.verify(attempt.id); const result = await billing.get(p.userId, intent.id); expect(result.status).toBe('PAID');
     const payment = await db.payment.findUniqueOrThrow({ where: { orderId: checkout.id } }); expect(payment).toMatchObject({ method: 'GATEWAY', billingAttemptId: attempt.id, paymentAttemptId: null }); expect(payment.providerReferenceId).toBeTruthy();
@@ -179,6 +257,125 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const refund = await billing.refund(context(), intent.id, '10000', 'Bank refund', randomUUID()); expect(refund.status).toBe('MANUAL_REQUIRED');
     expect((await wallet.summary(p.profile)).balanceRial).toBe('20000');
     await billing.completeRefund(context(), refund.id, 'synthetic-bank-transfer-evidence'); expect((await db.payment.findUniqueOrThrow({ where: { id: payment.id } })).status).toBe('REFUNDED');
+  });
+
+  async function expireOrder(orderId: string) {
+    await db.inventoryReservation.updateMany({ where: { orderId, status: 'ACTIVE' }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    await app.get(CommerceInventoryService).expireDue(100);
+  }
+
+  it('resumes the same order after repeated stock expiry, preserves its price and debits once under concurrent wallet retries', async () => {
+    const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    expect(await db.commerceCartItem.count({ where: { cart: { patientId: p.profile.id } } })).toBe(0);
+    const reservation = await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } });
+    const item = await db.inventoryItem.findUniqueOrThrow({ where: { id: reservation.inventoryItemId } });
+    await db.commerceSku.update({ where: { id: item.skuId }, data: { currentPriceToman: 9000n } });
+    for (let cycle = 0; cycle < 2; cycle++) {
+      await expireOrder(checkout.id);
+      expect((await db.commerceOrder.findUniqueOrThrow({ where: { id: checkout.id } })).status).toBe('PENDING_PAYMENT');
+      await db.$transaction(async tx => { const target = app.get(OrderBillingTarget); const row = await billing.lockIntent(tx, intent.id); await target.lock(tx, row); expect(await target.preparePayment(tx, row)).toBe(true); });
+    }
+    await expireOrder(checkout.id);
+    const results = await Promise.allSettled(Array.from({ length: 4 }, () => billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))));
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('10000');
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { id: item.id } }))).toMatchObject({ onHandQuantity: 9, reservedQuantity: 0 });
+    const ledger = await db.inventoryLedgerEntry.findMany({ where: { referenceId: reservation.id } });
+    expect(ledger.filter(row => row.entryType === 'RESERVATION')).toHaveLength(4);
+    expect(ledger.filter(row => row.entryType === 'RELEASE')).toHaveLength(3);
+    expect(ledger.filter(row => row.entryType === 'CONSUMPTION')).toHaveLength(1);
+    expect((await db.payment.findUniqueOrThrow({ where: { orderId: checkout.id } })).commerceAmountToman).toBe(1000n);
+  });
+
+  it('releases shared pending bank stock, allows a separate purchase and settles the old bank receipt only once when stock remains', async () => {
+    const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    expect((await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } })).status).toBe('EXPIRED');
+    expect(await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId))).toMatchObject({ id: attempt.id, redirectUrl: attempt.redirectUrl });
+    const methods = await gateway.methods(p.userId, intent.id); expect(methods.find(method => method.code === 'WALLET')?.available).toBe(false);
+    const nextOrder = await order(p); const next = await billing.create(p.userId, 'ORDER', { orderId: nextOrder.id }, randomUUID(), context(p.userId));
+    await billing.payWallet(p.userId, next.id, randomUUID(), context(p.userId));
+    await Promise.all([gateway.verify(attempt.id), gateway.verify(attempt.id)]);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+    expect(await db.payment.count({ where: { orderId: checkout.id } })).toBe(1);
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('10000');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(0);
+  });
+
+  it('keeps unavailable orders intact and compensates a late bank receipt without consuming missing stock or double credit', async () => {
+    const p = await patient(); await credit(p, '3000'); const checkout = await order(p, 1000n, undefined, 2);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    const reservation = await db.inventoryReservation.findFirstOrThrow({ where: { orderId: checkout.id } });
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 0 } });
+    await expect(billing.payWallet(p.userId, intent.id, randomUUID(), context(p.userId))).rejects.toMatchObject({ response: { code: 'COMMERCE_INVENTORY_INSUFFICIENT' } });
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('30000');
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 1 } });
+    const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    await db.inventoryItem.update({ where: { id: reservation.inventoryItemId }, data: { onHandQuantity: 0 } });
+    await Promise.all([gateway.verify(attempt.id), gateway.verify(attempt.id)]);
+    expect((await billing.get(p.userId, intent.id)).status).toBe('COMPENSATED');
+    expect((await wallet.summary(p.profile)).balanceRial).toBe('50000');
+    expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+    expect(await db.inventoryReservation.count({ where: { orderId: checkout.id, status: 'ACTIVE' } })).toBe(0);
+    expect(await db.payment.count({ where: { orderId: checkout.id } })).toBe(0);
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { id: reservation.inventoryItemId } }))).toMatchObject({ onHandQuantity: 0, reservedQuantity: 0 });
+  });
+
+  it('does not oversell the last unit when two expired orders resume together', async () => {
+    const first = await patient(); const second = await patient(); await credit(first, '2000'); await credit(second, '2000');
+    const firstOrder = await order(first);
+    const line = await db.commerceOrderLine.findFirstOrThrow({ where: { orderId: firstOrder.id } });
+    await db.commerceCart.create({ data: { clinicId, patientId: second.profile.id, items: { create: { skuId: line.skuId!, quantity: 1 } } } });
+    const secondOrder = await app.get(CommerceCheckoutService).checkout(second.userId, randomUUID(), { shippingMethod: 'PICKUP' }, context(second.userId));
+    const firstIntent = await billing.create(first.userId, 'ORDER', { orderId: firstOrder.id }, randomUUID(), context(first.userId));
+    const secondIntent = await billing.create(second.userId, 'ORDER', { orderId: secondOrder.id }, randomUUID(), context(second.userId));
+    await expireOrder(firstOrder.id); await expireOrder(secondOrder.id);
+    await db.inventoryItem.update({ where: { skuId: line.skuId! }, data: { onHandQuantity: 1 } });
+    const outcomes = await Promise.allSettled([
+      billing.payWallet(first.userId, firstIntent.id, randomUUID(), context(first.userId)),
+      billing.payWallet(second.userId, secondIntent.id, randomUUID(), context(second.userId)),
+    ]);
+    expect(outcomes.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(outcomes.find(result => result.status === 'rejected')).toMatchObject({ reason: { response: { code: 'COMMERCE_INVENTORY_INSUFFICIENT' } } });
+    expect(await db.payment.count({ where: { orderId: { in: [firstOrder.id, secondOrder.id] } } })).toBe(1);
+    expect((await db.inventoryItem.findUniqueOrThrow({ where: { skuId: line.skuId! } }))).toMatchObject({ onHandQuantity: 0, reservedQuantity: 0 });
+  });
+
+  it('keeps the accepted discount with a saved order and releases it on explicit cancellation after stock expiry', async () => {
+    const p = await patient(); const code = `SAVE_${randomUUID().slice(0, 8).toUpperCase()}`;
+    const discount = await db.commerceDiscount.create({ data: { clinicId, code, title: 'Synthetic accepted discount', kind: 'FIXED_AMOUNT', amountToman: 100n, usageLimit: 1 } });
+    const checkout = await order(p, 1000n, code);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    await expireOrder(checkout.id);
+    expect(intent.amountRial).toBe('9000');
+    expect(await db.commerceDiscountReservation.findUniqueOrThrow({ where: { orderId: checkout.id } })).toMatchObject({ status: 'ACTIVE', expiresAt: null });
+    await billing.cancel(p.userId, intent.id, randomUUID(), context(p.userId));
+    expect((await db.commerceOrder.findUniqueOrThrow({ where: { id: checkout.id } })).status).toBe('CANCELLED');
+    expect(await db.commerceDiscountReservation.findUniqueOrThrow({ where: { orderId: checkout.id } })).toMatchObject({ discountId: discount.id, status: 'RELEASED' });
+  });
+
+  it('maintenance resolves abandoned ready attempts and token-less requests without cancelling their orders', async () => {
+    const p = await patient(); const checkout = await order(p);
+    const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+    const providerOrderId = (await db.$queryRaw<Array<{ value: bigint }>>`SELECT nextval('payment_provider_order_id_seq') AS value`)[0]!.value;
+    const old = new Date(Date.now() - 21 * 60_000);
+    const attempt = await db.billingGatewayAttempt.create({ data: { intentId: intent.id, revisionId, providerOrderId, amountRial: BigInt(intent.amountRial), idempotencyKey: randomUUID(), providerToken: `synthetic-abandoned-${providerOrderId}`, status: 'REDIRECT_READY', createdAt: old, updatedAt: old } });
+    const original = fake.verifyPayment;
+    fake.verifyPayment = async () => ({ resultCode: '101' });
+    try { await gateway.maintain(100); } finally { fake.verifyPayment = original; }
+    expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } })).status).toBe('FAILED');
+    const nextId = (await db.$queryRaw<Array<{ value: bigint }>>`SELECT nextval('payment_provider_order_id_seq') AS value`)[0]!.value;
+    const tokenless = await db.billingGatewayAttempt.create({ data: { intentId: intent.id, revisionId, providerOrderId: nextId, amountRial: BigInt(intent.amountRial), idempotencyKey: randomUUID(), status: 'REQUIRES_RECONCILIATION', createdAt: old, updatedAt: old } });
+    await gateway.maintain(100);
+    expect((await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: tokenless.id } })).status).toBe('FAILED');
+    expect((await billing.get(p.userId, intent.id)).status).toBe('PENDING');
+    const retry = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId)); expect(retry.status).toBe('REDIRECT_READY');
   });
 
   it('full wallet payment creates the appointment only once, protects the slot and refunds an allowed cancellation', async () => {
@@ -204,6 +401,19 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const attempt = await db.billingGatewayAttempt.create({ data: { intentId: intent.id, revisionId, providerOrderId, amountRial: intent.amountRial, status: 'REDIRECT_READY', providerToken: token, idempotencyKey: randomUUID() } });
     await billing.expire(); await gateway.verify(attempt.id); await gateway.verify(attempt.id);
     const result = await db.billingIntent.findUniqueOrThrow({ where: { id: intent.id } }); expect(result.status).toBe('COMPENSATED'); expect(result.appointmentId).toBeNull(); expect((await wallet.summary(p.profile)).balanceRial).toBe(intent.amountRial.toString());
+  });
+
+  it('allows only one concurrent appointment hold for the same slot', async () => {
+    const first = await patient(true);
+    const second = await patient(true);
+    const input = await appointmentInput(first);
+    const results = await Promise.allSettled([first, second].map(item =>
+      billing.create(item.userId, 'APPOINTMENT', input, randomUUID(), context(item.userId)),
+    ));
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
+    expect(await db.appointmentHold.count({
+      where: { doctorServiceId: input.doctorServiceId, startsAt: new Date(input.startsAt), releasedAt: null, expiresAt: { gt: new Date() } },
+    })).toBe(1);
   });
 
   it('a fully verified bank payment creates one final appointment and cancellation requests an evidenced bank refund', async () => {
@@ -292,4 +502,185 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     for (let i = 0; i < 10 && !(await db.notification.count({ where: { recipientId: p.userId, category: 'FINANCIAL' } })); i++) await app.get(OutboxWorker).tick();
     expect(await db.notification.count({ where: { recipientId: p.userId, category: 'FINANCIAL' } })).toBe(1);
   });
+  it('AN03: consented wallet purchase/refund, rollback, partition leases, bounded retry and privacy TTL use real PostgreSQL', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    const send = vi.spyOn(transport, 'send').mockResolvedValue('submitted');
+    const worker = app.get(AnalyticsWorker); worker.onModuleDestroy();
+    app.get(OutboxWorker).onModuleDestroy();
+    const outbox = app.get(OutboxService);
+    const analytics = app.get(AnalyticsService);
+    try {
+      const p = await patient(); await credit(p, '2000');
+      const purchase = await order(p);
+      const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now(), entry_cta: 'home_enter', phone: 'private-not-allowed' };
+      const requestHeaders = { ...headers(p.token), 'x-analytics-context': JSON.stringify(ctx) };
+      const created = await app.inject({ method: 'POST', url: '/v1/patients/me/billing/order-intents', headers: requestHeaders, payload: { orderId: purchase.id } });
+      expect(created.statusCode).toBe(201); const intentId = created.json().id;
+      const metadata = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: `analytics:context:${purchase.id}` } });
+      expect(JSON.stringify(metadata.payload)).not.toContain('private-not-allowed');
+      const key = randomUUID(); const path = `/v1/patients/me/billing/intents/${intentId}/wallet-payment`;
+      const paid = await app.inject({ method: 'POST', url: path, headers: { ...requestHeaders, 'idempotency-key': key } });
+      expect(paid.statusCode).toBe(201); expect(paid.json().status).toBe('PAID');
+      const replays = await Promise.all([0,1].map(() => app.inject({ method: 'POST', url: path, headers: { ...requestHeaders, 'idempotency-key': key } })));
+      expect(replays.every(response => response.statusCode === 201)).toBe(true);
+      const eventKey = `analytics:ga4:purchase:${purchase.id}`;
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: eventKey } })).toBe(1);
+      const stored = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: eventKey } });
+      expect(stored.payload).toMatchObject({ event: 'purchase', transactionId: purchase.id, amountRial: '10000' });
+      expect(JSON.stringify(stored.payload)).not.toContain(p.userId);
+      const foreign = await patient();
+      const refused = await app.inject({ method: 'POST', url: path, headers: { ...headers(foreign.token), 'x-analytics-context': JSON.stringify(ctx) } });
+      expect(refused.statusCode).toBe(404);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: eventKey } })).toBe(1);
+      const rollback = randomUUID();
+      await expect(db.$transaction(async tx => { await analytics.enqueue(tx, 'assessment_completed', rollback, new Date(), ctx); throw Error('synthetic rollback'); })).rejects.toThrow('synthetic rollback');
+      expect(await db.outboxEvent.count({ where: { aggregateId: rollback } })).toBe(0);
+      const operational = await outbox.claim();
+      expect(operational.some(row => row.eventType.startsWith('ANALYTICS_'))).toBe(false);
+      const claims = (await Promise.all([outbox.claim(5, 'analytics'), outbox.claim(5, 'analytics')])).flat();
+      expect(new Set(claims.map(row => row.id)).size).toBe(claims.length);
+      expect(claims.some(row => row.id === stored.id)).toBe(true);
+      await db.outboxEvent.update({ where: { id: stored.id }, data: { status: 'PENDING', availableAt: new Date(), lockedAt: null } });
+      await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: stored.id } })).toMatchObject({ status: 'DELIVERED', payload: {} });
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(send.mock.calls[0][0]).toMatchObject({ client_id: '123.456', events: [{ name: 'purchase', params: { transaction_id: purchase.id, amount_rial: 10000 } }] });
+      const refund = await billing.refund(context(), intentId, '5000', 'Synthetic refund', randomUUID());
+      const refundEvent = await db.outboxEvent.findUniqueOrThrow({ where: { idempotencyKey: `analytics:ga4:refund:${refund.id}` } });
+      send.mockResolvedValueOnce('retry'); await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: refundEvent.id } })).toMatchObject({ status: 'PENDING', attempts: 1, lastError: 'ANALYTICS_RETRY' });
+      await db.outboxEvent.update({ where: { id: refundEvent.id }, data: { availableAt: new Date() } });
+      send.mockResolvedValueOnce('permanent'); await worker.tick();
+      expect(await db.outboxEvent.findUnique({ where: { id: refundEvent.id } })).toMatchObject({ status: 'FAILED', payload: {} });
+      await db.outboxEvent.update({ where: { id: metadata.id }, data: { availableAt: new Date(0) } });
+      const lateRefund = await billing.refund(context(), intentId, '5000', 'Synthetic later refund', randomUUID());
+      expect(lateRefund.status).toBe('COMPLETED');
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:refund:${lateRefund.id}` } })).toBe(0);
+      await db.outboxEvent.updateMany({ where: { id: { in: [stored.id, refundEvent.id] } }, data: { availableAt: new Date(0) } });
+      await worker.tick();
+      expect(await db.outboxEvent.count({ where: { id: { in: [metadata.id, stored.id, refundEvent.id] } } })).toBe(0);
+      expect(await db.billingIntent.findUnique({ where: { id: intentId } })).toMatchObject({ status: 'PAID' });
+    } finally { send.mockRestore(); property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
+  it('AN03: verified gateway and capture/payment race yield one purchase; top-up and compensation never count as sales', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    app.get(AnalyticsWorker).onModuleDestroy(); app.get(OutboxWorker).onModuleDestroy();
+    const analytics = app.get(AnalyticsService);
+    const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now() };
+    try {
+      const p = await patient(); const checkout = await order(p);
+      const intent = await billing.create(p.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(intent.id, p.userId, ctx);
+      const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${checkout.id}` } })).toBe(0);
+      await gateway.verify(attempt.id); await gateway.verify(attempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: intent.id } })).toMatchObject({ status: 'PAID' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${checkout.id}` } })).toBe(1);
+      const racePatient = await patient(); await credit(racePatient, '2000');
+      const raceOrder = await order(racePatient);
+      const raceIntent = await billing.create(racePatient.userId, 'ORDER', { orderId: raceOrder.id }, randomUUID(), context(racePatient.userId));
+      await Promise.all([analytics.captureIntent(raceIntent.id, racePatient.userId, ctx), billing.payWallet(racePatient.userId, raceIntent.id, randomUUID(), context(racePatient.userId))]);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${raceOrder.id}` } })).toBe(1);
+      const topup = await billing.create(p.userId, 'TOPUP', { amountToman: '10' }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(topup.id, p.userId, ctx);
+      const topupAttempt = await gateway.create(p.userId, topup.id, randomUUID(), context(p.userId));
+      await gateway.verify(topupAttempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: topup.id } })).toMatchObject({ status: 'PAID' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${topup.id}` } })).toBe(0);
+      const lateOrder = await order(p);
+      const lateIntent = await billing.create(p.userId, 'ORDER', { orderId: lateOrder.id }, randomUUID(), context(p.userId));
+      await analytics.captureIntent(lateIntent.id, p.userId, ctx);
+      const lateAttempt = await gateway.create(p.userId, lateIntent.id, randomUUID(), context(p.userId));
+      await db.billingIntent.update({ where: { id: lateIntent.id }, data: { status: 'CANCELLED' } });
+      await gateway.verify(lateAttempt.id);
+      expect(await db.billingIntent.findUnique({ where: { id: lateIntent.id } })).toMatchObject({ status: 'COMPENSATED' });
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:purchase:${lateOrder.id}` } })).toBe(0);
+    } finally { property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
+  it('AN03: registration and completed-only response projection queue no private clinical fields; disabled/invalid context fails open', async () => {
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    app.get(AnalyticsWorker).onModuleDestroy();
+    const ctx = { consent: 'granted' as const, measurement_id: 'G-TEST123', client_id: '123.456', session_id: String(Math.floor(Date.now()/1000)-10), at: Date.now() };
+    try {
+      const phone = `+989${Math.floor(Math.random()*900000000+100000000)}`;
+      const signup = await app.inject({ method: 'POST', url: '/v1/auth/register', headers: { origin: 'http://localhost:3000', 'x-analytics-context': JSON.stringify(ctx) }, payload: { phone, password: 'An03syntheticPassword!47' } });
+      expect(signup.statusCode).toBe(201);
+      expect(await db.outboxEvent.count({ where: { idempotencyKey: `analytics:ga4:sign_up:${signup.json().id}` } })).toBe(1);
+      const id = randomUUID();
+      const interceptor = new AnalyticsInterceptor(app.get(AnalyticsService), db);
+      const execution = { switchToHttp: () => ({ getRequest: () => ({ method: 'POST', url: `/v1/assessment-submissions/${id}/submit`, headers: { 'x-analytics-context': JSON.stringify(ctx) } }) }) };
+      const incomplete = { id, state: 'IN_PROGRESS', answers: { private: 'private-medical' }, completedAt: null };
+      expect(await lastValueFrom(interceptor.intercept(execution as never, { handle: () => of(incomplete) }))).toBe(incomplete);
+      expect(await db.outboxEvent.count({ where: { aggregateId: id } })).toBe(0);
+      const complete = { ...incomplete, state: 'COMPLETE', completedAt: new Date(), resultSnapshot: { private: 'private-result' } };
+      for (let i=0;i<2;i++) expect(await lastValueFrom(interceptor.intercept(execution as never, { handle: () => of(complete) }))).toBe(complete);
+      const rows = await db.outboxEvent.findMany({ where: { aggregateId: id } });
+      expect(rows).toHaveLength(1); expect(JSON.stringify(rows[0].payload)).not.toContain('private-');
+      const invalid = app.get(AnalyticsService).context('x'.repeat(1025)); expect(invalid).toBeNull();
+      mode.mockReturnValue(false);
+      const blocked = randomUUID();
+      await db.$transaction(tx => app.get(AnalyticsService).enqueue(tx, 'assessment_completed', blocked, new Date(), ctx));
+      expect(await db.outboxEvent.count({ where: { aggregateId: blocked } })).toBe(0);
+    } finally { property.mockRestore(); mode.mockRestore(); }
+  }, 30000);
+
+  it.skipIf(process.env.ANALYTICS_BROWSER_TEST !== '1')('AN04: production payment UI reaches real API/PostgreSQL and bounded HTTP delivery; denied/blocked analytics never blocks payment', async () => {
+    const { analyticsBrowserFrontend, browserWalletPayment } = await import('./analytics-browser-test-support.js');
+    const worker = app.get(AnalyticsWorker); worker.onModuleDestroy();
+    app.get(OutboxWorker).onModuleDestroy();
+    const transport = app.get(Ga4Transport);
+    const mode = vi.spyOn(transport, 'enabled', 'get').mockReturnValue(true);
+    const property = vi.spyOn(transport, 'measurementId', 'get').mockReturnValue('G-TEST123');
+    const config = app.get(ConfigService); const oldSecret = config.get('GA4_API_SECRET');
+    config.set('GA4_API_SECRET', 'an04-synthetic-secret');
+    const submitted: Array<NonNullable<ReturnType<typeof measurementPayload>>> = [];
+    const collector = createServer(async (request, response) => {
+      let body = ''; for await (const chunk of request) body += String(chunk);
+      submitted.push(JSON.parse(body)); response.statusCode = 204; response.end();
+    });
+    await new Promise<void>(resolve => collector.listen(0, '127.0.0.1', resolve));
+    const realFetch = globalThis.fetch;
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation((target, options) => {
+      const url = new URL(String(target));
+      if (url.origin === 'https://www.google-analytics.com') {
+        expect(url.pathname).toBe('/mp/collect'); expect(url.searchParams.get('api_secret')).toBe('an04-synthetic-secret');
+        return realFetch(`http://127.0.0.1:${(collector.address() as { port: number }).port}`, options);
+      }
+      return realFetch(target, options);
+    });
+    let frontend: Awaited<ReturnType<typeof analyticsBrowserFrontend>> | undefined;
+    try {
+      await app.listen({ port: 0, host: '127.0.0.1' });
+      const apiUrl = await app.getUrl();
+      frontend = await analyticsBrowserFrontend(apiUrl);
+      for (const browserMode of ['granted', 'denied', 'blocked'] as const) {
+        const p = await patient(); await credit(p, '2000'); const checkout = await order(p);
+        await browserWalletPayment({ origin: frontend.origin, apiUrl, orderId: checkout.id, token: p.token, userId: p.userId, mode: browserMode });
+        expect(await db.commerceOrder.findUnique({ where: { id: checkout.id } })).toMatchObject({ status: 'PAID' });
+        const key = `analytics:ga4:purchase:${checkout.id}`;
+        expect(await db.outboxEvent.count({ where: { idempotencyKey: key } })).toBe(browserMode === 'granted' ? 1 : 0);
+        if (browserMode === 'granted') {
+          // Existing unrelated fixtures can be queued; drain bounded batches, never alter them.
+          for (let i = 0; i < 10 && !submitted.some(body => body.events?.[0]?.params?.transaction_id === checkout.id); i++) await worker.tick();
+          const payload = submitted.find(body => body.events?.[0]?.params?.transaction_id === checkout.id)!;
+          expect(payload).toBeDefined(); expect(payload.client_id).toBe('123.456');
+          expect(payload.events[0].params).toMatchObject({ amount_rial: 10000, source: 'browser_test' });
+          expect(JSON.stringify(payload)).not.toContain(p.userId); expect(JSON.stringify(payload)).not.toContain('private-query');
+          expect(await db.outboxEvent.findUnique({ where: { idempotencyKey: key } })).toMatchObject({ status: 'DELIVERED', payload: {} });
+        }
+      }
+    } finally {
+      await frontend?.close(); fetchSpy.mockRestore(); mode.mockRestore(); property.mockRestore(); config.set('GA4_API_SECRET', oldSecret);
+      await new Promise<void>(resolve => collector.close(() => resolve()));
+    }
+  }, 120000);
+
 });

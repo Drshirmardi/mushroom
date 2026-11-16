@@ -64,12 +64,11 @@ export default function ProductWorkspace({ product, categories, accessToken, ini
     setConfirmDiscard(false);
   };
   const requestClose = () => {
-    if (busy || blocked) {
-      setNotice({ tone: "warning", text: blocked ? "نتیجهٔ عملیات تصویر هنوز مشخص نیست؛ ابتدا در بخش تصویر وضعیت را دریافت یا همان عملیات را تکرار کنید." : "ذخیره‌سازی در حال انجام است؛ منتظر نتیجه بمانید." });
-      if (blocked) selectTab("image");
+    if (busy) {
+      setNotice({ tone: "warning", text: "ذخیره‌سازی در حال انجام است؛ منتظر نتیجه بمانید." });
       return;
     }
-    if (dirty) { setConfirmDiscard(true); return; }
+    if (dirty || blocked) { setConfirmDiscard(true); return; }
     onClose();
   };
 
@@ -137,6 +136,6 @@ export default function ProductWorkspace({ product, categories, accessToken, ini
         }} />}</div>
       </div>
     </div>
-    <footer className="shrink-0 border-t border-border bg-card px-4 py-3 sm:px-6">{confirmDiscard ? <div className="flex flex-wrap items-center justify-between gap-3" role="alert"><p className="text-xs leading-7">تغییرهای ذخیره‌نشدهٔ این محصول کنار گذاشته شوند؟</p><div className="flex flex-wrap gap-2"><button type="button" disabled={busy || blocked} className="dashboard-button" onClick={() => { if (!busy && !blocked) onClose(); }}>بستن بدون ذخیره</button><button type="button" disabled={busy || blocked} className="dashboard-button dashboard-button-primary" onClick={() => setConfirmDiscard(false)}>ادامهٔ ویرایش</button></div></div> : <div className="flex items-center justify-between gap-3"><p className="text-xs text-muted-foreground" role="status">{busy ? "در حال ذخیره و دریافت وضعیت…" : dirty ? "تغییرهای ذخیره‌نشده دارید." : "هر بخش را پس از ویرایش ذخیره کنید."}</p><button type="button" onClick={requestClose} className="dashboard-button">بستن</button></div>}</footer>
+    <footer className="shrink-0 border-t border-border bg-card px-4 py-3 sm:px-6">{confirmDiscard ? <div className="flex flex-wrap items-center justify-between gap-3" role="alert"><p className="text-xs leading-7">{blocked ? "نتیجهٔ آپلود هنوز مشخص نیست. بستن پنجره عملیات سرور را لغو نمی‌کند؛ هنگام بازکردن دوباره، وضعیت ذخیره‌شده دریافت می‌شود. پنجره بسته شود؟" : "تغییرهای ذخیره‌نشدهٔ این محصول کنار گذاشته شوند؟"}</p><div className="flex flex-wrap gap-2"><button type="button" disabled={busy} className="dashboard-button" onClick={() => { if (!busy) onClose(); }}>بستن پنجره</button><button type="button" disabled={busy} className="dashboard-button dashboard-button-primary" onClick={() => setConfirmDiscard(false)}>ادامهٔ ویرایش</button></div></div> : <div className="flex items-center justify-between gap-3"><p className="text-xs text-muted-foreground" role="status">{busy ? "در حال ذخیره و دریافت وضعیت…" : dirty ? "تغییرهای ذخیره‌نشده دارید." : "هر بخش را پس از ویرایش ذخیره کنید."}</p><button type="button" onClick={requestClose} className="dashboard-button">بستن</button></div>}</footer>
   </dialog>;
 }

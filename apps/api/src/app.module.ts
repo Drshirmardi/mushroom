@@ -28,6 +28,7 @@ import { AdminSchedulingModule } from './modules/scheduling/admin-scheduling.mod
 import { PatientAppointmentsModule } from './modules/appointments/patient-appointments.module';
 import { AssignedAppointmentModule } from './modules/appointments/assigned/assigned-appointment.module';
 import { ProgramDefinitionModule } from './modules/programs/definitions/program-definition.module';
+import { ProgramCatalogModule } from './modules/programs/catalog/program-catalog.module';
 import { ProgramPublicationModule } from './modules/programs/publication/program-publication.module';
 import { ProgramPurchaseModule } from './modules/programs/purchases/program-purchase.module';
 import { CustomProgramModule } from './modules/programs/custom-requests/custom-program.module';
@@ -88,6 +89,7 @@ import { SmsModule } from './modules/communications/sms/sms.module';
     AssessmentPurchaseModule,
     CoupleResultProtocolModule,
     CoupleAssessmentModule,
+    ProgramCatalogModule,
   ],
 })
 export class AppModule {}
