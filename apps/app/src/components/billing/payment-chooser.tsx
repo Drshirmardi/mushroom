@@ -64,7 +64,7 @@ export function PaymentChooser({
 
   const wallet = intent.methods?.find((method) => method.code === 'WALLET') ?? null;
   const gateway = intent.methods?.find((method) => method.code === 'GATEWAY') ?? null;
-  const bale = intent.methods?.find((method) => method.code === 'BALE_WALLET') ?? null;
+  const bale = intent.methods?.find((method) => (method.code as string) === 'BALE_WALLET') ?? null;
   const nativeBale = Boolean(bale?.available && canOpenBaleInvoice());
   const amount = BigInt(intent.amountRial);
   const isTopup = intent.purpose === 'TOPUP';
@@ -172,7 +172,7 @@ export function PaymentChooser({
           className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900"
         >
           {bankAttempt.status === 'REDIRECT_READY'
-            ? bankAttempt.providerCode === 'bale_wallet'
+            ? 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
               ? 'فاکتور پرداخت بله آماده است؛ می‌توانید آن را ادامه دهید یا پیش از تأیید پرداخت، درگاه بانکی را انتخاب کنید.'
               : 'یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود.'
             : 'نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید.'}
