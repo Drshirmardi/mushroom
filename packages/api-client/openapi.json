@@ -60706,16 +60706,62 @@
           "capabilities"
         ]
       },
+      "SadadPaymentCredentialDto": {
+        "type": "object",
+        "properties": {
+          "merchantId": {
+            "type": "string",
+            "maxLength": 128,
+            "writeOnly": true,
+            "description": "Sadad merchant identifier issued to the clinic."
+          },
+          "terminalId": {
+            "type": "string",
+            "maxLength": 128,
+            "writeOnly": true,
+            "description": "Sadad terminal identifier issued to the clinic."
+          },
+          "terminalKey": {
+            "type": "string",
+            "maxLength": 4096,
+            "writeOnly": true,
+            "description": "Sadad Base64 TripleDES terminal key; encrypted at rest and never returned."
+          }
+        },
+        "required": [
+          "merchantId",
+          "terminalId",
+          "terminalKey"
+        ]
+      },
+      "BaleWalletCredentialDto": {
+        "type": "object",
+        "properties": {
+          "walletToken": {
+            "type": "string",
+            "maxLength": 4096,
+            "writeOnly": true,
+            "description": "Bale commercial wallet token; encrypted at rest and never returned."
+          }
+        },
+        "required": [
+          "walletToken"
+        ]
+      },
       "CreatePaymentProviderRevisionDto": {
         "type": "object",
         "properties": {
           "credential": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SadadPaymentCredentialDto"
+              },
+              {
+                "$ref": "#/components/schemas/BaleWalletCredentialDto"
+              }
+            ],
             "writeOnly": true,
-            "description": "Write-only encrypted credentials: Sadad merchantId/terminalId/terminalKey or Bale walletToken."
+            "description": "Write-only encrypted credentials for the selected provider."
           },
           "enable": {
             "type": "boolean"

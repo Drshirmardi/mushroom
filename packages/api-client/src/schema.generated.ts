@@ -11729,11 +11729,21 @@ export interface components {
             };
             updatedAt?: string | null;
         };
+        SadadPaymentCredentialDto: {
+            /** @description Sadad merchant identifier issued to the clinic. */
+            merchantId: string;
+            /** @description Sadad terminal identifier issued to the clinic. */
+            terminalId: string;
+            /** @description Sadad Base64 TripleDES terminal key; encrypted at rest and never returned. */
+            terminalKey: string;
+        };
+        BaleWalletCredentialDto: {
+            /** @description Bale commercial wallet token; encrypted at rest and never returned. */
+            walletToken: string;
+        };
         CreatePaymentProviderRevisionDto: {
-            /** @description Write-only encrypted credentials: Sadad merchantId/terminalId/terminalKey or Bale walletToken. */
-            credential: {
-                [key: string]: string;
-            };
+            /** @description Write-only encrypted credentials for the selected provider. */
+            credential: components["schemas"]["SadadPaymentCredentialDto"] | components["schemas"]["BaleWalletCredentialDto"];
             enable?: boolean;
             isDefault?: boolean;
         };

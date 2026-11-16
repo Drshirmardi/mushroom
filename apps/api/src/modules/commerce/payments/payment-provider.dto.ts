@@ -1,5 +1,5 @@
 import { IsBoolean, IsDefined, IsNotEmpty, IsObject, IsOptional, IsString, MaxLength } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 
 export class SadadPaymentCredentialDto {
   @ApiProperty({ maxLength: 128, writeOnly: true, description: 'Sadad merchant identifier issued to the clinic.' }) @IsString() @IsNotEmpty() @MaxLength(128) merchantId!: string;
@@ -7,8 +7,16 @@ export class SadadPaymentCredentialDto {
   @ApiProperty({ maxLength: 4096, writeOnly: true, description: 'Sadad Base64 TripleDES terminal key; encrypted at rest and never returned.' }) @IsString() @IsNotEmpty() @MaxLength(4096) terminalKey!: string;
 }
 
+export class BaleWalletCredentialDto {
+  @ApiProperty({ maxLength: 4096, writeOnly: true, description: 'Bale commercial wallet token; encrypted at rest and never returned.' }) @IsString() @IsNotEmpty() @MaxLength(4096) walletToken!: string;
+}
+
+@ApiExtraModels(SadadPaymentCredentialDto, BaleWalletCredentialDto)
 export class CreatePaymentProviderRevisionDto {
-  @ApiProperty({ type: 'object', additionalProperties: { type: 'string' }, writeOnly: true, description: 'Write-only encrypted credentials: Sadad merchantId/terminalId/terminalKey or Bale walletToken.' }) @IsDefined() @IsObject() credential!: Record<string, string>;
+  @ApiProperty({ oneOf: [
+    { $ref: getSchemaPath(SadadPaymentCredentialDto) },
+    { $ref: getSchemaPath(BaleWalletCredentialDto) },
+  ], writeOnly: true, description: 'Write-only encrypted credentials for the selected provider.' }) @IsDefined() @IsObject() credential!: Record<string, string>;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() enable?: boolean;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isDefault?: boolean;
 }
