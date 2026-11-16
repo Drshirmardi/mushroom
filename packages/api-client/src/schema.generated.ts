@@ -342,23 +342,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/integrations/bale/webhook/{secret}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs */
-        post: operations["baleWebhook"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/chat/appointments/{appointmentId}/conversation": {
         parameters: {
             query?: never;
@@ -1435,6 +1418,392 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/integrations/bale/webhook/{secret}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs */
+        post: operations["baleWebhook"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientWalletGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientWalletTransactionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/wallet/topups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientWalletTopupCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/order-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientOrderBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/appointment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientAppointmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["patientBillingIntentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingIntentCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/wallet-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingWalletPay"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/bale-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingBaleAttemptCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/patients/me/billing/intents/{id}/gateway-attempts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["patientBillingGatewayAttemptCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/appointment-intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientAppointmentBillingIntentCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPatientWalletGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/transactions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminPatientWalletTransactionsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/adjustments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientWalletAdjust"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/patients/{patientId}/wallet/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminPatientWalletStatusSet"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingIntentsList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingIntentGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingReconciliationList"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["adminBillingSummaryGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/intents/{id}/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingRefundCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/refunds/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingRefundComplete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/attempts/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adminBillingAttemptRetry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/billing/attempts/{id}/resolve-failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful */
+        post: operations["adminBillingAttemptResolveFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/patients/me/entry": {
         parameters: {
             query?: never;
@@ -2012,359 +2381,6 @@ export interface paths {
         get: operations["patientGuidanceContentGet"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/wallet": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientWalletGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/wallet/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientWalletTransactionsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/wallet/topups": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientWalletTopupCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/order-intents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientOrderBillingIntentCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/appointment-intents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientAppointmentBillingIntentCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/intents/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["patientBillingIntentGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/intents/{id}/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientBillingIntentCancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/intents/{id}/wallet-payment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientBillingWalletPay"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/patients/me/billing/intents/{id}/gateway-attempts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["patientBillingGatewayAttemptCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/wallet/appointment-intents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPatientAppointmentBillingIntentCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/wallet": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminPatientWalletGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/wallet/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminPatientWalletTransactionsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/wallet/adjustments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPatientWalletAdjust"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/patients/{patientId}/wallet/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminPatientWalletStatusSet"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/intents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminBillingIntentsList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/intents/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminBillingIntentGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/reconciliation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminBillingReconciliationList"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["adminBillingSummaryGet"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/intents/{id}/refunds": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminBillingRefundCreate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/refunds/{id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminBillingRefundComplete"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/attempts/{id}/retry": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["adminBillingAttemptRetry"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/admin/billing/attempts/{id}/resolve-failed": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Resolve an ambiguous attempt as failed using reviewed non-sensitive evidence; never manually mark a bank payment successful */
-        post: operations["adminBillingAttemptResolveFailed"];
         delete?: never;
         options?: never;
         head?: never;
@@ -7763,45 +7779,52 @@ export interface components {
             resolvedAt?: Record<string, never> | null;
             providerCode?: Record<string, never> | null;
         };
-        PatientEntryStatusDto: {
-            amountRial?: string;
-            allowDeferral?: boolean;
-            reminder?: boolean;
-            intentId?: string | null;
-            introduction?: string;
-            required: boolean;
-            assessmentRequired: boolean;
+        WalletSummaryDto: {
+            patientId: string;
             /** @enum {string} */
-            phase: "PROFILE" | "PAYMENT" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
-            /** Format: uuid */
-            assessmentVersionId: string | null;
-            assessmentTitle: string | null;
-            /** Format: uuid */
-            submissionId: string | null;
-            firstName: string | null;
-            lastName: string | null;
-            /** @enum {string|null} */
-            gender: "FEMALE" | "MALE" | null;
-            /** Format: date */
-            birthDate: string | null;
+            currency: "IRR";
+            balanceRial: string;
+            version: number;
+            frozen: boolean;
+            /** Format: date-time */
+            asOf: string;
         };
-        EntryProfileDto: {
-            firstName: string;
-            lastName: string;
-            /** @enum {string} */
-            gender: "FEMALE" | "MALE";
-            /** Format: date */
-            birthDate: string;
+        WalletTransactionDto: {
+            id: string;
+            kind: string;
+            deltaRial: string;
+            balanceAfterRial: string;
+            reference: string;
+            createdAt: string;
+            /** @description ADMIN projection only */
+            actorUserId?: string | null;
+            /** @description ADMIN projection only */
+            actorDisplayName?: string | null;
+            /** @description ADMIN projection only */
+            reason?: string | null;
+            /** @description ADMIN projection only */
+            balanceBeforeRial?: string;
+        };
+        WalletTransactionPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["WalletTransactionDto"][];
+        };
+        WalletAmountDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
         };
         BillingPaymentMethodDto: {
             /** @enum {string} */
-            code: "WALLET" | "GATEWAY";
+            code: "WALLET" | "BALE_WALLET" | "GATEWAY";
             available: boolean;
             balanceRial: string | null;
         };
         BillingAttemptStatusDto: {
             id: string;
             status: string;
+            providerCode: string;
             reference: string | null;
             traceNumber: string | null;
             verifiedAt: string | null;
@@ -7848,6 +7871,173 @@ export interface components {
             createdAt: string;
             attempts?: components["schemas"]["BillingAttemptStatusDto"][];
             refunds?: components["schemas"]["BillingRefundDto"][];
+        };
+        BillingOrderIntentDto: {
+            /** Format: uuid */
+            orderId: string;
+        };
+        BillingAppointmentIntentDto: {
+            /** Format: uuid */
+            doctorServiceId: string;
+            /** Format: date-time */
+            startsAt: string;
+        };
+        BillingBaleAttemptDto: {
+            id: string;
+            intentId: string;
+            status: string;
+            invoiceParams: string | null;
+        };
+        BillingGatewayAttemptDto: {
+            id: string;
+            intentId: string;
+            status: string;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            redirectUrl: string | null;
+        };
+        WalletAdjustmentDto: {
+            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
+            amountToman: string;
+            /** @enum {string} */
+            type: "CREDIT" | "DEBIT" | "SET_BALANCE";
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletAdjustmentResultDto: {
+            patientId: string;
+            currency: string;
+            beforeRial: string;
+            balanceRial: string;
+            deltaRial: string;
+            version: number;
+            journalId: string | null;
+        };
+        WalletStatusDto: {
+            frozen: boolean;
+            expectedVersion: number;
+            reason: string;
+        };
+        WalletStatusResultDto: {
+            frozen: boolean;
+            version: number;
+        };
+        AdminBillingIntentDto: {
+            /**
+             * Format: uuid
+             * @description Present for the APPOINTMENT target only
+             */
+            doctorId?: string;
+            /**
+             * Format: uuid
+             * @description Present for the PROGRAM target only
+             */
+            programPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the ASSESSMENT target only
+             */
+            assessmentPurchaseId?: string | null;
+            /**
+             * Format: uuid
+             * @description Present for the MARRIAGE_REQUEST target only
+             */
+            marriagePublicationId?: string | null;
+            methods?: components["schemas"]["BillingPaymentMethodDto"][];
+            id: string;
+            purpose: string;
+            status: string;
+            method: string | null;
+            amountRial: string;
+            /** @enum {string} */
+            currency: "IRR";
+            orderId: string | null;
+            appointmentId: string | null;
+            expiresAt: string | null;
+            paidAt: string | null;
+            createdAt: string;
+            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
+            refunds?: components["schemas"]["BillingRefundDto"][];
+            /** Format: uuid */
+            patientId: string;
+        };
+        BillingIntentPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["AdminBillingIntentDto"][];
+        };
+        BillingReconciliationItemDto: {
+            id: string;
+            status: string;
+            providerCode: string;
+            reference: string | null;
+            traceNumber: string | null;
+            verifiedAt: string | null;
+            providerOrderId: string;
+            resultCode: string | null;
+            intentId: string;
+            amountRial: string;
+            createdAt: string;
+        };
+        BillingReconciliationPageDto: {
+            page: number;
+            pageSize: number;
+            total: number;
+            items: components["schemas"]["BillingReconciliationItemDto"][];
+        };
+        BillingSummaryDto: {
+            currency: string;
+            asOf: string;
+            walletLiabilityRial: string;
+            gatewayReceivedRial: string;
+            topupReceivedRial: string;
+            orderPaidRial: string;
+            appointmentPaidRial: string;
+            refundedRial: string;
+            administrativeCreditRial: string;
+            administrativeDebitRial: string;
+            ledgerMismatchCount: number;
+            source: string;
+        };
+        BillingRefundRequestDto: {
+            /** @description Exact integer IRR, including service-price remainders smaller than one TOMAN. */
+            amountRial: string;
+            reason: string;
+        };
+        BillingRefundCompleteDto: {
+            evidenceReference: string;
+        };
+        PatientEntryStatusDto: {
+            amountRial?: string;
+            allowDeferral?: boolean;
+            reminder?: boolean;
+            intentId?: string | null;
+            introduction?: string;
+            required: boolean;
+            assessmentRequired: boolean;
+            /** @enum {string} */
+            phase: "PROFILE" | "PAYMENT" | "ASSESSMENT" | "RESULT" | "COMPLETE" | "UNAVAILABLE";
+            /** Format: uuid */
+            assessmentVersionId: string | null;
+            assessmentTitle: string | null;
+            /** Format: uuid */
+            submissionId: string | null;
+            firstName: string | null;
+            lastName: string | null;
+            /** @enum {string|null} */
+            gender: "FEMALE" | "MALE" | null;
+            /** Format: date */
+            birthDate: string | null;
+        };
+        EntryProfileDto: {
+            firstName: string;
+            lastName: string;
+            /** @enum {string} */
+            gender: "FEMALE" | "MALE";
+            /** Format: date */
+            birthDate: string;
         };
         EntryPolicyDto: {
             amountRial?: string;
@@ -8214,172 +8404,6 @@ export interface components {
             educationalOnly: true;
             /** @enum {boolean} */
             noDiagnosisOrTherapeuticDiet: true;
-        };
-        WalletSummaryDto: {
-            patientId: string;
-            /** @enum {string} */
-            currency: "IRR";
-            balanceRial: string;
-            version: number;
-            frozen: boolean;
-            /** Format: date-time */
-            asOf: string;
-        };
-        WalletTransactionDto: {
-            id: string;
-            kind: string;
-            deltaRial: string;
-            balanceAfterRial: string;
-            reference: string;
-            createdAt: string;
-            /** @description ADMIN projection only */
-            actorUserId?: string | null;
-            /** @description ADMIN projection only */
-            actorDisplayName?: string | null;
-            /** @description ADMIN projection only */
-            reason?: string | null;
-            /** @description ADMIN projection only */
-            balanceBeforeRial?: string;
-        };
-        WalletTransactionPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["WalletTransactionDto"][];
-        };
-        WalletAmountDto: {
-            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
-            amountToman: string;
-        };
-        BillingOrderIntentDto: {
-            /** Format: uuid */
-            orderId: string;
-        };
-        BillingAppointmentIntentDto: {
-            /** Format: uuid */
-            doctorServiceId: string;
-            /** Format: date-time */
-            startsAt: string;
-        };
-        BillingGatewayAttemptDto: {
-            id: string;
-            intentId: string;
-            status: string;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            redirectUrl: string | null;
-        };
-        WalletAdjustmentDto: {
-            /** @description Integer TOMAN; normalized Persian and Arabic digits accepted. */
-            amountToman: string;
-            /** @enum {string} */
-            type: "CREDIT" | "DEBIT" | "SET_BALANCE";
-            expectedVersion: number;
-            reason: string;
-        };
-        WalletAdjustmentResultDto: {
-            patientId: string;
-            currency: string;
-            beforeRial: string;
-            balanceRial: string;
-            deltaRial: string;
-            version: number;
-            journalId: string | null;
-        };
-        WalletStatusDto: {
-            frozen: boolean;
-            expectedVersion: number;
-            reason: string;
-        };
-        WalletStatusResultDto: {
-            frozen: boolean;
-            version: number;
-        };
-        AdminBillingIntentDto: {
-            /**
-             * Format: uuid
-             * @description Present for the APPOINTMENT target only
-             */
-            doctorId?: string;
-            /**
-             * Format: uuid
-             * @description Present for the PROGRAM target only
-             */
-            programPurchaseId?: string | null;
-            /**
-             * Format: uuid
-             * @description Present for the ASSESSMENT target only
-             */
-            assessmentPurchaseId?: string | null;
-            /**
-             * Format: uuid
-             * @description Present for the MARRIAGE_REQUEST target only
-             */
-            marriagePublicationId?: string | null;
-            methods?: components["schemas"]["BillingPaymentMethodDto"][];
-            id: string;
-            purpose: string;
-            status: string;
-            method: string | null;
-            amountRial: string;
-            /** @enum {string} */
-            currency: "IRR";
-            orderId: string | null;
-            appointmentId: string | null;
-            expiresAt: string | null;
-            paidAt: string | null;
-            createdAt: string;
-            attempts?: components["schemas"]["BillingAttemptStatusDto"][];
-            refunds?: components["schemas"]["BillingRefundDto"][];
-            /** Format: uuid */
-            patientId: string;
-        };
-        BillingIntentPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["AdminBillingIntentDto"][];
-        };
-        BillingReconciliationItemDto: {
-            id: string;
-            status: string;
-            reference: string | null;
-            traceNumber: string | null;
-            verifiedAt: string | null;
-            providerOrderId: string;
-            resultCode: string | null;
-            intentId: string;
-            amountRial: string;
-            createdAt: string;
-        };
-        BillingReconciliationPageDto: {
-            page: number;
-            pageSize: number;
-            total: number;
-            items: components["schemas"]["BillingReconciliationItemDto"][];
-        };
-        BillingSummaryDto: {
-            currency: string;
-            asOf: string;
-            walletLiabilityRial: string;
-            gatewayReceivedRial: string;
-            topupReceivedRial: string;
-            orderPaidRial: string;
-            appointmentPaidRial: string;
-            refundedRial: string;
-            administrativeCreditRial: string;
-            administrativeDebitRial: string;
-            ledgerMismatchCount: number;
-            source: string;
-        };
-        BillingRefundRequestDto: {
-            /** @description Exact integer IRR, including service-price remainders smaller than one TOMAN. */
-            amountRial: string;
-            reason: string;
-        };
-        BillingRefundCompleteDto: {
-            evidenceReference: string;
         };
         JourneySetupStepDto: {
             /** @enum {string} */
@@ -11705,17 +11729,11 @@ export interface components {
             };
             updatedAt?: string | null;
         };
-        SadadPaymentCredentialDto: {
-            /** @description Sadad merchant identifier issued to the clinic. */
-            merchantId: string;
-            /** @description Sadad terminal identifier issued to the clinic. */
-            terminalId: string;
-            /** @description Sadad Base64 TripleDES terminal key; encrypted at rest and never returned. */
-            terminalKey: string;
-        };
         CreatePaymentProviderRevisionDto: {
-            /** @description Write-only Sadad credential set; values are encrypted and never returned. */
-            credential: components["schemas"]["SadadPaymentCredentialDto"];
+            /** @description Write-only encrypted credentials: Sadad merchantId/terminalId/terminalKey or Bale walletToken. */
+            credential: {
+                [key: string]: string;
+            };
             enable?: boolean;
             isDefault?: boolean;
         };
@@ -13533,31 +13551,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
                 };
-            };
-        };
-    };
-    baleWebhook: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                secret: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Acknowledged */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -15568,6 +15561,692 @@ export interface operations {
             };
         };
     };
+    baleWebhook: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                secret: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    patientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    patientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    patientWalletTopupCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAmountDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientOrderBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingOrderIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingIntentCancel: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingWalletPay: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    patientBillingBaleAttemptCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingBaleAttemptDto"];
+                };
+            };
+        };
+    };
+    patientBillingGatewayAttemptCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminPatientAppointmentBillingIntentCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletSummaryDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletTransactionsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletTransactionPageDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletAdjust: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletAdjustmentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletAdjustmentResultDto"];
+                };
+            };
+        };
+    };
+    adminPatientWalletStatusSet: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                patientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WalletStatusDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletStatusResultDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentsList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+                patientId?: string;
+                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT" | "MARRIAGE_REQUEST";
+                status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingIntentPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingIntentGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBillingIntentDto"];
+                };
+            };
+        };
+    };
+    adminBillingReconciliationList: {
+        parameters: {
+            query?: {
+                page?: components["schemas"]["Object"];
+                pageSize?: components["schemas"]["Object"];
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingReconciliationPageDto"];
+                };
+            };
+        };
+    };
+    adminBillingSummaryGet: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingSummaryDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundRequestDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingRefundComplete: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingRefundDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptRetry: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
+    adminBillingAttemptResolveFailed: {
+        parameters: {
+            query?: never;
+            header: {
+                "idempotency-key": string;
+                "Idempotency-Key": string;
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BillingRefundCompleteDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
+                };
+            };
+        };
+    };
     patientEntryStatus: {
         parameters: {
             query?: never;
@@ -17534,639 +18213,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorResponseDto"];
-                };
-            };
-        };
-    };
-    patientWalletGet: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletSummaryDto"];
-                };
-            };
-        };
-    };
-    patientWalletTransactionsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletTransactionPageDto"];
-                };
-            };
-        };
-    };
-    patientWalletTopupCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletAmountDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientOrderBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingOrderIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientAppointmentBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingIntentGet: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingIntentCancel: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingWalletPay: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    patientBillingGatewayAttemptCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
-                };
-            };
-        };
-    };
-    adminPatientAppointmentBillingIntentCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingAppointmentIntentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletGet: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletSummaryDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletTransactionsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletTransactionPageDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletAdjust: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletAdjustmentDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletAdjustmentResultDto"];
-                };
-            };
-        };
-    };
-    adminPatientWalletStatusSet: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                patientId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WalletStatusDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WalletStatusResultDto"];
-                };
-            };
-        };
-    };
-    adminBillingIntentsList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-                patientId?: string;
-                purpose?: "TOPUP" | "ORDER" | "APPOINTMENT" | "ASSESSMENT" | "PROGRAM" | "ENTRY_ASSESSMENT" | "MARRIAGE_REQUEST";
-                status?: "PENDING" | "PAID" | "EXPIRED" | "CANCELLED" | "COMPENSATED";
-            };
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingIntentPageDto"];
-                };
-            };
-        };
-    };
-    adminBillingIntentGet: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AdminBillingIntentDto"];
-                };
-            };
-        };
-    };
-    adminBillingReconciliationList: {
-        parameters: {
-            query?: {
-                page?: components["schemas"]["Object"];
-                pageSize?: components["schemas"]["Object"];
-            };
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingReconciliationPageDto"];
-                };
-            };
-        };
-    };
-    adminBillingSummaryGet: {
-        parameters: {
-            query?: never;
-            header?: {
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingSummaryDto"];
-                };
-            };
-        };
-    };
-    adminBillingRefundCreate: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundRequestDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingRefundDto"];
-                };
-            };
-        };
-    };
-    adminBillingRefundComplete: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundCompleteDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingRefundDto"];
-                };
-            };
-        };
-    };
-    adminBillingAttemptRetry: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
-                };
-            };
-        };
-    };
-    adminBillingAttemptResolveFailed: {
-        parameters: {
-            query?: never;
-            header: {
-                "idempotency-key": string;
-                "Idempotency-Key": string;
-                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
-                "X-Analytics-Context"?: string;
-                /** @description Invitation context locator; grants no access without server identity and resource checks. */
-                "X-Marriage-Request-Id"?: string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BillingRefundCompleteDto"];
-            };
-        };
-        responses: {
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BillingGatewayAttemptDto"];
                 };
             };
         };
