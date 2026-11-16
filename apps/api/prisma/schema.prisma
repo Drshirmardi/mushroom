@@ -845,6 +845,7 @@ model Credential {
 
 model Session {
   verifiedPhone String? @map("verified_phone") @db.VarChar(13)
+  baleProviderUserId String? @map("bale_provider_user_id") @db.VarChar(64)
   educationalCoupleCreations EducationalCoupleSession[] @relation("EducationalCoupleCreation")
   educationalCoupleAcceptances EducationalCoupleParticipant[] @relation("EducationalCoupleAcceptance")
   educationalCoupleWithdrawals EducationalCoupleParticipant[] @relation("EducationalCoupleWithdrawal")
