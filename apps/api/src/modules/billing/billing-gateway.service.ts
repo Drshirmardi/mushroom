@@ -46,7 +46,7 @@ export class BillingGatewayService {
       if (existing) { const rev = await tx.paymentProviderConfigRevision.findUniqueOrThrow({ where: { id: existing.revisionId }, include: { config: true } }); if (rev.config.providerCode !== 'sadad') throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return { attempt: existing, request: false }; }
       if (intent.status !== 'PENDING' || (intent.expiresAt && intent.expiresAt <= new Date())) throw financialConflict('BILLING_HOLD_EXPIRED');
       const active = await tx.billingGatewayAttempt.findFirst({ where: { intentId, status: { in: pendingAttempts } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], include: { revision: { select: { config: { select: { providerCode: true } } } } } });
-      if (active?.revision.config.providerCode === 'bale_wallet' && active.status === 'REDIRECT_READY' && !active.baleTransactionId) {
+      if (active?.revision.config.providerCode === 'bale_wallet' && ['REDIRECT_READY', 'REQUIRES_RECONCILIATION', 'CREATED'].includes(active.status) && !active.baleTransactionId) {
         // The bank fallback invalidates an unapproved Bale invoice under the BillingIntent lock.
         await tx.billingGatewayAttempt.update({ where: { id: active.id }, data: { status: 'FAILED', resultCode: 'BALE_SUPERSEDED_BY_BANK' } });
       } else if (active?.revision.config.providerCode === 'sadad') return { attempt: active, request: false };
