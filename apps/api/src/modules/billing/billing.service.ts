@@ -137,7 +137,7 @@ export class BillingService {
     if (nativeBale && (!attempt.baleTransactionId || !attempt.balePrecheckoutApprovedAt)) throw financialConflict('BALE_PAYMENT_PROOF_MISSING');
     const context: FinancialContext = { actorUserId: intent.actorUserId, actorSessionId: null, requestId: `billing-verify:${attempt.id}`, ipAddress: null };
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
-    let canSettle = intent.status === 'PENDING' && eligibilityValid;
+    let canSettle = intent.status === 'PENDING' && (!intent.expiresAt || intent.expiresAt > new Date()) && eligibilityValid;
     if (intent.purpose !== 'TOPUP') { await this.targets.get(intent.purpose).lock(tx, intent); const target = this.targets.get(intent.purpose); canSettle = canSettle && (!target.preparePayment || await target.preparePayment(tx, intent)) && await target.canSettle(tx, intent); }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { reference: proof.referenceId, traceNumber: proof.traceNumber, verifiedAt: new Date() } });
     let settlementFields: { appointmentId?: string } = {};
