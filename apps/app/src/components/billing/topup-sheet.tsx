@@ -8,9 +8,11 @@ import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { useAuthSession } from '@/components/auth/session-gate';
 import {
   createGatewayAttempt,
+  createBaleAttempt,
   createTopupIntent,
   walletErrorMessage,
 } from '@/lib/wallet-billing-api';
+import { canOpenBaleInvoice, openBaleInvoice, openSadadOutsideMiniApp } from '@/lib/bale-payment';
 import {
   MAX_TOPUP_TOMAN,
   MIN_TOPUP_TOMAN,
@@ -39,7 +41,8 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
   const validation = parseTopupToman(amount);
   const fieldError = touched && !validation.ok ? topupValidationMessage(validation.reason) : null;
 
-  const submit = async () => {
+  const nativeBale = canOpenBaleInvoice();
+  const submit = async (method: 'bale' | 'gateway' = 'gateway') => {
     setTouched(true);
     if (!validation.ok) return;
     const normalized = validation.toman.toString();
@@ -56,13 +59,21 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         intentKey.current.key,
       );
       setPendingIntentId(intent.id);
+      if (method === 'bale' && nativeBale) {
+        const native = await createBaleAttempt(authentication.accessToken, intent.id, crypto.randomUUID());
+        if (native.invoiceParams && openBaleInvoice(native.invoiceParams, () => {
+          router.push(`/profile/wallet/payment-result?intentId=${encodeURIComponent(intent.id)}`);
+        })) return;
+        setError('وضعیت فاکتور بله نامشخص است؛ برای مشاهده نتیجه از لینک زیر استفاده کنید.');
+        return;
+      }
       const attempt = await createGatewayAttempt(
         authentication.accessToken,
         intent.id,
         crypto.randomUUID(),
       );
       if (attempt.redirectUrl) {
-        window.location.assign(attempt.redirectUrl);
+        openSadadOutsideMiniApp(attempt.redirectUrl);
         return;
       }
       setPendingIntentId(intent.id);
@@ -179,30 +190,33 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         <div className="flex items-start gap-2 rounded-xl bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
           <Info size={15} className="mt-0.5 flex-shrink-0 text-gray-500" aria-hidden="true" />
           <span>
-            پرداخت از طریق درگاه امن بانکی انجام می‌شود و به‌محض تأیید، مبلغ بلافاصله به کیف پول شما
-            اضافه می‌شود.
+            {nativeBale ? 'در بله می‌توانید از کیف پول بله پرداخت کنید؛ درگاه بانکی نیز به‌عنوان جایگزین موجود است.' : 'پرداخت از طریق درگاه امن بانکی انجام می‌شود و پس از تأیید، مبلغ به کیف پول شما اضافه می‌شود.'}
           </span>
         </div>
 
         <button
           type="button"
           disabled={busy}
-          onClick={() => void submit()}
+          onClick={() => void submit(nativeBale ? 'bale' : 'gateway')}
           className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary py-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           aria-busy={Boolean(busy)}
         >
           {busy ? (
             <>
               <HeartbeatLoader />
-              در حال انتقال به درگاه…
+              در حال ایجاد پرداخت…
             </>
           ) : (
             <>
               <CreditCard size={17} aria-hidden="true" />
-              پرداخت و شارژ
+              {nativeBale ? 'شارژ با پرداخت بله' : 'پرداخت و شارژ'}
             </>
           )}
         </button>
+        {nativeBale && <button type="button" disabled={busy} onClick={() => void submit('gateway')}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background py-3.5 text-sm font-bold disabled:opacity-60">
+          <CreditCard size={17} aria-hidden="true" /> پرداخت بانکی (سداد)
+        </button>}
       </div>
     </BottomSheet>
   );
