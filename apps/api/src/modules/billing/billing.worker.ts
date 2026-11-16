@@ -14,8 +14,17 @@ export class BillingWorker implements OnModuleInit, OnModuleDestroy {
   async tick() {
     if (this.running) return;
     this.running = true;
-    try { await this.billing.expire(); await this.gateway.maintain(); await this.bale.maintain(); }
-    catch { this.logger.error('Billing maintenance deferred; financial state retained for retry.'); }
-    finally { this.running = false; }
+    try {
+      const tasks = [
+        ['expiration', () => this.billing.expire()],
+        ['Sadad reconciliation', () => this.gateway.maintain()],
+        ['Bale reconciliation', () => this.bale.maintain()],
+      ] as const;
+      // One provider outage must never suppress the other provider's recovery.
+      for (const [name, run] of tasks) {
+        try { await run(); }
+        catch { this.logger.error(`${name} deferred; financial state retained for retry.`); }
+      }
+    } finally { this.running = false; }
   }
 }
