@@ -41,7 +41,7 @@ function Payment() {
           ) : intent.status === "PENDING" ? (
             <PaymentChooser key={intent.id} accessToken={authentication.accessToken} intent={intent}
               onPaid={() => router.replace(marriageHref(`/profile/wallet/payment-result?intentId=${intent.id}`))}
-              onCancelled={() => void resource.reload()} />
+              onCancelled={() => void resource.reload()} onRefresh={() => void resource.reload()} />
           ) : intent.status === "CANCELLED" ? (
             <div role="status" className="space-y-3 rounded-2xl border border-border bg-white p-4">
               <p className="text-sm">{intent.purpose === "TOPUP" ? "درخواست شارژ کیف پول لغو شده است." : "این درخواست پرداخت لغو شده است."} این لغو فقط مربوط به همین درخواست است؛ درخواست‌های دیگر جداگانه پیگیری می‌شوند.</p>
