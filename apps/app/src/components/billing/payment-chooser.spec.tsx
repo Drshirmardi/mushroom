@@ -46,7 +46,7 @@ describe("payment method context", () => {
     }];
     const html = render(pending);
     expect(html).toContain("پرداخت بله در حال تأیید نهایی است");
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>لغو این پرداخت<\\/button>/);
+    expect(html).toMatch(new RegExp('<button[^>]*disabled=""[^>]*>لغو این پرداخت</button>'));
   });
 
   it("keeps wallet payment disabled for insufficient funds and offers a separate top-up", () => {
