@@ -30,7 +30,7 @@ RUN pnpm --filter @sabz-zendegi/api build \
   && chmod 755 /production/prisma-engines/schema-engine
 
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:9eeb7f5887d0e239e78264b06f7f11d2e14be534050481803a9e4728fcdd278e AS runner
+FROM gcr.io/distroless/nodejs24-debian13:nonroot@sha256:9fc11f6ee65993285c0fe3c4c9bbc4fd275fd4470572f58834ce490df91056e3 AS runner
 
 WORKDIR /workspace/apps/api
 
