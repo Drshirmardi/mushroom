@@ -1,0 +1,36 @@
+name: Bale feature API client regeneration
+on:
+  push:
+    branches:
+      - codex/bale-wallet-payments
+permissions:
+  contents: write
+jobs:
+  regenerate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.10.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @sabz-zendegi/api prisma:generate
+      - name: Generate from NestJS OpenAPI contract
+        run: corepack pnpm generate:api-client
+      - name: Commit generated API contract to this feature branch only
+        run: |
+          git add packages/api-client/openapi.json packages/api-client/src/schema.generated.ts
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(bale): regenerate OpenAPI client from feature backend"
+            git push origin HEAD:codex/bale-wallet-payments
+          fi
