@@ -6,10 +6,11 @@ import { PERMISSIONS } from '../../common/auth/authorization.policy';
 import { PublicAuthRateLimiter } from '../identity/application/ports/public-auth-rate-limiter';
 import { BillingService } from './billing.service';
 import { BillingGatewayService } from './billing-gateway.service';
+import { BaleWalletBillingService } from './bale-wallet-billing.service';
 import { WalletService } from './wallet.service';
 import { BillingReportingService } from './billing-reporting.service';
 import { financialKey } from './billing.policy';
-import { AdminBillingIntentDto, BillingAdminQuery, BillingAppointmentIntentDto, BillingGatewayAttemptDto, BillingIntentDto, BillingIntentPageDto, BillingOrderIntentDto, BillingPageQuery, BillingReconciliationPageDto, BillingRefundCompleteDto, BillingRefundDto, BillingRefundRequestDto, BillingSummaryDto, WalletAdjustmentDto, WalletAdjustmentResultDto, WalletAmountDto, WalletStatusDto, WalletStatusResultDto, WalletSummaryDto, WalletTransactionPageDto } from './billing.dto';
+import { AdminBillingIntentDto, BillingAdminQuery, BillingAppointmentIntentDto, BillingGatewayAttemptDto, BillingBaleAttemptDto, BillingIntentDto, BillingIntentPageDto, BillingOrderIntentDto, BillingPageQuery, BillingReconciliationPageDto, BillingRefundCompleteDto, BillingRefundDto, BillingRefundRequestDto, BillingSummaryDto, WalletAdjustmentDto, WalletAdjustmentResultDto, WalletAmountDto, WalletStatusDto, WalletStatusResultDto, WalletSummaryDto, WalletTransactionPageDto } from './billing.dto';
 
 const context = (request: AuthenticatedRequest) => ({ actorUserId: request.auth.userId, actorSessionId: request.auth.sessionId, requestId: request.id, ipAddress: request.ip });
 const uuid = () => new ParseUUIDPipe({ version: '4' });
@@ -27,7 +28,7 @@ export class BillingRateGuard implements CanActivate {
 
 @ApiTags('Patient Wallet and Billing') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @UseGuards(BillingRateGuard) @Controller('patients/me')
 export class PatientBillingController {
-  constructor(private readonly wallet: WalletService, private readonly billing: BillingService, private readonly gateway: BillingGatewayService) {}
+  constructor(private readonly wallet: WalletService, private readonly billing: BillingService, private readonly gateway: BillingGatewayService, private readonly bale: BaleWalletBillingService) {}
   @Get('wallet') @RequirePermissions(PERMISSIONS.WALLET_READ_SELF) @ApiOperation({ operationId: 'patientWalletGet' }) @ApiOkResponse({ type: WalletSummaryDto })
   async summary(@Req() req: AuthenticatedRequest) { return this.wallet.summary(await this.wallet.patient(req.auth.userId)); }
   @Get('wallet/transactions') @RequirePermissions(PERMISSIONS.WALLET_READ_SELF) @ApiOperation({ operationId: 'patientWalletTransactionsList' }) @ApiOkResponse({ type: WalletTransactionPageDto })
@@ -39,11 +40,13 @@ export class PatientBillingController {
   @Post('billing/appointment-intents') @RequirePermissions(PERMISSIONS.APPOINTMENTS_CREATE_SELF, PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientAppointmentBillingIntentCreate' }) @ApiCreatedResponse({ type: BillingIntentDto })
   appointment(@Req() req: AuthenticatedRequest, @Body() body: BillingAppointmentIntentDto, @Headers('idempotency-key') key?: string) { return this.billing.create(req.auth.userId, 'APPOINTMENT', { doctorServiceId: body.doctorServiceId, startsAt: body.startsAt }, key, context(req)); }
   @Get('billing/intents/:id') @RequirePermissions(PERMISSIONS.WALLET_READ_SELF) @ApiOperation({ operationId: 'patientBillingIntentGet' }) @ApiOkResponse({ type: BillingIntentDto })
-  async get(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string) { return { ...await this.billing.get(req.auth.userId, id), methods: await this.gateway.methods(req.auth.userId, id) }; }
+  async get(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string) { return { ...await this.billing.get(req.auth.userId, id), methods: await this.gateway.methods(req.auth.userId, id, req.auth.sessionId) }; }
   @Post('billing/intents/:id/cancel') @RequirePermissions(PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientBillingIntentCancel' }) @ApiCreatedResponse({ type: BillingIntentDto })
   cancel(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string, @Headers('idempotency-key') key?: string) { return this.billing.cancel(req.auth.userId, id, key, context(req)); }
   @Post('billing/intents/:id/wallet-payment') @RequirePermissions(PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientBillingWalletPay' }) @ApiCreatedResponse({ type: BillingIntentDto })
   pay(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string, @Headers('idempotency-key') key?: string) { return this.billing.payWallet(req.auth.userId, id, key, context(req)); }
+  @Post('billing/intents/:id/bale-attempts') @RequirePermissions(PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientBillingBaleAttemptCreate' }) @ApiCreatedResponse({ type: BillingBaleAttemptDto })
+  baleAttempt(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string, @Headers('idempotency-key') key?: string) { return this.bale.create(req.auth.userId, req.auth.sessionId, id, key, context(req)); }
   @Post('billing/intents/:id/gateway-attempts') @RequirePermissions(PERMISSIONS.WALLET_WRITE_SELF) @ApiHeader({ name: 'Idempotency-Key', required: true }) @ApiOperation({ operationId: 'patientBillingGatewayAttemptCreate' }) @ApiCreatedResponse({ type: BillingGatewayAttemptDto })
   gatewayAttempt(@Req() req: AuthenticatedRequest, @Param('id', uuid()) id: string, @Headers('idempotency-key') key?: string) { return this.gateway.create(req.auth.userId, id, key, context(req)); }
 }
