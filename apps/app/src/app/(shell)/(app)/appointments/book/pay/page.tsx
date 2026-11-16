@@ -9,6 +9,9 @@ import { PageHeader } from "@/components/shared/page-header";
 import { PaymentChooser } from "@/components/billing/payment-chooser";
 import { getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
 
+import { usePaymentRefresh } from "@/lib/use-payment-refresh";
+import { intentResultView } from "@/lib/wallet-labels";
+
 type State = "loading" | "ready" | "error" | "closed";
 
 function AppointmentPayment() {
@@ -20,13 +23,13 @@ function AppointmentPayment() {
   const [error, setError] = useState<string | null>(null);
   const bookingHref = intent?.doctorId ? `/doctors/${encodeURIComponent(intent.doctorId)}` : "/appointments/book";
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (background = false) => {
     if (!intentId) {
       setError("شناسهٔ پرداخت در آدرس وجود ندارد.");
       setState("error");
       return;
     }
-    setState("loading");
+    if (!background) setState("loading");
     setError(null);
     try {
       const next = await getBillingIntent(authentication.accessToken, intentId);
@@ -34,13 +37,21 @@ function AppointmentPayment() {
         router.replace(`/appointments/book/success?appointmentId=${encodeURIComponent(next.appointmentId)}`);
         return;
       }
+      if (next.status === "COMPENSATED" || (next.status !== "PENDING" && intentResultView(next) === "ambiguous")) {
+        router.replace(`/profile/wallet/payment-result?intentId=${encodeURIComponent(intentId)}`);
+        return;
+      }
       setIntent(next);
       setState(next.status === "PENDING" ? "ready" : "closed");
     } catch (cause) {
+      if (background) return;
       setError(walletErrorMessage(cause));
       setState("error");
     }
   }, [authentication.accessToken, intentId, router]);
+
+  const refresh = useCallback(() => load(true), [load]);
+  usePaymentRefresh(state === "ready", refresh);
 
   useEffect(() => {
     void load();
@@ -85,6 +96,7 @@ function AppointmentPayment() {
               if (paid.appointmentId) router.replace(`/appointments/book/success?appointmentId=${encodeURIComponent(paid.appointmentId)}`);
               else void load();
             }}
+            onRefresh={() => void refresh()}
             onCancelled={() => router.replace(bookingHref)}
           />
         )}

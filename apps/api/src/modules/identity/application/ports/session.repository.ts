@@ -11,6 +11,7 @@ export interface SessionUser {
 
 export interface CreateSession {
   verifiedPhone?: string;
+  baleProviderUserId?: string;
   id: string;
   userId: string;
   refreshTokenHash: string;

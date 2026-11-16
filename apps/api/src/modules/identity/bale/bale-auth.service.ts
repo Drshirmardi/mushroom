@@ -53,7 +53,7 @@ export class BaleAuthService {
     catch (error) { if (error instanceof BaleInitDataError) throw invalid(); throw error; }
   }
 
-  private async issue(user: { id: string; phone: string; status: string; roles: { role: { code: string } }[] }, context: RequestContext): Promise<Authentication> {
+  private async issue(user: { id: string; phone: string; status: string; roles: { role: { code: string } }[] }, context: RequestContext, baleProviderUserId: string): Promise<Authentication> {
     const roles = user.roles.map(({ role }) => role.code);
     if (!isActivePatient(user)) throw invalid();
     return {
@@ -61,6 +61,7 @@ export class BaleAuthService {
       result: await this.sessions.execute({
         user: { id: user.id, phone: user.phone, roles },
         remember: true,
+        baleProviderUserId,
         ipAddress: context.ipAddress,
         userAgent: context.userAgent,
         requestId: context.requestId,
@@ -81,7 +82,7 @@ export class BaleAuthService {
         },
       },
     });
-    return identity ? this.issue(identity.user, context) : { status: 'CONTACT_REQUIRED' };
+    return identity ? this.issue(identity.user, context, bale.providerUserId) : { status: 'CONTACT_REQUIRED' };
   }
 
   async requestContact(raw: string): Promise<{ status: 'CONTACT_REQUIRED'; ticket: string; expiresAt: string }> {
@@ -170,7 +171,7 @@ export class BaleAuthService {
         });
         return created;
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
-      return this.issue(user, context);
+      return this.issue(user, context, bale.providerUserId);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && ['P2002', 'P2034'].includes(error.code)) throw limited();
       throw error;
@@ -215,14 +216,13 @@ export class BaleAuthService {
 
   /** Receives bot updates ONLY through a secret, server-configured webhook URL. */
   async acceptWebhook(secret: string, input: unknown): Promise<void> {
-    if (this.config.get('BALE_AUTH_ENABLED') !== 'true') throw invalid();
     const configured = this.config.get<string>('BALE_WEBHOOK_SECRET');
     if (!configured || !secret) throw invalid();
     const expected = createHash('sha256').update(configured).digest();
     const presented = createHash('sha256').update(secret).digest();
     if (!timingSafeEqual(expected, presented)) throw invalid();
 
-    if (!input || typeof input !== 'object') return;
+    if (this.config.get('BALE_AUTH_ENABLED') !== 'true' || !input || typeof input !== 'object') return;
     const update = input as Record<string, unknown>;
     const message = update.message as Record<string, unknown> | undefined;
     const from = message?.from as Record<string, unknown> | undefined;

@@ -7,6 +7,8 @@ import { AppLoading } from '@/components/shared/heartbeat-loader';
 import { MizajChart } from '@/components/assessments/mizaj-chart';
 import { marriageReturn } from '@/lib/marriage-return';
 import { PaymentChooser } from '@/components/billing/payment-chooser';
+import { intentResultView } from '@/lib/wallet-labels';
+import { usePaymentRefresh } from '@/lib/use-payment-refresh';
 import { getBillingIntent } from '@/lib/wallet-billing-api';
 import { createEntryPayment, deferEntry } from '@/lib/patient-entry-api';
 import { formatRial } from '@/lib/wallet-money';
@@ -420,6 +422,11 @@ function EntryPayment({
       [token, status.intentId],
     ),
   );
+  usePaymentRefresh(resource.data?.status === 'PENDING' ||
+    (resource.data != null && intentResultView(resource.data) === 'ambiguous'), resource.refresh);
+  useEffect(() => {
+    if (resource.data?.status === 'PAID') void reload();
+  }, [resource.data?.status, reload]);
   const run = async (action: () => Promise<unknown>) => {
     if (busy) return;
     setBusy(true);
@@ -444,6 +451,7 @@ function EntryPayment({
             accessToken={token}
             intent={resource.data}
             onPaid={() => void reload()}
+            onRefresh={() => void resource.refresh()}
             onCancelled={() => void reload()}
           />
         )

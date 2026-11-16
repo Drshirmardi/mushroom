@@ -19,7 +19,7 @@ describe("payment method context", () => {
   it("explains a top-up independently of the user's existing balance and shows the disabled bank method", () => {
     const html = render(intent("TOPUP", [{ code: "GATEWAY", available: false, balanceRial: null }]));
     expect(html).toContain("پرداخت هزینهٔ خرید یا خدمت نیست");
-    expect(html).toContain("افزایش موجودی فقط از درگاه بانکی انجام می‌شود.");
+    expect(html).toContain("افزایش موجودی از پرداخت بومی بله یا درگاه بانکی انجام می‌شود.");
     expect(html).toContain('href="/profile/wallet"');
     expect(html).toContain("مبلغ افزایش موجودی");
     expect(html).toContain("افزایش موجودی فعلاً ممکن نیست");
@@ -36,6 +36,17 @@ describe("payment method context", () => {
     const walletButton = html.match(/<button[^>]*class="wallet-method(?: [^"\n]*)?"[^>]*>/)?.[0];
     expect(walletButton).toBeDefined();
     expect(walletButton).not.toContain("disabled");
+  });
+
+  it("shows a pending Bale pre-checkout and prevents cancellation while payment is unresolved", () => {
+    const pending = intent("ORDER", [{ code: "GATEWAY", available: false, balanceRial: null }]);
+    pending.attempts = [{
+      id: "bale-attempt-1", status: "REQUIRES_RECONCILIATION", providerCode: "bale_wallet",
+      reference: null, traceNumber: null, verifiedAt: null,
+    }];
+    const html = render(pending);
+    expect(html).toContain("پرداخت بله در حال تأیید نهایی است");
+    expect(html).toMatch(new RegExp('<button[^>]*disabled=""[^>]*>لغو این پرداخت</button>'));
   });
 
   it("keeps wallet payment disabled for insufficient funds and offers a separate top-up", () => {

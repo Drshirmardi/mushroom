@@ -1,3 +1,7 @@
+import { ConfigService } from '@nestjs/config';
+import { BaleWalletBillingService } from '../src/modules/billing/bale-wallet-billing.service';
+import { BaleWalletApi } from '../src/modules/commerce/payments/bale-wallet-api';
+import { PaymentProviderConfigService } from '../src/modules/commerce/payments/payment-provider-config.service';
 import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { createCompleteTestPatient } from './patient-entry-test-support';
 import { createHash, randomUUID } from 'node:crypto';
@@ -136,6 +140,46 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('paid individ
     const f=await configured(),p=await patient();const bought=await complete(f,p);const balance=(await wallet.summary(p.profile)).balanceRial;
     const r=await req('POST',`admin/billing/intents/${bought.intent.id}/refunds`,admin,{amountRial:'250000',reason:'Synthetic ordinary refund'});expect(r.statusCode,r.body).toBe(409);expect(r.json().code).toBe('ASSESSMENT_REFUND_NOT_ALLOWED');expect((await req('POST',`patients/me/billing/intents/${bought.intent.id}/cancel`,p)).statusCode).toBe(409);
     await expect(db.billingRefund.create({data:{intentId:bought.intent.id,amountRial:250000n,reason:'Synthetic forbidden refund',status:'MANUAL_REQUIRED',idempotencyKey:randomUUID(),fingerprint:'a'.repeat(64)}})).rejects.toThrow(/no ordinary refunds/);expect((await wallet.summary(p.profile)).balanceRial).toBe(balance);expect((await req('GET',`assessment-submissions/${bought.id}/result`,p)).statusCode).toBe(200);
+  });
+  it('grants assessment access once after native Bale payment', async () => {
+    const patientActor = await patient();
+    const purchase = await intent(await configured(), patientActor);
+    const payer = await db.billingIntent.findUniqueOrThrow({ where: { id: purchase.intent.id } });
+    const baleId = BigInt(`0x${randomUUID().replaceAll('-', '').slice(0, 10)}`).toString();
+    await db.session.update({ where: { id: patientActor.sessionId }, data: { baleProviderUserId: baleId } });
+    await db.externalAuthIdentity.create({ data: { provider: 'BALE', providerUserId: baleId, userId: patientActor.userId } });
+    const config = app.get(ConfigService);
+    const getConfig = config.get.bind(config);
+    const settings = vi.spyOn(config, 'get').mockImplementation((key: string) => {
+      if (key === 'BALE_AUTH_ENABLED') return 'true';
+      if (key === 'BALE_BOT_TOKEN') return '123456:synthetic_bot_token';
+      if (key === 'BALE_WEBHOOK_SECRET') return 'synthetic-test-webhook-secret-never-use-in-production';
+      return getConfig(key);
+    });
+    const invoice = vi.spyOn(BaleWalletApi.prototype, 'createInvoiceLink').mockImplementation(async () => randomUUID());
+    const answer = vi.spyOn(BaleWalletApi.prototype, 'answerPreCheckoutQuery').mockResolvedValue(undefined);
+    const transactionId = randomUUID();
+    const inquire = vi.spyOn(BaleWalletApi.prototype, 'inquireTransaction').mockResolvedValue({
+      id: transactionId, status: 'paid', providerUserId: baleId, amountRial: payer.amountRial,
+    });
+    try {
+      await app.get(PaymentProviderConfigService).createRevision('bale_wallet', randomUUID(), {
+        credential: { walletToken: 'synthetic-assessment-wallet' }, enable: true,
+      }, ctx(admin));
+      const service = app.get(BaleWalletBillingService);
+      const attempt = await service.create(patientActor.userId, patientActor.sessionId, payer.id, randomUUID(), ctx(patientActor));
+      await service.handlePreCheckout({ id: transactionId, from: { id: Number(baleId) }, currency: 'IRR',
+        total_amount: Number(payer.amountRial), invoice_payload: `bale:${attempt.id}` });
+      expect(answer).toHaveBeenCalledWith(transactionId, true, undefined);
+      await Promise.all([service.reconcile(attempt.id), service.reconcile(attempt.id)]);
+      expect(await billing.get(patientActor.userId, payer.id)).toMatchObject({ status: 'PAID', method: 'GATEWAY' });
+      expect(await db.assessmentAccessGrant.count({ where: { purchaseId: purchase.intent.assessmentPurchaseId } })).toBe(1);
+    } finally {
+      settings.mockRestore();
+      invoice.mockRestore();
+      answer.mockRestore();
+      inquire.mockRestore();
+    }
   });
   it('uses server Verify despite callback hints and handles concurrent verification exactly once',async()=>{
     const f=await configured(),p=await patient();const i=await intent(f,p);const a=await gateway.create(p.userId,i.intent.id,randomUUID(),ctx(p));const stored=await db.billingGatewayAttempt.findUniqueOrThrow({where:{id:a.id}});

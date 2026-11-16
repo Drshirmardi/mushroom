@@ -83,12 +83,13 @@ export class BillingRefundDto {
 export class BillingAttemptStatusDto {
   @ApiProperty() id!: string;
   @ApiProperty() status!: string;
+  @ApiProperty() providerCode!: string;
   @ApiProperty({ type: String, nullable: true }) reference!: string | null;
   @ApiProperty({ type: String, nullable: true }) traceNumber!: string | null;
   @ApiProperty({ type: String, nullable: true }) verifiedAt!: string | null;
 }
 export class BillingPaymentMethodDto {
-  @ApiProperty({ enum: ['WALLET', 'GATEWAY'] }) code!: string;
+  @ApiProperty({ enum: ['WALLET', 'BALE_WALLET', 'GATEWAY'] }) code!: string;
   @ApiProperty() available!: boolean;
   @ApiProperty({ type: String, nullable: true }) balanceRial!: string | null;
 }
@@ -120,6 +121,12 @@ export class BillingIntentPageDto {
   @ApiProperty() pageSize!: number;
   @ApiProperty() total!: number;
   @ApiProperty({ type: AdminBillingIntentDto, isArray: true }) items!: AdminBillingIntentDto[];
+}
+export class BillingBaleAttemptDto {
+  @ApiProperty() id!: string;
+  @ApiProperty() intentId!: string;
+  @ApiProperty() status!: string;
+  @ApiProperty({ type: String, nullable: true }) invoiceParams!: string | null;
 }
 export class BillingGatewayAttemptDto {
   @ApiProperty() id!: string;

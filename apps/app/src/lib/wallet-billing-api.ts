@@ -1,6 +1,6 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
-import { apiClient } from "./api";
+import { apiClient, baleSessionHeaders } from "./api";
 
 export type WalletSummary = components["schemas"]["WalletSummaryDto"];
 export type WalletTransaction = components["schemas"]["WalletTransactionDto"];
@@ -112,6 +112,16 @@ export const createGatewayAttempt = (accessToken: string, intentId: string, idem
     }),
   );
 
+export type BaleInvoiceAttempt = components["schemas"]["BillingBaleAttemptDto"];
+
+export const createBaleAttempt = (accessToken: string, intentId: string, idempotencyKey: string) =>
+  expectData<BaleInvoiceAttempt>(
+    apiClient.POST("/v1/patients/me/billing/intents/{id}/bale-attempts", {
+      headers: { ...authorization(accessToken), ...baleSessionHeaders() },
+      params: { path: { id: intentId }, header: idempotentHeader(idempotencyKey) },
+    }),
+  );
+
 /** Whether an intent can still be paid, cancelled or watched for a result. */
 export const isIntentPending = (intent: BillingIntent) => intent.status === "PENDING";
 
@@ -152,6 +162,11 @@ export function walletErrorMessage(error: unknown): string {
       return "برای ثبت این نوبت، ابتدا پرداخت کامل لازم است.";
     case "IDEMPOTENCY_KEY_REUSED":
       return "این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.";
+    case "BALE_SESSION_REQUIRED":
+    case "BALE_IDENTITY_MISMATCH":
+      return "برای پرداخت با بله، مینی‌اپ را دوباره از خود بله باز کنید.";
+    case "BALE_WALLET_UNAVAILABLE":
+      return "پرداخت کیف‌پولی بله فعلاً در دسترس نیست؛ می‌توانید از پرداخت بانکی استفاده کنید.";
     case "SADAD_GO_LIVE_BLOCKED":
       return "درگاه پرداخت بانکی هنوز فعال نیست. افزایش موجودی به فعال‌شدن درگاه نیاز دارد؛ هزینهٔ خرید یا خدمت را در صورت دسترسی می‌توانید با کیف پول پرداخت کنید.";
     case "BILLING_RATE_LIMITED":

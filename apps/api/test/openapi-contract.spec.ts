@@ -188,6 +188,12 @@ describe('identity OpenAPI contract', () => {
     expect(Object.values(schemas.SadadPaymentCredentialDto.properties).every(
       (property) => (property as Record<string, unknown>).writeOnly === true,
     )).toBe(true);
+    expect(schemas.CreatePaymentProviderRevisionDto.properties.credential.oneOf).toEqual([
+      { $ref: '#/components/schemas/SadadPaymentCredentialDto' },
+      { $ref: '#/components/schemas/BaleWalletCredentialDto' },
+    ]);
+    expect(schemas.BaleWalletCredentialDto.properties.walletToken.writeOnly)
+      .toBe(true);
     expect(schemas.AuthenticatedUserDto.properties.roles.items.enum).toEqual([
       'PATIENT',
       'DOCTOR',

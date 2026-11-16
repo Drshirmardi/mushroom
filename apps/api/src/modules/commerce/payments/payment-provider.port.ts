@@ -4,7 +4,7 @@ export type PaymentCapabilityState = 'SUPPORTED_WHEN_GO_LIVE_READY' | 'UNSUPPORT
 export type PaymentProviderDescriptor = {
   code: string;
   displayName: string;
-  capabilities: Record<PaymentCapability, PaymentCapabilityState>;
+  capabilities: Record<PaymentCapability, PaymentCapabilityState> & { createInvoiceLink?: PaymentCapabilityState };
 };
 
 export type ProviderCreateInput = { providerOrderId: bigint; commerceAmountToman?: bigint; amountRial?: bigint; providerAmount: bigint; providerUnit: string; credential: Record<string, string>; returnUrl?: string; redirectProfile?: string };

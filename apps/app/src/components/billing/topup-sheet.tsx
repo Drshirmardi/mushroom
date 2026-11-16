@@ -11,6 +11,7 @@ import {
   createTopupIntent,
   walletErrorMessage,
 } from '@/lib/wallet-billing-api';
+import { isBaleContext, openSadadOutsideMiniApp } from '@/lib/bale-payment';
 import {
   MAX_TOPUP_TOMAN,
   MIN_TOPUP_TOMAN,
@@ -39,6 +40,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
   const validation = parseTopupToman(amount);
   const fieldError = touched && !validation.ok ? topupValidationMessage(validation.reason) : null;
 
+  const inBale = isBaleContext();
   const submit = async () => {
     setTouched(true);
     if (!validation.ok) return;
@@ -56,13 +58,18 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         intentKey.current.key,
       );
       setPendingIntentId(intent.id);
+      if (inBale) {
+        router.push(`/profile/wallet/pay?intentId=${encodeURIComponent(intent.id)}`);
+        onClose();
+        return;
+      }
       const attempt = await createGatewayAttempt(
         authentication.accessToken,
         intent.id,
         crypto.randomUUID(),
       );
       if (attempt.redirectUrl) {
-        window.location.assign(attempt.redirectUrl);
+        openSadadOutsideMiniApp(attempt.redirectUrl);
         return;
       }
       setPendingIntentId(intent.id);
@@ -179,8 +186,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
         <div className="flex items-start gap-2 rounded-xl bg-primary/5 p-3 text-xs leading-6 text-muted-foreground">
           <Info size={15} className="mt-0.5 flex-shrink-0 text-gray-500" aria-hidden="true" />
           <span>
-            پرداخت از طریق درگاه امن بانکی انجام می‌شود و به‌محض تأیید، مبلغ بلافاصله به کیف پول شما
-            اضافه می‌شود.
+            {inBale ? 'در مرحلهٔ بعد روش‌های پرداخت در دسترس نمایش داده می‌شوند.' : 'پرداخت از طریق درگاه امن بانکی انجام می‌شود و پس از تأیید، مبلغ به کیف پول شما اضافه می‌شود.'}
           </span>
         </div>
 
@@ -194,12 +200,12 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
           {busy ? (
             <>
               <HeartbeatLoader />
-              در حال انتقال به درگاه…
+              در حال ایجاد پرداخت…
             </>
           ) : (
             <>
               <CreditCard size={17} aria-hidden="true" />
-              پرداخت و شارژ
+              {inBale ? 'انتخاب روش پرداخت' : 'پرداخت و شارژ'}
             </>
           )}
         </button>

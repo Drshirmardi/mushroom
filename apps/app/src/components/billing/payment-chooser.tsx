@@ -13,11 +13,14 @@ import { BottomSheet, type BottomSheetHandle } from '@/components/shared/bottom-
 import {
   cancelBillingIntent,
   createGatewayAttempt,
+  createBaleAttempt,
+  getBillingIntent,
   payWithWallet,
   walletErrorMessage,
   type BillingIntent,
 } from '@/lib/wallet-billing-api';
 import { formatRial } from '@/lib/wallet-money';
+import { canOpenBaleInvoice, openBaleInvoice, openSadadOutsideMiniApp } from '@/lib/bale-payment';
 import { billingPurposeLabel } from '@/lib/wallet-labels';
 import styles from './payment.module.css';
 
@@ -26,6 +29,7 @@ type Props = {
   intent: BillingIntent;
   onPaid: (intent: BillingIntent) => void;
   onCancelled?: () => void;
+  onRefresh?: () => void;
   context?: ReactNode;
   details?: ReactNode;
 };
@@ -40,11 +44,12 @@ export function PaymentChooser({
   intent,
   onPaid,
   onCancelled,
+  onRefresh,
   context,
   details,
 }: Props) {
   const router = useRouter();
-  const [busy, setBusy] = useState<'wallet' | 'gateway' | 'cancel' | null>(null);
+  const [busy, setBusy] = useState<'wallet' | 'gateway' | 'bale' | 'cancel' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [topupOpen, setTopupOpen] = useState(false);
   const [walletConfirmation, setWalletConfirmation] = useState<{
@@ -52,12 +57,15 @@ export function PaymentChooser({
     amountRial: string;
   } | null>(null);
   const walletKey = useRef<{ intentId: string; key: string } | null>(null);
+  const baleKey = useRef<{ intentId: string; key: string } | null>(null);
   const inFlight = useRef(false);
   const walletSheetRef = useRef<BottomSheetHandle>(null);
   const paidAfterCloseRef = useRef<BillingIntent | null>(null);
 
   const wallet = intent.methods?.find((method) => method.code === 'WALLET') ?? null;
   const gateway = intent.methods?.find((method) => method.code === 'GATEWAY') ?? null;
+  const bale = intent.methods?.find((method) => method.code === 'BALE_WALLET') ?? null;
+  const nativeBale = Boolean(bale?.available && canOpenBaleInvoice());
   const amount = BigInt(intent.amountRial);
   const isTopup = intent.purpose === 'TOPUP';
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
@@ -66,7 +74,7 @@ export function PaymentChooser({
   );
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
-  const run = async (kind: 'wallet' | 'gateway' | 'cancel', action: () => Promise<void>) => {
+  const run = async (kind: 'wallet' | 'gateway' | 'bale' | 'cancel', action: () => Promise<void>) => {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(kind);
@@ -102,6 +110,25 @@ export function PaymentChooser({
     });
   };
 
+  const payViaBale = () =>
+    run('bale', async () => {
+      if (!nativeBale) return;
+      if (baleKey.current?.intentId !== intent.id || (!bankAttempt && intent.attempts?.[0]?.status === 'FAILED')) baleKey.current = { intentId: intent.id, key: crypto.randomUUID() };
+      const attempt = await createBaleAttempt(accessToken, intent.id, baleKey.current.key);
+      if (!attempt.invoiceParams) {
+        if (attempt.status === 'FAILED') baleKey.current = null;
+        setError('فاکتور بله آماده نشد. روش‌های پرداخت در دسترس پس از بررسی دوباره نمایش داده می‌شوند.');
+        onRefresh?.();
+        return;
+      }
+      if (!openBaleInvoice(attempt.invoiceParams, () => {
+        void getBillingIntent(accessToken, intent.id).then((latest) => {
+          if (latest.status === 'PAID' || latest.status === 'COMPENSATED') onPaid(latest);
+          else { setError('وضعیت نهایی پرداخت از سرور در حال بررسی است.'); onRefresh?.(); }
+        }).catch(() => { setError('ارتباط با سرور برای بررسی نتیجه ممکن نشد؛ صفحه را تازه کنید.'); onRefresh?.(); });
+      })) setError('این نسخه بله از پرداخت داخلی پشتیبانی نمی‌کند؛ پرداخت بانکی را انتخاب کنید.');
+    });
+
   const payViaGateway = () =>
     run('gateway', async () => {
       const attempt = await createGatewayAttempt(accessToken, intent.id, crypto.randomUUID());
@@ -113,7 +140,7 @@ export function PaymentChooser({
         );
         return;
       }
-      window.location.assign(attempt.redirectUrl);
+      openSadadOutsideMiniApp(attempt.redirectUrl);
     });
 
   const cancel = () =>
@@ -146,8 +173,12 @@ export function PaymentChooser({
           className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900"
         >
           {bankAttempt.status === 'REDIRECT_READY'
-            ? 'یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود.'
-            : 'نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید.'}
+            ? 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
+              ? 'فاکتور پرداخت بله آماده است؛ می‌توانید آن را ادامه دهید یا پیش از تأیید پرداخت، درگاه بانکی را انتخاب کنید.'
+              : 'یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود.'
+            : 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
+              ? 'پرداخت بله در حال تأیید نهایی است؛ تا تعیین نتیجه، روش دیگری را انتخاب نکنید.'
+              : 'نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید.'}
         </p>
       )}
       {isTopup && (
@@ -157,7 +188,7 @@ export function PaymentChooser({
         >
           <p>این مبلغ به موجودی کیف پول شما اضافه می‌شود؛ پرداخت هزینهٔ خرید یا خدمت نیست.</p>
           <p className="mt-2 text-muted-foreground">
-            افزایش موجودی فقط از درگاه بانکی انجام می‌شود.
+            افزایش موجودی از پرداخت بومی بله یا درگاه بانکی انجام می‌شود.
           </p>
           <Link
             href="/profile/wallet"
@@ -172,6 +203,17 @@ export function PaymentChooser({
       )}
       <section className={styles.methods} aria-label="انتخاب روش پرداخت">
         <h2>روش پرداخت</h2>
+        {nativeBale && (
+          <button type="button" className={`wallet-method ${styles.method}`}
+            disabled={busy !== null || !bale?.available} onClick={() => void payViaBale()}>
+            <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
+            <span className="wallet-method__body">
+              <span className="wallet-method__title">پرداخت با کیف پول بله</span>
+              <span className="wallet-method__hint">پرداخت مستقیم در محیط بله، بدون خروج از مینی‌اپ.</span>
+            </span>
+            {busy === 'bale' ? <HeartbeatLoader /> : <ChevronLeft size={18} aria-hidden="true" />}
+          </button>
+        )}
         {wallet && !isTopup && (
           <button
             type="button"
@@ -219,14 +261,14 @@ export function PaymentChooser({
             </span>
             <span className="wallet-method__body">
               <span className="wallet-method__title">
-                {bankAttempt?.status === 'REDIRECT_READY'
+                {bankAttempt?.status === 'REDIRECT_READY' && bankAttempt.providerCode === 'sadad'
                   ? 'ادامهٔ پرداخت بانکی'
                   : 'پرداخت بانکی (درگاه)'}
               </span>
               <span className="wallet-method__hint">
                 {gateway.available
                   ? 'انتقال به درگاه پرداخت امن.'
-                  : isTopup
+                  : isTopup && !nativeBale
                     ? 'افزایش موجودی فعلاً ممکن نیست؛ درگاه بانکی برای این درخواست در دسترس نیست.'
                     : 'درگاه بانکی در حال حاضر برای این مورد در دسترس نیست.'}
               </span>
@@ -239,7 +281,7 @@ export function PaymentChooser({
           </button>
         )}
 
-        {!wallet && !gateway && (
+        {!wallet && !gateway && !nativeBale && (
           <p
             role="status"
             className="rounded-2xl border border-border bg-white p-4 text-sm text-muted-foreground"
