@@ -16,6 +16,7 @@ import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
 import { AuthenticationResponseDto } from '../presentation/http/dto/login.dto';
 import { BaleAuthService, type BaleFlowResult } from './bale-auth.service';
+import { BaleWalletBillingService } from '../../billing/bale-wallet-billing.service';
 
 class BaleInitDataDto {
   @ApiProperty() @IsString() @MaxLength(8192) initData!: string;
@@ -127,7 +128,7 @@ export class BaleAuthController {
 @ApiTags('Bale Bot Webhook')
 @Controller('integrations/bale')
 export class BaleWebhookController {
-  constructor(private readonly bale: BaleAuthService) {}
+  constructor(private readonly bale: BaleAuthService, private readonly payments: BaleWalletBillingService) {}
 
   @Post('webhook/:secret')
   @Public()
@@ -135,7 +136,15 @@ export class BaleWebhookController {
   @ApiOperation({ operationId: 'baleWebhook', summary: 'Secret-protected Bale bot webhook; configure an unguessable URL and redact it from access logs' })
   @ApiOkResponse({ description: 'Acknowledged' })
   async webhook(@Param('secret') secret: string, @Body() body: unknown): Promise<{ ok: true }> {
+    // Auth service validates the shared secret before any payment processing.
     await this.bale.acceptWebhook(secret, body);
+    if (body && typeof body === 'object' && !Array.isArray(body)) {
+      const update = body as Record<string, unknown>;
+      if (update.pre_checkout_query) await this.payments.handlePreCheckout(update.pre_checkout_query);
+      const message = update.message && typeof update.message === 'object' && !Array.isArray(update.message)
+        ? update.message as Record<string, unknown> : null;
+      if (message?.successful_payment) await this.payments.handleSuccessfulPayment(message.successful_payment);
+    }
     return { ok: true };
   }
 }
