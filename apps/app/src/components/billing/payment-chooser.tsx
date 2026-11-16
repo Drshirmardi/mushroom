@@ -70,7 +70,7 @@ export function PaymentChooser({
   const isTopup = intent.purpose === 'TOPUP';
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
   const bankAttempt = intent.attempts?.find((attempt) =>
-    ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'].includes(attempt.status),
+    ['CREATED', 'REDIRECT_READY', 'PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'].includes(attempt.status),
   );
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
@@ -175,7 +175,9 @@ export function PaymentChooser({
             ? 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
               ? 'فاکتور پرداخت بله آماده است؛ می‌توانید آن را ادامه دهید یا پیش از تأیید پرداخت، درگاه بانکی را انتخاب کنید.'
               : 'یک پرداخت بانکی برای این سفارش باز است. با دکمهٔ زیر همان پرداخت را ادامه دهید. وضعیت به‌صورت خودکار بررسی می‌شود.'
-            : 'نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید.'}
+            : 'providerCode' in bankAttempt && bankAttempt.providerCode === 'bale_wallet'
+              ? 'پرداخت بله در حال تأیید نهایی است؛ تا تعیین نتیجه، روش دیگری را انتخاب نکنید.'
+              : 'نتیجهٔ پرداخت بانکی در حال بررسی است. وضعیت خودکار تازه می‌شود؛ تا تعیین نتیجه، پرداخت دوباره انجام ندهید.'}
         </p>
       )}
       {isTopup && (
