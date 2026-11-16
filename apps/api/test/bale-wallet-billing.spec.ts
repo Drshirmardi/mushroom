@@ -31,7 +31,7 @@ function setup(overrides: Partial<typeof attempt> = {}) {
   const billing = { lockIntent: vi.fn().mockResolvedValue(intent), settleGateway: vi.fn().mockResolvedValue({ status: 'PAID' }) };
   const service = new BaleWalletBillingService(prisma as never, billing as never, {} as never, {} as never, {} as never, {} as never);
   const bot = { answerPreCheckoutQuery: vi.fn().mockResolvedValue(undefined), inquireTransaction: vi.fn() };
-  vi.spyOn(service as never, 'bot').mockReturnValue(bot);
+  vi.spyOn(service as unknown as { bot: () => typeof bot }, 'bot').mockReturnValue(bot);
   return { service, bot, tx, prisma, billing };
 }
 
