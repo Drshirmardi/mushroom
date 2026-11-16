@@ -1,7 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
-import { Prisma, type BillingIntent, type PaymentProviderCredentialVersion } from '../../generated/prisma/client';
+import type { BillingIntent, PaymentProviderCredentialVersion } from '../../generated/prisma/client';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PaymentCredentialCryptoService } from '../commerce/payments/payment-credential-crypto.service';
 import { PaymentProviderOrderIdService } from '../commerce/payments/payment-provider-order-id.service';
