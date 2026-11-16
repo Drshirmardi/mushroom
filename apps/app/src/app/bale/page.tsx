@@ -424,7 +424,7 @@ export default function BaleMiniAppPage() {
             role="alert"
             className="rounded-xl bg-[var(--bale-background)] px-4 py-3 text-sm leading-7 text-[var(--bale-text)]"
           >
-            ورود از بله فقط برای حساب فعال بیماران در دسترس است.
+            ورود از بله فقط برای حساب فعال مراجعان در دسترس است.
           </p>
         )}
         {view === 'error' && (
