@@ -1,6 +1,6 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
-import { apiClient } from "./api";
+import { apiClient, apiBaseUrl, sessionFetch, baleSessionHeaders } from "./api";
 
 export type WalletSummary = components["schemas"]["WalletSummaryDto"];
 export type WalletTransaction = components["schemas"]["WalletTransactionDto"];
@@ -112,6 +112,39 @@ export const createGatewayAttempt = (accessToken: string, intentId: string, idem
     }),
   );
 
+export type BaleInvoiceAttempt = {
+  id: string;
+  intentId: string;
+  status: string;
+  invoiceParams: string | null;
+};
+
+/**
+ * New Bale endpoint uses the same authenticated transport. Regenerate the
+ * OpenAPI client from the backend schema before release.
+ */
+export async function createBaleAttempt(accessToken: string, intentId: string, idempotencyKey: string): Promise<BaleInvoiceAttempt> {
+  let response: Response;
+  try {
+    response = await sessionFetch(`${apiBaseUrl}/v1/patients/me/billing/intents/${encodeURIComponent(intentId)}/bale-attempts`, {
+      method: 'POST',
+      headers: { ...authorization(accessToken), ...idempotentHeader(idempotencyKey), ...baleSessionHeaders() },
+    });
+  } catch { throw new WalletRequestError(0); }
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) {
+    const error = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : null;
+    throw new WalletRequestError(response.status, error);
+  }
+  if (!body || typeof body !== 'object' || !('id' in body) || typeof body.id !== 'string' ||
+      !('intentId' in body) || body.intentId !== intentId ||
+      !('status' in body) || typeof body.status !== 'string' ||
+      !('invoiceParams' in body) || (body.invoiceParams !== null && typeof body.invoiceParams !== 'string')) {
+    throw new WalletRequestError(0);
+  }
+  return body as BaleInvoiceAttempt;
+}
+
 /** Whether an intent can still be paid, cancelled or watched for a result. */
 export const isIntentPending = (intent: BillingIntent) => intent.status === "PENDING";
 
@@ -152,6 +185,11 @@ export function walletErrorMessage(error: unknown): string {
       return "برای ثبت این نوبت، ابتدا پرداخت کامل لازم است.";
     case "IDEMPOTENCY_KEY_REUSED":
       return "این درخواست با اطلاعات دیگری قبلاً ثبت شده است؛ صفحه را تازه‌سازی کنید.";
+    case "BALE_SESSION_REQUIRED":
+    case "BALE_IDENTITY_MISMATCH":
+      return "برای پرداخت با بله، مینی‌اپ را دوباره از خود بله باز کنید.";
+    case "BALE_WALLET_UNAVAILABLE":
+      return "پرداخت کیف‌پولی بله فعلاً در دسترس نیست؛ می‌توانید از پرداخت بانکی استفاده کنید.";
     case "SADAD_GO_LIVE_BLOCKED":
       return "درگاه پرداخت بانکی هنوز فعال نیست. افزایش موجودی به فعال‌شدن درگاه نیاز دارد؛ هزینهٔ خرید یا خدمت را در صورت دسترسی می‌توانید با کیف پول پرداخت کنید.";
     case "BILLING_RATE_LIMITED":
