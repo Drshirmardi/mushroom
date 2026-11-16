@@ -24,10 +24,16 @@ export class BillingGatewayService {
     let live = false; try { live = this.runtime.live && Boolean(this.runtime.settings()); } catch { live = false; }
     const active = await this.prisma.billingGatewayAttempt.findFirst({ where: { intentId: id, status: { in: pendingAttempts } }, orderBy: { createdAt: 'desc' }, include: { revision: { select: { config: { select: { providerCode: true } } } } } });
     const legacy = intent.orderId ? await this.prisma.paymentAttempt.count({ where: { orderId: intent.orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } }) : 0;
+    // A native invoice can be superseded until pre-checkout binds it to a Bale transaction.
+    // Keep the advertised methods in sync with the same locked rule in create().
+    const replaceableBale = active?.revision.config.providerCode === 'bale_wallet' &&
+      !active.baleTransactionId &&
+      ['CREATED', 'REDIRECT_READY', 'REQUIRES_RECONCILIATION'].includes(active.status);
+    const resumableSadad = active?.revision.config.providerCode === 'sadad' && active.status === 'REDIRECT_READY';
     return [
       ...(intent.purpose === 'TOPUP' ? [] : [{ code: 'WALLET', available: pending && !active && !legacy && !summary.frozen && BigInt(summary.balanceRial) >= intent.amountRial, balanceRial: summary.balanceRial }]),
       { code: 'BALE_WALLET', available: Boolean(sessionId && !legacy && await this.bale.available(userId, sessionId, intent)), balanceRial: null },
-      { code: 'GATEWAY', available: pending && !legacy && (!active || active.status === 'REDIRECT_READY') && live && Boolean(config) && intent.amountRial > 0n, balanceRial: null },
+      { code: 'GATEWAY', available: pending && !legacy && (!active || replaceableBale || resumableSadad) && live && Boolean(config) && intent.amountRial > 0n, balanceRial: null },
     ];
   }
 
