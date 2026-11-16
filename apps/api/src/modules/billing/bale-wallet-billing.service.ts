@@ -111,6 +111,13 @@ export class BaleWalletBillingService {
         return { attempt: existing, requested: false };
       }
       if (intent.status !== 'PENDING' || (intent.expiresAt && intent.expiresAt <= new Date())) throw financialConflict('BILLING_HOLD_EXPIRED');
+      const open = await tx.billingGatewayAttempt.findFirst({
+        where: { intentId, status: 'REDIRECT_READY' },
+        include: { revision: { select: { config: { select: { providerCode: true } } } } },
+      });
+      if (open?.revision.config.providerCode === 'bale_wallet' && open.baleProviderUserId === providerUserId) {
+        return { attempt: open, requested: false };
+      }
       await this.billing.assertNoPending(tx, intent);
       if (intent.purpose !== 'TOPUP') {
         const target = this.targets.get(intent.purpose);
