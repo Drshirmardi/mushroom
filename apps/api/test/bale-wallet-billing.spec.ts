@@ -9,7 +9,7 @@ const query = {
 };
 const intent = { id: intentId, amountRial: 200000n, currency: 'IRR', purpose: 'TOPUP', status: 'PENDING', expiresAt: null, orderId: null };
 const attempt = {
-  id: attemptId, intentId, amountRial: 200000n, baleProviderUserId: '123456', baleTransactionId: null,
+  id: attemptId, intentId, amountRial: 200000n, baleProviderUserId: '123456', baleTransactionId: null as string | null,
   status: 'REDIRECT_READY', revision: { config: { providerCode: 'bale_wallet' } },
 };
 function setup(overrides: Partial<typeof attempt> = {}) {
