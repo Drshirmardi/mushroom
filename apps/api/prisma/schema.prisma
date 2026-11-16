@@ -800,6 +800,7 @@ model BillingGatewayAttempt {
   providerToken String? @unique @map("provider_token") @db.VarChar(512)
   baleProviderUserId String? @map("bale_provider_user_id") @db.VarChar(64)
   baleTransactionId String? @unique @map("bale_transaction_id") @db.VarChar(128)
+  baleLastInquiredAt DateTime? @map("bale_last_inquired_at") @db.Timestamptz(3)
   balePrecheckoutApprovedAt DateTime? @map("bale_precheckout_approved_at") @db.Timestamptz(3)
   resultCode String? @map("result_code") @db.VarChar(32)
   reference String? @unique @db.VarChar(128)
@@ -4221,6 +4222,14 @@ model BaleContactChallenge {
 
   @@index([expiresAt], map: "bale_contact_challenges_expires_at_idx")
   @@map("bale_contact_challenges")
+}
+
+model BalePrecheckoutDecision {
+  transactionId String @id @map("transaction_id") @db.VarChar(128)
+  fingerprint String @db.Char(64)
+  approved Boolean
+
+  @@map("bale_precheckout_decisions")
 }
 
 model BaleWebhookEvent {

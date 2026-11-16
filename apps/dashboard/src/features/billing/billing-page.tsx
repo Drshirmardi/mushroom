@@ -325,7 +325,7 @@ function IntentDetail({ accessToken, intent, onChanged }: { accessToken: string;
           <div className="space-y-2">
             {intent.attempts.map((attempt) => (
               <div key={attempt.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-border p-3 text-xs">
-                <span>{ATTEMPT_LABELS[attempt.status] ?? attempt.status}</span>
+                <span>{attempt.providerCode === 'bale_wallet' && 'کیف پول بله · '}{ATTEMPT_LABELS[attempt.status] ?? attempt.status}</span>
                 {attempt.traceNumber && <span className="text-muted-foreground" dir="ltr">{attempt.traceNumber}</span>}
                 <span className="text-muted-foreground">{dateLabel(attempt.verifiedAt)}</span>
               </div>
@@ -463,7 +463,7 @@ function ReconciliationView({ accessToken }: { accessToken: string }) {
             <tbody className="divide-y divide-border">
               {items.map((attempt) => (
                 <tr key={attempt.id}>
-                  <td className="px-4 py-2.5"><StatusBadge status={ATTEMPT_LABELS[attempt.status] ?? attempt.status} /></td>
+                  <td className="px-4 py-2.5"><StatusBadge status={ATTEMPT_LABELS[attempt.status] ?? attempt.status} />{attempt.providerCode === 'bale_wallet' && <span className="ms-2 text-xs">کیف پول بله</span>}</td>
                   <td className="px-4 py-2.5 font-mono text-xs" dir="ltr">{attempt.providerOrderId}</td>
                   <td className="px-4 py-2.5 font-mono text-xs" dir="ltr">{attempt.resultCode ?? "—"}</td>
                   <td className="px-4 py-2.5 tabular-nums">{formatRial(BigInt(attempt.amountRial))}</td>
@@ -471,7 +471,7 @@ function ReconciliationView({ accessToken }: { accessToken: string }) {
                   <td className="px-4 py-2.5">
                     <div className="flex items-center gap-2">
                       <button onClick={() => void retry(attempt.id)} className="rounded-lg border border-primary px-3 py-1.5 text-xs font-semibold text-primary">Verify مجدد</button>
-                      {attempt.status === "REQUIRES_RECONCILIATION" && (
+                      {attempt.providerCode !== "bale_wallet" && attempt.status === "REQUIRES_RECONCILIATION" && (
                         <>
                           <input
                             value={evidence[attempt.id] ?? ""}

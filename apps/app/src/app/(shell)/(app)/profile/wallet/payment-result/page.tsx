@@ -54,7 +54,7 @@ function PaymentResult() {
   );
   const { data: intent, error } = resource;
   const load = resource.reload;
-  usePaymentRefresh(intent?.status === 'PENDING', resource.refresh);
+  usePaymentRefresh(intent?.status === 'PENDING' || (intent != null && intentResultView(intent) === 'ambiguous'), resource.refresh);
 
   const view: View = intent ? intentResultView(intent) : error ? 'error' : 'loading';
   useEffect(() => {
@@ -195,7 +195,7 @@ function PaymentResult() {
                   <div className="flex justify-between border-b border-border/60 pb-2">
                     <dt className="text-muted-foreground">روش پرداخت</dt>
                     <dd className="font-bold text-foreground">
-                      {billingMethodLabel(intent.method)}
+                      {billingMethodLabel(intent.method === 'GATEWAY' && intent.attempts?.find(attempt => attempt.status === 'VERIFIED')?.providerCode === 'bale_wallet' ? 'BALE_WALLET' : intent.method)}
                     </dd>
                   </div>
                 )}

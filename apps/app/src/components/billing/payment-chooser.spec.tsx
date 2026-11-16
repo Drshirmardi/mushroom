@@ -41,7 +41,7 @@ describe("payment method context", () => {
   it("shows a pending Bale pre-checkout and prevents cancellation while payment is unresolved", () => {
     const pending = intent("ORDER", [{ code: "GATEWAY", available: false, balanceRial: null }]);
     pending.attempts = [{
-      id: "bale-attempt-1", status: "PRECHECKOUT_APPROVED", providerCode: "bale_wallet",
+      id: "bale-attempt-1", status: "REQUIRES_RECONCILIATION", providerCode: "bale_wallet",
       reference: null, traceNumber: null, verifiedAt: null,
     }];
     const html = render(pending);

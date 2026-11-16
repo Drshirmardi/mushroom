@@ -14,7 +14,7 @@ import { getBillingIntent } from "@/lib/wallet-billing-api";
 import { returnFromPayment } from "@/lib/payment-return";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { usePatientResource } from "@/lib/use-patient-resource";
-import { billingStatusLabel, billingPurposeLabel } from "@/lib/wallet-labels";
+import { billingStatusLabel, billingPurposeLabel, intentResultView } from "@/lib/wallet-labels";
 import { formatRial } from "@/lib/wallet-money";
 
 function Payment() {
@@ -36,7 +36,7 @@ function Payment() {
             <strong>{formatRial(BigInt(intent.amountRial))} <small>تومان</small></strong>
             <p>{billingStatusLabel(intent.status)}</p>
           </section>}
-          {intent.status === "PAID" ? (
+          {intent.status === "PAID" || intent.status === "COMPENSATED" || (intent.status !== "PENDING" && intentResultView(intent) === "ambiguous") ? (
             <Link href={marriageHref(`/profile/wallet/payment-result?intentId=${intent.id}`)} className="block rounded-xl bg-primary p-4 text-center font-bold text-white">مشاهدهٔ نتیجه و ادامه</Link>
           ) : intent.status === "PENDING" ? (
             <PaymentChooser key={intent.id} accessToken={authentication.accessToken} intent={intent}

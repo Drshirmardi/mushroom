@@ -25,6 +25,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const METHOD_LABELS: Record<string, string> = {
+  BALE_WALLET: "کیف پول بله",
   WALLET: "کیف پول",
   GATEWAY: "درگاه بانکی",
   FREE: "رایگان",
@@ -85,9 +86,9 @@ type ResultIntent = { status: string; attempts?: Array<{ status: string }> | nul
 export function intentResultView(intent: ResultIntent): IntentResultView {
   if (intent.status === "PAID") return "paid";
   if (intent.status === "COMPENSATED") return "compensated";
-  if (intent.status === "CANCELLED" || intent.status === "EXPIRED") return "closed";
   const attempts = intent.attempts ?? [];
   if (attempts.some((attempt) => isAmbiguousAttempt(attempt.status))) return "ambiguous";
+  if (intent.status === "CANCELLED" || intent.status === "EXPIRED") return "closed";
   if (attempts[0]?.status === "FAILED") return "failed";
   return "pending";
 }

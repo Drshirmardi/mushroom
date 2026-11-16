@@ -1,3 +1,6 @@
+import { BaleWalletBillingService } from '../src/modules/billing/bale-wallet-billing.service';
+import { BaleWalletApi } from '../src/modules/commerce/payments/bale-wallet-api';
+import { PaymentProviderConfigService } from '../src/modules/commerce/payments/payment-provider-config.service';
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createServer } from 'node:http';
@@ -103,6 +106,99 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     const slot = slots.items.find(s => ![...allocated, ...held].some(a => a.startsAt.getTime() === s.startsAt.getTime()))!;
     expect(slot).toBeDefined(); return { doctorServiceId: offering.id, startsAt: slot.startsAt.toISOString() };
   }
+
+  it('settles native Bale once across webhook retries and server inquiry in PostgreSQL', async () => {
+    const payer = await patient(true);
+    const baleId = BigInt(`0x${randomUUID().replaceAll('-', '').slice(0, 10)}`).toString();
+    await db.session.update({ where: { id: payer.sessionId }, data: { baleProviderUserId: baleId } });
+    await db.externalAuthIdentity.create({ data: { provider: 'BALE', providerUserId: baleId, userId: payer.userId } });
+
+    const webhookSecret = 'synthetic-test-webhook-secret-never-use-in-production';
+    let loginEnabled = true;
+    const config = app.get(ConfigService);
+    const getConfig = config.get.bind(config);
+    const settings = vi.spyOn(config, 'get').mockImplementation((key: string) => {
+      if (key === 'BALE_AUTH_ENABLED') return String(loginEnabled);
+      if (key === 'BALE_BOT_TOKEN') return '123456:synthetic_bot_token';
+      if (key === 'BALE_WEBHOOK_SECRET') return webhookSecret;
+      return getConfig(key);
+    });
+    const issue = vi.spyOn(BaleWalletApi.prototype, 'createInvoiceLink').mockImplementation(async () => randomUUID());
+    const answer = vi.spyOn(BaleWalletApi.prototype, 'answerPreCheckoutQuery').mockResolvedValue(undefined);
+    const inquiry = vi.spyOn(BaleWalletApi.prototype, 'inquireTransaction');
+    const service = app.get(BaleWalletBillingService);
+    try {
+      await app.get(PaymentProviderConfigService).createRevision('bale_wallet', randomUUID(), {
+        credential: { walletToken: 'synthetic-wallet-token' }, enable: true,
+      }, { actorUserId: admin.userId, actorSessionId: admin.sessionId, requestId: randomUUID(), ipAddress: '127.0.0.1' });
+
+      const topup = await billing.create(payer.userId, 'TOPUP', { amountToman: '1000' }, randomUUID(), context(payer.userId));
+      const checkout = await order(payer);
+      const purchase = await billing.create(payer.userId, 'ORDER', { orderId: checkout.id }, randomUUID(), context(payer.userId));
+      const appointment = await billing.create(payer.userId, 'APPOINTMENT', await appointmentInput(payer), randomUUID(), context(payer.userId));
+      for (const intent of [topup, purchase, appointment]) {
+        loginEnabled = true;
+        const attempt = await service.create(payer.userId, payer.sessionId, intent.id, randomUUID(), context(payer.userId));
+        expect(attempt.invoiceParams).toBeTruthy();
+        const query = { id: randomUUID(), from: { id: Number(baleId) }, currency: 'IRR', total_amount: Number(intent.amountRial), invoice_payload: `bale:${attempt.id}` };
+        const rejected = { ...query, id: randomUUID(), total_amount: query.total_amount + 1 };
+        await service.handlePreCheckout(rejected);
+        await service.handlePreCheckout(rejected);
+        expect(answer).toHaveBeenLastCalledWith(rejected.id, false, expect.any(String));
+        expect(await db.balePrecheckoutDecision.count({ where: { transactionId: rejected.id, approved: false } })).toBe(1);
+        await Promise.all([service.handlePreCheckout(query), service.handlePreCheckout(query)]);
+        expect(answer).toHaveBeenLastCalledWith(query.id, true, undefined);
+        expect(await db.billingGatewayAttempt.findUnique({ where: { id: attempt.id } })).toMatchObject({
+          status: 'REQUIRES_RECONCILIATION', baleTransactionId: query.id,
+        });
+        await expect(gateway.create(payer.userId, intent.id, randomUUID(), context(payer.userId))).rejects.toMatchObject({
+          response: { code: 'BILLING_PAYMENT_PENDING' },
+        });
+
+        loginEnabled = false;
+        inquiry.mockResolvedValue({ id: query.id, status: 'paid', providerUserId: baleId, amountRial: BigInt(intent.amountRial) });
+        const receipt = { invoice_payload: query.invoice_payload, currency: 'IRR', total_amount: query.total_amount,
+          telegram_payment_charge_id: query.id, provider_payment_charge_id: 'synthetic-receipt' };
+        const [, webhook] = await Promise.all([service.reconcile(attempt.id), app.inject({
+          method: 'POST', url: `/v1/integrations/bale/webhook/${webhookSecret}`,
+          payload: { message: { successful_payment: receipt } },
+        })]);
+        expect(webhook.statusCode).toBe(200);
+        expect(await billing.get(payer.userId, intent.id)).toMatchObject({ status: 'PAID', method: 'GATEWAY' });
+        expect(await db.billingGatewayAttempt.findUnique({ where: { id: attempt.id } })).toMatchObject({ status: 'VERIFIED' });
+        if (intent.id === topup.id) expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+        if (intent.id === purchase.id) expect(await db.payment.count({ where: { billingAttemptId: attempt.id } })).toBe(1);
+        if (intent.id === appointment.id) expect((await billing.get(payer.userId, intent.id)).appointmentId).toBeTruthy();
+      }
+      loginEnabled = true;
+      const late = await billing.create(payer.userId, 'TOPUP', { amountToman: '500' }, randomUUID(), context(payer.userId));
+      const lateAttempt = await service.create(payer.userId, payer.sessionId, late.id, randomUUID(), context(payer.userId));
+      const lateQuery = { id: randomUUID(), from: { id: Number(baleId) }, currency: 'IRR', total_amount: Number(late.amountRial), invoice_payload: `bale:${lateAttempt.id}` };
+      await service.handlePreCheckout(lateQuery);
+      await db.billingIntent.update({ where: { id: late.id }, data: { status: 'EXPIRED' } });
+      inquiry.mockResolvedValue({ id: lateQuery.id, status: 'paid', providerUserId: baleId, amountRial: BigInt(late.amountRial) });
+      await Promise.all([service.reconcile(lateAttempt.id), service.reconcile(lateAttempt.id)]);
+      expect(await billing.get(payer.userId, late.id)).toMatchObject({ status: 'COMPENSATED', method: 'GATEWAY' });
+      expect(await db.walletJournal.count({ where: { reference: `gateway:${lateAttempt.id}:credit`, kind: 'LATE_PAYMENT_CREDIT' } })).toBe(1);
+
+      const fallback = await billing.create(payer.userId, 'TOPUP', { amountToman: '500' }, randomUUID(), context(payer.userId));
+      const fallbackAttempt = await service.create(payer.userId, payer.sessionId, fallback.id, randomUUID(), context(payer.userId));
+      const fallbackQuery = { ...lateQuery, id: randomUUID(), invoice_payload: `bale:${fallbackAttempt.id}` };
+      const [bale, sadad] = await Promise.allSettled([
+        service.handlePreCheckout(fallbackQuery),
+        gateway.create(payer.userId, fallback.id, randomUUID(), context(payer.userId)),
+      ]);
+      expect(bale.status).toBe('fulfilled');
+      const decision = await db.balePrecheckoutDecision.findUniqueOrThrow({ where: { transactionId: fallbackQuery.id } });
+      expect(sadad.status).toBe(decision.approved ? 'rejected' : 'fulfilled');
+      expect(await db.billingGatewayAttempt.count({ where: { intentId: fallback.id, status: { not: 'FAILED' } } })).toBe(1);
+    } finally {
+      settings.mockRestore();
+      issue.mockRestore();
+      answer.mockRestore();
+      inquiry.mockRestore();
+    }
+  }, 30_000);
 
   it('ADMIN can credit/debit/set from patient detail, with replay, version checks, ownership and private-reason redaction', async () => {
     await db.userProfile.create({ data: { userId: admin.userId, firstName: 'Synthetic', lastName: 'Administrator' } });

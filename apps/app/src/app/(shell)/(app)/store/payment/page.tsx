@@ -12,6 +12,7 @@ import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceOrder, type CommerceOrder } from "@/lib/commerce-catalog-api";
 import { createOrderIntent, getBillingIntent, walletErrorMessage, type BillingIntent } from "@/lib/wallet-billing-api";
 import { returnFromPayment } from "@/lib/payment-return";
+import { intentResultView } from "@/lib/wallet-labels";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { toP } from "@/lib/format";
 import styles from "@/components/billing/payment.module.css";
@@ -72,6 +73,11 @@ function PaymentScreen() {
       if (nextIntent.purpose !== "ORDER" || !nextIntent.orderId || (orderId && nextIntent.orderId !== orderId)) {
         setError("این پرداخت مربوط به این سفارش نیست؛ از بخش سفارش‌های من ادامه دهید.");
         setState("error");
+        return;
+      }
+      if (nextIntent.status === "COMPENSATED" ||
+          (nextIntent.status !== "PENDING" && intentResultView(nextIntent) === "ambiguous")) {
+        router.replace(`/profile/wallet/payment-result?intentId=${encodeURIComponent(nextIntent.id)}`);
         return;
       }
       if (!orderId) {

@@ -149,7 +149,7 @@ export class BillingService {
       settlementFields = billingSettlementFields(intent.purpose, settlement);
     }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { status: 'VERIFIED', resultCode: proof.resultCode, compensated: !canSettle } });
-    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: nativeBale ? 'BALE_WALLET' : 'GATEWAY', paidAt: new Date(), ...settlementFields } });
+    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...settlementFields } });
     await this.analytics.paid(tx, updated);
     await financialAudit(tx, context, 'BILLING_GATEWAY_SETTLED', intent.id, { amountRial: intent.amountRial.toString(), compensated: !canSettle });
     return this.view(updated);
@@ -188,7 +188,7 @@ export class BillingService {
       const intent = await this.lockIntent(tx, row.intentId);
       const current = await tx.billingRefund.findUniqueOrThrow({ where: { id: refundId } });
       if (current.status === 'COMPLETED') { if (current.evidenceReference !== reference) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.refundView(current); }
-      if (current.status !== 'MANUAL_REQUIRED' || !['GATEWAY', 'BALE_WALLET'].includes(intent.method ?? '')) throw financialConflict();
+      if (current.status !== 'MANUAL_REQUIRED' || intent.method !== 'GATEWAY') throw financialConflict();
       const updated = await tx.billingRefund.update({ where: { id: refundId }, data: { status: 'COMPLETED', evidenceReference: reference, completedAt: new Date() } });
       await this.targets.get(intent.purpose).refund(tx, intent, current.amountRial, refundId);
       await this.analytics.refund(tx, intent, refundId, current.amountRial);

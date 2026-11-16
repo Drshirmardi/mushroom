@@ -12,7 +12,8 @@ export class BaleWalletPaymentProviderAdapter implements PaymentProviderPort {
     code: 'bale_wallet',
     displayName: 'کیف پول بله',
     capabilities: {
-      createPayment: 'SUPPORTED_WHEN_GO_LIVE_READY',
+      createPayment: 'UNSUPPORTED',
+      createInvoiceLink: 'SUPPORTED_WHEN_GO_LIVE_READY',
       parseCallback: 'UNSUPPORTED',
       verifyPayment: 'UNSUPPORTED',
       sandbox: 'SUPPORTED_WHEN_GO_LIVE_READY',

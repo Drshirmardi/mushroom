@@ -1,6 +1,6 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
-import { apiClient, apiBaseUrl, sessionFetch, baleSessionHeaders } from "./api";
+import { apiClient, baleSessionHeaders } from "./api";
 
 export type WalletSummary = components["schemas"]["WalletSummaryDto"];
 export type WalletTransaction = components["schemas"]["WalletTransactionDto"];
@@ -112,38 +112,15 @@ export const createGatewayAttempt = (accessToken: string, intentId: string, idem
     }),
   );
 
-export type BaleInvoiceAttempt = {
-  id: string;
-  intentId: string;
-  status: string;
-  invoiceParams: string | null;
-};
+export type BaleInvoiceAttempt = components["schemas"]["BillingBaleAttemptDto"];
 
-/**
- * New Bale endpoint uses the same authenticated transport. Regenerate the
- * OpenAPI client from the backend schema before release.
- */
-export async function createBaleAttempt(accessToken: string, intentId: string, idempotencyKey: string): Promise<BaleInvoiceAttempt> {
-  let response: Response;
-  try {
-    response = await sessionFetch(`${apiBaseUrl}/v1/patients/me/billing/intents/${encodeURIComponent(intentId)}/bale-attempts`, {
-      method: 'POST',
-      headers: { ...authorization(accessToken), ...idempotentHeader(idempotencyKey), ...baleSessionHeaders() },
-    });
-  } catch { throw new WalletRequestError(0); }
-  const body: unknown = await response.json().catch(() => null);
-  if (!response.ok) {
-    const error = body && typeof body === 'object' && 'code' in body && typeof body.code === 'string' ? body.code : null;
-    throw new WalletRequestError(response.status, error);
-  }
-  if (!body || typeof body !== 'object' || !('id' in body) || typeof body.id !== 'string' ||
-      !('intentId' in body) || body.intentId !== intentId ||
-      !('status' in body) || typeof body.status !== 'string' ||
-      !('invoiceParams' in body) || (body.invoiceParams !== null && typeof body.invoiceParams !== 'string')) {
-    throw new WalletRequestError(0);
-  }
-  return body as BaleInvoiceAttempt;
-}
+export const createBaleAttempt = (accessToken: string, intentId: string, idempotencyKey: string) =>
+  expectData<BaleInvoiceAttempt>(
+    apiClient.POST("/v1/patients/me/billing/intents/{id}/bale-attempts", {
+      headers: { ...authorization(accessToken), ...baleSessionHeaders() },
+      params: { path: { id: intentId }, header: idempotentHeader(idempotencyKey) },
+    }),
+  );
 
 /** Whether an intent can still be paid, cancelled or watched for a result. */
 export const isIntentPending = (intent: BillingIntent) => intent.status === "PENDING";

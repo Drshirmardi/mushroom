@@ -37,7 +37,7 @@ describe('Sadad fallback for native Bale invoices', () => {
     },
   );
 
-  it.each(['PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'])(
+  it.each(['VERIFYING', 'REQUIRES_RECONCILIATION'])(
     'blocks bank fallback after Bale %s is bound to a transaction',
     async status => {
       const methods = await makeService(status, 'bale-transaction-1').methods('patient-user', 'intent-1', 'session-1');

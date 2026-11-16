@@ -64,13 +64,13 @@ export function PaymentChooser({
 
   const wallet = intent.methods?.find((method) => method.code === 'WALLET') ?? null;
   const gateway = intent.methods?.find((method) => method.code === 'GATEWAY') ?? null;
-  const bale = intent.methods?.find((method) => (method.code as string) === 'BALE_WALLET') ?? null;
+  const bale = intent.methods?.find((method) => method.code === 'BALE_WALLET') ?? null;
   const nativeBale = Boolean(bale?.available && canOpenBaleInvoice());
   const amount = BigInt(intent.amountRial);
   const isTopup = intent.purpose === 'TOPUP';
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
   const bankAttempt = intent.attempts?.find((attempt) =>
-    ['CREATED', 'REDIRECT_READY', 'PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'].includes(attempt.status),
+    ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'].includes(attempt.status),
   );
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
@@ -113,10 +113,11 @@ export function PaymentChooser({
   const payViaBale = () =>
     run('bale', async () => {
       if (!nativeBale) return;
-      if (baleKey.current?.intentId !== intent.id) baleKey.current = { intentId: intent.id, key: crypto.randomUUID() };
+      if (baleKey.current?.intentId !== intent.id || (!bankAttempt && intent.attempts?.[0]?.status === 'FAILED')) baleKey.current = { intentId: intent.id, key: crypto.randomUUID() };
       const attempt = await createBaleAttempt(accessToken, intent.id, baleKey.current.key);
       if (!attempt.invoiceParams) {
-        setError('وضعیت صدور فاکتور بله هنوز مشخص نیست؛ تا بررسی نتیجه پرداخت دیگری انجام ندهید.');
+        if (attempt.status === 'FAILED') baleKey.current = null;
+        setError('فاکتور بله آماده نشد. روش‌های پرداخت در دسترس پس از بررسی دوباره نمایش داده می‌شوند.');
         onRefresh?.();
         return;
       }
@@ -202,6 +203,17 @@ export function PaymentChooser({
       )}
       <section className={styles.methods} aria-label="انتخاب روش پرداخت">
         <h2>روش پرداخت</h2>
+        {nativeBale && (
+          <button type="button" className={`wallet-method ${styles.method}`}
+            disabled={busy !== null || !bale?.available} onClick={() => void payViaBale()}>
+            <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
+            <span className="wallet-method__body">
+              <span className="wallet-method__title">پرداخت با کیف پول بله</span>
+              <span className="wallet-method__hint">پرداخت مستقیم در محیط بله، بدون خروج از مینی‌اپ.</span>
+            </span>
+            {busy === 'bale' ? <HeartbeatLoader /> : <ChevronLeft size={18} aria-hidden="true" />}
+          </button>
+        )}
         {wallet && !isTopup && (
           <button
             type="button"
@@ -237,17 +249,6 @@ export function PaymentChooser({
           </button>
         )}
 
-        {nativeBale && (
-          <button type="button" className={`wallet-method ${styles.method}`}
-            disabled={busy !== null || !bale?.available} onClick={() => void payViaBale()}>
-            <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
-            <span className="wallet-method__body">
-              <span className="wallet-method__title">پرداخت با کیف پول بله</span>
-              <span className="wallet-method__hint">پرداخت مستقیم در محیط بله، بدون خروج از مینی‌اپ.</span>
-            </span>
-            {busy === 'bale' ? <HeartbeatLoader /> : <ChevronLeft size={18} aria-hidden="true" />}
-          </button>
-        )}
         {gateway && (
           <button
             type="button"
@@ -260,14 +261,14 @@ export function PaymentChooser({
             </span>
             <span className="wallet-method__body">
               <span className="wallet-method__title">
-                {bankAttempt?.status === 'REDIRECT_READY'
+                {bankAttempt?.status === 'REDIRECT_READY' && bankAttempt.providerCode === 'sadad'
                   ? 'ادامهٔ پرداخت بانکی'
                   : 'پرداخت بانکی (درگاه)'}
               </span>
               <span className="wallet-method__hint">
                 {gateway.available
                   ? 'انتقال به درگاه پرداخت امن.'
-                  : isTopup
+                  : isTopup && !nativeBale
                     ? 'افزایش موجودی فعلاً ممکن نیست؛ درگاه بانکی برای این درخواست در دسترس نیست.'
                     : 'درگاه بانکی در حال حاضر برای این مورد در دسترس نیست.'}
               </span>

@@ -66,12 +66,12 @@ describe('Bale wallet protocol (no real network access)', () => {
 
   it('validates pre-checkout and successful payment evidence but never settles on a browser hint', () => {
     expect(parseBalePreCheckout({ id: 'pre-001', from: { id: 456789 }, invoice_payload: 'billing:attempt-1', currency: 'IRR', total_amount: 120000 }))
-      .toEqual({ transactionId: 'pre-001', providerUserId: '456789', payload: 'billing:attempt-1', amountRial: 120000n });
+      .toEqual({ currency: 'IRR', transactionId: 'pre-001', providerUserId: '456789', payload: 'billing:attempt-1', amountRial: 120000n });
     expect(parseBaleSuccessfulPayment({
       currency: 'IRR', total_amount: 120000, invoice_payload: 'billing:attempt-1',
       telegram_payment_charge_id: 'pre-001', provider_payment_charge_id: 'receipt-1',
     })).toEqual({ transactionId: 'pre-001', payload: 'billing:attempt-1', amountRial: 120000n, reference: 'receipt-1' });
-    expect(() => parseBalePreCheckout({ id: 'pre-001', from: { id: 1 }, invoice_payload: 'p', currency: 'USD', total_amount: 120000 })).toThrow();
+    expect(() => parseBalePreCheckout({ id: 'pre-001', from: { id: 1 }, invoice_payload: 'p', currency: 'INVALID', total_amount: 120000 })).toThrow();
     expect(() => parseBaleSuccessfulPayment({ currency: 'IRR', total_amount: 120000, invoice_payload: 'p' })).toThrow();
   });
 });

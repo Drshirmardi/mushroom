@@ -216,14 +216,13 @@ export class BaleAuthService {
 
   /** Receives bot updates ONLY through a secret, server-configured webhook URL. */
   async acceptWebhook(secret: string, input: unknown): Promise<void> {
-    if (this.config.get('BALE_AUTH_ENABLED') !== 'true') throw invalid();
     const configured = this.config.get<string>('BALE_WEBHOOK_SECRET');
     if (!configured || !secret) throw invalid();
     const expected = createHash('sha256').update(configured).digest();
     const presented = createHash('sha256').update(secret).digest();
     if (!timingSafeEqual(expected, presented)) throw invalid();
 
-    if (!input || typeof input !== 'object') return;
+    if (this.config.get('BALE_AUTH_ENABLED') !== 'true' || !input || typeof input !== 'object') return;
     const update = input as Record<string, unknown>;
     const message = update.message as Record<string, unknown> | undefined;
     const from = message?.from as Record<string, unknown> | undefined;

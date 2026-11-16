@@ -5,16 +5,17 @@ import type { BillingIntent, PaymentProviderCredentialVersion } from '../../gene
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PaymentCredentialCryptoService } from '../commerce/payments/payment-credential-crypto.service';
 import { PaymentProviderOrderIdService } from '../commerce/payments/payment-provider-order-id.service';
-import { BaleWalletApi, parseBalePreCheckout, parseBaleSuccessfulPayment } from '../commerce/payments/bale-wallet-api';
+import { BALE_TEST_WALLET_TOKEN, BaleWalletApi, parseBalePreCheckout, parseBaleSuccessfulPayment } from '../commerce/payments/bale-wallet-api';
 import { BillingService } from './billing.service';
 import { BillingTargetRegistry } from './billing-target.registry';
-import { financialAudit, financialConflict, financialKey, pendingAttempts, type FinancialContext } from './billing.policy';
+import { financialAudit, financialConflict, financialKey, lockFinancial, pendingAttempts, type Tx, type FinancialContext } from './billing.policy';
 
 const unavailable = () => new ServiceUnavailableException({
   code: 'BALE_WALLET_UNAVAILABLE', message: 'Native Bale payment is not available.', details: {},
 });
 const invoicePayload = (id: string) => `bale:${id}`;
 const payloadAttempt = (payload: string) => /^bale:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/iu.exec(payload)?.[1] ?? null;
+const reconcilable = ['VERIFYING', 'REQUIRES_RECONCILIATION'];
 const safeReference = (transactionId: string) => 'bale:' + createHash('sha256').update(transactionId).digest('hex');
 
 @Injectable()
@@ -29,13 +30,13 @@ export class BaleWalletBillingService {
   ) {}
 
   private bot() {
-    if (this.config.get('BALE_AUTH_ENABLED') !== 'true') throw unavailable();
     const token = this.config.get<string>('BALE_BOT_TOKEN');
-    if (!token || !this.config.get<string>('BALE_WEBHOOK_SECRET')) throw unavailable();
+    if (!token) throw unavailable();
     return new BaleWalletApi(token);
   }
 
   private async configFor(clinicId: string) {
+    if (this.config.get('BALE_AUTH_ENABLED') !== 'true' || !this.config.get<string>('BALE_WEBHOOK_SECRET')) throw unavailable();
     const config = await this.prisma.paymentProviderConfig.findUnique({
       where: { clinicId_providerCode: { clinicId, providerCode: 'bale_wallet' } },
       include: { activeRevision: { include: { credentialVersion: true } } },
@@ -53,6 +54,7 @@ export class BaleWalletBillingService {
       encryptionKeyVersion: version.encryptionKeyVersion,
     });
     if (!values.walletToken || Object.keys(values).length !== 1) throw unavailable();
+    if (this.config.get('NODE_ENV') === 'production' && values.walletToken === BALE_TEST_WALLET_TOKEN) throw unavailable();
     return values.walletToken;
   }
 
@@ -77,7 +79,8 @@ export class BaleWalletBillingService {
         (intent.expiresAt && intent.expiresAt <= new Date())) return false;
     try {
       await this.payer(userId, sessionId);
-      await this.configFor(intent.clinicId);
+      const revision = await this.configFor(intent.clinicId);
+      this.walletToken(revision.credentialVersion!);
       this.bot();
     } catch { return false; }
     const active = await this.prisma.billingGatewayAttempt.findFirst({
@@ -118,10 +121,10 @@ export class BaleWalletBillingService {
       if (open?.revision.config.providerCode === 'bale_wallet' && open.baleProviderUserId === providerUserId) {
         return { attempt: open, requested: false };
       }
+      const target = intent.purpose === 'TOPUP' ? null : this.targets.get(intent.purpose);
+      await target?.lock(tx, intent);
       await this.billing.assertNoPending(tx, intent);
-      if (intent.purpose !== 'TOPUP') {
-        const target = this.targets.get(intent.purpose);
-        await target.lock(tx, intent);
+      if (target) {
         if (target.preparePayment && !await target.preparePayment(tx, intent)) throw financialConflict('COMMERCE_INVENTORY_INSUFFICIENT');
         if (!await target.canSettle(tx, intent)) throw financialConflict('BILLING_STATE_CONFLICT');
       }
@@ -164,49 +167,54 @@ export class BaleWalletBillingService {
   /** Approval is durably associated with the provider transaction before calling the Bot API. */
   async handlePreCheckout(input: unknown) {
     const query = parseBalePreCheckout(input);
-    const attemptId = payloadAttempt(query.payload);
-    let approved = false;
-    if (attemptId) {
-      try {
-        approved = await this.prisma.$transaction(async tx => {
-          const pointer = await tx.billingGatewayAttempt.findUnique({
-            where: { id: attemptId }, select: { intentId: true },
-          });
-          if (!pointer) return false;
-          const intent = await this.billing.lockIntent(tx, pointer.intentId);
-          const current = await tx.billingGatewayAttempt.findUniqueOrThrow({
-            where: { id: attemptId }, include: { revision: { include: { config: true } } },
-          });
-          if (current.revision.config.providerCode !== 'bale_wallet' ||
-              current.baleProviderUserId !== query.providerUserId ||
-              current.amountRial !== query.amountRial || intent.amountRial !== query.amountRial ||
-              intent.currency !== 'IRR') return false;
-          if (current.baleTransactionId) return current.baleTransactionId === query.transactionId &&
-            ['PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION', 'VERIFIED'].includes(current.status);
-          if (current.status !== 'REDIRECT_READY' || intent.status !== 'PENDING' ||
-              (intent.expiresAt && intent.expiresAt <= new Date())) return false;
-          if (intent.orderId && await tx.paymentAttempt.count({
-            where: { orderId: intent.orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } },
-          })) return false;
-          const other = await tx.billingGatewayAttempt.count({
-            where: { intentId: intent.id, id: { not: attemptId }, status: { in: pendingAttempts } },
-          });
-          if (other) return false;
-          if (intent.purpose !== 'TOPUP') {
-            const target = this.targets.get(intent.purpose);
-            await target.lock(tx, intent);
-            if ((target.preparePayment && !await target.preparePayment(tx, intent)) || !await target.canSettle(tx, intent)) return false;
-          }
-          const saved = await tx.billingGatewayAttempt.updateMany({
-            where: { id: attemptId, status: 'REDIRECT_READY', baleTransactionId: null },
-            data: { status: 'PRECHECKOUT_APPROVED', baleTransactionId: query.transactionId,
-              balePrecheckoutApprovedAt: new Date(), resultCode: 'PRECHECKOUT_APPROVED' },
-          });
-          return saved.count === 1;
-        }, { timeout: 3_500 });
-      } catch { approved = false; }
-    }
+    const fingerprint = createHash('sha256').update(JSON.stringify([
+      query.payload, query.providerUserId, query.currency, query.amountRial.toString(),
+    ])).digest('hex');
+    const approved = await this.prisma.$transaction(async tx => {
+      await lockFinancial(tx, `bale-precheckout:${query.transactionId}`);
+      const decision = await tx.balePrecheckoutDecision.findUnique({ where: { transactionId: query.transactionId } });
+      if (decision) return decision.fingerprint === fingerprint && decision.approved;
+      const approved = await this.approvePreCheckout(tx, query);
+      await tx.balePrecheckoutDecision.create({ data: { transactionId: query.transactionId, fingerprint, approved } });
+      return approved;
+    }, { maxWait: 1_000, timeout: 3_500 });
     await this.bot().answerPreCheckoutQuery(query.transactionId, approved, approved ? undefined : 'این پرداخت معتبر نیست یا زمان سفارش پایان یافته است.');
+  }
+
+  private async approvePreCheckout(tx: Tx, query: ReturnType<typeof parseBalePreCheckout>) {
+    const attemptId = payloadAttempt(query.payload);
+    if (!attemptId || query.currency !== 'IRR') return false;
+    const pointer = await tx.billingGatewayAttempt.findUnique({ where: { id: attemptId }, select: { intentId: true } });
+    if (!pointer) return false;
+
+    const intent = await this.billing.lockIntent(tx, pointer.intentId);
+    const current = await tx.billingGatewayAttempt.findUniqueOrThrow({
+      where: { id: attemptId }, include: { revision: { include: { config: true } } },
+    });
+    if (current.revision.config.providerCode !== 'bale_wallet' ||
+        current.baleProviderUserId !== query.providerUserId ||
+        current.amountRial !== query.amountRial || intent.amountRial !== query.amountRial ||
+        intent.currency !== 'IRR') return false;
+    if (current.baleTransactionId) return current.baleTransactionId === query.transactionId && Boolean(current.balePrecheckoutApprovedAt);
+    if (current.status !== 'REDIRECT_READY' || intent.status !== 'PENDING' ||
+        current.createdAt <= new Date(Date.now() - 20 * 60_000) ||
+        (intent.expiresAt && intent.expiresAt <= new Date())) return false;
+    const bound = await tx.billingGatewayAttempt.findUnique({
+      where: { baleTransactionId: query.transactionId }, select: { id: true },
+    });
+    if (bound) return false;
+    const target = intent.purpose === 'TOPUP' ? null : this.targets.get(intent.purpose);
+    await target?.lock(tx, intent);
+    if (intent.orderId && await tx.paymentAttempt.count({
+      where: { orderId: intent.orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } },
+    })) return false;
+    if (target && ((target.preparePayment && !await target.preparePayment(tx, intent)) || !await target.canSettle(tx, intent))) return false;
+    const saved = await tx.billingGatewayAttempt.updateMany({
+      where: { id: attemptId, status: 'REDIRECT_READY', baleTransactionId: null },
+      data: { status: 'REQUIRES_RECONCILIATION', baleTransactionId: query.transactionId,
+        balePrecheckoutApprovedAt: new Date(), resultCode: 'PRECHECKOUT_APPROVED' },
+    });
+    return saved.count === 1;
   }
 
   /** A successful-payment update triggers inquiry; only inquiry can settle money. */
@@ -229,12 +237,12 @@ export class BaleWalletBillingService {
       include: { revision: { include: { config: true } } },
     });
     if (!attempt || attempt.revision.config.providerCode !== 'bale_wallet' ||
-        !attempt.baleTransactionId || !attempt.baleProviderUserId || attempt.status === 'VERIFIED') return;
+        !attempt.baleTransactionId || !attempt.baleProviderUserId || !reconcilable.includes(attempt.status)) return;
     const proof = await this.bot().inquireTransaction(attempt.baleTransactionId);
     if (proof.id !== attempt.baleTransactionId || proof.providerUserId !== attempt.baleProviderUserId ||
         proof.amountRial !== attempt.amountRial) {
       await this.prisma.billingGatewayAttempt.updateMany({
-        where: { id: attemptId, status: { not: 'VERIFIED' } },
+        where: { id: attemptId, status: { in: reconcilable } },
         data: { status: 'REQUIRES_RECONCILIATION', resultCode: 'BALE_PROOF_MISMATCH' },
       });
       return;
@@ -242,25 +250,29 @@ export class BaleWalletBillingService {
     if (proof.status === 'pending') return;
     if (proof.status !== 'paid') {
       await this.prisma.billingGatewayAttempt.updateMany({
-        where: { id: attemptId, status: { in: ['PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } },
+        where: { id: attemptId, status: { in: reconcilable } },
         data: { status: 'FAILED', resultCode: `BALE_${proof.status.toUpperCase()}` },
       });
       return;
     }
-    await this.prisma.billingGatewayAttempt.updateMany({
-      where: { id: attemptId, status: { in: ['PRECHECKOUT_APPROVED', 'REQUIRES_RECONCILIATION'] } },
-      data: { status: 'VERIFYING' },
-    });
     try {
       const intent = await this.prisma.billingIntent.findUniqueOrThrow({ where: { id: attempt.intentId } });
       const valid = intent.purpose === 'TOPUP' ? true : await this.targets.get(intent.purpose).validateSettlement?.(intent) ?? true;
-      await this.prisma.$transaction(tx => this.billing.settleGateway(tx, attemptId, {
-        resultCode: '0', providerOrderId: attempt.providerOrderId, amount: proof.amountRial,
-        referenceId: safeReference(proof.id),
-      }, valid), { timeout: 15_000 });
+      await this.prisma.$transaction(async tx => {
+        await this.billing.lockIntent(tx, attempt.intentId);
+        const changed = await tx.billingGatewayAttempt.updateMany({
+          where: { id: attemptId, status: { in: reconcilable } },
+          data: { status: 'VERIFYING' },
+        });
+        if (!changed.count) return;
+        await this.billing.settleGateway(tx, attemptId, {
+          resultCode: '0', providerOrderId: attempt.providerOrderId, amount: proof.amountRial,
+          referenceId: safeReference(proof.id),
+        }, valid);
+      }, { timeout: 15_000 });
     } catch {
       await this.prisma.billingGatewayAttempt.updateMany({
-        where: { id: attemptId, status: { not: 'VERIFIED' } },
+        where: { id: attemptId, status: { in: reconcilable } },
         data: { status: 'REQUIRES_RECONCILIATION', resultCode: 'BALE_SETTLEMENT_RETRY' },
       });
     }
@@ -268,14 +280,37 @@ export class BaleWalletBillingService {
 
   /** Failed or pending native invoices never flow through Sadad's verification routine. */
   async maintain(limit = 10) {
-    const before = new Date(Date.now() - 30_000);
+    const now = new Date();
+    const before = new Date(now.getTime() - 30_000);
+    await this.prisma.billingGatewayAttempt.updateMany({
+      where: {
+        baleProviderUserId: { not: null }, baleTransactionId: null,
+        OR: [
+          { status: { in: ['CREATED', 'REQUIRES_RECONCILIATION'] }, createdAt: { lte: new Date(now.getTime() - 120_000) } },
+          { status: 'REDIRECT_READY', OR: [
+            { createdAt: { lte: new Date(now.getTime() - 20 * 60_000) } },
+            { intent: { OR: [{ expiresAt: { lte: now } }, { status: { not: 'PENDING' } }] } },
+          ] },
+        ],
+      },
+      data: { status: 'FAILED', resultCode: 'BALE_INVOICE_EXPIRED' },
+    });
+    const due = {
+      baleTransactionId: { not: null }, status: { in: reconcilable },
+      balePrecheckoutApprovedAt: { lt: before },
+      OR: [{ baleLastInquiredAt: null }, { baleLastInquiredAt: { lt: before } }],
+    };
     const rows = await this.prisma.billingGatewayAttempt.findMany({
-      where: { baleTransactionId: { not: null }, status: { in: ['PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] }, updatedAt: { lt: before } },
-      orderBy: { updatedAt: 'asc' }, take: limit, select: { id: true },
+      where: due, orderBy: [{ baleLastInquiredAt: { sort: 'asc', nulls: 'first' } }, { createdAt: 'asc' }],
+      take: limit, select: { id: true },
     });
     for (const attempt of rows) {
+      const claimed = await this.prisma.billingGatewayAttempt.updateMany({
+        where: { id: attempt.id, ...due }, data: { baleLastInquiredAt: new Date() },
+      });
+      if (!claimed.count) continue;
       try { await this.reconcile(attempt.id); }
-      catch { /* Background reconciliation remains retryable; no financial state is discarded. */ }
+      catch { /* Retry after the current inquiry interval. */ }
     }
     return rows.length;
   }

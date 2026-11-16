@@ -12,6 +12,8 @@ const unavailable = () => new ServiceUnavailableException({
   code: 'BALE_WALLET_UNAVAILABLE', message: 'Bale wallet service is temporarily unavailable.', details: {},
 });
 
+export const BALE_TEST_WALLET_TOKEN = 'WALLET-TEST-1111111111111111';
+
 export type BaleTransactionStatus = 'pending' | 'paid' | 'failed' | 'rejected';
 export type BaleTransaction = {
   id: string;
@@ -19,7 +21,7 @@ export type BaleTransaction = {
   providerUserId: string;
   amountRial: bigint;
 };
-export type BalePreCheckout = { transactionId: string; providerUserId: string; payload: string; amountRial: bigint };
+export type BalePreCheckout = { currency: string; transactionId: string; providerUserId: string; payload: string; amountRial: bigint };
 export type BaleSuccessfulPayment = { transactionId: string; payload: string; amountRial: bigint; reference: string };
 
 const record = (value: unknown): Record<string, unknown> => {
@@ -41,8 +43,8 @@ const userId = (value: unknown): string => {
 
 export function parseBalePreCheckout(input: unknown): BalePreCheckout {
   const item = record(input);
-  if (item.currency !== 'IRR') throw malformed();
   return {
+    currency: bounded(item.currency, 3),
     transactionId: bounded(item.id),
     providerUserId: userId(record(item.from).id),
     payload: bounded(item.invoice_payload),

@@ -57,10 +57,10 @@ export class BillingGatewayService {
         await tx.billingGatewayAttempt.update({ where: { id: active.id }, data: { status: 'FAILED', resultCode: 'BALE_SUPERSEDED_BY_BANK' } });
       } else if (active?.revision.config.providerCode === 'sadad') return { attempt: active, request: false };
       else if (active) throw financialConflict('BILLING_PAYMENT_PENDING');
+      const target = intent.purpose === 'TOPUP' ? null : this.targets.get(intent.purpose);
+      await target?.lock(tx, intent);
       await this.billing.assertNoPending(tx, intent);
-      if (intent.purpose !== 'TOPUP') {
-        const target = this.targets.get(intent.purpose);
-        await target.lock(tx, intent);
+      if (target) {
         if (target.preparePayment && !await target.preparePayment(tx, intent)) throw financialConflict('COMMERCE_INVENTORY_INSUFFICIENT');
         if (!await target.canSettle(tx, intent)) throw financialConflict();
       }
@@ -80,12 +80,12 @@ export class BillingGatewayService {
     return this.view(await this.prisma.billingGatewayAttempt.findUniqueOrThrow({ where: { id: prepared.attempt.id } }));
   }
 
-  owns(providerOrderId: bigint) { return this.prisma.billingGatewayAttempt.findUnique({ where: { providerOrderId }, select: { id: true } }); }
+  owns(providerOrderId: bigint) { return this.prisma.billingGatewayAttempt.findUnique({ where: { providerOrderId, revision: { config: { providerCode: 'sadad' } } }, select: { id: true } }); }
 
   async callback(body: Record<string, unknown>) {
     const settings = this.runtime.settings();
     const callback = this.registry.resolve('sadad').parseCallback(body);
-    const attempt = await this.prisma.billingGatewayAttempt.findUnique({ where: { providerOrderId: callback.providerOrderId } });
+    const attempt = await this.prisma.billingGatewayAttempt.findUnique({ where: { providerOrderId: callback.providerOrderId, revision: { config: { providerCode: 'sadad' } } } });
     if (!attempt) throw financialMissing();
     if (!attempt.providerToken && attempt.status !== 'VERIFIED') {
       await this.recoverCallbackToken(attempt.id, callback.token);
@@ -143,7 +143,7 @@ export class BillingGatewayService {
       if (old) { if (old.fingerprint !== hash) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return old.response; }
       await this.billing.lockIntent(tx, pointer.intentId);
       const attempt = await tx.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attemptId } });
-      if (attempt.status !== 'REQUIRES_RECONCILIATION') throw financialConflict();
+      if (attempt.status !== 'REQUIRES_RECONCILIATION' || attempt.baleTransactionId) throw financialConflict();
       const updated = await tx.billingGatewayAttempt.update({ where: { id: attemptId }, data: { status: 'FAILED', resultCode: 'MANUAL_FAILED' } });
       await financialAudit(tx, context, 'BILLING_ATTEMPT_RECONCILED_FAILED', attemptId, { evidenceReference: reference });
       const response = this.view(updated);
