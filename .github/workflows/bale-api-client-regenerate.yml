@@ -5,6 +5,9 @@ on:
       - codex/bale-wallet-payments
 permissions:
   contents: write
+concurrency:
+  group: bale-api-client-regenerate
+  cancel-in-progress: true
 jobs:
   regenerate:
     if: github.actor != 'github-actions[bot]'
@@ -34,5 +37,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "chore(bale): regenerate OpenAPI client from feature backend"
+            git fetch origin codex/bale-wallet-payments
+            git rebase origin/codex/bale-wallet-payments
             git push origin HEAD:codex/bale-wallet-payments
           fi
