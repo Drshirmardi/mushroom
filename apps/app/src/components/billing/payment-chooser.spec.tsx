@@ -19,7 +19,7 @@ describe("payment method context", () => {
   it("explains a top-up independently of the user's existing balance and shows the disabled bank method", () => {
     const html = render(intent("TOPUP", [{ code: "GATEWAY", available: false, balanceRial: null }]));
     expect(html).toContain("پرداخت هزینهٔ خرید یا خدمت نیست");
-    expect(html).toContain("افزایش موجودی فقط از درگاه بانکی انجام می‌شود.");
+    expect(html).toContain("افزایش موجودی از پرداخت بومی بله یا درگاه بانکی انجام می‌شود.");
     expect(html).toContain('href="/profile/wallet"');
     expect(html).toContain("مبلغ افزایش موجودی");
     expect(html).toContain("افزایش موجودی فعلاً ممکن نیست");
