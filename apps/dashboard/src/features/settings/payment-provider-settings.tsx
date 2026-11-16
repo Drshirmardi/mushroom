@@ -28,6 +28,17 @@ type ProviderMetadata = {
 };
 
 const providerMetadata: Record<string, ProviderMetadata> = {
+  bale_wallet: {
+    description: "پرداخت بومی مینی‌اپ بله؛ فقط در نشست معتبر بله نمایش داده می‌شود. توکن کیف‌پولی مستقل از Bot Token است.",
+    credentialLabels: {
+      merchantId: { label: "شناسه پذیرنده", help: "" },
+      terminalId: { label: "شناسه ترمینال", help: "" },
+      terminalKey: { label: "کلید", secret: true, help: "" },
+    },
+    paymentRequestEndpoint: "https://tapi.bale.ai/bot<TOKEN>/createInvoiceLink",
+    verifyEndpoint: "https://tapi.bale.ai/bot<TOKEN>/inquireTransaction",
+    redirectDescription: "همان وب‌هوک محرمانهٔ موجود بله برای تماس و پرداخت استفاده می‌شود؛ SECRET فقط در سرور نگهداری می‌شود.",
+  },
   sadad: {
     description: "درگاه پرداخت بانک ملی ایران؛ تنظیمات پذیرندگی، آدرس بازگشت و وضعیت عملیاتی آن از این بخش مدیریت می‌شود.",
     credentialLabels: {
@@ -70,6 +81,7 @@ export function PaymentProviderSettings({ accessToken }: { accessToken: string }
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
   const [credential, setCredential] = useState<SadadCredential>({ merchantId: "", terminalId: "", terminalKey: "" });
+  const [baleWalletToken, setBaleWalletToken] = useState("");
   const [busyAction, setBusyAction] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string } | null>(null);
@@ -126,6 +138,13 @@ export function PaymentProviderSettings({ accessToken }: { accessToken: string }
     }, crypto.randomUUID()).then(() => setCredential({ merchantId: "", terminalId: "", terminalKey: "" })), "نسخه جدید اطلاعات پذیرندگی ثبت و رمزنگاری شد.");
   };
 
+  const saveBaleCredential = () => {
+    if (!selected || selected.code !== 'bale_wallet' || !baleWalletToken.trim()) return;
+    void run('bale-credential', () => createPaymentProviderRevision(accessToken, selected.code,
+      { walletToken: baleWalletToken.trim() }, crypto.randomUUID())
+      .then(() => setBaleWalletToken('')), 'توکن پرداخت بله رمزنگاری و ثبت شد.');
+  };
+
   const copyValue = async (key: string, value: string) => {
     try { await navigator.clipboard.writeText(value); setCopied(key); window.setTimeout(() => setCopied((current) => current === key ? null : current), 1800); }
     catch { setMessage({ tone: "error", text: "کپی خودکار ممکن نشد؛ آدرس را به‌صورت دستی انتخاب کنید." }); }
@@ -164,19 +183,30 @@ export function PaymentProviderSettings({ accessToken }: { accessToken: string }
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div className="flex items-start gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary"><CreditCard size={21} /></span><div><h3 className="font-bold">{selected.displayName}</h3><p dir="ltr" className="mt-0.5 text-left text-xs text-muted-foreground">{selected.code}</p><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{metadata.description}</p></div></div><div className="flex flex-wrap gap-1.5"><StatusBadge tone={selected.enabled ? "green" : "gray"}>{selected.enabled ? "فعال" : "غیرفعال"}</StatusBadge>{selected.isDefault && <StatusBadge tone="green">درگاه پیش‌فرض</StatusBadge>}<StatusBadge tone={selected.goLiveReady ? "green" : "amber"}>{selected.goLiveReady ? "آماده بهره‌برداری" : selected.activationAvailable ? "آماده فعال‌سازی" : "رانتایم غیرفعال"}</StatusBadge></div></div>
       <div className="mt-4 flex flex-wrap gap-2">
         {selected.enabled ? <button type="button" className={dangerButton} disabled={busyAction !== null} onClick={() => void run("toggle", () => updatePaymentProviderConfig(accessToken, selected.code, { enabled: false }), "آداپتور غیرفعال شد.")}><Power size={16} />{busyAction === "toggle" ? "در حال ذخیره…" : "غیرفعال‌کردن آداپتور"}</button> : <button type="button" className={primaryButton} disabled={busyAction !== null || !selected.activationAvailable} onClick={() => void run("toggle", () => updatePaymentProviderConfig(accessToken, selected.code, { enabled: true }), "آداپتور فعال و نسخه پذیرندگی برای اجرای واقعی آماده شد.")}><Power size={16} />{busyAction === "toggle" ? "در حال فعال‌سازی…" : "فعال‌کردن آداپتور"}</button>}
-        {!selected.isDefault && <button type="button" className={secondaryButton} disabled={busyAction !== null || !selected.enabled || !selected.goLiveReady} onClick={() => void run("default", () => updatePaymentProviderConfig(accessToken, selected.code, { isDefault: true }), "این آداپتور به‌عنوان درگاه پیش‌فرض انتخاب شد.")}><Settings2 size={16} />انتخاب به‌عنوان پیش‌فرض</button>}
+        {selected.code === 'sadad' && !selected.isDefault && <button type="button" className={secondaryButton} disabled={busyAction !== null || !selected.enabled || !selected.goLiveReady} onClick={() => void run("default", () => updatePaymentProviderConfig(accessToken, selected.code, { isDefault: true }), "این آداپتور به‌عنوان درگاه پیش‌فرض انتخاب شد.")}><Settings2 size={16} />انتخاب به‌عنوان پیش‌فرض</button>}
       </div>
-      {!selected.activationAvailable && <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-6 text-amber-900">رانتایم واقعی سداد در این محیط هنوز فعال نیست. پس از تنظیم حالت live، callback و پروفایل انتقال روی سرور، همین دکمه فعال‌سازی درگاه را انجام می‌دهد.</p>}
-      {selected.activationAvailable && !selected.goLiveReady && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-6 text-emerald-900">سرور برای اتصال واقعی آماده است. با فعال‌کردن آداپتور، یک revision عملیاتی RIAL ساخته می‌شود و پرداخت‌های جدید از سداد استفاده می‌کنند.</p>}
+      {!selected.activationAvailable && <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-6 text-amber-900">{selected.code === 'bale_wallet' ? 'برای فعال‌سازی بله، تنظیمات BALE_BOT_TOKEN و BALE_WEBHOOK_SECRET سرور و توکن پرداخت کیف‌پولی لازم است.' : 'رانتایم واقعی سداد در این محیط هنوز فعال نیست. پس از تنظیم حالت live، callback و پروفایل انتقال روی سرور، همین دکمه فعال‌سازی درگاه را انجام می‌دهد.'}</p>}
+      {selected.activationAvailable && !selected.goLiveReady && <p className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs leading-6 text-emerald-900">سرور برای اتصال واقعی آماده است. {selected.code === 'bale_wallet' ? 'پس از فعال‌سازی، پرداخت بومی برای نشست‌های معتبر بله در دسترس خواهد بود.' : 'با فعال‌کردن آداپتور، یک revision عملیاتی RIAL ساخته می‌شود و پرداخت‌های جدید از سداد استفاده می‌کنند.'}</p>}
     </div>
 
     <nav aria-label="بخش‌های مدیریت درگاه" className="flex flex-wrap gap-2 border-b border-border pb-3">{([{ id: 'settings', label: 'تنظیمات و اتصال' }, { id: 'requests', label: 'درخواست‌ها و رخدادها' }] as const).map(tab => <button key={tab.id} type="button" aria-pressed={view === tab.id} className={view === tab.id ? primaryButton : secondaryButton} onClick={() => setView(tab.id)}>{tab.label}</button>)}</nav>
     {view === 'requests' ? <PaymentProviderRequests key={selected.code} token={accessToken} provider={selected.code} /> : <>
-    <section className="space-y-3"><div><h4 className="font-bold">آدرس‌ها و اتصال</h4><p className="mt-1 text-sm leading-6 text-muted-foreground">آدرس بازگشت از دامنه عمومی API همین محیط ساخته می‌شود؛ همین مقدار باید برای پذیرندگی آن محیط ثبت شود.</p></div>
+    <section className="space-y-3"><div><h4 className="font-bold">آدرس‌ها و اتصال</h4><p className="mt-1 text-sm leading-6 text-muted-foreground">{selected.code === "bale_wallet" ? "وب‌هوک بله همان آدرس محافظت‌شدهٔ فعلی است؛ در آدرس زیر SECRET فقط یک جایگزین نمایشی است و نباید در معرض کاربر قرار گیرد." : "آدرس بازگشت از دامنه عمومی API همین محیط ساخته می‌شود؛ همین مقدار باید برای پذیرندگی آن محیط ثبت شود."}</p></div>
       <CopyValue label="Back Link / Return URL / Callback" value={callbackUrl} copied={copied === "callback"} onCopy={() => void copyValue("callback", callbackUrl)} />
-      <details className="rounded-xl border border-border p-3"><summary className="cursor-pointer text-sm font-bold">جزئیات فنی اتصال سداد</summary><div className="mt-3 space-y-3"><CopyValue label="Payment Request endpoint" value={metadata.paymentRequestEndpoint} copied={copied === "request"} onCopy={() => void copyValue("request", metadata.paymentRequestEndpoint)} /><CopyValue label="Verify endpoint" value={metadata.verifyEndpoint} copied={copied === "verify"} onCopy={() => void copyValue("verify", metadata.verifyEndpoint)} /><p className="rounded-xl bg-secondary/50 p-3 text-xs leading-6 text-muted-foreground">{metadata.redirectDescription}</p></div></details>
+      <details className="rounded-xl border border-border p-3"><summary className="cursor-pointer text-sm font-bold">جزئیات فنی اتصال {selected.code === "bale_wallet" ? "بله" : "سداد"}</summary><div className="mt-3 space-y-3"><CopyValue label="Payment Request endpoint" value={metadata.paymentRequestEndpoint} copied={copied === "request"} onCopy={() => void copyValue("request", metadata.paymentRequestEndpoint)} /><CopyValue label="Verify endpoint" value={metadata.verifyEndpoint} copied={copied === "verify"} onCopy={() => void copyValue("verify", metadata.verifyEndpoint)} /><p className="rounded-xl bg-secondary/50 p-3 text-xs leading-6 text-muted-foreground">{metadata.redirectDescription}</p></div></details>
     </section>
 
+    {selected.code === "bale_wallet" && <section className="rounded-2xl border border-border p-4 sm:p-5">
+      <h4 className="font-bold">توکن پرداخت کیف‌پولی بله</h4>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">توکن پرداخت دریافت‌شده از BotFather را وارد کنید. با کلید رمزنگاری فعلی سرور ذخیره می‌شود و پس از ثبت دوباره قابل مشاهده نیست؛ توکن Bot با توکن پرداخت متفاوت است.</p>
+      <label className="mt-4 block text-sm font-bold">توکن کیف پول (فقط‌نوشتنی)
+        <input className={field} dir="ltr" type="password" autoComplete="new-password" value={baleWalletToken} onChange={(event) => setBaleWalletToken(event.target.value)} />
+      </label>
+      <button type="button" className={`${primaryButton} mt-4`} disabled={busyAction !== null || !baleWalletToken.trim()} onClick={saveBaleCredential}>
+        {busyAction === "bale-credential" ? "در حال ثبت…" : selected.configured ? "جایگزینی توکن کیف‌پولی" : "ثبت توکن کیف‌پولی"}
+      </button>
+      <p className="mt-3 text-xs leading-6 text-muted-foreground">برای تست، توکن آزمایشی رسمی بله را در محیط جدا ثبت کنید؛ در تولید فقط توکن واقعی را وارد کنید.</p>
+    </section>}
     {selected.code === "sadad" && <section className="rounded-2xl border border-border p-4 sm:p-5"><div className="flex items-start gap-3"><span className="rounded-xl bg-amber-100 p-2 text-amber-800"><ShieldAlert size={19} /></span><div><h4 className="font-bold">اطلاعات پذیرندگی</h4><p className="mt-1 text-sm leading-6 text-muted-foreground">هر سه مقدار به‌صورت یک نسخه رمزنگاری‌شده ذخیره می‌شوند. مقدار ثبت‌شده برای امنیت دوباره نمایش داده نمی‌شود.</p></div></div>
       <div className="mt-4 grid gap-3 md:grid-cols-2">{(Object.keys(metadata.credentialLabels) as Array<keyof SadadCredential>).map((key) => { const config = metadata.credentialLabels[key]; return <label key={key} className={`text-sm font-bold ${key === "terminalKey" ? "md:col-span-2" : ""}`}>{config.label}<input className={field} dir="ltr" type={config.secret ? "password" : "text"} value={credential[key]} onChange={(event) => setCredential((current) => ({ ...current, [key]: event.target.value }))} autoComplete={config.secret ? "new-password" : "off"} /><span className="mt-1 block text-[0.7rem] font-normal leading-5 text-muted-foreground">{config.help}</span></label>; })}</div>
       <button type="button" className={`${primaryButton} mt-4 w-full sm:w-auto`} disabled={busyAction !== null || !completeCredential} onClick={saveCredential}>{busyAction === "credential" ? "در حال ثبت…" : selected.configured ? "جایگزینی اطلاعات پذیرندگی" : "ثبت اطلاعات پذیرندگی"}</button>
