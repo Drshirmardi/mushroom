@@ -61,9 +61,9 @@ export class BillingService {
 
   private async detail(intent: BillingIntent) {
     const id = intent.id;
-    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { intentId: id }, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, status: true, reference: true, traceNumber: true, verifiedAt: true } });
+    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { intentId: id }, orderBy: { createdAt: 'desc' }, take: 5, select: { id: true, status: true, reference: true, traceNumber: true, verifiedAt: true, revision: { select: { config: { select: { providerCode: true } } } } } });
     const refunds = await this.prisma.billingRefund.findMany({ where: { intentId: id }, orderBy: { createdAt: 'desc' }, take: 50, select: { id: true, status: true, amountRial: true, completedAt: true } });
-    return { ...this.view(intent), attempts, refunds: refunds.map(row => ({ ...row, amountRial: row.amountRial.toString() })) };
+    return { ...this.view(intent), attempts: attempts.map(({ revision, ...attempt }) => ({ ...attempt, providerCode: revision.config.providerCode })), refunds: refunds.map(row => ({ ...row, amountRial: row.amountRial.toString() })) };
   }
 
   async payWallet(userId: string, id: string, rawKey: string | undefined, context: FinancialContext) {
@@ -129,10 +129,12 @@ export class BillingService {
   async settleGateway(tx: Tx, attemptId: string, proof: { providerOrderId: bigint; amount: bigint; resultCode: string; referenceId?: string; traceNumber?: string }, eligibilityValid = true) {
     const pointer = await tx.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attemptId }, select: { intentId: true } });
     const intent = await this.lockIntent(tx, pointer.intentId);
-    const attempt = await tx.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attemptId } });
+    const attempt = await tx.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attemptId }, include: { revision: { select: { config: { select: { providerCode: true } } } } } });
     if (attempt.status === 'VERIFIED') return this.view(intent);
     if (!['0', '100'].includes(proof.resultCode) || proof.providerOrderId !== attempt.providerOrderId || proof.amount !== attempt.amountRial || proof.amount !== intent.amountRial) throw financialConflict('PAYMENT_VERIFICATION_MISMATCH');
     if (!['VERIFYING', 'REQUIRES_RECONCILIATION'].includes(attempt.status)) throw financialConflict();
+    const nativeBale = attempt.revision.config.providerCode === 'bale_wallet';
+    if (nativeBale && (!attempt.baleTransactionId || !attempt.balePrecheckoutApprovedAt)) throw financialConflict('BALE_PAYMENT_PROOF_MISSING');
     const context: FinancialContext = { actorUserId: intent.actorUserId, actorSessionId: null, requestId: `billing-verify:${attempt.id}`, ipAddress: null };
     const patient = await tx.patientProfile.findUniqueOrThrow({ where: { id: intent.patientId } });
     let canSettle = intent.status === 'PENDING' && eligibilityValid;
@@ -147,7 +149,7 @@ export class BillingService {
       settlementFields = billingSettlementFields(intent.purpose, settlement);
     }
     await tx.billingGatewayAttempt.update({ where: { id: attempt.id }, data: { status: 'VERIFIED', resultCode: proof.resultCode, compensated: !canSettle } });
-    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: 'GATEWAY', paidAt: new Date(), ...settlementFields } });
+    const updated = intent.status === 'PAID' ? intent : await tx.billingIntent.update({ where: { id: intent.id }, data: { status: canSettle ? 'PAID' : 'COMPENSATED', method: nativeBale ? 'BALE_WALLET' : 'GATEWAY', paidAt: new Date(), ...settlementFields } });
     await this.analytics.paid(tx, updated);
     await financialAudit(tx, context, 'BILLING_GATEWAY_SETTLED', intent.id, { amountRial: intent.amountRial.toString(), compensated: !canSettle });
     return this.view(updated);
@@ -186,7 +188,7 @@ export class BillingService {
       const intent = await this.lockIntent(tx, row.intentId);
       const current = await tx.billingRefund.findUniqueOrThrow({ where: { id: refundId } });
       if (current.status === 'COMPLETED') { if (current.evidenceReference !== reference) throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.refundView(current); }
-      if (current.status !== 'MANUAL_REQUIRED' || intent.method !== 'GATEWAY') throw financialConflict();
+      if (current.status !== 'MANUAL_REQUIRED' || !['GATEWAY', 'BALE_WALLET'].includes(intent.method ?? '')) throw financialConflict();
       const updated = await tx.billingRefund.update({ where: { id: refundId }, data: { status: 'COMPLETED', evidenceReference: reference, completedAt: new Date() } });
       await this.targets.get(intent.purpose).refund(tx, intent, current.amountRial, refundId);
       await this.analytics.refund(tx, intent, refundId, current.amountRial);
