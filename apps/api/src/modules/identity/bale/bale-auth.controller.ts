@@ -7,8 +7,8 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Public } from '../../../common/auth/public.decorator';
 import { ApiBrowserOrigin } from '../../../common/auth/browser-origin.decorator';
 import { BrowserOriginService } from '../../../common/auth/browser-origin.service';
-import { RefreshCookieService } from '../../../common/auth/refresh-cookie.service';
-import { REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../common/auth/refresh-cookie.openapi';
+import { RefreshCookieService, type SessionContext } from '../../../common/auth/refresh-cookie.service';
+import { ApiSessionContext, REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../common/auth/refresh-cookie.openapi';
 import { ACCESS_TOKEN_TTL_SECONDS } from '../../../common/auth/access-token.service';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
@@ -52,9 +52,9 @@ export class BaleAuthController {
     private readonly origins: BrowserOriginService,
   ) {}
 
-  private flow(result: BaleFlowResult, reply: FastifyReply): BaleFlowResponseDto {
+  private flow(result: BaleFlowResult, reply: FastifyReply, context: SessionContext): BaleFlowResponseDto {
     if (result.status === 'AUTHENTICATED') {
-      this.cookies.set(reply, result.result.refreshToken, result.result.refreshExpiresAt);
+      this.cookies.set(reply, result.result.refreshToken, result.result.refreshExpiresAt, undefined, context);
       return {
         status: 'AUTHENTICATED',
         authentication: {
@@ -66,7 +66,7 @@ export class BaleAuthController {
       };
     }
     // Avoid continuing a different person's cookie-based session in a Bale frame.
-    this.cookies.clear(reply);
+    this.cookies.clear(reply, context);
     return result.status === 'ACCOUNT_LINK_REQUIRED'
       ? { status: result.status, phone: result.phone }
       : { status: result.status };
@@ -75,12 +75,14 @@ export class BaleAuthController {
   @Post('exchange')
   @Public()
   @ApiBrowserOrigin()
+  @ApiSessionContext()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'baleExchange', summary: 'Validate signed Bale identity and exchange it for a patient session if linked' })
   @ApiOkResponse({ type: BaleFlowResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
   async exchange(@Body() body: BaleInitDataDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     this.origins.assertAllowed(originOf(request));
-    return this.flow(await this.bale.exchange(body.initData, contextOf(request)), reply);
+    const context = this.cookies.contextFor(request);
+    return this.flow(await this.bale.exchange(body.initData, contextOf(request)), reply, context);
   }
 
   @Post('contact/request')
@@ -97,13 +99,15 @@ export class BaleAuthController {
   @Post('contact/complete')
   @Public()
   @ApiBrowserOrigin()
+  @ApiSessionContext()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'baleContactComplete', summary: 'Finish a server-verified Bale contact flow; never trusts the browser phone' })
   @ApiOkResponse({ type: BaleFlowResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'Browser origin is not allowed or the existing account is ineligible (BALE_ACCOUNT_UNSUPPORTED).')
   async complete(@Body() body: BaleContactTicketDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     this.origins.assertAllowed(originOf(request));
-    return this.flow(await this.bale.completeContact(body.initData, body.ticket, contextOf(request)), reply);
+    const context = this.cookies.contextFor(request);
+    return this.flow(await this.bale.completeContact(body.initData, body.ticket, contextOf(request)), reply, context);
   }
 
   @Post('contact/link')

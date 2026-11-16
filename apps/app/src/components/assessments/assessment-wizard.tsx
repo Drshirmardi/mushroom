@@ -549,15 +549,6 @@ function AssessmentAttempt({
           ادامه
         </button>
       </div>
-      {busy && (
-        <p
-          role="status"
-          aria-live="polite"
-          className="mb-0 mt-2 text-center text-[11px] text-muted-foreground"
-        >
-          پاسخ در حال ذخیره است…
-        </p>
-      )}
     </>
   );
   return (
@@ -582,9 +573,7 @@ function AssessmentAttempt({
               {adaptive && step >= 11 ? (
                 'سؤال تکمیلی برای روشن‌شدن نتیجه'
               ) : (
-                <span
-                  className="assessment-step-label inline-flex items-center gap-1.5"
-                >
+                <span className="assessment-step-label inline-flex items-center gap-1.5">
                   <span>سؤال</span>
                   <span key={step} className="assessment-step-number">
                     {toP(step + 1)}
@@ -621,78 +610,81 @@ function AssessmentAttempt({
           data-direction={stepDirection}
           className="assessment-question-transition flex flex-col gap-4"
         >
-        <section className="assessment-question-card">
-          <div className="assessment-question-eyebrow" aria-hidden="true">
-            <span className="assessment-question-eyebrow__dot" />
-            پرسش این مرحله
-          </div>
-          <h2
-            id="assessment-question"
-            ref={entryQuestion}
-            tabIndex={-1}
-            className="assessment-question-title m-0 text-base font-bold leading-8 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-lg"
+          <section className="assessment-question-card">
+            <div className="assessment-question-eyebrow" aria-hidden="true">
+              <span className="assessment-question-eyebrow__dot" />
+              پرسش این مرحله
+            </div>
+            <h2
+              id="assessment-question"
+              ref={entryQuestion}
+              tabIndex={-1}
+              className="assessment-question-title m-0 text-base font-bold leading-8 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary sm:text-lg"
+            >
+              {current.text}
+            </h2>
+          </section>
+          {current.type === 'MULTIPLE_CHOICE' && (
+            <p className="m-0 text-xs font-medium text-muted-foreground">
+              می‌توانید بیش از یک گزینه را انتخاب کنید.
+            </p>
+          )}
+          {current.type === 'NUMBER' && (
+            <p
+              id="assessment-number-hint"
+              className="m-0 text-xs font-medium text-muted-foreground"
+            >
+              {typeof current.min === 'number' ? `حداقل: ${toP(current.min)}` : ''}
+              {typeof current.min === 'number' && typeof current.max === 'number' ? '؛ ' : ''}
+              {typeof current.max === 'number' ? `حداکثر: ${toP(current.max)}` : ''}
+            </p>
+          )}
+          <fieldset
+            className="assessment-answer-group min-w-0 border-0 p-0"
+            aria-labelledby="assessment-question"
+            aria-describedby={error ? 'assessment-answer-error' : undefined}
+            disabled={locking || conflict || submitCommand !== null}
           >
-            {current.text}
-          </h2>
-        </section>
-        {current.type === 'MULTIPLE_CHOICE' && (
-          <p className="m-0 text-xs font-medium text-muted-foreground">
-            می‌توانید بیش از یک گزینه را انتخاب کنید.
-          </p>
-        )}
-        {current.type === 'NUMBER' && (
-          <p id="assessment-number-hint" className="m-0 text-xs font-medium text-muted-foreground">
-            {typeof current.min === 'number' ? `حداقل: ${toP(current.min)}` : ''}
-            {typeof current.min === 'number' && typeof current.max === 'number' ? '؛ ' : ''}
-            {typeof current.max === 'number' ? `حداکثر: ${toP(current.max)}` : ''}
-          </p>
-        )}
-        <fieldset
-          className="assessment-answer-group min-w-0 border-0 p-0"
-          aria-labelledby="assessment-question"
-          aria-describedby={error ? 'assessment-answer-error' : undefined}
-          disabled={locking || conflict || submitCommand !== null}
-        >
-          <AnswerInput
-            invalid={!!error}
-            question={current}
-            value={answers[current.id]}
-            onChange={(value) => {
-              const all = answersRef.current;
-              const updated = {
-                ...(adaptive && current.phase !== 'FOLLOW_UP'
-                  ? Object.fromEntries(
-                      Object.entries(all).filter(([id]) =>
-                        items.some(
-                          (question) => question.phase !== 'FOLLOW_UP' && question.id === id,
-                        ),
-                      ),
-                    )
-                  : adaptive
+            <AnswerInput
+              invalid={!!error}
+              question={current}
+              value={answers[current.id]}
+              onChange={(value) => {
+                const all = answersRef.current;
+                const updated = {
+                  ...(adaptive && current.phase !== 'FOLLOW_UP'
                     ? Object.fromEntries(
-                        Object.entries(all).filter(
-                          ([id]) => items.findIndex((question) => question.id === id) <= step,
+                        Object.entries(all).filter(([id]) =>
+                          items.some(
+                            (question) => question.phase !== 'FOLLOW_UP' && question.id === id,
+                          ),
                         ),
                       )
-                    : all),
-                [current.id]: value,
-              };
-              answersRef.current = updated;
-              setAnswers(updated);
-              setError(null);
-              if (requiredNotice !== 'hidden') setRequiredNotice('leaving');
-            }}
-          />
-        </fieldset>
-        {error && (
-          <p
-            id="assessment-answer-error"
-            role="alert"
-            className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-sm leading-7 text-red-700"
-          >
-            {error}
-          </p>
-        )}
+                    : adaptive
+                      ? Object.fromEntries(
+                          Object.entries(all).filter(
+                            ([id]) => items.findIndex((question) => question.id === id) <= step,
+                          ),
+                        )
+                      : all),
+                  [current.id]: value,
+                };
+                answersRef.current = updated;
+                setAnswers(updated);
+                setError(null);
+                if (requiredNotice !== 'hidden') setRequiredNotice('leaving');
+              }}
+            />
+          </fieldset>
+          {error && (
+            <p
+              id="assessment-answer-error"
+              role="alert"
+              className="m-0 rounded-2xl border border-red-200 bg-red-50 p-3.5 text-sm leading-7 text-red-700"
+            >
+              {error}
+            </p>
+          )}
         </div>
         {conflict && (
           <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">

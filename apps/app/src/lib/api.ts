@@ -8,11 +8,23 @@ export const apiBaseUrl = runtimePublicUrl("apiUrl", "http://localhost:3003");
 const webBaseUrl = runtimePublicUrl("webUrl", "http://localhost:3000");
 
 const sessionTransport = createSessionAwareFetch();
+export function baleSessionHeaders(): Record<string, string> {
+  return typeof window !== 'undefined' && window.location.protocol === 'https:'
+    ? { 'x-session-context': 'bale' }
+    : {};
+}
+
 export const sessionFetch: typeof fetch = (input, init) => analyticsFetch(input, init,
   (nextInput, nextInit) => sessionTransport.fetch(nextInput, nextInit), apiBaseUrl, 'app');
 
 export const authApiClient = createApiClient({ baseUrl: apiBaseUrl,
-  fetch: (input, init) => analyticsFetch(input, init, (nextInput, nextInit) => fetch(nextInput, nextInit), apiBaseUrl, 'app') });
+  fetch: (input, init) => {
+    const request = new Request(input, init);
+    if (typeof window !== 'undefined' && window.sessionStorage.getItem('mushroom:bale-miniapp') === '1') {
+      for (const [name, value] of Object.entries(baleSessionHeaders())) request.headers.set(name, value);
+    }
+    return analyticsFetch(request, undefined, (nextInput, nextInit) => fetch(nextInput, nextInit), apiBaseUrl, 'app');
+  } });
 export const apiClient = createApiClient({
   baseUrl: apiBaseUrl,
   fetch: (input, init) => {

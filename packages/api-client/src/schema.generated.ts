@@ -12687,6 +12687,8 @@ export interface operations {
                 "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
+                /** @description Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin. */
+                "x-session-context"?: "bale";
             };
             path: {
                 challengeId: string;
@@ -12909,6 +12911,8 @@ export interface operations {
                 "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
+                /** @description Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin. */
+                "x-session-context"?: "bale";
             };
             path?: never;
             cookie?: never;
@@ -12973,6 +12977,8 @@ export interface operations {
                 "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
+                /** @description Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin. */
+                "x-session-context"?: "bale";
             };
             path?: never;
             cookie?: never;
@@ -13396,6 +13402,8 @@ export interface operations {
                 "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
+                /** @description Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin. */
+                "x-session-context"?: "bale";
             };
             path?: never;
             cookie?: never;
@@ -13458,6 +13466,8 @@ export interface operations {
                 "X-Analytics-Context"?: string;
                 /** @description Invitation context locator; grants no access without server identity and resource checks. */
                 "X-Marriage-Request-Id"?: string;
+                /** @description Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin. */
+                "x-session-context"?: "bale";
             };
             path?: never;
             cookie?: never;

@@ -372,6 +372,18 @@
             }
           },
           {
+            "name": "x-session-context",
+            "in": "header",
+            "description": "Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bale"
+              ]
+            }
+          },
+          {
             "name": "challengeId",
             "required": true,
             "in": "path",
@@ -720,6 +732,18 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "x-session-context",
+            "in": "header",
+            "description": "Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bale"
+              ]
+            }
           }
         ],
         "responses": {
@@ -824,6 +848,18 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "x-session-context",
+            "in": "header",
+            "description": "Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bale"
+              ]
             }
           }
         ],
@@ -1612,6 +1648,18 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "x-session-context",
+            "in": "header",
+            "description": "Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bale"
+              ]
+            }
           }
         ],
         "requestBody": {
@@ -1743,6 +1791,18 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "x-session-context",
+            "in": "header",
+            "description": "Selects the partitioned cookie for the Bale mini-app on the configured HTTPS app origin.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "bale"
+              ]
             }
           }
         ],

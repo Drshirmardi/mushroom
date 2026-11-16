@@ -25,14 +25,14 @@ const CONTACT_TTL_MS = 5 * 60_000;
 const hashTicket = (ticket: string) => createHash('sha256').update(ticket).digest('hex');
 const invalid = () => new UnauthorizedException({ code: 'BALE_AUTH_INVALID', message: 'Bale identity or contact request is invalid.', details: {} });
 const limited = () => new ConflictException({ code: 'BALE_LINK_CONFLICT', message: 'The account cannot be linked.', details: {} });
-const unsupportedAccount = () => new ForbiddenException({
+export const unsupportedBaleAccount = () => new ForbiddenException({
   code: 'BALE_ACCOUNT_UNSUPPORTED',
   message: 'Bale sign-in is available only for active patient accounts.',
   details: {},
 });
-const hasPatientRole = (roles: string[]) => roles.includes('PATIENT') && !roles.some(role => ['ADMIN', 'STAFF', 'DOCTOR'].includes(role));
+export const hasBalePatientRole = (roles: string[]) => roles.includes('PATIENT') && !roles.some(role => ['ADMIN', 'STAFF', 'DOCTOR'].includes(role));
 const isActivePatient = (user: { status: string; roles: { role: { code: string } }[] }) =>
-  user.status === 'ACTIVE' && hasPatientRole(user.roles.map(({ role }) => role.code));
+  user.status === 'ACTIVE' && hasBalePatientRole(user.roles.map(({ role }) => role.code));
 
 /** This service only trusts signed Bale initData and authenticated webhook updates. */
 @Injectable()
@@ -127,7 +127,7 @@ export class BaleAuthService {
       select: { status: true, roles: { select: { role: { select: { code: true } } } } },
     });
     if (prior) {
-      if (!isActivePatient(prior)) throw unsupportedAccount();
+      if (!isActivePatient(prior)) throw unsupportedBaleAccount();
       return { status: 'ACCOUNT_LINK_REQUIRED', phone: challenge.phone };
     }
 
@@ -189,7 +189,7 @@ export class BaleAuthService {
       where: { id: userId },
       select: { id: true, phone: true, status: true, roles: { select: { role: { select: { code: true } } } } },
     });
-    if (!user || !isActivePatient(user)) throw unsupportedAccount();
+    if (!user || !isActivePatient(user)) throw unsupportedBaleAccount();
     if (user.phone !== challenge.phone || session?.userId !== userId || session.verifiedPhone !== challenge.phone ||
       session.revokedAt || session.expiresAt.getTime() <= Date.now() || session.createdAt.getTime() < Date.now() - 10 * 60_000) throw new ForbiddenException({ code: 'BALE_REAUTH_REQUIRED', message: 'Fresh phone authentication is required.', details: {} });
 

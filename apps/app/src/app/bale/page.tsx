@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, LoaderCircle, ShieldCheck, Smartphone } from 'lucide-react';
 import type { Authentication } from '@/auth/session';
 import { acceptBaleAuthentication } from '@/components/auth/session-gate';
-import { apiBaseUrl } from '@/lib/api';
+import { apiBaseUrl, baleSessionHeaders } from '@/lib/api';
 
 interface BaleWebApp {
   initData: string;
@@ -105,7 +105,7 @@ async function apiPost<T>(
     method: 'POST',
     credentials: 'include',
     cache: 'no-store',
-    headers: { 'content-type': 'application/json', ...extraHeaders },
+    headers: { 'content-type': 'application/json', ...baleSessionHeaders(), ...extraHeaders },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
@@ -153,6 +153,12 @@ export default function BaleMiniAppPage() {
         setBaleSdkReady(true);
       }
       if (!webApp?.initData) throw new Error('BALE_CONTEXT_MISSING');
+      const authDate = new URLSearchParams(webApp.initData).get('auth_date');
+      if (authDate && Math.floor(Date.now() / 1000) - Number(authDate) > 600) {
+        setError('برای ادامه، مینی‌اپ را دوباره از بله باز کنید.');
+        setView('error');
+        return;
+      }
       initData.current = webApp.initData;
       window.sessionStorage.setItem('mushroom:bale-miniapp', '1');
       webApp.ready();

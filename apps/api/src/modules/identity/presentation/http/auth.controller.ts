@@ -36,7 +36,7 @@ import { PERMISSIONS } from '../../../../common/auth/authorization.policy';
 import { ApiBrowserOrigin } from '../../../../common/auth/browser-origin.decorator';
 import { BrowserOriginService } from '../../../../common/auth/browser-origin.service';
 import { Public } from '../../../../common/auth/public.decorator';
-import { REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../../common/auth/refresh-cookie.openapi';
+import { ApiSessionContext, REFRESH_COOKIE_RESPONSE_HEADERS } from '../../../../common/auth/refresh-cookie.openapi';
 import { RefreshCookieService } from '../../../../common/auth/refresh-cookie.service';
 import { ApiErrorResponse } from '../../../../common/errors/api-error-response.decorator';
 import {
@@ -65,6 +65,7 @@ import {
 import { PhoneAlreadyRegisteredError } from '../../application/ports/registration.repository';
 import type { SecurityAuditContext } from '../../application/security-audit';
 import { OtpAuthenticationUseCase } from '../../application/otp-authentication.use-case';
+import { hasBalePatientRole, unsupportedBaleAccount } from '../../bale/bale-auth.service';
 import { InvalidPhoneNumberError } from '../../domain/phone-number';
 import { PasswordPolicyError } from '../../domain/password-policy';
 import {
@@ -166,6 +167,7 @@ export class AuthController {
   @Post('otp/challenges/:challengeId/verify')
   @Public()
   @ApiBrowserOrigin()
+  @ApiSessionContext()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ operationId: 'authOtpChallengeVerify', summary: 'Verify OTP and create an authenticated session' })
   @ApiOkResponse({ type: AuthenticationResponseDto, headers: REFRESH_COOKIE_RESPONSE_HEADERS })
@@ -176,8 +178,10 @@ export class AuthController {
   @ApiErrorResponse(HttpStatus.SERVICE_UNAVAILABLE, 'OTP account provisioning is unavailable.')
   async verifyOtpChallenge(@Param('challengeId', ParseUUIDPipe) challengeId: string, @Body() body: VerifyOtpChallengeDto, @Req() request: FastifyRequest, @Res({ passthrough: true }) reply: FastifyReply): Promise<AuthenticationResponseDto> {
     this.browserOrigins.assertAllowed(getOrigin(request));
+    const context = this.refreshCookie.contextFor(request);
     const result = await this.otp.verify(challengeId, body.code, { ipAddress: request.ip, userAgent: getUserAgent(request), requestId: request.id });
-    this.refreshCookie.set(reply, result.refreshToken, result.refreshExpiresAt);
+    if (context === 'bale' && !hasBalePatientRole(result.user.roles)) throw unsupportedBaleAccount();
+    this.refreshCookie.set(reply, result.refreshToken, result.refreshExpiresAt, undefined, context);
     return toResponse(result);
   }
 
@@ -314,6 +318,7 @@ export class AuthController {
   @Post('refresh')
   @Public()
   @ApiBrowserOrigin()
+  @ApiSessionContext()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     operationId: 'authRefresh',
@@ -339,18 +344,22 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<AuthenticationResponseDto> {
     this.browserOrigins.assertAllowed(getOrigin(request));
+    const context = this.refreshCookie.contextFor(request);
 
     try {
       const result = await this.refreshSession.execute({
-        refreshToken: this.refreshCookie.read(request),
+        refreshToken: this.refreshCookie.read(request, context),
         ipAddress: request.ip,
         userAgent: getUserAgent(request),
         requestId: request.id,
       });
+      if (context === 'bale' && !hasBalePatientRole(result.user.roles)) throw new InvalidRefreshTokenError();
       this.refreshCookie.set(
         reply,
         result.refreshToken,
         result.refreshExpiresAt,
+        undefined,
+        context,
       );
 
       return toResponse(result);
@@ -364,7 +373,7 @@ export class AuthController {
       }
 
       if (error instanceof InvalidRefreshTokenError) {
-        this.refreshCookie.clear(reply);
+        this.refreshCookie.clear(reply, context);
         throw new UnauthorizedException({
           code: error.code,
           message: error.message,
@@ -388,6 +397,7 @@ export class AuthController {
   @SkipActiveSessionCheck()
   @RequirePermissions(PERMISSIONS.SESSION_REVOKE_SELF)
   @ApiBrowserOrigin()
+  @ApiSessionContext()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('bearerAuth')
   @ApiOperation({
@@ -411,12 +421,13 @@ export class AuthController {
     @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<void> {
     this.browserOrigins.assertAllowed(getOrigin(request));
+    const context = this.refreshCookie.contextFor(request);
     await this.manageSessions.logout(
       request.auth.userId,
       request.auth.sessionId,
       getAuditContext(request, request.auth.sessionId),
     );
-    this.refreshCookie.clear(reply);
+    this.refreshCookie.clear(reply, context);
   }
 
   @Post('logout-all')
