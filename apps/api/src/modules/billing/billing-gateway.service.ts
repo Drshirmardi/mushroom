@@ -6,6 +6,7 @@ import { PaymentProviderOrderIdService } from '../commerce/payments/payment-prov
 import { SadadRuntimeConfigService } from '../commerce/payments/sadad-runtime-config.service';
 import { buildSadadStartUrl } from '../commerce/payments/sadad-browser-start';
 import { BillingService } from './billing.service';
+import { BaleWalletBillingService } from './bale-wallet-billing.service';
 import { BillingTargetRegistry } from './billing-target.registry';
 import { financialAudit, financialConflict, financialKey, financialMissing, fingerprint, lockFinancial, pendingAttempts, reasonText, type FinancialContext } from './billing.policy';
 import type { PaymentProviderCredentialVersion } from '../../generated/prisma/client';
@@ -13,18 +14,19 @@ import { WalletService } from './wallet.service';
 
 @Injectable()
 export class BillingGatewayService {
-  constructor(private readonly prisma: PrismaService, private readonly billing: BillingService, private readonly targets: BillingTargetRegistry, private readonly registry: PaymentProviderRegistry, private readonly crypto: PaymentCredentialCryptoService, private readonly orderIds: PaymentProviderOrderIdService, private readonly runtime: SadadRuntimeConfigService, private readonly wallet: WalletService) {}
+  constructor(private readonly prisma: PrismaService, private readonly billing: BillingService, private readonly targets: BillingTargetRegistry, private readonly registry: PaymentProviderRegistry, private readonly crypto: PaymentCredentialCryptoService, private readonly orderIds: PaymentProviderOrderIdService, private readonly runtime: SadadRuntimeConfigService, private readonly wallet: WalletService, private readonly bale: BaleWalletBillingService) {}
 
-  async methods(userId: string, id: string) {
+  async methods(userId: string, id: string, sessionId?: string) {
     const intent = await this.billing.owned(userId, id);
     const patient = await this.wallet.patient(userId); const summary = await this.wallet.summary(patient);
     const pending = intent.status === 'PENDING' && (!intent.expiresAt || intent.expiresAt > new Date());
     const config = await this.prisma.paymentProviderConfig.findFirst({ where: { clinicId: intent.clinicId, enabled: true, isDefault: true, goLiveReady: true, activeRevision: { goLiveReady: true, providerUnit: 'RIAL', credentialVersion: { encryptedPayload: { not: null } } } }, select: { id: true } });
     let live = false; try { live = this.runtime.live && Boolean(this.runtime.settings()); } catch { live = false; }
-    const active = await this.prisma.billingGatewayAttempt.findFirst({ where: { intentId: id, status: { in: pendingAttempts } }, orderBy: { createdAt: 'desc' } });
+    const active = await this.prisma.billingGatewayAttempt.findFirst({ where: { intentId: id, status: { in: pendingAttempts } }, orderBy: { createdAt: 'desc' }, include: { revision: { select: { config: { select: { providerCode: true } } } } } });
     const legacy = intent.orderId ? await this.prisma.paymentAttempt.count({ where: { orderId: intent.orderId, status: { in: ['CREATED', 'REDIRECT_READY', 'CALLBACK_RECEIVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'] } } }) : 0;
     return [
       ...(intent.purpose === 'TOPUP' ? [] : [{ code: 'WALLET', available: pending && !active && !legacy && !summary.frozen && BigInt(summary.balanceRial) >= intent.amountRial, balanceRial: summary.balanceRial }]),
+      { code: 'BALE_WALLET', available: Boolean(sessionId && !legacy && await this.bale.available(userId, sessionId, intent)), balanceRial: null },
       { code: 'GATEWAY', available: pending && !legacy && (!active || active.status === 'REDIRECT_READY') && live && Boolean(config) && intent.amountRial > 0n, balanceRial: null },
     ];
   }
@@ -32,7 +34,7 @@ export class BillingGatewayService {
   async create(userId: string, intentId: string, rawKey: string | undefined, context: FinancialContext) {
     const owned = await this.billing.owned(userId, intentId); const key = financialKey(rawKey);
     const old = await this.prisma.billingGatewayAttempt.findUnique({ where: { intentId_idempotencyKey: { intentId, idempotencyKey: key } } });
-    if (old) return this.view(old);
+    if (old) { const rev = await this.prisma.paymentProviderConfigRevision.findUnique({ where: { id: old.revisionId }, include: { config: true } }); if (rev?.config.providerCode !== 'sadad') throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return this.view(old); }
     const settings = this.runtime.settings();
     const config = await this.prisma.paymentProviderConfig.findFirst({ where: { clinicId: owned.clinicId, enabled: true, isDefault: true, goLiveReady: true }, include: { activeRevision: { include: { credentialVersion: true } } } });
     const revision = config?.activeRevision;
@@ -41,10 +43,14 @@ export class BillingGatewayService {
     const prepared = await this.prisma.$transaction(async tx => {
       const intent = await this.billing.lockIntent(tx, intentId);
       const existing = await tx.billingGatewayAttempt.findUnique({ where: { intentId_idempotencyKey: { intentId, idempotencyKey: key } } });
-      if (existing) return { attempt: existing, request: false };
+      if (existing) { const rev = await tx.paymentProviderConfigRevision.findUniqueOrThrow({ where: { id: existing.revisionId }, include: { config: true } }); if (rev.config.providerCode !== 'sadad') throw financialConflict('IDEMPOTENCY_KEY_REUSED'); return { attempt: existing, request: false }; }
       if (intent.status !== 'PENDING' || (intent.expiresAt && intent.expiresAt <= new Date())) throw financialConflict('BILLING_HOLD_EXPIRED');
-      const active = await tx.billingGatewayAttempt.findFirst({ where: { intentId, status: { in: pendingAttempts } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
-      if (active) return { attempt: active, request: false };
+      const active = await tx.billingGatewayAttempt.findFirst({ where: { intentId, status: { in: pendingAttempts } }, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], include: { revision: { select: { config: { select: { providerCode: true } } } } } });
+      if (active?.revision.config.providerCode === 'bale_wallet' && active.status === 'REDIRECT_READY' && !active.baleTransactionId) {
+        // The bank fallback invalidates an unapproved Bale invoice under the BillingIntent lock.
+        await tx.billingGatewayAttempt.update({ where: { id: active.id }, data: { status: 'FAILED', resultCode: 'BALE_SUPERSEDED_BY_BANK' } });
+      } else if (active?.revision.config.providerCode === 'sadad') return { attempt: active, request: false };
+      else if (active) throw financialConflict('BILLING_PAYMENT_PENDING');
       await this.billing.assertNoPending(tx, intent);
       if (intent.purpose !== 'TOPUP') {
         const target = this.targets.get(intent.purpose);
@@ -92,6 +98,7 @@ export class BillingGatewayService {
     const attempt = await this.prisma.billingGatewayAttempt.findUnique({ where: { id: attemptId }, include: { revision: { include: { credentialVersion: true, config: true } } } });
     if (!attempt) throw financialMissing();
     if (attempt.status === 'VERIFIED') return;
+    if (attempt.revision.config.providerCode !== 'sadad') return this.bale.reconcile(attemptId);
     if (!attempt.providerToken || !attempt.revision.credentialVersion) throw financialConflict('BILLING_PAYMENT_PENDING');
     const changed = await this.prisma.billingGatewayAttempt.updateMany({ where: { id: attemptId, status: { in: ['REDIRECT_READY', 'REQUIRES_RECONCILIATION', 'VERIFYING'] } }, data: { status: 'VERIFYING' } });
     if (!changed.count) return;
@@ -161,9 +168,9 @@ export class BillingGatewayService {
   async maintain(limit = 10) {
     const before = new Date(Date.now() - 60_000);
     // No browser received a usable bank token. Late proven callbacks still recover safely.
-    await this.prisma.billingGatewayAttempt.updateMany({ where: { status: { in: ['CREATED', 'REQUIRES_RECONCILIATION'] }, providerToken: null, createdAt: { lt: new Date(Date.now() - 2 * 60_000) } }, data: { status: 'FAILED', resultCode: 'REQUEST_EXPIRED' } });
-    await this.prisma.billingGatewayAttempt.updateMany({ where: { status: 'CREATED', updatedAt: { lt: before } }, data: { status: 'REQUIRES_RECONCILIATION', resultCode: 'REQUEST_AMBIGUOUS' } });
-    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { providerToken: { not: null }, OR: [{ status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] }, updatedAt: { lt: before } }, { status: 'REDIRECT_READY', createdAt: { lt: new Date(Date.now() - 20 * 60_000) }, updatedAt: { lt: before } }] }, orderBy: { updatedAt: 'asc' }, take: limit });
+    await this.prisma.billingGatewayAttempt.updateMany({ where: { revision: { config: { providerCode: 'sadad' } }, status: { in: ['CREATED', 'REQUIRES_RECONCILIATION'] }, providerToken: null, createdAt: { lt: new Date(Date.now() - 2 * 60_000) } }, data: { status: 'FAILED', resultCode: 'REQUEST_EXPIRED' } });
+    await this.prisma.billingGatewayAttempt.updateMany({ where: { revision: { config: { providerCode: 'sadad' } }, status: 'CREATED', updatedAt: { lt: before } }, data: { status: 'REQUIRES_RECONCILIATION', resultCode: 'REQUEST_AMBIGUOUS' } });
+    const attempts = await this.prisma.billingGatewayAttempt.findMany({ where: { revision: { config: { providerCode: 'sadad' } }, providerToken: { not: null }, OR: [{ status: { in: ['VERIFYING', 'REQUIRES_RECONCILIATION'] }, updatedAt: { lt: before } }, { status: 'REDIRECT_READY', createdAt: { lt: new Date(Date.now() - 20 * 60_000) }, updatedAt: { lt: before } }] }, orderBy: { updatedAt: 'asc' }, take: limit });
     for (const attempt of attempts) await this.verify(attempt.id);
     return attempts.length;
   }
