@@ -38,6 +38,17 @@ describe("payment method context", () => {
     expect(walletButton).not.toContain("disabled");
   });
 
+  it("shows a pending Bale pre-checkout and prevents cancellation while payment is unresolved", () => {
+    const pending = intent("ORDER", [{ code: "GATEWAY", available: false, balanceRial: null }]);
+    pending.attempts = [{
+      id: "bale-attempt-1", status: "PRECHECKOUT_APPROVED", providerCode: "bale_wallet",
+      reference: null, traceNumber: null, verifiedAt: null,
+    }];
+    const html = render(pending);
+    expect(html).toContain("پرداخت بله در حال تأیید نهایی است");
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>لغو این پرداخت<\\/button>/);
+  });
+
   it("keeps wallet payment disabled for insufficient funds and offers a separate top-up", () => {
     const html = render(intent("ASSESSMENT", [{ code: "WALLET", available: false, balanceRial: "1000000" }]));
     expect(html).toContain("کسری موجودی");
