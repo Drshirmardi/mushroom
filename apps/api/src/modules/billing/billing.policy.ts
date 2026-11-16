@@ -5,7 +5,7 @@ import { Prisma } from '../../generated/prisma/client';
 export type FinancialContext = { actorUserId: string; actorSessionId: string | null; requestId: string; ipAddress: string | null };
 export type Tx = Prisma.TransactionClient;
 export const MAX_MONEY = 9_000_000_000_000_000_000n;
-export const pendingAttempts = ['CREATED', 'REDIRECT_READY', 'VERIFYING', 'REQUIRES_RECONCILIATION'];
+export const pendingAttempts = ['CREATED', 'REDIRECT_READY', 'PRECHECKOUT_APPROVED', 'VERIFYING', 'REQUIRES_RECONCILIATION'];
 export const financialConflict = (code = 'BILLING_STATE_CONFLICT') => new ConflictException({ code, message: 'The financial operation conflicts with the current state.', details: {} });
 export const financialMissing = () => new NotFoundException({ code: 'BILLING_INTENT_NOT_FOUND', message: 'The financial resource was not found.', details: {} });
 export const financialForbidden = () => new ForbiddenException({ code: 'FORBIDDEN', message: 'This financial scope is not available.', details: {} });
