@@ -221,10 +221,6 @@ export function PaymentChooser({
       const needsTab = isBaleSession() && !baleAndroid;
       // Reserve the tab while the click still grants permission to open it.
       const tab = needsTab ? openBankPaymentTab() : null;
-      if (needsTab && !tab) {
-        setError('مرورگر اجازهٔ باز کردن تب پرداخت را نداد. باز شدن تب را مجاز کنید و دوباره بزنید.');
-        return;
-      }
       let navigated = false;
       try {
         const attempt = await createGatewayAttempt(accessToken, intent.id, crypto.randomUUID());
@@ -243,7 +239,9 @@ export function PaymentChooser({
           }
           tab.location.replace(attempt.redirectUrl);
           navigated = true;
-        } else if (!baleAndroid || !openBaleBrowser(attempt.redirectUrl)) {
+        } else if (needsTab || !baleAndroid || !openBaleBrowser(attempt.redirectUrl)) {
+          // Still create the gateway attempt if the browser blocks a new tab.
+          // In that case continue in this page instead of silently aborting.
           openSadadOutsideMiniApp(attempt.redirectUrl);
         }
       } finally {
