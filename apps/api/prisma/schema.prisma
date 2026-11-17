@@ -4238,3 +4238,12 @@ model BaleWebhookEvent {
 
   @@map("bale_webhook_events")
 }
+
+model BaleStartRateLimit {
+  providerUserId String     @id @map("provider_user_id") @db.VarChar(64)
+  lastUpdateId   BigInt     @map("last_update_id")
+  recentStartAt  DateTime[] @default([]) @map("recent_start_at") @db.Timestamptz(3)
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("bale_start_rate_limits")
+}

@@ -22,6 +22,8 @@ type LinkRequired = { status: 'ACCOUNT_LINK_REQUIRED'; phone: string };
 export type BaleFlowResult = Authentication | ContactRequired | Pending | LinkRequired;
 
 const CONTACT_TTL_MS = 5 * 60_000;
+const START_RATE_LIMIT = 5;
+const START_RATE_WINDOW_MS = 60_000;
 const hashTicket = (ticket: string) => createHash('sha256').update(ticket).digest('hex');
 const invalid = () => new UnauthorizedException({ code: 'BALE_AUTH_INVALID', message: 'Bale identity or contact request is invalid.', details: {} });
 const limited = () => new ConflictException({ code: 'BALE_LINK_CONFLICT', message: 'The account cannot be linked.', details: {} });
@@ -227,10 +229,21 @@ export class BaleAuthService {
     const message = update.message as Record<string, unknown> | undefined;
     const from = message?.from as Record<string, unknown> | undefined;
     const chat = message?.chat as Record<string, unknown> | undefined;
-    const contact = message?.contact as Record<string, unknown> | undefined;
-    if (!contact || chat?.type !== 'private' ||
+    if (chat?.type !== 'private' ||
       typeof update.update_id !== 'number' || !Number.isSafeInteger(update.update_id) ||
-      typeof from?.id !== 'number' || !Number.isSafeInteger(from.id) ||
+      typeof from?.id !== 'number' || !Number.isSafeInteger(from.id)) return;
+
+    const startCommand = typeof message?.text === 'string' &&
+      /^\/start(?:@[A-Za-z0-9_]+)?(?:\s|$)/u.test(message.text.trim());
+    if (startCommand) {
+      if (typeof chat.id === 'number' && Number.isSafeInteger(chat.id)) {
+        await this.replyToStart(update.update_id, from.id, chat.id);
+      }
+      return;
+    }
+
+    const contact = message?.contact as Record<string, unknown> | undefined;
+    if (!contact ||
       typeof contact.user_id !== 'number' || contact.user_id !== from.id ||
       typeof contact.phone_number !== 'string' ||
       typeof message?.date !== 'number' || !Number.isSafeInteger(message.date)) return;
@@ -256,5 +269,73 @@ export class BaleAuthService {
         data: { phone, status: 'VERIFIED', verifiedAt: now },
       });
     });
+  }
+
+  private async replyToStart(updateId: number, providerUserId: number, chatId: number): Promise<void> {
+    const token = this.config.get<string>('BALE_BOT_TOKEN');
+    const appUrl = this.miniAppUrl();
+    if (!token || !appUrl) return;
+
+    const shouldReply = await this.prisma.$transaction(async tx => {
+      const providerId = String(providerUserId);
+      // Serialize updates from the same user across API replicas before checking the window.
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${providerId}, 0))`;
+      const previous = await tx.baleStartRateLimit.findUnique({ where: { providerUserId: providerId } });
+      const currentUpdateId = BigInt(updateId);
+      if (previous && currentUpdateId <= previous.lastUpdateId) return false;
+
+      const now = new Date();
+      const cutoff = now.getTime() - START_RATE_WINDOW_MS;
+      const recent = (previous?.recentStartAt ?? []).filter(value => value.getTime() > cutoff);
+      const allowed = recent.length < START_RATE_LIMIT;
+      if (allowed) recent.push(now);
+
+      if (previous) {
+        await tx.baleStartRateLimit.update({
+          where: { providerUserId: providerId },
+          data: { lastUpdateId: currentUpdateId, recentStartAt: recent },
+        });
+      } else {
+        await tx.baleStartRateLimit.create({
+          data: { providerUserId: providerId, lastUpdateId: currentUpdateId, recentStartAt: recent },
+        });
+      }
+      return allowed;
+    });
+    if (!shouldReply) return;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4_000);
+    try {
+      await fetch(`https://tapi.bale.ai/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: 'برای استفاده از خدمات، وارد مینی‌اپ شوید.',
+          reply_markup: {
+            inline_keyboard: [[{ text: 'ورود به مینی‌اپ', web_app: { url: appUrl } }]],
+          },
+        }),
+        signal: controller.signal,
+      });
+    } catch {
+      // A failed send must not break contact verification or payment webhook processing.
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  private miniAppUrl(): string | undefined {
+    const configured = this.config.get<string>('PUBLIC_APP_URL');
+    if (!configured) return undefined;
+    try {
+      const base = new URL(configured);
+      if ((base.protocol !== 'https:' && base.protocol !== 'http:') || base.username || base.password ||
+        (this.config.get('NODE_ENV') === 'production' && base.protocol !== 'https:')) return undefined;
+      return new URL('/bale', base.origin).toString();
+    } catch {
+      return undefined;
+    }
   }
 }

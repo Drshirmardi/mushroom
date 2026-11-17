@@ -1,227 +1,564 @@
-import { expect, test, type Page } from "@playwright/test";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { expect, test, type Page } from '@playwright/test';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
-const origin = process.env.STORE_TEST_ORIGIN ?? "http://localhost:3001";
-const productId = "bd904d31-442e-45c1-af10-636c967cc381";
-const categoryId = "968fc43a-77c6-47ac-b88e-0f9ca86f2146";
-const product = { id: productId, title: "شامپو مراقبت مو", slug: "hair-care", image: null, category: { id: categoryId, name: "مراقبت مو", slug: "hair" }, description: "مشخصات واقعی محصول از سرویس فروشگاه دریافت می‌شود.", skus: [
-  { id: "small", title: "۱۲۵ میلی‌لیتر", code: "HAIR-125", currentPriceToman: "125000", currentTaxToman: "5000" },
-  { id: "large", title: "۲۵۰ میلی‌لیتر", code: "HAIR-250", currentPriceToman: "250000", currentTaxToman: "10000" },
-] };
-const home = { id: "home", label: "خانه", recipientName: "گیرنده آزمایشی", phone: "09120000000", province: "تهران", city: "تهران", line1: "نشانی اول", isDefault: true };
+const origin = process.env.STORE_TEST_ORIGIN ?? 'http://localhost:3001';
+const productId = 'bd904d31-442e-45c1-af10-636c967cc381';
+const categoryId = '968fc43a-77c6-47ac-b88e-0f9ca86f2146';
+const product = {
+  id: productId,
+  title: 'شامپو مراقبت مو',
+  slug: 'hair-care',
+  image: null,
+  category: { id: categoryId, name: 'مراقبت مو', slug: 'hair' },
+  description: 'مشخصات واقعی محصول از سرویس فروشگاه دریافت می‌شود.',
+  skus: [
+    {
+      id: 'small',
+      title: '۱۲۵ میلی‌لیتر',
+      code: 'HAIR-125',
+      currentPriceToman: '125000',
+      currentTaxToman: '5000',
+    },
+    {
+      id: 'large',
+      title: '۲۵۰ میلی‌لیتر',
+      code: 'HAIR-250',
+      currentPriceToman: '250000',
+      currentTaxToman: '10000',
+    },
+  ],
+};
+const home = {
+  id: 'home',
+  label: 'خانه',
+  recipientName: 'گیرنده آزمایشی',
+  phone: '09120000000',
+  province: 'تهران',
+  city: 'تهران',
+  line1: 'نشانی اول',
+  isDefault: true,
+};
 
-async function fixture(page: Page, options: { failedAccount?: boolean; paid?: boolean; unavailable?: boolean; banners?: boolean } = {}) {
+async function fixture(
+  page: Page,
+  options: {
+    failedAccount?: boolean;
+    paid?: boolean;
+    unavailable?: boolean;
+    banners?: boolean;
+  } = {},
+) {
   let quantity = 0;
-  let skuId = "large";
+  let skuId = 'large';
   let saved = false;
   let paid = options.paid ?? false;
   let failedAccount = options.failedAccount ?? false;
   const addresses = [home];
   const commands: { path: string; body: any; key: string | undefined }[] = [];
   const unexpected: string[] = [];
-  const cart = () => ({ items: quantity ? [{ id: "cart-line", quantity, product, sku: product.skus.find(s => s.id === skuId) }] : [] });
-  const order = () => ({ id: "order-1", orderNumber: "1024", status: paid ? "PAID" : "PENDING_PAYMENT", paymentStatus: paid ? "VERIFIED" : "PENDING", paymentMethod: paid ? "WALLET" : null, shippingMethod: "COURIER", shippingAddress: addresses[addresses.length - 1], subtotalAmountToman: "500000", taxAmountToman: "20000", discountAmountToman: "25000", shippingAmountToman: "25000", totalAmountToman: "520000", lines: [{ productTitle: product.title, skuCode: "HAIR-250", quantity: 2, unitPriceToman: "250000", unitTaxToman: "10000", lineTotalToman: "520000" }], refundStatuses: [], createdAt: "2026-10-20T10:00:00Z" });
-  const intent = () => ({ id: "intent-1", purpose: "ORDER", status: paid ? "PAID" : "PENDING", method: paid ? "WALLET" : null, amountRial: "5200000", currency: "IRR", orderId: "order-1", appointmentId: null, expiresAt: null, paidAt: paid ? "2026-10-20T10:00:00Z" : null, createdAt: "2026-10-20T10:00:00Z", methods: [{ code: "WALLET", available: !options.unavailable, balanceRial: options.unavailable ? "100000" : "19000000" }, { code: "GATEWAY", available: false }] });
-  await page.route("**/v1/**", async route => {
-    const request = route.request(); const path = new URL(request.url()).pathname; const method = request.method();
-    const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS", "access-control-allow-headers": "authorization, content-type, idempotency-key" };
-    const send = (body: unknown, status = 200) => route.fulfill({ status, headers, contentType: "application/json", body: JSON.stringify(body) });
-    if (method === "OPTIONS") { await route.fulfill({ status: 204, headers }); return; }
-    if (path === "/v1/auth/refresh") { await send({ accessToken: "fixture-token", tokenType: "Bearer", expiresIn: 600, user: { id: "fixture-patient", roles: ["PATIENT"] } }); return; }
-    if (path === "/v1/patients/me/entry") { await send({ required: false, phase: "COMPLETE" }); return; }
-    if (method !== "GET") {
-      const body = request.postDataJSON();
-      if (path.endsWith("/commerce/discount-preview")) { await send(body.discountCode === "INVALID" ? {code:"COMMERCE_DISCOUNT_NOT_FOUND"} : {code:body.discountCode,subtotalAmountToman:"500000",taxAmountToman:"20000",discountAmountToman:"25000"},body.discountCode === "INVALID" ? 422 : 200); return; }
-      commands.push({ path, body, key: request.headers()["idempotency-key"] });
-      if (path.endsWith("/cart") && method === "PUT") { quantity = body.quantity; skuId = body.skuId; await send(cart()); return; }
-      if (path.endsWith("/wishlist") && method === "PUT") { saved = body.saved; await send({ items: saved ? [{ id: "wish-1", product, sku: product.skus[1] }] : [] }); return; }
-      if (path.endsWith("/commerce/addresses") && method === "POST") { const address = { ...body, id: "new-address", isDefault: false }; addresses.push(address); await send(address); return; }
-      if (path === "/v1/patients/me/orders" && method === "POST") {
-        if (body.discountCode === "INVALID") { await send({ code: "COMMERCE_DISCOUNT_NOT_FOUND" }, 422); return; }
-        quantity = 0; await send(order()); return;
-      }
-      if (path.endsWith("/billing/order-intents")) { await send(intent()); return; }
-      if (path.endsWith("/intent-1/wallet-payment")) { paid = true; await send(intent()); return; }
-      unexpected.push(`${method} ${path}`); await send({}, 403); return;
-    }
-    if (path === "/v1/commerce/products") { const url = new URL(request.url()); await send({ items: [product], total: 1, page: Number(url.searchParams.get("page") ?? 1), pageSize: 20 }); }
-    else if (path === `/v1/commerce/products/${productId}`) await send(product);
-    else if (path.endsWith("/commerce/addresses")) await send(addresses);
-    else if (path.endsWith("/shipping-options")) await send([{ method: "PICKUP", amountToman: "0" }, { method: "COURIER", amountToman: "25000" }]);
-    else if (path.endsWith("/cart")) await send(failedAccount ? {} : cart(), failedAccount ? 503 : 200);
-    else if (path.endsWith("/wishlist")) await send({ items: saved ? [{ id: "wish-1", product, sku: product.skus[1] }] : [] });
-    else if (path === "/v1/patients/me/orders") await send([order()]);
-    else if (path === "/v1/patients/me/orders/order-1") await send(order());
-    else if (path.endsWith("/order-1/receipt")) await send(paid ? { orderId:"order-1", orderNumber:"1024", totalAmountToman:"520000", status:"VERIFIED", order: order(), verifiedAt: "2026-10-20T10:00:00Z", method: "WALLET" } : {}, paid ? 200 : 409);
-    else if (path.endsWith("/billing/intents/intent-1")) await send(intent());
-    else if (path === "/v1/patients/me") await send({ firstName: "کاربر", lastName: "آزمایشی", phone: "09120000000", accountStatus: "ACTIVE" });
-    else if (path === "/v1/content/banners") await send({ items: options.banners ? [1, 2].map(id => ({ id: String(id), title: `بنر ${id}`, contentPath: `/v1/content/banners/${id}/image`, destinationUrl: "/store?view=all" })) : [] });
-    else if (/\/content\/banners\/\d\/image$/.test(path)) await route.fulfill({ status: 200, headers, contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600"><rect width="1200" height="600" fill="#DEEDFF"/></svg>' });
-    else if (path.endsWith("/notifications")) await send({ items: [], total: 0 });
-    else await send({}, 503);
+  const cart = () => ({
+    items: quantity
+      ? [{ id: 'cart-line', quantity, product, sku: product.skus.find((s) => s.id === skuId) }]
+      : [],
   });
-  return { commands, unexpected, recover: () => { failedAccount = false; } };
-}
-
-async function noOverflow(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-}
-
-test("services reuses both catalog pages when returning within the session cache window", async ({ page }, testInfo) => {
-  const counts = { education: 0, custom: 0 };
-  await fixture(page);
-  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/, async route => {
+  const order = () => ({
+    id: 'order-1',
+    orderNumber: '1024',
+    status: paid ? 'PAID' : 'PENDING_PAYMENT',
+    paymentStatus: paid ? 'VERIFIED' : 'PENDING',
+    paymentMethod: paid ? 'WALLET' : null,
+    shippingMethod: 'COURIER',
+    shippingAddress: addresses[addresses.length - 1],
+    subtotalAmountToman: '500000',
+    taxAmountToman: '20000',
+    discountAmountToman: '25000',
+    shippingAmountToman: '25000',
+    totalAmountToman: '520000',
+    lines: [
+      {
+        productTitle: product.title,
+        skuCode: 'HAIR-250',
+        quantity: 2,
+        unitPriceToman: '250000',
+        unitTaxToman: '10000',
+        lineTotalToman: '520000',
+      },
+    ],
+    refundStatuses: [],
+    createdAt: '2026-10-20T10:00:00Z',
+  });
+  const intent = () => ({
+    id: 'intent-1',
+    purpose: 'ORDER',
+    status: paid ? 'PAID' : 'PENDING',
+    method: paid ? 'WALLET' : null,
+    amountRial: '5200000',
+    currency: 'IRR',
+    orderId: 'order-1',
+    appointmentId: null,
+    expiresAt: null,
+    paidAt: paid ? '2026-10-20T10:00:00Z' : null,
+    createdAt: '2026-10-20T10:00:00Z',
+    methods: [
+      {
+        code: 'WALLET',
+        available: !options.unavailable,
+        balanceRial: options.unavailable ? '100000' : '19000000',
+      },
+      { code: 'GATEWAY', available: false },
+    ],
+  });
+  await page.route('**/v1/**', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    const method = request.method();
     const headers = {
-      "access-control-allow-origin": origin,
-      "access-control-allow-credentials": "true",
-      "access-control-allow-headers": "authorization, content-type, x-analytics-context",
+      'access-control-allow-origin': origin,
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+      'access-control-allow-headers': 'authorization, content-type, idempotency-key',
     };
-    if (route.request().method() === "OPTIONS") return route.fulfill({ status: 204, headers });
-    const path = new URL(route.request().url()).pathname;
-    if (path.endsWith("/program-recommendations")) {
-      return route.fulfill({ headers, json: { status: "NO_RESULT", items: [] } });
-    }
-    const custom = path.endsWith("/custom-program-offering-cards");
-    const type = custom ? "custom" : "education";
-    counts[type]++;
-    return route.fulfill({ headers, json: {
-      items: [{
-        id: type, title: custom ? "خدمت اختصاصی آزمایشی" : "خدمت آموزشی آزمایشی",
-        summary: "", category: "خواب", amountRial: "100000", discountPercent: 0,
-        accessMode: "PERPETUAL", accessDurationDays: null,
-        ...(custom ? { physician: { displayName: "دکتر آزمایشی" }, requestSupported: true } : {}),
-      }], nextCursor: null,
-    } });
-  });
-  await page.goto(`${origin}/store`);
-  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
-  const services = tabs.getByRole("link", { name: "خدمات" });
-  for (const phase of ["cold", "warm"]) {
-    const start = performance.now();
-    await services.click();
-    const times = await Promise.all(["خدمت آموزشی آزمایشی", "خدمت اختصاصی آزمایشی"].map(async title => {
-      await expect(page.getByText(title, { exact: true })).toBeVisible();
-      return performance.now() - start;
-    }));
-    await testInfo.attach(`catalog-${phase}`, { body: JSON.stringify({
-      mocks: true, firstVisibleCardMs: Math.min(...times), bothCardsMs: Math.max(...times), ...counts,
-    }), contentType: "application/json" });
-    expect(counts).toEqual({ education: 1, custom: 1 });
-    if (phase === "cold") await page.goBack();
-  }
-});
-
-test("services uses the latest mezaj result and preserves product filters between tabs", async ({ page }, testInfo) => {
-  if (testInfo.project.name === "mobile") await page.setViewportSize({ width: 320, height: 760 });
-  const requests: string[] = [];
-  let recommendationStatus = "NO_RESULT";
-  let failed = false;
-  const educational = { id: "education", title: "راهنمای شناخت خود", summary: "محتوای آموزشی", category: "شناخت خود", amountRial: "0", discountPercent: 0, accessMode: "DAYS", accessDurationDays: 30 };
-  const custom = { id: "custom", title: "برنامهٔ اختصاصی خواب", summary: "", category: "خواب", amountRial: "100000", physician: { displayName: "دکتر آزمایشی" }, requestSupported: false };
-  const recommended = { programDefinitionId: "featured", publicationId: "featured", title: "پیشنهاد نخست", summary: "برنامهٔ پیشنهادی", icon: "heart", amountRial: "100000", baseAmountRial: "150000", discountPercent: 33, state: "BUY" };
-  await fixture(page);
-  await page.route(/\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/, async (route) => {
-    const url = new URL(route.request().url());
-    const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-headers": "authorization, content-type, x-analytics-context" };
-    if (route.request().method() === "OPTIONS") {
+    const send = (body: unknown, status = 200) =>
+      route.fulfill({
+        status,
+        headers,
+        contentType: 'application/json',
+        body: JSON.stringify(body),
+      });
+    if (method === 'OPTIONS') {
       await route.fulfill({ status: 204, headers });
       return;
     }
-    const path = url.pathname.split("/").at(-1)!;
-    requests.push(path);
-    if (path === "program-recommendations") {
-      expect(url.searchParams.has("submissionId")).toBe(false);
-      await route.fulfill({ status: failed ? 503 : 200, headers, json: {
-        status: recommendationStatus,
-        items: recommendationStatus === "READY" ? [
-          recommended,
-          { ...recommended, programDefinitionId: "pending", title: "خرید معلق", state: "PENDING", purchaseId: "pending" },
-          { ...recommended, programDefinitionId: "owned", title: "محتوای من", state: "OWNED", accessGrantId: "owned" },
-        ] : [],
-      } });
+    if (path === '/v1/auth/refresh') {
+      await send({
+        accessToken: 'fixture-token',
+        tokenType: 'Bearer',
+        expiresIn: 600,
+        user: { id: 'fixture-patient', roles: ['PATIENT'] },
+      });
       return;
     }
-    const cursor = url.searchParams.get("cursor");
-    if (cursor !== null) expect(cursor).toBe("next-fixture");
-    const catalogPage = cursor ? 2 : 1;
-    const items = path === "program-offering-cards"
-      ? Array.from({ length: catalogPage === 1 ? 7 : 2 }, (_, index) => ({
-        ...educational,
-        id: `education-${catalogPage}-${index}`,
-        title: catalogPage === 1 ? (index ? `آموزش ${index + 1}` : educational.title) : (index ? "آموزش دوم این صفحه" : "صفحهٔ دوم آموزش"),
-      }))
-      : [custom];
-    await route.fulfill({ headers, json: { items, nextCursor: path === "program-offering-cards" && catalogPage === 1 ? "next-fixture" : null } });
+    if (path === '/v1/patients/me/entry') {
+      await send({ required: false, phase: 'COMPLETE' });
+      return;
+    }
+    if (method !== 'GET') {
+      const body = request.postDataJSON();
+      if (path.endsWith('/commerce/discount-preview')) {
+        await send(
+          body.discountCode === 'INVALID'
+            ? { code: 'COMMERCE_DISCOUNT_NOT_FOUND' }
+            : {
+                code: body.discountCode,
+                subtotalAmountToman: '500000',
+                taxAmountToman: '20000',
+                discountAmountToman: '25000',
+              },
+          body.discountCode === 'INVALID' ? 422 : 200,
+        );
+        return;
+      }
+      commands.push({ path, body, key: request.headers()['idempotency-key'] });
+      if (path.endsWith('/cart') && method === 'PUT') {
+        quantity = body.quantity;
+        skuId = body.skuId;
+        await send(cart());
+        return;
+      }
+      if (path.endsWith('/wishlist') && method === 'PUT') {
+        saved = body.saved;
+        await send({ items: saved ? [{ id: 'wish-1', product, sku: product.skus[1] }] : [] });
+        return;
+      }
+      if (path.endsWith('/commerce/addresses') && method === 'POST') {
+        const address = { ...body, id: 'new-address', isDefault: false };
+        addresses.push(address);
+        await send(address);
+        return;
+      }
+      if (path === '/v1/patients/me/orders' && method === 'POST') {
+        if (body.discountCode === 'INVALID') {
+          await send({ code: 'COMMERCE_DISCOUNT_NOT_FOUND' }, 422);
+          return;
+        }
+        quantity = 0;
+        await send(order());
+        return;
+      }
+      if (path.endsWith('/billing/order-intents')) {
+        await send(intent());
+        return;
+      }
+      if (path.endsWith('/intent-1/wallet-payment')) {
+        paid = true;
+        await send(intent());
+        return;
+      }
+      unexpected.push(`${method} ${path}`);
+      await send({}, 403);
+      return;
+    }
+    if (path === '/v1/commerce/products') {
+      const url = new URL(request.url());
+      await send({
+        items: [product],
+        total: 1,
+        page: Number(url.searchParams.get('page') ?? 1),
+        pageSize: 20,
+      });
+    } else if (path === `/v1/commerce/products/${productId}`) await send(product);
+    else if (path.endsWith('/commerce/addresses')) await send(addresses);
+    else if (path.endsWith('/shipping-options'))
+      await send([
+        { method: 'PICKUP', amountToman: '0' },
+        { method: 'COURIER', amountToman: '25000' },
+      ]);
+    else if (path.endsWith('/cart'))
+      await send(failedAccount ? {} : cart(), failedAccount ? 503 : 200);
+    else if (path.endsWith('/wishlist'))
+      await send({ items: saved ? [{ id: 'wish-1', product, sku: product.skus[1] }] : [] });
+    else if (path === '/v1/patients/me/orders') await send([order()]);
+    else if (path === '/v1/patients/me/orders/order-1') await send(order());
+    else if (path.endsWith('/order-1/receipt'))
+      await send(
+        paid
+          ? {
+              orderId: 'order-1',
+              orderNumber: '1024',
+              totalAmountToman: '520000',
+              status: 'VERIFIED',
+              order: order(),
+              verifiedAt: '2026-10-20T10:00:00Z',
+              method: 'WALLET',
+            }
+          : {},
+        paid ? 200 : 409,
+      );
+    else if (path.endsWith('/billing/intents/intent-1')) await send(intent());
+    else if (path === '/v1/patients/me')
+      await send({
+        firstName: 'کاربر',
+        lastName: 'آزمایشی',
+        phone: '09120000000',
+        accountStatus: 'ACTIVE',
+      });
+    else if (path === '/v1/content/banners')
+      await send({
+        items: options.banners
+          ? [1, 2].map((id) => ({
+              id: String(id),
+              title: `بنر ${id}`,
+              contentPath: `/v1/content/banners/${id}/image`,
+              destinationUrl: '/store?view=all',
+            }))
+          : [],
+      });
+    else if (/\/content\/banners\/\d\/image$/.test(path))
+      await route.fulfill({
+        status: 200,
+        headers,
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600"><rect width="1200" height="600" fill="#DEEDFF"/></svg>',
+      });
+    else if (path.endsWith('/notifications')) await send({ items: [], total: 0 });
+    else await send({}, 503);
   });
+  return {
+    commands,
+    unexpected,
+    recover: () => {
+      failedAccount = false;
+    },
+  };
+}
+
+async function noOverflow(page: Page) {
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
+  ).toBeTruthy();
+}
+
+test('services reuses both catalog pages when returning within the session cache window', async ({
+  page,
+}, testInfo) => {
+  const counts = { education: 0, custom: 0 };
+  await fixture(page);
+  await page.route(
+    /\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/,
+    async (route) => {
+      const headers = {
+        'access-control-allow-origin': origin,
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-headers': 'authorization, content-type, x-analytics-context',
+      };
+      if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+      const path = new URL(route.request().url()).pathname;
+      if (path.endsWith('/program-recommendations')) {
+        return route.fulfill({ headers, json: { status: 'NO_RESULT', items: [] } });
+      }
+      const custom = path.endsWith('/custom-program-offering-cards');
+      const type = custom ? 'custom' : 'education';
+      counts[type]++;
+      return route.fulfill({
+        headers,
+        json: {
+          items: [
+            {
+              id: type,
+              title: custom ? 'خدمت اختصاصی آزمایشی' : 'خدمت آموزشی آزمایشی',
+              summary: '',
+              category: 'خواب',
+              amountRial: '100000',
+              discountPercent: 0,
+              accessMode: 'PERPETUAL',
+              accessDurationDays: null,
+              ...(custom
+                ? { physician: { displayName: 'دکتر آزمایشی' }, requestSupported: true }
+                : {}),
+            },
+          ],
+          nextCursor: null,
+        },
+      });
+    },
+  );
+  await page.goto(`${origin}/store`);
+  const tabs = page.getByRole('navigation', { name: 'بخش‌های فروشگاه' });
+  const services = tabs.getByRole('link', { name: 'خدمات' });
+  for (const phase of ['cold', 'warm']) {
+    const start = performance.now();
+    await services.click();
+    const times = await Promise.all(
+      ['خدمت آموزشی آزمایشی', 'خدمت اختصاصی آزمایشی'].map(async (title) => {
+        await expect(page.getByText(title, { exact: true })).toBeVisible();
+        return performance.now() - start;
+      }),
+    );
+    await testInfo.attach(`catalog-${phase}`, {
+      body: JSON.stringify({
+        mocks: true,
+        firstVisibleCardMs: Math.min(...times),
+        bothCardsMs: Math.max(...times),
+        ...counts,
+      }),
+      contentType: 'application/json',
+    });
+    expect(counts).toEqual({ education: 1, custom: 1 });
+    if (phase === 'cold') await page.goBack();
+  }
+});
+
+test('services uses the latest mezaj result and preserves product filters between tabs', async ({
+  page,
+}, testInfo) => {
+  if (testInfo.project.name === 'mobile') await page.setViewportSize({ width: 320, height: 760 });
+  const requests: string[] = [];
+  let recommendationStatus = 'NO_RESULT';
+  let failed = false;
+  const educational = {
+    id: 'education',
+    title: 'راهنمای شناخت خود',
+    summary: 'محتوای آموزشی',
+    category: 'شناخت خود',
+    amountRial: '0',
+    discountPercent: 0,
+    accessMode: 'DAYS',
+    accessDurationDays: 30,
+  };
+  const custom = {
+    id: 'custom',
+    title: 'برنامهٔ اختصاصی خواب',
+    summary: '',
+    category: 'خواب',
+    amountRial: '100000',
+    physician: { displayName: 'دکتر آزمایشی' },
+    requestSupported: false,
+  };
+  const recommended = {
+    programDefinitionId: 'featured',
+    publicationId: 'featured',
+    title: 'پیشنهاد نخست',
+    summary: 'برنامهٔ پیشنهادی',
+    icon: 'heart',
+    amountRial: '100000',
+    baseAmountRial: '150000',
+    discountPercent: 33,
+    state: 'BUY',
+  };
+  await fixture(page);
+  await page.route(
+    /\/v1\/patients\/me\/(?:program-recommendations|program-offering-cards|custom-program-offering-cards)(?:\?|$)/,
+    async (route) => {
+      const url = new URL(route.request().url());
+      const headers = {
+        'access-control-allow-origin': origin,
+        'access-control-allow-credentials': 'true',
+        'access-control-allow-headers': 'authorization, content-type, x-analytics-context',
+      };
+      if (route.request().method() === 'OPTIONS') {
+        await route.fulfill({ status: 204, headers });
+        return;
+      }
+      const path = url.pathname.split('/').at(-1)!;
+      requests.push(path);
+      if (path === 'program-recommendations') {
+        expect(url.searchParams.has('submissionId')).toBe(false);
+        await route.fulfill({
+          status: failed ? 503 : 200,
+          headers,
+          json: {
+            status: recommendationStatus,
+            items:
+              recommendationStatus === 'READY'
+                ? [
+                    recommended,
+                    {
+                      ...recommended,
+                      programDefinitionId: 'pending',
+                      title: 'خرید معلق',
+                      state: 'PENDING',
+                      purchaseId: 'pending',
+                    },
+                    {
+                      ...recommended,
+                      programDefinitionId: 'owned',
+                      title: 'محتوای من',
+                      state: 'OWNED',
+                      accessGrantId: 'owned',
+                    },
+                  ]
+                : [],
+          },
+        });
+        return;
+      }
+      const cursor = url.searchParams.get('cursor');
+      if (cursor !== null) expect(cursor).toBe('next-fixture');
+      const catalogPage = cursor ? 2 : 1;
+      const items =
+        path === 'program-offering-cards'
+          ? Array.from({ length: catalogPage === 1 ? 7 : 2 }, (_, index) => ({
+              ...educational,
+              id: `education-${catalogPage}-${index}`,
+              title:
+                catalogPage === 1
+                  ? index
+                    ? `آموزش ${index + 1}`
+                    : educational.title
+                  : index
+                    ? 'آموزش دوم این صفحه'
+                    : 'صفحهٔ دوم آموزش',
+            }))
+          : [custom];
+      await route.fulfill({
+        headers,
+        json: {
+          items,
+          nextCursor:
+            path === 'program-offering-cards' && catalogPage === 1 ? 'next-fixture' : null,
+        },
+      });
+    },
+  );
 
   await page.goto(`${origin}/store?view=all&q=شامپو&category=${categoryId}&page=2`);
-  await expect(page.locator(".store-product").first()).toBeVisible();
+  await expect(page.locator('.store-product').first()).toBeVisible();
   expect(requests).toEqual([]);
-  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
-  const services = tabs.getByRole("link", { name: "خدمات" });
+  const tabs = page.getByRole('navigation', { name: 'بخش‌های فروشگاه' });
+  const services = tabs.getByRole('link', { name: 'خدمات' });
   await services.focus();
-  await page.keyboard.press("Enter");
-  await expect(services).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("link", { name: "شروع ارزیابی" })).toHaveAttribute("href", "/assessment");
-  await expect(page.locator("#store-search")).toHaveCount(0);
-  expect(new URL(page.url()).searchParams.get("page")).toBe("2");
-  const education = page.getByRole("region", { name: "خدمات مرتبط با سایر مزاج‌ها" });
-  const educationRail = education.getByRole("group", { name: "خدمات مرتبط با سایر مزاج‌ها، شناخت خود", exact: true });
-  await educationRail.getByRole("button", { name: "نمایش کارت ۱", exact: true }).click();
-  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۱", exact: true })).toHaveAttribute("aria-current", "true");
-  await educationRail.getByLabel("جابه‌جایی کارت‌های خدمات مرتبط با سایر مزاج‌ها، شناخت خود با کلیدهای جهت").focus();
-  await page.keyboard.press("ArrowLeft");
-  await expect(educationRail.getByRole("button", { name: "نمایش کارت ۲", exact: true })).toHaveAttribute("aria-current", "true");
-  await page.getByRole("region", { name: "خدمات اختصاصی" }).scrollIntoViewIfNeeded();
-  await expect(education.getByText("صفحهٔ دوم آموزش")).toHaveCount(1);
+  await page.keyboard.press('Enter');
+  await expect(services).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('link', { name: 'شروع ارزیابی' })).toHaveAttribute(
+    'href',
+    '/assessment',
+  );
+  await expect(page.locator('#store-search')).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('page')).toBe('2');
+  const education = page.getByRole('region', { name: 'خدمات مرتبط با سایر مزاج‌ها' });
+  const educationRail = education.getByRole('group', {
+    name: 'خدمات مرتبط با سایر مزاج‌ها، شناخت خود',
+    exact: true,
+  });
+  await educationRail.getByRole('button', { name: 'نمایش کارت ۱', exact: true }).click();
+  await expect(
+    educationRail.getByRole('button', { name: 'نمایش کارت ۱', exact: true }),
+  ).toHaveAttribute('aria-current', 'true');
+  await educationRail
+    .getByLabel('جابه‌جایی کارت‌های خدمات مرتبط با سایر مزاج‌ها، شناخت خود با کلیدهای جهت')
+    .focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(
+    educationRail.getByRole('button', { name: 'نمایش کارت ۲', exact: true }),
+  ).toHaveAttribute('aria-current', 'true');
+  await page.getByRole('region', { name: 'خدمات اختصاصی' }).scrollIntoViewIfNeeded();
+  await expect(education.getByText('صفحهٔ دوم آموزش')).toHaveCount(1);
   await expect(page.getByText(/دکتر آزمایشی.*درخواست فعلاً غیرفعال/)).toBeVisible();
-  await expect(page.getByRole("region", { name: "خدمات اختصاصی" }).locator(".swiper")).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'خدمات اختصاصی' }).locator('.swiper')).toHaveCount(
+    0,
+  );
   await page.goBack();
-  await expect(page.locator("#store-search")).toHaveValue("شامپو");
+  await expect(page.locator('#store-search')).toHaveValue('شامپو');
 
-  recommendationStatus = "READY";
+  recommendationStatus = 'READY';
   failed = true;
   await page.goForward();
-  await expect(page.getByText("پیشنهادهای خدمات دریافت نشد.")).toBeVisible();
-  await expect(education.getByText("راهنمای شناخت خود")).toBeVisible();
+  await expect(page.getByText('پیشنهادهای خدمات دریافت نشد.')).toBeVisible();
+  await expect(education.getByText('راهنمای شناخت خود')).toBeVisible();
   failed = false;
-  await page.getByRole("button", { name: "تلاش دوباره" }).click();
-  await expect(page.getByRole("link", { name: /جزئیات خدمت، پیشنهاد نخست/ })).toHaveAttribute("href", "/programs/offerings/featured");
-  await expect(page.getByRole("link", { name: /ادامهٔ پرداخت، خرید معلق/ })).toHaveAttribute("href", "/programs/purchases/pending");
-  await expect(page.getByRole("link", { name: /مطالعهٔ محتوا، محتوای من/ })).toHaveAttribute("href", "/programs/content/owned");
-  const rail = page.getByRole("group", { name: "پیشنهادهای بیشتر", exact: true });
-  const viewport = rail.getByLabel("جابه‌جایی کارت‌های پیشنهادهای بیشتر با کلیدهای جهت");
-  const firstDot = rail.getByRole("button", { name: "نمایش کارت ۱" });
-  const secondDot = rail.getByRole("button", { name: "نمایش کارت ۲" });
+  await page.getByRole('button', { name: 'تلاش دوباره' }).click();
+  await expect(page.getByRole('link', { name: /جزئیات خدمت، پیشنهاد نخست/ })).toHaveAttribute(
+    'href',
+    '/programs/offerings/featured',
+  );
+  await expect(page.getByRole('link', { name: /ادامهٔ پرداخت، خرید معلق/ })).toHaveAttribute(
+    'href',
+    '/programs/purchases/pending',
+  );
+  await expect(page.getByRole('link', { name: /مطالعهٔ محتوا، محتوای من/ })).toHaveAttribute(
+    'href',
+    '/programs/content/owned',
+  );
+  const rail = page.getByRole('group', { name: 'پیشنهادهای بیشتر', exact: true });
+  const viewport = rail.getByLabel('جابه‌جایی کارت‌های پیشنهادهای بیشتر با کلیدهای جهت');
+  const firstDot = rail.getByRole('button', { name: 'نمایش کارت ۱' });
+  const secondDot = rail.getByRole('button', { name: 'نمایش کارت ۲' });
   await viewport.focus();
-  await page.keyboard.press("ArrowLeft");
-  await expect(secondDot).toHaveAttribute("aria-current", "true");
-  await page.keyboard.press("ArrowLeft");
-  await expect(secondDot).toHaveAttribute("aria-current", "true");
+  await page.keyboard.press('ArrowLeft');
+  await expect(secondDot).toHaveAttribute('aria-current', 'true');
+  await page.keyboard.press('ArrowLeft');
+  await expect(secondDot).toHaveAttribute('aria-current', 'true');
   await firstDot.click();
-  await expect(firstDot).toHaveAttribute("aria-current", "true");
-  await expect.poll(() => rail.locator(".swiper-wrapper").evaluate(el => el.getAnimations().length)).toBe(0);
-  const railBounds = (await rail.locator(".swiper").boundingBox())!;
-  const activeBounds = (await rail.locator(".swiper-slide-active").boundingBox())!;
-  const adjacentBounds = (await rail.locator(".swiper-slide-next").boundingBox())!;
-  expect(Math.abs(activeBounds.x + activeBounds.width / 2 - railBounds.x - railBounds.width / 2)).toBeLessThan(2);
+  await expect(firstDot).toHaveAttribute('aria-current', 'true');
+  await expect
+    .poll(() => rail.locator('.swiper-wrapper').evaluate((el) => el.getAnimations().length))
+    .toBe(0);
+  const railBounds = (await rail.locator('.swiper').boundingBox())!;
+  const activeBounds = (await rail.locator('.swiper-slide-active').boundingBox())!;
+  const adjacentBounds = (await rail.locator('.swiper-slide-next').boundingBox())!;
+  expect(
+    Math.abs(activeBounds.x + activeBounds.width / 2 - railBounds.x - railBounds.width / 2),
+  ).toBeLessThan(2);
   expect(adjacentBounds.x).toBeLessThan(railBounds.x);
   expect(adjacentBounds.x + adjacentBounds.width).toBeGreaterThan(railBounds.x);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const card = rail.locator(".swiper-slide-active");
-  const link = card.getByRole("link", { name: /ادامهٔ پرداخت/ });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const card = rail.locator('.swiper-slide-active');
+  const link = card.getByRole('link', { name: /ادامهٔ پرداخت/ });
   await link.scrollIntoViewIfNeeded();
   const bounds = (await link.boundingBox())!;
   const x = Math.round(bounds.x + bounds.width / 2);
   const y = Math.round(bounds.y + bounds.height / 2);
-  if (testInfo.project.name === "mobile") {
+  if (testInfo.project.name === 'mobile') {
     const cdp = await page.context().newCDPSession(page);
-    await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
     for (const offset of [20, 50, 80]) {
-      await cdp.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: x + offset, y }] });
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x: x + offset, y }],
+      });
     }
-    await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await cdp.detach();
   } else {
     await page.mouse.move(x, y);
@@ -229,160 +566,219 @@ test("services uses the latest mezaj result and preserves product filters betwee
     await page.mouse.move(x + 95, y, { steps: 8 });
     await page.mouse.up();
   }
-  await expect(secondDot).toHaveAttribute("aria-current", "true");
+  await expect(secondDot).toHaveAttribute('aria-current', 'true');
   await expect(page).toHaveURL(/\/store\?/);
-  await expect.poll(() => rail.locator(".swiper-wrapper").evaluate(el => getComputedStyle(el).transitionDuration)).toBe("0s");
-  if (testInfo.project.name === "desktop") {
-    await rail.locator(".swiper").hover();
+  await expect
+    .poll(() =>
+      rail.locator('.swiper-wrapper').evaluate((el) => getComputedStyle(el).transitionDuration),
+    )
+    .toBe('0s');
+  if (testInfo.project.name === 'desktop') {
+    await rail.locator('.swiper').hover();
     await page.mouse.wheel(260, 0);
-    await expect(firstDot).toHaveAttribute("aria-current", "true");
+    await expect(firstDot).toHaveAttribute('aria-current', 'true');
     await page.mouse.wheel(0, 90);
-    await expect(firstDot).toHaveAttribute("aria-current", "true");
+    await expect(firstDot).toHaveAttribute('aria-current', 'true');
   }
   await noOverflow(page);
-  expect(await page.locator(".patient-shell-content").evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  expect(
+    await page
+      .locator('.patient-shell-content')
+      .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+  ).toBe(true);
   await page.reload();
-  await expect(services).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: "پیشنهاد نخست" })).toBeVisible();
-  await page.getByRole("link", { name: /جزئیات خدمت، پیشنهاد نخست/ }).click();
+  await expect(services).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('heading', { name: 'پیشنهاد نخست' })).toBeVisible();
+  await page.getByRole('link', { name: /جزئیات خدمت، پیشنهاد نخست/ }).click();
   await expect(page).toHaveURL(/\/programs\/offerings\/featured$/);
   await page.goto(`${origin}/programs`);
-  await expect(page.getByRole("heading", { name: "برنامه‌های سلامت" })).toBeVisible();
-  await expect(page.getByRole("navigation", { name: "بخش‌های فروشگاه" })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'برنامه‌های سلامت' })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'بخش‌های فروشگاه' })).toHaveCount(0);
 });
 
-test("guest services offers login with a return destination and sends no private requests", async ({ page }) => {
+test('guest services offers login with a return destination and sends no private requests', async ({
+  page,
+}) => {
   const privateRequests: string[] = [];
-  await page.route("**/v1/**", async (route) => {
+  await page.route('**/v1/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
-    const headers = { "access-control-allow-origin": origin, "access-control-allow-credentials": "true", "access-control-allow-headers": "authorization, content-type" };
-    if (route.request().method() === "OPTIONS") {
+    const headers = {
+      'access-control-allow-origin': origin,
+      'access-control-allow-credentials': 'true',
+      'access-control-allow-headers': 'authorization, content-type',
+    };
+    if (route.request().method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers });
       return;
     }
-    if (path.includes("/patients/me/")) privateRequests.push(path);
+    if (path.includes('/patients/me/')) privateRequests.push(path);
     await route.fulfill({ status: 401, headers, json: {} });
   });
   await page.goto(`${origin}/store?tab=services`);
-  const login = page.getByRole("link", { name: "ورود به حساب" });
-  await expect(login).toHaveAttribute("href", /[?&]next=/);
-  expect(new URL((await login.getAttribute("href"))!).searchParams.get("next")).toBe(`${origin}/store?tab=services`);
+  const login = page.getByRole('link', { name: 'ورود به حساب' });
+  await expect(login).toHaveAttribute('href', /[?&]next=/);
+  expect(new URL((await login.getAttribute('href'))!).searchParams.get('next')).toBe(
+    `${origin}/store?tab=services`,
+  );
   expect(privateRequests).toEqual([]);
 });
 
-test("product banner dots work after returning from services", async ({ page }) => {
+test('product banner dots work after returning from services', async ({ page }) => {
   await fixture(page, { banners: true });
-  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`${origin}/store`);
-  const tabs = page.getByRole("navigation", { name: "بخش‌های فروشگاه" });
-  const hero = page.getByRole("region", { name: "بنرهای فروشگاه" });
-  const dots = hero.getByRole("group", { name: "انتخاب بنر" });
+  const tabs = page.getByRole('navigation', { name: 'بخش‌های فروشگاه' });
+  const hero = page.getByRole('region', { name: 'بنرهای فروشگاه' });
+  const dots = hero.getByRole('group', { name: 'انتخاب بنر' });
   const selectSecond = async () => {
-    const second = dots.getByRole("button", { name: "بنر 2", exact: true });
+    const second = dots.getByRole('button', { name: 'بنر 2', exact: true });
     await second.click();
-    await expect(second).toHaveAttribute("aria-current", "true");
+    await expect(second).toHaveAttribute('aria-current', 'true');
   };
   await selectSecond();
-  await tabs.getByRole("link", { name: "خدمات" }).click();
+  await tabs.getByRole('link', { name: 'خدمات' }).click();
   await expect(hero).toHaveCount(0);
-  await tabs.getByRole("link", { name: "محصولات" }).click();
+  await tabs.getByRole('link', { name: 'محصولات' }).click();
   await selectSecond();
   await noOverflow(page);
 });
 
-test("selected SKU, favorites, cart, Persian address, totals and wallet receipt form one usable purchase", async ({ page }, testInfo) => {
+test('selected SKU, favorites, cart, Persian address, totals and wallet receipt form one usable purchase', async ({
+  page,
+}, testInfo) => {
   const mock = await fixture(page);
   const errors: string[] = [];
-  page.on("pageerror", error => errors.push(error.message));
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`${origin}/store?view=all&q=شامپو`);
-  await expect(page.locator("#store-search")).toHaveValue("شامپو");
-  await page.locator(".store-product").first().getByRole("link").first().click();
-  await expect(page.locator("#product-variant")).toHaveValue("small");
-  await page.locator("#product-variant").selectOption("large");
+  await expect(page.locator('#store-search')).toHaveValue('شامپو');
+  await page.locator('.store-product').first().getByRole('link').first().click();
+  await expect(page.locator('#product-variant')).toHaveValue('small');
+  await page.locator('#product-variant').selectOption('large');
   await expect(page).toHaveURL(/sku=large/);
-  await expect(page.locator(".store-unit-price")).toContainText("۲۵۰٬۰۰۰");
-  await expect(page.locator(".store-facts")).toContainText("HAIR-250");
-  await expect(page.getByRole("navigation", { name: "ناوبری اصلی" })).toHaveCount(0);
-  await page.getByRole("button", { name: "افزودن به علاقه‌مندی‌ها", exact: true }).first().click();
-  await expect(page.getByRole("button", { name: "حذف از علاقه‌مندی‌ها", exact: true }).first()).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "افزودن به سبد", exact: true }).click();
-  await page.getByRole("button", { name: `افزایش تعداد ${product.title}`, exact: true }).click();
-  await expect(page.locator(".store-purchase-bar__price")).toContainText("۵۰۰٬۰۰۰");
+  await expect(page.locator('.store-unit-price')).toContainText('۲۵۰٬۰۰۰');
+  await expect(page.locator('.store-facts')).toContainText('HAIR-250');
+  await expect(page.getByRole('navigation', { name: 'ناوبری اصلی' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'افزودن به علاقه‌مندی‌ها', exact: true }).first().click();
+  await expect(
+    page.getByRole('button', { name: 'حذف از علاقه‌مندی‌ها', exact: true }).first(),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'افزودن به سبد', exact: true }).click();
+  await page.getByRole('button', { name: `افزایش تعداد ${product.title}`, exact: true }).click();
+  await expect(page.locator('.store-purchase-bar__price')).toContainText('۵۰۰٬۰۰۰');
   await noOverflow(page);
-  await page.screenshot({ path: join(tmpdir(), `store-product-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({
+    path: join(tmpdir(), `store-product-${testInfo.project.name}.png`),
+    fullPage: true,
+  });
   await page.goto(`${origin}/store/wishlist`);
-  await expect(page.locator(".store-product")).toHaveCount(1);
-  await expect(page.locator(".store-product a").first()).toHaveAttribute("href", /sku=large/);
+  await expect(page.locator('.store-product')).toHaveCount(1);
+  await expect(page.locator('.store-product a').first()).toHaveAttribute('href', /sku=large/);
   await page.goto(`${origin}/store/cart`);
-  await expect(page.locator(".store-cart-item")).toContainText("۲۵۰ میلی‌لیتر");
-  await expect(page.locator('[aria-label="خلاصهٔ سبد"]')).toContainText("۵۲۰٬۰۰۰");
+  await expect(page.locator('.store-cart-item')).toContainText('۲۵۰ میلی‌لیتر');
+  await expect(page.locator('[aria-label="خلاصهٔ سبد"]')).toContainText('۵۲۰٬۰۰۰');
   await noOverflow(page);
   await page.goto(`${origin}/store/checkout`);
-  await page.getByRole("radio", { name: /ارسال با پیک/ }).check();
-  await page.getByRole("button", { name: "افزودن آدرس", exact: true }).click();
-  const form = page.getByRole("dialog", { name: "آدرس جدید" });
+  await page.getByRole('radio', { name: /ارسال با پیک/ }).check();
+  await page.getByRole('button', { name: 'افزودن آدرس', exact: true }).click();
+  const form = page.getByRole('dialog', { name: 'آدرس جدید' });
   await expect(form).toBeVisible();
-  for (const [key, value] of Object.entries({ label: "دفتر", recipientName: "کاربر آزمایشی", phone: "۰۹۱۲۳۴۵۶۷۸۹", province: "تهران", city: "تهران", line1: "خیابان آزمایشی، پلاک ۲", postalCode: "۱۲۳۴۵۶۷۸۹۰" })) await form.locator(`#profile-address-${key}`).fill(value);
-  await form.getByRole("button", { name: "ذخیره آدرس", exact: true }).click();
+  for (const [key, value] of Object.entries({
+    label: 'دفتر',
+    recipientName: 'کاربر آزمایشی',
+    phone: '۰۹۱۲۳۴۵۶۷۸۹',
+    province: 'تهران',
+    city: 'تهران',
+    line1: 'خیابان آزمایشی، پلاک ۲',
+    postalCode: '۱۲۳۴۵۶۷۸۹۰',
+  }))
+    await form.locator(`#profile-address-${key}`).fill(value);
+  await form.getByRole('button', { name: 'ذخیره آدرس', exact: true }).click();
   await expect(form).toHaveCount(0);
-  await expect(page.locator('input[name="address"]:checked').locator("..")).toContainText("دفتر");
-  expect(mock.commands.find(command => command.path.endsWith("/commerce/addresses"))?.body).toMatchObject({ phone: "09123456789", postalCode: "1234567890" });
-  await page.locator("#checkout-discount").fill("INVALID");
-  await page.getByRole("button", { name: "اعمال کد", exact: true }).click();
-  await expect(page.locator("#checkout-discount-feedback")).toContainText("کد تخفیف معتبر نیست");
-  await page.locator("#checkout-discount").fill("SAVE25");
-  await page.getByRole("button", { name: "اعمال کد", exact: true }).click();
-  await expect(page.locator("#checkout-discount-feedback")).toContainText("۲۵٬۰۰۰ تومان");
+  await expect(page.locator('input[name="address"]:checked').locator('..')).toContainText('دفتر');
+  expect(
+    mock.commands.find((command) => command.path.endsWith('/commerce/addresses'))?.body,
+  ).toMatchObject({ phone: '09123456789', postalCode: '1234567890' });
+  await page.locator('#checkout-discount').fill('INVALID');
+  await page.getByRole('button', { name: 'اعمال کد', exact: true }).click();
+  await expect(page.locator('#checkout-discount-feedback')).toContainText('کد تخفیف معتبر نیست');
+  await page.locator('#checkout-discount').fill('SAVE25');
+  await page.getByRole('button', { name: 'اعمال کد', exact: true }).click();
+  await expect(page.locator('#checkout-discount-feedback')).toContainText('۲۵٬۰۰۰ تومان');
   await noOverflow(page);
-  await page.screenshot({ path: join(tmpdir(), `store-checkout-${testInfo.project.name}.png`), fullPage: true });
-  await page.getByRole("button", { name: "ثبت سفارش و ادامهٔ پرداخت", exact: true }).click();
+  await page.screenshot({
+    path: join(tmpdir(), `store-checkout-${testInfo.project.name}.png`),
+    fullPage: true,
+  });
+  await page.getByRole('button', { name: 'ثبت سفارش و ادامهٔ پرداخت', exact: true }).click();
   await expect(page).toHaveURL(/store\/payment\?orderId=order-1/);
-  const pay = page.getByRole("button", { name: /پرداخت از کیف پول/ });
+  const pay = page.getByRole('button', { name: /پرداخت از کیف پول/ });
   await expect(pay).toBeEnabled();
-  await expect(page.getByRole("button", { name: /پرداخت بانکی/ })).toBeDisabled();
-  await expect(page.getByRole("region", { name: "مبلغ قابل پرداخت" })).toContainText("۵۲۰٬۰۰۰");
-  await page.screenshot({ path: join(tmpdir(), `store-payment-${testInfo.project.name}.png`), fullPage: true });
+  await expect(page.getByRole('button', { name: /پرداخت بانکی/ })).toBeDisabled();
+  await expect(page.getByRole('region', { name: 'مبلغ قابل پرداخت' })).toContainText('۵۲۰٬۰۰۰');
+  await page.screenshot({
+    path: join(tmpdir(), `store-payment-${testInfo.project.name}.png`),
+    fullPage: true,
+  });
   await pay.click();
-  await page.getByRole("dialog", { name:"تأیید پرداخت از کیف پول" }).getByRole("button",{name:"تأیید پرداخت",exact:true}).click();
+  await page
+    .getByRole('dialog', { name: 'تأیید پرداخت از کیف پول' })
+    .getByRole('button', { name: 'تأیید پرداخت', exact: true })
+    .click();
   await expect(page).toHaveURL(/store\/order-success\?orderId=order-1/);
-  await expect(page.getByRole("dialog")).toContainText("۵۲۰٬۰۰۰");
-  await page.getByRole("dialog").getByRole("button", { name: "پیگیری سفارش", exact: true }).click();
-  await expect(page.getByText("HAIR-250", { exact: false })).toBeVisible();
+  await expect(page.getByRole('dialog')).toContainText('۵۲۰٬۰۰۰');
+  await page.getByRole('dialog').getByRole('button', { name: 'پیگیری سفارش', exact: true }).click();
+  await expect(page.getByText('HAIR-250', { exact: false })).toBeVisible();
   await noOverflow(page);
   await page.goto(`${origin}/store/orders`);
-  await expect(page.getByRole("link", { name: /سفارش ۱۰۲۴/ })).toBeVisible();
-  const checkout = mock.commands.filter(command => command.path === "/v1/patients/me/orders").at(-1);
-  expect(checkout?.body).toEqual({ shippingMethod: "COURIER", addressId: "new-address", discountCode: "SAVE25" });
+  await expect(page.getByRole('link', { name: /سفارش ۱۰۲۴/ })).toBeVisible();
+  const checkout = mock.commands
+    .filter((command) => command.path === '/v1/patients/me/orders')
+    .at(-1);
+  expect(checkout?.body).toEqual({
+    shippingMethod: 'COURIER',
+    addressId: 'new-address',
+    discountCode: 'SAVE25',
+  });
   expect(checkout?.key).toBeTruthy();
-  const intentKeys = mock.commands.filter(command => command.path.endsWith("/order-intents")).map(command => command.key);
+  const intentKeys = mock.commands
+    .filter((command) => command.path.endsWith('/order-intents'))
+    .map((command) => command.key);
   expect(new Set(intentKeys).size).toBe(1);
-  expect(mock.commands.filter(command => command.path.endsWith("/wallet-payment"))).toHaveLength(1);
+  expect(mock.commands.filter((command) => command.path.endsWith('/wallet-payment'))).toHaveLength(
+    1,
+  );
   expect(mock.unexpected).toEqual([]);
   expect(errors).toEqual([]);
 });
 
-test("server payment state wins over success URL, and unavailable methods remain unavailable", async ({ page }) => {
+test('server payment state wins over success URL, and unavailable methods remain unavailable', async ({
+  page,
+}) => {
   const mock = await fixture(page, { unavailable: true });
   await page.goto(`${origin}/store/order-success?orderId=order-1&status=success`);
-  await expect(page.getByText("در انتظار پرداخت", { exact: true })).toBeVisible();
-  await expect(page.getByText("رسید پرداخت", { exact: true })).toHaveCount(0);
+  await expect(page.getByText('در انتظار پرداخت', { exact: true })).toBeVisible();
+  await expect(page.getByText('رسید پرداخت', { exact: true })).toHaveCount(0);
   await page.goto(`${origin}/store/payment?intentId=intent-1`);
-  await expect(page.getByRole("region", { name: "جزئیات مبلغ سفارش" })).toContainText(product.title);
-  await expect(page.getByRole("button", { name: /پرداخت از کیف پول/ })).toBeDisabled();
-  await expect(page.getByRole("button", { name: /پرداخت بانکی/ })).toBeDisabled();
-  await expect(page.getByRole("button", { name: /افزایش موجودی کیف پول/ })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'جزئیات مبلغ سفارش' })).toContainText(
+    product.title,
+  );
+  await expect(page.getByRole('button', { name: /پرداخت از کیف پول/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /پرداخت بانکی/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /افزایش موجودی کیف پول/ })).toBeVisible();
   await noOverflow(page);
   expect(mock.unexpected).toEqual([]);
 });
 
-test("published banners are compact, precede products and stay manual on resize", async ({ page }) => {
+test('published banners are compact, precede products and stay manual on resize', async ({
+  page,
+}) => {
   await fixture(page, { banners: true });
   await page.goto(`${origin}/store`);
-  const hero = page.getByRole("region", { name: "بنرهای فروشگاه" });
-  const next = hero.getByRole("button", { name: "بنر بعدی", exact: true });
+  const hero = page.getByRole('region', { name: 'بنرهای فروشگاه' });
+  const next = hero.getByRole('button', { name: 'بنر بعدی', exact: true });
   await expect(next).toBeVisible();
   await next.focus();
-  const selected = () => hero.locator('[aria-current="true"]').getAttribute("aria-label");
+  const selected = () => hero.locator('[aria-current="true"]').getAttribute('aria-label');
   const first = await selected();
   await page.waitForTimeout(4500);
   expect(await selected()).toBe(first);
@@ -391,60 +787,99 @@ test("published banners are compact, precede products and stay manual on resize"
   const second = await selected();
   await page.waitForTimeout(4500);
   expect(await selected()).toBe(second);
-  for (const size of [{width:1440,height:900,max:280},{width:375,height:812,max:160},{width:320,height:568,max:160},{width:667,height:375,max:120}]) {
+  for (const size of [
+    { width: 1440, height: 900, max: 280 },
+    { width: 375, height: 812, max: 160 },
+    { width: 320, height: 568, max: 160 },
+    { width: 667, height: 375, max: 120 },
+  ]) {
     await page.setViewportSize(size);
-    await expect.poll(async () => (await hero.locator('img').first().boundingBox())!.height).toBeLessThanOrEqual(size.max);
-    await expect.poll(async () => Math.abs((await hero.locator('.store-hero__slide').first().boundingBox())!.width - (await hero.locator('.store-banner-track').boundingBox())!.width)).toBeLessThan(2);
-    expect(await hero.evaluate(e=>e.getBoundingClientRect().top < document.querySelector('#store-products')!.getBoundingClientRect().top)).toBeTruthy();
+    await expect
+      .poll(async () => (await hero.locator('img').first().boundingBox())!.height)
+      .toBeLessThanOrEqual(size.max);
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await hero.locator('.store-hero__slide').first().boundingBox())!.width -
+            (await hero.locator('.store-banner-track').boundingBox())!.width,
+        ),
+      )
+      .toBeLessThan(2);
+    expect(
+      await hero.evaluate(
+        (e) =>
+          e.getBoundingClientRect().top <
+          document.querySelector('#store-products')!.getBoundingClientRect().top,
+      ),
+    ).toBeTruthy();
     await noOverflow(page);
   }
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await hero.getByRole('button',{name:'بنر قبلی',exact:true}).click();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await hero.getByRole('button', { name: 'بنر قبلی', exact: true }).click();
   await expect.poll(selected).toBe(first);
-  await expect(hero.getByRole("button", { name: /نمایش خودکار بنرها/ })).toHaveCount(0);
+  await expect(hero.getByRole('button', { name: /نمایش خودکار بنرها/ })).toHaveCount(0);
   await noOverflow(page);
 });
 
-test("catalog keeps URL filters through product navigation, exposes account failure and fits narrow viewports", async ({ page }, testInfo) => {
+test('catalog keeps URL filters through product navigation, exposes account failure and fits narrow viewports', async ({
+  page,
+}, testInfo) => {
   const mock = await fixture(page, { failedAccount: true });
   await page.goto(`${origin}/store?view=all&q=شامپو`);
-  await expect(page.locator("#store-search")).toHaveValue("شامپو");
+  await expect(page.locator('#store-search')).toHaveValue('شامپو');
   await expect(page.getByText(/سبد و علاقه‌مندی‌ها دریافت نشدند/).first()).toBeVisible();
   mock.recover();
-  await page.getByRole("button", { name: /دریافت دوباره/ }).first().click();
-  await page.locator(".store-product a").first().click();
-  await expect(page.locator("#product-variant")).toBeVisible();
+  await page
+    .getByRole('button', { name: /دریافت دوباره/ })
+    .first()
+    .click();
+  await page.locator('.store-product a').first().click();
+  await expect(page.locator('#product-variant')).toBeVisible();
   await page.goBack();
-  await expect(page.locator("#store-search")).toHaveValue("شامپو");
-  await page.getByRole("link", { name: "مراقبت مو", exact: true }).first().click();
+  await expect(page.locator('#store-search')).toHaveValue('شامپو');
+  await page.getByRole('link', { name: 'مراقبت مو', exact: true }).first().click();
   await expect(page).toHaveURL(new RegExp(`category=${categoryId}`));
-  await expect(page.getByText("نمایش یک دستهٔ محصول", { exact: true })).toBeVisible();
+  await expect(page.getByText('نمایش یک دستهٔ محصول', { exact: true })).toBeVisible();
   for (const width of [320, 390, 844, 1280]) {
     await page.setViewportSize({ width, height: width === 844 ? 390 : 844 });
     await noOverflow(page);
   }
-  await page.screenshot({ path: join(tmpdir(), `store-catalog-${testInfo.project.name}.png`), fullPage: true });
+  await page.screenshot({
+    path: join(tmpdir(), `store-catalog-${testInfo.project.name}.png`),
+    fullPage: true,
+  });
   expect(mock.unexpected).toEqual([]);
 });
 
-
-test("product loading reserves gallery and purchase footer on a small phone", async ({ page }) => {
+test('product loading reserves gallery and purchase footer on a small phone', async ({ page }) => {
   await fixture(page);
   let release!: () => void;
-  const pending = new Promise<void>(resolve => { release=resolve; });
-  await page.route(`**/v1/commerce/products/${productId}`, async route => { await pending; await route.fallback(); });
-  await page.setViewportSize({width:320,height:568});
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route(`**/v1/commerce/products/${productId}`, async (route) => {
+    await pending;
+    await route.fallback();
+  });
+  await page.setViewportSize({ width: 320, height: 568 });
   try {
     await page.goto(`${origin}/store/products/${productId}`);
     await expect(page.locator('[data-product-loading]')).toBeVisible();
-    const gallery=await page.locator('.store-gallery').boundingBox();
-    const footer=await page.locator('.patient-shell-footer').boundingBox();
+    const gallery = await page.locator('.store-gallery').boundingBox();
+    const footer = await page.locator('.patient-shell-footer').boundingBox();
     release();
     await expect(page.locator('.store-detail__title')).toBeVisible();
-    expect((await page.locator('.store-gallery').boundingBox())!.y).toBeCloseTo(gallery!.y,0);
-    expect((await page.locator('.patient-shell-footer').boundingBox())!.height).toBeCloseTo(footer!.height,0);
-    await page.setViewportSize({width:667,height:375});
-    await expect.poll(async ()=>(await page.locator('.store-gallery').boundingBox())!.height).toBeLessThanOrEqual(106);
+    expect((await page.locator('.store-gallery').boundingBox())!.y).toBeCloseTo(gallery!.y, 0);
+    expect((await page.locator('.patient-shell-footer').boundingBox())!.height).toBeCloseTo(
+      footer!.height,
+      0,
+    );
+    await page.setViewportSize({ width: 667, height: 375 });
+    await expect
+      .poll(async () => (await page.locator('.store-gallery').boundingBox())!.height)
+      .toBeLessThanOrEqual(106);
     await noOverflow(page);
-  } finally { release(); }
+  } finally {
+    release();
+  }
 });

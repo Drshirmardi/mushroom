@@ -85,6 +85,7 @@ services:
     environment:
       <<: *node-environment
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      PUBLIC_APP_URL: "${PUBLIC_APP_URL:?set the public dev app URL}"
       # Optional Bale mini-app auth: disabled until a private bot token and webhook secret are provisioned.
       BALE_AUTH_ENABLED: "${BALE_AUTH_ENABLED:-false}"
       BALE_BOT_TOKEN: "${BALE_BOT_TOKEN:-}"
