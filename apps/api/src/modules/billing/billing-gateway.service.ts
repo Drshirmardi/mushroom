@@ -103,10 +103,14 @@ export class BillingGatewayService {
     }
     const redirect = new URL('/profile/wallet/payment-result', settings.resultUrl);
     redirect.searchParams.set('intentId', attempt.intentId);
-    const baleReturnUrl = attempt.startedInBale
-      ? balePaymentReturnLink(this.config.get<string>('BALE_BOT_USERNAME'), attempt.intentId)
-      : null;
-    return { redirectUrl: redirect.toString(), startedInBale: attempt.startedInBale, baleReturnUrl };
+    const bot = attempt.startedInBale ? this.config.get<string>('BALE_BOT_USERNAME') : undefined;
+    return {
+      redirectUrl: redirect.toString(),
+      startedInBale: attempt.startedInBale,
+      baleReturnUrl: balePaymentReturnLink(bot, attempt.intentId),
+      chatUrl: balePaymentReturnLink(bot, attempt.intentId, 'start'),
+      intentId: attempt.intentId,
+    };
   }
 
   async verify(attemptId: string) {

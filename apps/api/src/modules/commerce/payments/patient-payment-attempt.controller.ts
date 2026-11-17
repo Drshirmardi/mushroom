@@ -60,12 +60,13 @@ export class SadadCallbackController {
     if (!allowed) throw new HttpException({ code: 'PAYMENT_CALLBACK_RATE_LIMITED', message: 'Payment callback rate limit exceeded.', details: {} }, HttpStatus.TOO_MANY_REQUESTS);
     const result = await this.attempts.processSadadCallback(body);
     if ('startedInBale' in result && result.startedInBale) {
+      const nonce = randomBytes(16).toString('base64');
       return reply.code(200)
         .type('text/html; charset=utf-8')
         .header('Cache-Control', 'no-store')
         .header('Referrer-Policy', 'no-referrer')
-        .header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'")
-        .send(balePaymentReturnDocument(result.baleReturnUrl, result.redirectUrl));
+        .header('Content-Security-Policy', `default-src 'none'; script-src 'nonce-${nonce}'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'`)
+        .send(balePaymentReturnDocument(result.baleReturnUrl, result.redirectUrl, { intentId: result.intentId, chatUrl: result.chatUrl, nonce }));
     }
     return reply.code(303).redirect(result.redirectUrl);
   }

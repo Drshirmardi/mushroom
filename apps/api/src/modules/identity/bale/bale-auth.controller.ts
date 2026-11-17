@@ -1,5 +1,5 @@
 import {
-  Body, Controller, HttpCode, HttpStatus, Param, Post, Req, Res,
+  Body, Controller, ForbiddenException, HttpCode, HttpStatus, NotFoundException, Param, Post, Req, Res,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from '@nestjs/swagger';
 import { IsString, MaxLength } from 'class-validator';
@@ -17,6 +17,8 @@ import { ApiErrorResponse } from '../../../common/errors/api-error-response.deco
 import { AuthenticationResponseDto } from '../presentation/http/dto/login.dto';
 import { BaleAuthService, type BaleFlowResult } from './bale-auth.service';
 import { BaleWalletBillingService } from '../../billing/bale-wallet-billing.service';
+import { BillingService } from '../../billing/billing.service';
+import { balePaymentStatusText } from '../../billing/bale-payment-return';
 
 class BaleInitDataDto {
   @ApiProperty() @IsString() @MaxLength(8192) initData!: string;
@@ -128,7 +130,11 @@ export class BaleAuthController {
 @ApiTags('Bale Bot Webhook')
 @Controller('integrations/bale')
 export class BaleWebhookController {
-  constructor(private readonly bale: BaleAuthService, private readonly payments: BaleWalletBillingService) {}
+  constructor(
+    private readonly bale: BaleAuthService,
+    private readonly payments: BaleWalletBillingService,
+    private readonly billing: BillingService,
+  ) {}
 
   @Post('webhook/:secret')
   @Public()
@@ -137,7 +143,14 @@ export class BaleWebhookController {
   @ApiOkResponse({ description: 'Acknowledged' })
   async webhook(@Param('secret') secret: string, @Body() body: unknown): Promise<{ ok: true }> {
     // Auth service validates the shared secret before any payment processing.
-    await this.bale.acceptWebhook(secret, body);
+    await this.bale.acceptWebhook(secret, body, async (userId, intentId) => {
+      try {
+        return balePaymentStatusText(await this.billing.get(userId, intentId));
+      } catch (error) {
+        if (error instanceof NotFoundException || error instanceof ForbiddenException) return null;
+        throw error;
+      }
+    });
     if (body && typeof body === 'object' && !Array.isArray(body)) {
       const update = body as Record<string, unknown>;
       if (update.pre_checkout_query) await this.payments.handlePreCheckout(update.pre_checkout_query);

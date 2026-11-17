@@ -135,7 +135,8 @@ export default function BaleMiniAppPage() {
   const finish = useCallback(
     (authentication: Authentication) => {
       acceptBaleAuthentication(authentication);
-      const startParam = new URLSearchParams(window.location.search).get('tgWebAppStartParam')
+      const params = new URLSearchParams(window.location.search);
+      const startParam = params.get('paymentReturn') ?? params.get('tgWebAppStartParam')
         ?? new URLSearchParams(initData.current).get('start_param');
       router.replace(balePaymentResultHref(startParam) ?? '/');
     },

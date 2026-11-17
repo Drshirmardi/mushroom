@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { balePaymentReturnDocument, balePaymentReturnLink } from '../src/modules/billing/bale-payment-return';
+import { balePaymentReturnDocument, balePaymentReturnLink, balePaymentStatusText } from '../src/modules/billing/bale-payment-return';
 
 describe('Bale payment return', () => {
   it('passes the intent as a routing hint to the configured bot', () => {
@@ -23,5 +23,24 @@ describe('Bale payment return', () => {
     const html = balePaymentReturnDocument(null, 'https://app.example.test/result');
     expect(html).toContain('بررسی وضعیت پرداخت');
     expect(html).not.toContain('باز کردن اپ بله');
+  });
+
+  it('provides a chat deep link and a manually copyable command', () => {
+    const intentId = '56ac23e7-3b76-4ba0-8c01-df49094fbad8';
+    const chatUrl = balePaymentReturnLink('clinic_bot', intentId, 'start');
+    const html = balePaymentReturnDocument(null, 'https://app.example.test/result', { chatUrl, intentId, nonce: 'test' });
+    expect(html).toContain(`https://ble.ir/clinic_bot?start=payment_${intentId}`);
+    expect(html).toContain(`/start payment_${intentId}`);
+    expect(html).toContain('<script nonce="test">');
+  });
+
+  it.each([
+    ['PAID', 'FAILED', 'پرداخت تأیید شد.'],
+    ['COMPENSATED', 'VERIFIED', 'مبلغ پرداخت به کیف پول شما برگشت.'],
+    ['PENDING', 'FAILED', 'پرداخت انجام نشد.'],
+    ['PENDING', 'REQUIRES_RECONCILIATION', 'پرداخت در حال بررسی است.'],
+    ['EXPIRED', 'FAILED', 'این درخواست پرداخت بسته شده است.'],
+  ])('maps %s and %s to the bot message', (status, attempt, expected) => {
+    expect(balePaymentStatusText({ status, attempts: [{ status: attempt }] })).toBe(expected);
   });
 });

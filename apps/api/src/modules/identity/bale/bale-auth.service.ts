@@ -21,6 +21,7 @@ type ContactRequired = { status: 'CONTACT_REQUIRED' };
 type Pending = { status: 'CONTACT_PENDING' };
 type LinkRequired = { status: 'ACCOUNT_LINK_REQUIRED'; phone: string };
 export type BaleFlowResult = Authentication | ContactRequired | Pending | LinkRequired;
+type PaymentStatusLookup = (userId: string, intentId: string) => Promise<string | null>;
 
 const CONTACT_TTL_MS = 5 * 60_000;
 const START_RATE_LIMIT = 5;
@@ -220,7 +221,7 @@ export class BaleAuthService {
   }
 
   /** Receives bot updates ONLY through a secret, server-configured webhook URL. */
-  async acceptWebhook(secret: string, input: unknown): Promise<void> {
+  async acceptWebhook(secret: string, input: unknown, paymentStatus?: PaymentStatusLookup): Promise<void> {
     const configured = this.config.get<string>('BALE_WEBHOOK_SECRET');
     if (!configured || !secret) throw invalid();
     const expected = createHash('sha256').update(configured).digest();
@@ -232,10 +233,11 @@ export class BaleAuthService {
     const message = update.message as Record<string, unknown> | undefined;
     const from = message?.from as Record<string, unknown> | undefined;
     const chat = message?.chat as Record<string, unknown> | undefined;
-    const startCommand = typeof message?.text === 'string' &&
-      /^\/start(?:@[A-Za-z0-9_]+)?(?:\s|$)/u.test(message.text.trim());
+    const startCommand = typeof message?.text === 'string'
+      ? /^\/start(?:@[A-Za-z0-9_]+)?(?:\s+([\s\S]*))?$/u.exec(message.text.trim())
+      : null;
     if (typeof message?.text === 'string') {
-      this.logger.log(`Bale message update received (private=${chat?.type === 'private'}, start=${startCommand}, senderValid=${typeof from?.id === 'number' && Number.isSafeInteger(from.id)}, chatValid=${typeof chat?.id === 'number' && Number.isSafeInteger(chat.id)})`);
+      this.logger.log(`Bale message update received (private=${chat?.type === 'private'}, start=${Boolean(startCommand)}, senderValid=${typeof from?.id === 'number' && Number.isSafeInteger(from.id)}, chatValid=${typeof chat?.id === 'number' && Number.isSafeInteger(chat.id)})`);
     }
     if (chat?.type !== 'private' ||
       typeof update.update_id !== 'number' || !Number.isSafeInteger(update.update_id) ||
@@ -243,7 +245,7 @@ export class BaleAuthService {
 
     if (startCommand) {
       if (typeof chat.id === 'number' && Number.isSafeInteger(chat.id)) {
-        await this.replyToStart(update.update_id, from.id, chat.id);
+        await this.replyToStart(update.update_id, from.id, chat.id, startCommand[1], paymentStatus);
       }
       return;
     }
@@ -277,10 +279,11 @@ export class BaleAuthService {
     });
   }
 
-  private async replyToStart(updateId: number, providerUserId: number, chatId: number): Promise<void> {
+  private async replyToStart(updateId: number, providerUserId: number, chatId: number, payload?: string, paymentStatus?: PaymentStatusLookup): Promise<void> {
     const token = this.config.get<string>('BALE_BOT_TOKEN');
     const appUrl = this.miniAppUrl();
-    if (!token || !appUrl) {
+    const isPayment = payload?.startsWith('payment_') === true;
+    if (!token || (!appUrl && !isPayment)) {
       this.logger.warn(`Bale /start reply skipped (botTokenConfigured=${Boolean(token)}, miniAppUrlConfigured=${Boolean(appUrl)})`);
       return;
     }
@@ -316,6 +319,35 @@ export class BaleAuthService {
       return;
     }
 
+    let replyText = 'برای استفاده از خدمات، وارد مینی‌اپ شوید.';
+    let buttonUrl = isPayment ? undefined : appUrl;
+    let buttonText = 'ورود به مینی‌اپ';
+    if (isPayment) {
+      replyText = 'نتیجهٔ پرداخت با این کد در دسترس نیست.';
+      const intentId = /^payment_([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/iu.exec(payload ?? '')?.[1];
+      if (intentId && paymentStatus) {
+        try {
+          const identity = await this.prisma.externalAuthIdentity.findUnique({
+            where: { provider_providerUserId: { provider: 'BALE', providerUserId: String(providerUserId) } },
+            select: { user: { select: { id: true, status: true, roles: { select: { role: { select: { code: true } } } } } } },
+          });
+          const status = identity && isActivePatient(identity.user) ? await paymentStatus(identity.user.id, intentId) : null;
+          if (status) {
+            replyText = status;
+            buttonText = 'مشاهدهٔ نتیجه در مینی‌اپ';
+            if (appUrl) {
+              const url = new URL(appUrl);
+              url.searchParams.set('paymentReturn', `payment_${intentId}`);
+              buttonUrl = url.toString();
+            }
+          }
+        } catch {
+          this.logger.warn('Bale payment status lookup failed');
+          replyText = 'بررسی وضعیت پرداخت ممکن نشد. دوباره تلاش کنید.';
+        }
+      }
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4_000);
     try {
@@ -324,10 +356,8 @@ export class BaleAuthService {
         headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' },
         body: JSON.stringify({
           chat_id: chatId,
-          text: 'برای استفاده از خدمات، وارد مینی‌اپ شوید.',
-          reply_markup: {
-            inline_keyboard: [[{ text: 'ورود به مینی‌اپ', web_app: { url: appUrl } }]],
-          },
+          text: replyText,
+          ...(buttonUrl ? { reply_markup: { inline_keyboard: [[{ text: buttonText, web_app: { url: buttonUrl } }]] } } : {}),
         }),
         signal: controller.signal,
       });

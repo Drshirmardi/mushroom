@@ -1,7 +1,9 @@
 import { createHash, createHmac } from 'node:crypto';
 import { ConfigService } from '@nestjs/config';
+import { NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 import { BaleAuthService } from '../src/modules/identity/bale/bale-auth.service';
+import { BaleWebhookController } from '../src/modules/identity/bale/bale-auth.controller';
 
 const token = '123456789:test-token';
 const webhookSecret = 'the-bale-webhook-secret-is-long-and-random-0123456789';
@@ -22,6 +24,56 @@ function service(prisma: object, sessions: object = { execute: vi.fn() }) {
 const contactTicket = 'a'.repeat(43);
 const verifiedPhone = '+989121234567';
 const context = { ipAddress: '127.0.0.1', requestId: 'req' };
+
+describe('Bale payment status command', () => {
+  it.each([true, false])('checks ownership and suppresses duplicate replies (owner=%s)', async (ownsPayment) => {
+    const intentId = '56ac23e7-3b76-4ba0-8c01-df49094fbad8';
+    let previous: { lastUpdateId: bigint; recentStartAt: Date[] } | null = null;
+    const tx = {
+      $queryRaw: vi.fn(),
+      baleStartRateLimit: {
+        findUnique: vi.fn(() => previous),
+        create: vi.fn(({ data }) => { previous = data; }),
+      },
+    };
+    const findUnique = vi.fn().mockResolvedValue({
+      user: { id: 'linked-user', status: 'ACTIVE', roles: [{ role: { code: 'PATIENT' } }] },
+    });
+    const bale = new BaleAuthService({
+      externalAuthIdentity: { findUnique },
+      $transaction: (run: (value: typeof tx) => unknown) => run(tx),
+    } as never, new ConfigService({
+      BALE_AUTH_ENABLED: 'true', BALE_BOT_TOKEN: token, BALE_WEBHOOK_SECRET: webhookSecret,
+      PUBLIC_APP_URL: 'https://app.example.test',
+    }), {} as never);
+    const get = vi.fn().mockImplementation(async () => {
+      if (!ownsPayment) throw new NotFoundException();
+      return { status: 'PAID', attempts: [] };
+    });
+    const controller = new BaleWebhookController(bale, {} as never, { get } as never);
+    const send = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ ok: true }) });
+    vi.stubGlobal('fetch', send);
+    try {
+      const update = { update_id: 1, message: {
+        from: { id: 456789 }, chat: { type: 'private', id: 456789 }, text: `/start payment_${intentId}`,
+      } };
+      await controller.webhook(webhookSecret, update);
+      await controller.webhook(webhookSecret, update);
+      expect(get).toHaveBeenCalledExactlyOnceWith('linked-user', intentId);
+      expect(send).toHaveBeenCalledOnce();
+      const reply = JSON.parse(send.mock.calls[0][1].body);
+      if (ownsPayment) {
+        expect(reply.text).toBe('پرداخت تأیید شد.');
+        expect(reply.reply_markup.inline_keyboard[0][0].web_app.url)
+          .toBe(`https://app.example.test/bale?paymentReturn=payment_${intentId}`);
+      } else {
+        expect(reply).toEqual({ chat_id: 456789, text: 'نتیجهٔ پرداخت با این کد در دسترس نیست.' });
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
 
 function verifiedContact() {
   return {
