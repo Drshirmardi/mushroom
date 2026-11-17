@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: join(__dirname, "../.."),
   reactStrictMode: true,
+  experimental: {
+    agentUpgrade: "security",
+  },
   ...(allowedDevOrigins ? { allowedDevOrigins } : {}),
 };
 

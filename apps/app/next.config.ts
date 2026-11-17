@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: join(__dirname, "../.."),
   ...(allowedDevOrigins ? { allowedDevOrigins } : {}),
   experimental: {
+    agentUpgrade: "security",
     optimizePackageImports: [
       "@base-ui/react",
       "@radix-ui/react-dropdown-menu",
