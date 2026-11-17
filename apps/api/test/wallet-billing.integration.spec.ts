@@ -296,6 +296,37 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
     expect(response.body).toContain('location.hash');
   });
 
+  it('returns Bale sessions to the original intent and settles repeated Sadad callbacks only once', async () => {
+    const p = await patient();
+    await db.session.update({ where: { id: p.sessionId }, data: { baleProviderUserId: '912345' } });
+    const config = app.get(ConfigService);
+    const get = config.get.bind(config);
+    const username = vi.spyOn(config, 'get').mockImplementation((key, ...args) =>
+      key === 'BALE_BOT_USERNAME' ? 'clinic_test_bot' : get(key, ...args));
+    try {
+      const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '750' }, randomUUID(), context(p.userId));
+      const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+      const stored = await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
+      expect(stored.startedInBale).toBe(true);
+      const callback = new URLSearchParams({ OrderId: stored.providerOrderId.toString(), token: stored.providerToken!, ResCode: '0' });
+      for (let replay = 0; replay < 2; replay++) {
+        const response = await app.inject({
+          method: 'POST',
+          url: '/v1/payments/providers/sadad/callback',
+          headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sadad.shaparak.ir' },
+          payload: callback.toString(),
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toContain(`https://ble.ir/clinic_test_bot?startapp=payment_${intent.id}`);
+        expect(response.body).not.toContain(stored.providerToken!);
+      }
+      expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
+      expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+    } finally {
+      username.mockRestore();
+    }
+  });
+
   it('allows a fresh attempt only after server verification definitively rejects the prior token', async () => {
     const p = await patient();
     const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '100' }, randomUUID(), context(p.userId));

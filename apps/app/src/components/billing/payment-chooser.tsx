@@ -1,9 +1,10 @@
 'use client';
 import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 
-import { useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { currentInvitationContext } from '@/lib/marriage-context';
 import Link from 'next/link';
+import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence } from 'motion/react';
 import { ChevronLeft, CreditCard, Landmark, ReceiptText, Wallet } from 'lucide-react';
@@ -21,8 +22,11 @@ import {
 } from '@/lib/wallet-billing-api';
 import { formatRial } from '@/lib/wallet-money';
 import {
+  BALE_SDK_URL,
   canOpenBaleInvoice,
   isBaleInvoiceActive,
+  isBaleSession,
+  openBaleBrowser,
   openBaleInvoice,
   openSadadOutsideMiniApp,
 } from '@/lib/bale-payment';
@@ -57,6 +61,13 @@ export function PaymentChooser({
   const [busy, setBusy] = useState<'wallet' | 'gateway' | 'bale' | 'cancel' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [baleInvoiceActive, setBaleInvoiceActive] = useState(isBaleInvoiceActive);
+  const [inBale, setInBale] = useState(false);
+  const [baleCapability, setBaleCapability] = useState<'loading' | 'ready' | 'unsupported' | 'unavailable'>('loading');
+  const [bankLink, setBankLink] = useState<{ intentId: string; url: string } | null>(null);
+  const [openedIntentId, setOpenedIntentId] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState<string | null>(null);
+  const statusInFlight = useRef(false);
   const [topupOpen, setTopupOpen] = useState(false);
   const [walletConfirmation, setWalletConfirmation] = useState<{
     id: string;
@@ -71,7 +82,9 @@ export function PaymentChooser({
   const wallet = intent.methods?.find((method) => method.code === 'WALLET') ?? null;
   const gateway = intent.methods?.find((method) => method.code === 'GATEWAY') ?? null;
   const bale = intent.methods?.find((method) => method.code === 'BALE_WALLET') ?? null;
-  const nativeBale = Boolean(bale?.available && canOpenBaleInvoice());
+  const nativeBale = Boolean(bale?.available && (baleCapability === 'ready' || canOpenBaleInvoice()));
+  const debugBale = inBale && (process.env.NODE_ENV !== 'production' || window.location.hostname === 'dev-app.drshirmardi.com');
+  const preparedBankUrl = bankLink?.intentId === intent.id && gateway?.available && intent.status === 'PENDING' ? bankLink.url : null;
   const amount = BigInt(intent.amountRial);
   const isTopup = intent.purpose === 'TOPUP';
   const balance = wallet?.balanceRial ? BigInt(wallet.balanceRial) : null;
@@ -80,11 +93,57 @@ export function PaymentChooser({
   );
   const deficit = balance !== null && balance < amount ? amount - balance : null;
 
+  useEffect(() => setInBale(isBaleSession()), []);
+
+  const refreshPayment = useCallback(async (manual = false) => {
+    if (statusInFlight.current) return;
+    statusInFlight.current = true;
+    if (manual) setChecking(true);
+    try {
+      const latest = await getBillingIntent(accessToken, intent.id);
+      if (latest.status === 'PAID' || latest.status === 'COMPENSATED') {
+        onPaid(latest);
+        return;
+      }
+      if (latest.status !== 'PENDING' || !latest.attempts?.some(
+        (attempt) => attempt.providerCode === 'sadad' && attempt.status === 'REDIRECT_READY',
+      )) setBankLink(null);
+      if (manual) {
+        setError(null);
+        setPaymentNotice(latest.status === 'PENDING'
+          ? 'پرداخت هنوز تأیید نشده است. وضعیت را دوباره بررسی کنید.'
+          : 'این درخواست پرداخت بسته شده است.');
+      }
+      onRefresh?.();
+    } catch {
+      if (manual) setError('بررسی وضعیت پرداخت ممکن نشد. دوباره تلاش کنید.');
+    } finally {
+      statusInFlight.current = false;
+      if (manual) setChecking(false);
+    }
+  }, [accessToken, intent.id, onPaid, onRefresh]);
+
+  useEffect(() => {
+    if (openedIntentId !== intent.id) return;
+    const refreshOnReturn = () => {
+      if (document.visibilityState === 'visible') void refreshPayment();
+    };
+    window.addEventListener('focus', refreshOnReturn);
+    window.addEventListener('pageshow', refreshOnReturn);
+    document.addEventListener('visibilitychange', refreshOnReturn);
+    return () => {
+      window.removeEventListener('focus', refreshOnReturn);
+      window.removeEventListener('pageshow', refreshOnReturn);
+      document.removeEventListener('visibilitychange', refreshOnReturn);
+    };
+  }, [intent.id, openedIntentId, refreshPayment]);
+
   const run = async (kind: 'wallet' | 'gateway' | 'bale' | 'cancel', action: () => Promise<void>) => {
     if (inFlight.current) return;
     inFlight.current = true;
     setBusy(kind);
     setError(null);
+    setPaymentNotice(null);
     try {
       await action();
     } catch (cause) {
@@ -134,11 +193,9 @@ export function PaymentChooser({
       }
       const openResult = openBaleInvoice(attempt.invoiceParams, () => {
         setBaleInvoiceActive(false);
-        void getBillingIntent(accessToken, intent.id).then((latest) => {
-          if (latest.status === 'PAID' || latest.status === 'COMPENSATED') onPaid(latest);
-          else { setError('وضعیت نهایی پرداخت از سرور در حال بررسی است.'); onRefresh?.(); }
-        }).catch(() => { setError('ارتباط با سرور برای بررسی نتیجه ممکن نشد؛ صفحه را تازه کنید.'); onRefresh?.(); });
+        void refreshPayment(true);
       });
+      if (openResult === 'opened' || openResult === 'already-active') setOpenedIntentId(intent.id);
       setBaleInvoiceActive(isBaleInvoiceActive());
       if (openResult === 'already-active') {
         setBaleInvoiceActive(true);
@@ -163,8 +220,17 @@ export function PaymentChooser({
         );
         return;
       }
-      openSadadOutsideMiniApp(attempt.redirectUrl);
+      if (isBaleSession()) setBankLink({ intentId: intent.id, url: attempt.redirectUrl });
+      else openSadadOutsideMiniApp(attempt.redirectUrl);
     });
+
+  const launchBank = () => {
+    if (!preparedBankUrl) return;
+    setOpenedIntentId(intent.id);
+    if (!openBaleBrowser(preparedBankUrl)) {
+      setError('مرورگر داخلی بله در دسترس نیست. درگاه را در مرورگر دستگاه باز کنید.');
+    }
+  };
 
   const cancel = () =>
     run('cancel', async () => {
@@ -175,6 +241,11 @@ export function PaymentChooser({
 
   return (
     <div className={styles.chooser}>
+      {inBale && (
+        <Script src={BALE_SDK_URL} strategy="afterInteractive"
+          onReady={() => setBaleCapability(canOpenBaleInvoice() ? 'ready' : 'unsupported')}
+          onError={() => setBaleCapability('unavailable')} />
+      )}
       <section
         className={styles.amount}
         aria-label={isTopup ? 'مبلغ افزایش موجودی' : 'مبلغ قابل پرداخت'}
@@ -228,9 +299,25 @@ export function PaymentChooser({
       )}
       <section className={styles.methods} aria-label="انتخاب روش پرداخت">
         <h2>روش پرداخت</h2>
+        {inBale && bale?.available && !nativeBale && (
+          <p role="status" className="text-sm leading-7 text-muted-foreground">
+            {baleCapability === 'loading' ? 'در حال بررسی امکان پرداخت با کیف پول بله…'
+              : baleCapability === 'unsupported' ? 'برای پرداخت با کیف پول بله، برنامهٔ بله را به‌روز کنید.'
+              : 'ارتباط با ابزار پرداخت بله برقرار نشد.'}
+          </p>
+        )}
+        {debugBale && (
+          <div className="rounded-xl border p-3 text-sm leading-7">
+            <p>عیب‌یابی بله · SDK: {baleCapability} · مجوز سرور: {bale?.available ? 'فعال' : 'غیرفعال'}</p>
+            <Button type="button" variant="secondary"
+              onClick={() => { if (!openBaleBrowser('https://docs.bale.ai/miniapp')) setError('باز کردن لینک آزمایشی در بله ممکن نشد.'); }}>
+              باز کردن لینک آزمایشی در بله
+            </Button>
+          </div>
+        )}
         {nativeBale && (
           <button type="button" className={`wallet-method ${styles.method}`}
-            disabled={busy !== null || !bale?.available || baleInvoiceActive} onClick={() => void payViaBale()}>
+            disabled={busy !== null || !bale?.available || baleInvoiceActive || Boolean(preparedBankUrl)} onClick={() => void payViaBale()}>
             <span className="wallet-method__icon" aria-hidden="true"><Wallet size={20} /></span>
             <span className="wallet-method__body">
               <span className="wallet-method__title">پرداخت با کیف پول بله</span>
@@ -274,7 +361,7 @@ export function PaymentChooser({
           </button>
         )}
 
-        {gateway && (
+        {gateway && !preparedBankUrl && (
           <button
             type="button"
             className={`wallet-method ${styles.method}`}
@@ -305,6 +392,22 @@ export function PaymentChooser({
             ) : null}
           </button>
         )}
+        {preparedBankUrl && (
+          <div className="grid gap-2">
+            <Button type="button" onClick={launchBank}>رفتن به درگاه پرداخت</Button>
+            <a href={preparedBankUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center justify-center text-sm underline"
+              onClick={() => setOpenedIntentId(intent.id)}>
+              باز کردن در مرورگر دستگاه
+            </a>
+          </div>
+        )}
+        {(openedIntentId === intent.id || (inBale && bankAttempt)) && (
+          <Button type="button" variant="secondary" disabled={checking} onClick={() => void refreshPayment(true)}>
+            {checking ? 'در حال بررسی…' : 'بررسی وضعیت پرداخت'}
+          </Button>
+        )}
+        {paymentNotice && <p role="status" className="text-sm leading-7 text-muted-foreground">{paymentNotice}</p>}
 
         {!wallet && !gateway && !nativeBale && (
           <p

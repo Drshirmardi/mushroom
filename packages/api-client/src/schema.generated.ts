@@ -31781,6 +31781,15 @@ export interface operations {
             };
         };
         responses: {
+            /** @description Bale Mini App return document */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
             /** @description Callback rate limit exceeded. */
             429: {
                 headers: {

@@ -11,7 +11,7 @@ import {
   createTopupIntent,
   walletErrorMessage,
 } from '@/lib/wallet-billing-api';
-import { isBaleContext, openSadadOutsideMiniApp } from '@/lib/bale-payment';
+import { isBaleSession, openSadadOutsideMiniApp } from '@/lib/bale-payment';
 import {
   MAX_TOPUP_TOMAN,
   MIN_TOPUP_TOMAN,
@@ -40,7 +40,7 @@ export function TopupSheet({ onClose }: { onClose: () => void }) {
   const validation = parseTopupToman(amount);
   const fieldError = touched && !validation.ok ? topupValidationMessage(validation.reason) : null;
 
-  const inBale = isBaleContext();
+  const inBale = isBaleSession();
   const submit = async () => {
     setTouched(true);
     if (!validation.ok) return;

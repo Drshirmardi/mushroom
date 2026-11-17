@@ -147,6 +147,7 @@ export const environmentValidationSchema = Joi.object({
     otherwise: trustedProxySchema.allow('').default(''),
   }),
   BALE_AUTH_ENABLED: Joi.string().valid('true', 'false').default('false'),
+  BALE_BOT_USERNAME: Joi.string().pattern(/^[A-Za-z0-9_]{3,64}$/u).allow('').default(''),
   BALE_BOT_TOKEN: Joi.string().max(256).pattern(/^\d+:[A-Za-z0-9_-]+$/u).when('BALE_AUTH_ENABLED', {
     is: 'true', then: Joi.required(), otherwise: Joi.string().allow('').default(''),
   }),

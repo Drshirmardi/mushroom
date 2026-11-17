@@ -1,4 +1,5 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { PaymentProviderRegistry } from '../commerce/payments/payment-provider.registry';
 import { PaymentCredentialCryptoService } from '../commerce/payments/payment-credential-crypto.service';
@@ -11,10 +12,11 @@ import { BillingTargetRegistry } from './billing-target.registry';
 import { financialAudit, financialConflict, financialKey, financialMissing, fingerprint, lockFinancial, pendingAttempts, reasonText, type FinancialContext } from './billing.policy';
 import type { PaymentProviderCredentialVersion } from '../../generated/prisma/client';
 import { WalletService } from './wallet.service';
+import { balePaymentReturnLink } from './bale-payment-return';
 
 @Injectable()
 export class BillingGatewayService {
-  constructor(private readonly prisma: PrismaService, private readonly billing: BillingService, private readonly targets: BillingTargetRegistry, private readonly registry: PaymentProviderRegistry, private readonly crypto: PaymentCredentialCryptoService, private readonly orderIds: PaymentProviderOrderIdService, private readonly runtime: SadadRuntimeConfigService, private readonly wallet: WalletService, private readonly bale: BaleWalletBillingService) {}
+  constructor(private readonly prisma: PrismaService, private readonly billing: BillingService, private readonly targets: BillingTargetRegistry, private readonly registry: PaymentProviderRegistry, private readonly crypto: PaymentCredentialCryptoService, private readonly orderIds: PaymentProviderOrderIdService, private readonly runtime: SadadRuntimeConfigService, private readonly wallet: WalletService, private readonly bale: BaleWalletBillingService, private readonly config: ConfigService) {}
 
   async methods(userId: string, id: string, sessionId?: string) {
     const intent = await this.billing.owned(userId, id);
@@ -65,7 +67,11 @@ export class BillingGatewayService {
         if (!await target.canSettle(tx, intent)) throw financialConflict();
       }
       const providerOrderId = await this.orderIds.next(tx);
-      const attempt = await tx.billingGatewayAttempt.create({ data: { intentId, revisionId: revision.id, providerOrderId, amountRial: intent.amountRial, idempotencyKey: key } });
+      const startedInBale = context.actorSessionId != null && Boolean(await tx.session.findFirst({
+        where: { id: context.actorSessionId, userId, revokedAt: null, expiresAt: { gt: new Date() }, baleProviderUserId: { not: null } },
+        select: { id: true },
+      }));
+      const attempt = await tx.billingGatewayAttempt.create({ data: { intentId, revisionId: revision.id, providerOrderId, amountRial: intent.amountRial, idempotencyKey: key, startedInBale } });
       await financialAudit(tx, context, 'BILLING_GATEWAY_ATTEMPT_CREATED', intentId, { attemptId: attempt.id });
       return { attempt, request: true };
     });
@@ -97,7 +103,10 @@ export class BillingGatewayService {
     }
     const redirect = new URL('/profile/wallet/payment-result', settings.resultUrl);
     redirect.searchParams.set('intentId', attempt.intentId);
-    return { redirectUrl: redirect.toString() };
+    const baleReturnUrl = attempt.startedInBale
+      ? balePaymentReturnLink(this.config.get<string>('BALE_BOT_USERNAME'), attempt.intentId)
+      : null;
+    return { redirectUrl: redirect.toString(), baleReturnUrl };
   }
 
   async verify(attemptId: string) {

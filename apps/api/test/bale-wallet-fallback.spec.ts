@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { ConfigService } from '@nestjs/config';
 import { BillingGatewayService } from '../src/modules/billing/billing-gateway.service';
 
 function makeService(status: string, baleTransactionId: string | null) {
@@ -23,7 +24,7 @@ function makeService(status: string, baleTransactionId: string | null) {
   const bale = { available: vi.fn().mockResolvedValue(false) };
   const service = new BillingGatewayService(
     prisma as never, billing as never, {} as never, {} as never,
-    {} as never, {} as never, runtime as never, wallet as never, bale as never,
+    {} as never, {} as never, runtime as never, wallet as never, bale as never, new ConfigService(),
   );
   return service;
 }

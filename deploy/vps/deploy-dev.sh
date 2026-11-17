@@ -257,6 +257,7 @@ api_runtime_hash=$(
     'ANALYTICS_SERVER_ENABLED false' \
     'GA4_API_SECRET_FILE /run/optional-secrets/ga4_api_secret' \
     'BALE_AUTH_ENABLED false' \
+    'BALE_BOT_USERNAME -' \
     'BALE_BOT_TOKEN_FILE /run/optional-secrets/bale_bot_token' \
     'BALE_WEBHOOK_SECRET_FILE /run/optional-secrets/bale_webhook_secret' \
     'SADAD_TRANSPORT_MODE disabled' \

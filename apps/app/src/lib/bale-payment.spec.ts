@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  balePaymentResultHref,
   isBaleInvoiceActive,
+  openBaleBrowser,
   openBaleInvoice,
   supportsBaleInvoiceVersion,
 } from './bale-payment';
@@ -16,6 +18,29 @@ function installBaleApp(app: Record<string, unknown>) {
 }
 
 afterEach(() => vi.unstubAllGlobals());
+
+describe('Bale bank payment handoff', () => {
+  it('requests the internal browser and forwards the existing Sadad link unchanged', () => {
+    const openLink = vi.fn();
+    installBaleApp({ version: '1.0', openLink });
+    const url = 'https://api.example.test/v1/payments/providers/sadad/start#synthetic-token';
+    expect(openBaleBrowser(url)).toBe(true);
+    expect(openLink).toHaveBeenCalledOnce();
+    expect(openLink).toHaveBeenCalledWith(url, { try_instant_view: true });
+  });
+
+  it('allows explicit browser fallback when the Bale SDK is unavailable', () => {
+    installBaleApp({});
+    expect(openBaleBrowser('https://example.test')).toBe(false);
+  });
+
+  it('routes only a recognized payment payload to the existing result page', () => {
+    const id = '56ac23e7-3b76-4ba0-8c01-df49094fbad8';
+    expect(balePaymentResultHref(`payment_${id}`)).toBe(`/profile/wallet/payment-result?intentId=${id}`);
+    expect(balePaymentResultHref(`payment_${id}&status=paid`)).toBeNull();
+    expect(balePaymentResultHref('https://example.test')).toBeNull();
+  });
+});
 
 describe('Bale native invoice version gate', () => {
   it('requires API version 1.3 or later and fails closed for unknown versions', () => {

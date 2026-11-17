@@ -160,6 +160,7 @@ function PaymentScreen() {
                 else void load();
               }}
               onCancelled={() => router.push("/store/cart")}
+              onRefresh={() => void refresh()}
             />
           </>
         )}

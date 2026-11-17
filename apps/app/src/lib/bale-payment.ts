@@ -11,6 +11,12 @@ type BalePaymentWebApp = {
 };
 
 export type BaleInvoiceOpenResult = 'opened' | 'already-active' | 'unsupported' | 'failed';
+export const BALE_SDK_URL = 'https://tapi.bale.ai/miniapp.js?3';
+
+export function balePaymentResultHref(startParam: string | null): string | null {
+  const intentId = /^payment_([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/iu.exec(startParam ?? '')?.[1];
+  return intentId ? `/profile/wallet/payment-result?intentId=${encodeURIComponent(intentId)}` : null;
+}
 
 let invoiceActive = false;
 let activeInvoiceApp: BalePaymentWebApp | null = null;
@@ -41,9 +47,11 @@ export function supportsBaleInvoiceVersion(version: string | undefined): boolean
 }
 const webApp = (): BalePaymentWebApp | undefined =>
   typeof window === 'undefined' ? undefined : (window as Window & { Bale?: { WebApp?: BalePaymentWebApp } }).Bale?.WebApp;
+export function isBaleSession(): boolean {
+  return typeof window !== 'undefined' && window.sessionStorage.getItem('mushroom:bale-miniapp') === '1';
+}
 export function isBaleContext(): boolean {
-  return typeof window !== 'undefined' && window.sessionStorage.getItem('mushroom:bale-miniapp') === '1' &&
-    Boolean(webApp()?.version);
+  return isBaleSession() && Boolean(webApp()?.version);
 }
 export function canOpenBaleInvoice(): boolean {
   const app = webApp();
@@ -72,7 +80,16 @@ export function openBaleInvoice(invoiceParams: string, onClosed: () => void): Ba
   }
 }
 export function openSadadOutsideMiniApp(redirectUrl: string): void {
+  window.location.assign(redirectUrl);
+}
+
+export function openBaleBrowser(url: string): boolean {
   const app = webApp();
-  if (isBaleContext() && app?.openLink) app.openLink(redirectUrl, { try_instant_view: true });
-  else window.location.assign(redirectUrl);
+  if (!isBaleSession() || typeof app?.openLink !== 'function') return false;
+  try {
+    app.openLink(url, { try_instant_view: true });
+    return true;
+  } catch {
+    return false;
+  }
 }

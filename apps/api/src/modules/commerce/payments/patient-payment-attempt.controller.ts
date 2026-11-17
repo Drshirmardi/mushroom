@@ -11,6 +11,7 @@ import { PaymentAttemptDto } from './payment-provider.dto';
 import { PaymentAttemptService } from './payment-attempt.service';
 import { Public } from '../../../common/auth/public.decorator';
 import { PublicAuthRateLimiter } from '../../identity/application/ports/public-auth-rate-limiter';
+import { balePaymentReturnDocument } from '../../billing/bale-payment-return';
 
 @ApiTags('Patient Payments') @ApiBearerAuth('bearerAuth') @RequireRoles('PATIENT') @Controller('patients/me')
 export class PatientPaymentAttemptController {
@@ -51,12 +52,21 @@ export class SadadCallbackController {
     ] }],
   } })
   @ApiResponse({ status: 429, description: 'Callback rate limit exceeded.' })
+  @ApiResponse({ status: 200, description: 'Bale Mini App return document', content: { 'text/html': { schema: { type: 'string' } } } })
   @ApiOperation({ operationId: 'sadadPaymentCallback', summary: 'Validate a Sadad browser callback, Verify server-to-server and redirect to the app result page' })
   async callback(@Body() body: Record<string, unknown>, @Req() request: FastifyRequest, @Res() reply: FastifyReply) {
     const orderId = typeof body.OrderId === 'string' && body.OrderId.length <= 512 ? body.OrderId : null;
     const allowed = await this.rateLimiter.consume({ scope: 'sadad-callback', subjects: [{ kind: 'ip', value: request.ip, limit: 120 }, ...(orderId ? [{ kind: 'order', value: orderId, limit: 12 }] : [])], windowMs: 60_000, at: new Date() });
     if (!allowed) throw new HttpException({ code: 'PAYMENT_CALLBACK_RATE_LIMITED', message: 'Payment callback rate limit exceeded.', details: {} }, HttpStatus.TOO_MANY_REQUESTS);
     const result = await this.attempts.processSadadCallback(body);
+    if ('baleReturnUrl' in result && result.baleReturnUrl) {
+      return reply.code(200)
+        .type('text/html; charset=utf-8')
+        .header('Cache-Control', 'no-store')
+        .header('Referrer-Policy', 'no-referrer')
+        .header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'")
+        .send(balePaymentReturnDocument(result.baleReturnUrl, result.redirectUrl));
+    }
     return reply.code(303).redirect(result.redirectUrl);
   }
 }

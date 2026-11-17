@@ -288,7 +288,7 @@ export class BaleAuthService {
     const shouldReply = await this.prisma.$transaction(async tx => {
       const providerId = String(providerUserId);
       // Serialize updates from the same user across API replicas before checking the window.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${providerId}, 0))`;
+      await tx.$queryRaw(Prisma.sql`SELECT pg_advisory_xact_lock(hashtextextended(${providerId}, 0))::text AS locked`);
       const previous = await tx.baleStartRateLimit.findUnique({ where: { providerUserId: providerId } });
       const currentUpdateId = BigInt(updateId);
       if (previous && currentUpdateId <= previous.lastUpdateId) return false;

@@ -35803,6 +35803,16 @@
           }
         },
         "responses": {
+          "200": {
+            "description": "Bale Mini App return document",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "429": {
             "description": "Callback rate limit exceeded."
           }

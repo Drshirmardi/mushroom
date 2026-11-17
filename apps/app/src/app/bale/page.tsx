@@ -7,6 +7,7 @@ import { ArrowLeft, CheckCircle2, LoaderCircle, ShieldCheck, Smartphone } from '
 import type { Authentication } from '@/auth/session';
 import { acceptBaleAuthentication } from '@/components/auth/session-gate';
 import { apiBaseUrl, baleSessionHeaders } from '@/lib/api';
+import { BALE_SDK_URL, balePaymentResultHref } from '@/lib/bale-payment';
 
 interface BaleWebApp {
   initData: string;
@@ -134,7 +135,9 @@ export default function BaleMiniAppPage() {
   const finish = useCallback(
     (authentication: Authentication) => {
       acceptBaleAuthentication(authentication);
-      router.replace('/');
+      const startParam = new URLSearchParams(window.location.search).get('tgWebAppStartParam')
+        ?? new URLSearchParams(initData.current).get('start_param');
+      router.replace(balePaymentResultHref(startParam) ?? '/');
     },
     [router],
   );
@@ -319,7 +322,7 @@ export default function BaleMiniAppPage() {
       }
     >
       <Script
-        src="https://tapi.bale.ai/miniapp.js?3"
+        src={BALE_SDK_URL}
         strategy="afterInteractive"
         onReady={() => {
           void openBale();
