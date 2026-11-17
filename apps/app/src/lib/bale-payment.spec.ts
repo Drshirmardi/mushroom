@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   balePaymentResultHref,
+  isBaleAndroid,
   isBaleInvoiceActive,
   openBaleBrowser,
   openBaleInvoice,
@@ -20,6 +21,13 @@ function installBaleApp(app: Record<string, unknown>) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Bale bank payment handoff', () => {
+  it.each([[true, false], [false, true], [undefined, false]])(
+    'chooses the Android SDK path only for an explicit desktop-frame flag of false (%s)',
+    (isIframe, expected) => {
+      installBaleApp({ version: '1.3', isIframe });
+      expect(isBaleAndroid()).toBe(expected);
+    },
+  );
   it('requests the internal browser and forwards the existing Sadad link unchanged', () => {
     const openLink = vi.fn();
     installBaleApp({ version: '1.0', openLink });
@@ -70,6 +78,7 @@ describe('Bale native invoice lifecycle', () => {
 
     callback?.({ status: 'cancelled' });
     expect(closeHandler).toHaveBeenCalledTimes(1);
+    expect(closeHandler).toHaveBeenCalledWith('cancelled');
     expect(isBaleInvoiceActive()).toBe(false);
   });
 

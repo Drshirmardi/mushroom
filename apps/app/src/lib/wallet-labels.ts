@@ -76,6 +76,12 @@ export function isAmbiguousAttempt(status: string): boolean {
 
 export type IntentResultView = "paid" | "pending" | "ambiguous" | "failed" | "closed" | "compensated";
 
+export function paymentAttemptNotice(intentStatus: string, attemptStatus?: string): string {
+  if (intentStatus === "CANCELLED" || intentStatus === "EXPIRED") return "این درخواست پرداخت بسته شده است.";
+  if (attemptStatus === "FAILED") return "پرداخت انجام نشد.";
+  return "وضعیت پرداخت در حال بررسی است.";
+}
+
 /** Structural shape of the fields the result view reads, so this stays a pure helper. */
 type ResultIntent = { status: string; attempts?: Array<{ status: string }> | null };
 

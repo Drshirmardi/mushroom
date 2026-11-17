@@ -2,11 +2,15 @@
  * Native Bale SDK helpers. A closed invoice is never proof of settlement.
  * All callbacks must refresh the authoritative BillingIntent from the API.
  */
+export type BaleInvoiceStatus = 'paid' | 'cancelled' | 'failed' | 'pending';
+type InvoiceClosePayload = { status?: BaleInvoiceStatus };
+
 type BalePaymentWebApp = {
   version?: string;
-  openInvoice?: (params: string, callback?: (result: { status: 'paid' | 'cancelled' | 'failed' | 'pending' }) => void) => void;
-  onEvent?: (event: 'invoiceClosed', handler: () => void) => void;
-  offEvent?: (event: 'invoiceClosed', handler: () => void) => void;
+  isIframe?: boolean;
+  openInvoice?: (params: string, callback?: (result?: InvoiceClosePayload) => void) => void;
+  onEvent?: (event: 'invoiceClosed', handler: (result?: InvoiceClosePayload) => void) => void;
+  offEvent?: (event: 'invoiceClosed', handler: (result?: InvoiceClosePayload) => void) => void;
   openLink?: (url: string, options?: { try_instant_view?: boolean }) => void;
 };
 
@@ -20,9 +24,9 @@ export function balePaymentResultHref(startParam: string | null): string | null 
 
 let invoiceActive = false;
 let activeInvoiceApp: BalePaymentWebApp | null = null;
-let activeInvoiceCloseHandler: (() => void) | null = null;
+let activeInvoiceCloseHandler: ((status?: BaleInvoiceStatus) => void) | null = null;
 
-function finishActiveInvoice(notify: boolean): void {
+function finishActiveInvoice(notify: boolean, result?: InvoiceClosePayload): void {
   if (!invoiceActive) return;
   invoiceActive = false;
   const app = activeInvoiceApp;
@@ -34,11 +38,14 @@ function finishActiveInvoice(notify: boolean): void {
   } catch {
     // The payment result callback still releases our local invoice lock.
   }
-  if (notify) closeHandler?.();
+  const status = result?.status;
+  if (notify) closeHandler?.(
+    status === 'paid' || status === 'cancelled' || status === 'failed' || status === 'pending' ? status : undefined,
+  );
 }
 
-function handleInvoiceClosed(): void {
-  finishActiveInvoice(true);
+function handleInvoiceClosed(result?: InvoiceClosePayload): void {
+  finishActiveInvoice(true, result);
 }
 
 export function supportsBaleInvoiceVersion(version: string | undefined): boolean {
@@ -53,6 +60,9 @@ export function isBaleSession(): boolean {
 export function isBaleContext(): boolean {
   return isBaleSession() && Boolean(webApp()?.version);
 }
+export function isBaleAndroid(): boolean {
+  return isBaleSession() && webApp()?.isIframe === false;
+}
 export function canOpenBaleInvoice(): boolean {
   const app = webApp();
   return isBaleContext() && supportsBaleInvoiceVersion(app?.version) && typeof app?.openInvoice === 'function';
@@ -60,7 +70,7 @@ export function canOpenBaleInvoice(): boolean {
 export function isBaleInvoiceActive(): boolean {
   return invoiceActive;
 }
-export function openBaleInvoice(invoiceParams: string, onClosed: () => void): BaleInvoiceOpenResult {
+export function openBaleInvoice(invoiceParams: string, onClosed: (status?: BaleInvoiceStatus) => void): BaleInvoiceOpenResult {
   const app = webApp();
   if (!app || !canOpenBaleInvoice()) return 'unsupported';
   if (invoiceActive) return 'already-active';
@@ -70,7 +80,7 @@ export function openBaleInvoice(invoiceParams: string, onClosed: () => void): Ba
   activeInvoiceCloseHandler = onClosed;
   try {
     app.onEvent?.('invoiceClosed', handleInvoiceClosed);
-    app.openInvoice!(invoiceParams, () => finishActiveInvoice(true));
+    app.openInvoice!(invoiceParams, (result) => finishActiveInvoice(true, result));
     return 'opened';
   } catch (cause) {
     const message = cause instanceof Error ? cause.message : String(cause);

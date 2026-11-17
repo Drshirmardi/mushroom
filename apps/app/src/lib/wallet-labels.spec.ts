@@ -7,11 +7,18 @@ import {
   intentResultView,
   isAmbiguousAttempt,
   isPendingStatus,
+  paymentAttemptNotice,
   transactionDirection,
   walletKindLabel,
 } from "./wallet-labels";
 
 describe("wallet presentation labels", () => {
+  it("distinguishes a rejected attempt from an unresolved attempt on a pending order", () => {
+    expect(paymentAttemptNotice("PENDING", "FAILED")).toBe("پرداخت انجام نشد.");
+    expect(paymentAttemptNotice("PENDING", "REQUIRES_RECONCILIATION")).toBe("وضعیت پرداخت در حال بررسی است.");
+    expect(paymentAttemptNotice("PENDING", "REDIRECT_READY")).toBe("وضعیت پرداخت در حال بررسی است.");
+  });
+
   it("names each billing purpose, status and method in Persian", () => {
     expect(billingPurposeLabel("TOPUP")).toBe("شارژ کیف پول");
     expect(billingPurposeLabel("ORDER")).toBe("پرداخت سفارش");

@@ -106,7 +106,7 @@ export class BillingGatewayService {
     const baleReturnUrl = attempt.startedInBale
       ? balePaymentReturnLink(this.config.get<string>('BALE_BOT_USERNAME'), attempt.intentId)
       : null;
-    return { redirectUrl: redirect.toString(), baleReturnUrl };
+    return { redirectUrl: redirect.toString(), startedInBale: attempt.startedInBale, baleReturnUrl };
   }
 
   async verify(attemptId: string) {

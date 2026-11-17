@@ -14,6 +14,14 @@ describe('Bale payment return', () => {
     const html = balePaymentReturnDocument('https://ble.ir/clinic_bot?startapp=payment_test', 'https://app.example.test/result?intentId=test&test=1');
     expect(html).toContain('href="https://ble.ir/clinic_bot?startapp=payment_test"');
     expect(html).toContain('href="https://app.example.test/result?intentId=test&#38;test=1"');
+    expect(html).toContain('این تب را ببندید و به همان صفحهٔ پرداخت در بله برگردید.');
+    expect(html).toContain('با همان حساب بیمار وارد شوید.');
     expect(html).not.toContain('<script');
+  });
+
+  it('gives the original-tab instructions even without a configured Bale bot', () => {
+    const html = balePaymentReturnDocument(null, 'https://app.example.test/result');
+    expect(html).toContain('بررسی وضعیت پرداخت');
+    expect(html).not.toContain('باز کردن اپ بله');
   });
 });

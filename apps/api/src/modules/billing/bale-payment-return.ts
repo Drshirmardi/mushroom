@@ -5,7 +5,7 @@ export function balePaymentReturnLink(username: string | undefined, intentId: st
   return link.toString();
 }
 
-export function balePaymentReturnDocument(baleUrl: string, resultUrl: string): string {
+export function balePaymentReturnDocument(baleUrl: string | null, resultUrl: string): string {
   const attribute = (url: string) => url.replace(/[&"<>'`]/gu, (char) => `&#${char.charCodeAt(0)};`);
   return `<!doctype html>
 <html lang="fa" dir="rtl">
@@ -16,12 +16,13 @@ export function balePaymentReturnDocument(baleUrl: string, resultUrl: string): s
   body{margin:0;padding:1rem;font:1rem/1.8 system-ui,sans-serif;color:#173c53;background:#f6fafb}
   main{max-width:28rem;margin:12vh auto;padding:1.5rem;border:1px solid #dbe6eb;border-radius:1rem;background:white;text-align:center}
   h1{font-size:1.25rem} a{display:block;margin-top:.75rem;padding:.65rem;border-radius:.5rem}
-  .primary{background:#086566;color:white}
 </style>
 <main>
   <h1>بازگشت از درگاه پرداخت</h1>
-  <p>برای بررسی نتیجهٔ همین پرداخت به مینی‌اپ برگردید.</p>
-  <a class="primary" href="${attribute(baleUrl)}">بازگشت به مینی‌اپ بله</a>
+  <p><strong>این تب را ببندید و به همان صفحهٔ پرداخت در بله برگردید.</strong></p>
+  <p>در صفحهٔ پرداخت، گزینهٔ «بررسی وضعیت پرداخت» را بزنید.</p>
+  ${baleUrl ? `<a href="${attribute(baleUrl)}">باز کردن اپ بله</a>` : ''}
+  <p>برای دیدن نتیجه در وب، با همان حساب بیمار وارد شوید.</p>
   <a href="${attribute(resultUrl)}">مشاهدهٔ نتیجه در وب</a>
 </main>
 </html>`;

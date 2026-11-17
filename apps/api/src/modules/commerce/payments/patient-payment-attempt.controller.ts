@@ -59,7 +59,7 @@ export class SadadCallbackController {
     const allowed = await this.rateLimiter.consume({ scope: 'sadad-callback', subjects: [{ kind: 'ip', value: request.ip, limit: 120 }, ...(orderId ? [{ kind: 'order', value: orderId, limit: 12 }] : [])], windowMs: 60_000, at: new Date() });
     if (!allowed) throw new HttpException({ code: 'PAYMENT_CALLBACK_RATE_LIMITED', message: 'Payment callback rate limit exceeded.', details: {} }, HttpStatus.TOO_MANY_REQUESTS);
     const result = await this.attempts.processSadadCallback(body);
-    if ('baleReturnUrl' in result && result.baleReturnUrl) {
+    if ('startedInBale' in result && result.startedInBale) {
       return reply.code(200)
         .type('text/html; charset=utf-8')
         .header('Cache-Control', 'no-store')

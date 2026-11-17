@@ -317,12 +317,52 @@ describe.skipIf(process.env.WALLET_BILLING_TEST_ISOLATED !== '1')('shared wallet
           payload: callback.toString(),
         });
         expect(response.statusCode).toBe(200);
+        expect(response.body).toContain('به همان صفحهٔ پرداخت در بله برگردید');
         expect(response.body).toContain(`https://ble.ir/clinic_test_bot?startapp=payment_${intent.id}`);
         expect(response.body).not.toContain(stored.providerToken!);
       }
       expect((await billing.get(p.userId, intent.id)).status).toBe('PAID');
       expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(1);
+      const other = await patient();
+      await expect(billing.get(other.userId, intent.id)).rejects.toThrow();
     } finally {
+      username.mockRestore();
+    }
+  });
+
+  it.each([
+    ['101', 'FAILED', true],
+    ['104', 'REQUIRES_RECONCILIATION', false],
+  ] as const)('returns a Bale payer to the original tab after cancellation with Verify %s', async (resultCode, expected, canRetry) => {
+    const p = await patient();
+    await db.session.update({ where: { id: p.sessionId }, data: { baleProviderUserId: '912346' } });
+    const config = app.get(ConfigService);
+    const get = config.get.bind(config);
+    const username = vi.spyOn(config, 'get').mockImplementation((key, ...args) =>
+      key === 'BALE_BOT_USERNAME' ? '' : get(key, ...args));
+    const verify = vi.spyOn(fake, 'verifyPayment').mockResolvedValue({ resultCode });
+    try {
+      const intent = await billing.create(p.userId, 'TOPUP', { amountToman: '750' }, randomUUID(), context(p.userId));
+      const attempt = await gateway.create(p.userId, intent.id, randomUUID(), context(p.userId));
+      const stored = await db.billingGatewayAttempt.findUniqueOrThrow({ where: { id: attempt.id } });
+      const callback = new URLSearchParams({ OrderId: stored.providerOrderId.toString(), token: stored.providerToken!, ResCode: '17' });
+      const response = await app.inject({
+        method: 'POST',
+        url: '/v1/payments/providers/sadad/callback',
+        headers: { 'content-type': 'application/x-www-form-urlencoded', origin: 'https://sadad.shaparak.ir' },
+        payload: callback.toString(),
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toContain('به همان صفحهٔ پرداخت در بله برگردید');
+      expect(response.body).not.toContain('startapp');
+      expect(await billing.get(p.userId, intent.id)).toMatchObject({
+        status: 'PENDING',
+        attempts: [expect.objectContaining({ id: attempt.id, status: expected })],
+      });
+      expect((await gateway.methods(p.userId, intent.id, p.sessionId)).find((method) => method.code === 'GATEWAY')?.available).toBe(canRetry);
+      expect(await db.walletJournal.count({ where: { reference: `gateway:${attempt.id}:credit` } })).toBe(0);
+    } finally {
+      verify.mockRestore();
       username.mockRestore();
     }
   });
