@@ -3598,8 +3598,11 @@
   line-height: 1.5;
 }
 .home-assessment-carousel {
-  width: 100%;
-  margin-inline-end: 0;
+  --home-assessment-bleed: clamp(16px, 4vw, 24px);
+  width: calc(100% + var(--home-assessment-bleed) + var(--home-assessment-bleed));
+  margin-left: 0;
+  margin-right: calc(0px - var(--home-assessment-bleed));
+  transform: translateX(var(--home-assessment-bleed));
   padding-block: 2px 8px;
   overflow: hidden;
   touch-action: pan-y;
@@ -3675,7 +3678,6 @@
   max-width: 24ch;
   margin: 0;
   color: color-mix(in srgb, var(--home-ink) 86%, transparent);
-  font-size: clamp(0.625rem, 1.8vw, 0.8125rem);
   line-height: 1.7;
   text-wrap: pretty;
 }

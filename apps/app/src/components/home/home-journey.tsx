@@ -283,7 +283,7 @@ function SelfCareSlide() {
     <>
       <div className="home-assessment-self-care-copy">
         <h2 className="home-assessment-self-care-title">خودت، دکتر خودت باش!</h2>
-        <p>مزاجتو شناختی ؟ الان وقته درمانه </p>
+        <p className="text-sm leading-6 sm:text-base">مزاجتو شناختی ؟ الان وقته درمانه </p>
         <Link href="/store?tab=services" className="home-assessment-self-care-link">
           دیدن خدمات
           <ArrowLeft size={14} aria-hidden="true" />
@@ -318,7 +318,9 @@ function AssessmentStatus({ latest }: { latest: NonNullable<PatientHome['latestA
     <section className="home-next home-assessment-status" aria-label="وضعیت شما">
       <AssessmentCarousel secondSlide={<SelfCareSlide />}>
         <div className="home-assessment-heading">
-          <span id="home-assessment-title">وضعیت شما</span>
+          <span id="home-assessment-title" className="mx-auto">
+            وضعیت شما
+          </span>
         </div>
         <Link
           href={resultLink}
