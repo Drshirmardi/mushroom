@@ -4,7 +4,6 @@
  */
 type BalePaymentWebApp = {
   version?: string;
-  isIframe?: boolean;
   openInvoice?: (params: string, callback?: () => void) => void;
   onEvent?: (event: 'invoiceClosed', handler: () => void) => void;
   offEvent?: (event: 'invoiceClosed', handler: () => void) => void;
@@ -54,9 +53,6 @@ export function isBaleSession(): boolean {
 export function isBaleContext(): boolean {
   return isBaleSession() && Boolean(webApp()?.version);
 }
-export function isBaleAndroid(): boolean {
-  return isBaleSession() && webApp()?.isIframe === false;
-}
 export function canOpenBaleInvoice(): boolean {
   const app = webApp();
   return isBaleContext() && supportsBaleInvoiceVersion(app?.version) && typeof app?.openInvoice === 'function';
@@ -85,19 +81,6 @@ export function openBaleInvoice(invoiceParams: string, onClosed: () => void): Ba
 }
 export function openSadadOutsideMiniApp(redirectUrl: string): void {
   window.location.assign(redirectUrl);
-}
-
-export function openBankPaymentTab(): Window | null {
-  const tab = window.open('about:blank', '_blank');
-  if (!tab) return null;
-  tab.opener = null;
-  try {
-    tab.document.title = 'در حال باز کردن درگاه پرداخت';
-    if (tab.document.body) tab.document.body.textContent = 'در حال باز کردن درگاه پرداخت…';
-  } catch {
-    // A sandboxed tab can navigate even when its placeholder document is inaccessible.
-  }
-  return tab;
 }
 
 export function openBaleBrowser(url: string): boolean {

@@ -1,9 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   balePaymentResultHref,
-  isBaleAndroid,
   isBaleInvoiceActive,
-  openBankPaymentTab,
   openBaleBrowser,
   openBaleInvoice,
   supportsBaleInvoiceVersion,
@@ -22,33 +20,16 @@ function installBaleApp(app: Record<string, unknown>) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Bale bank payment handoff', () => {
-  it('detects a blocked tab or reserves a loading tab without exposing the opener', () => {
-    const tab = { opener: {}, document: { title: '', body: { textContent: '' } } };
-    const open = vi.fn().mockReturnValueOnce(null).mockReturnValueOnce(tab);
-    vi.stubGlobal('window', { open });
-    expect(openBankPaymentTab()).toBeNull();
-    expect(openBankPaymentTab()).toBe(tab);
-    expect(open).toHaveBeenLastCalledWith('about:blank', '_blank');
-    expect(tab.opener).toBeNull();
-    expect(tab.document.body.textContent).toContain('در حال باز کردن');
-  });
-  it.each([[true, false], [false, true], [undefined, false]])(
-    'chooses the Android SDK path only for an explicit desktop-frame flag of false (%s)',
-    (isIframe, expected) => {
-      installBaleApp({ version: '1.3', isIframe });
-      expect(isBaleAndroid()).toBe(expected);
-    },
-  );
-  it('requests the internal browser and forwards the existing Sadad link unchanged', () => {
+  it.each([true, false, undefined])('forwards the Sadad link unchanged to the SDK (isIframe: %s)', (isIframe) => {
     const openLink = vi.fn();
-    installBaleApp({ version: '1.0', openLink });
+    installBaleApp({ version: '1.0', isIframe, openLink });
     const url = 'https://api.example.test/v1/payments/providers/sadad/start#synthetic-token';
     expect(openBaleBrowser(url)).toBe(true);
     expect(openLink).toHaveBeenCalledOnce();
     expect(openLink).toHaveBeenCalledWith(url, { try_instant_view: true });
   });
 
-  it('allows explicit browser fallback when the Bale SDK is unavailable', () => {
+  it('reports failure when the Bale SDK is unavailable', () => {
     installBaleApp({});
     expect(openBaleBrowser('https://example.test')).toBe(false);
   });

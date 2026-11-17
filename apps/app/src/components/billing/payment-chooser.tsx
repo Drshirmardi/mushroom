@@ -24,10 +24,8 @@ import { formatRial } from '@/lib/wallet-money';
 import {
   BALE_SDK_URL,
   canOpenBaleInvoice,
-  isBaleAndroid,
   isBaleInvoiceActive,
   isBaleSession,
-  openBankPaymentTab,
   openBaleBrowser,
   openBaleInvoice,
   openSadadOutsideMiniApp,
@@ -217,36 +215,22 @@ export function PaymentChooser({
 
   const payViaGateway = () =>
     run('gateway', async () => {
-      const baleAndroid = isBaleAndroid();
-      const needsTab = isBaleSession() && !baleAndroid;
-      // Reserve the tab while the click still grants permission to open it.
-      const tab = needsTab ? openBankPaymentTab() : null;
-      let navigated = false;
-      try {
-        const attempt = await createGatewayAttempt(accessToken, intent.id, crypto.randomUUID());
-        trackOpenedAttempt(attempt.id);
-        if (!attempt.redirectUrl) {
-          setError(attempt.status === 'FAILED'
-            ? 'درگاه نتوانست این پرداخت را آغاز کند. دوباره تلاش کنید.'
-            : 'وضعیت پرداخت بانکی هنوز مشخص نیست؛ وضعیت آن را بررسی کنید.');
-          onRefresh?.();
-          return;
-        }
-        if (tab) {
-          if (tab.closed) {
-            setError('تب پرداخت بسته شد. برای ادامهٔ همین پرداخت دوباره روی پرداخت بانکی بزنید.');
-            return;
-          }
-          tab.location.replace(attempt.redirectUrl);
-          navigated = true;
-        } else if (needsTab || !baleAndroid || !openBaleBrowser(attempt.redirectUrl)) {
-          // Still create the gateway attempt if the browser blocks a new tab.
-          // In that case continue in this page instead of silently aborting.
-          openSadadOutsideMiniApp(attempt.redirectUrl);
-        }
-      } finally {
-        if (tab && !navigated && !tab.closed) tab.close();
+      const attempt = await createGatewayAttempt(accessToken, intent.id, crypto.randomUUID());
+      trackOpenedAttempt(attempt.id);
+      if (!attempt.redirectUrl) {
+        setError(attempt.status === 'FAILED'
+          ? 'درگاه نتوانست این پرداخت را آغاز کند. دوباره تلاش کنید.'
+          : 'وضعیت پرداخت بانکی هنوز مشخص نیست؛ وضعیت آن را بررسی کنید.');
+        onRefresh?.();
+        return;
       }
+      if (isBaleSession()) {
+        if (!openBaleBrowser(attempt.redirectUrl)) {
+          setError('درگاه پرداخت در بله باز نشد. دوباره روی پرداخت بانکی بزنید.');
+        }
+        return;
+      }
+      openSadadOutsideMiniApp(attempt.redirectUrl);
     });
 
   const cancel = () =>
