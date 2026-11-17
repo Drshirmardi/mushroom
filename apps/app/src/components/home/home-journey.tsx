@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useReducedMotion } from 'motion/react';
@@ -192,7 +193,13 @@ function NextVisit({ visit }: { visit: NonNullable<PatientHome['nextAppointment'
   );
 }
 
-function AssessmentCarousel({ children }: { children: ReactNode }) {
+function AssessmentCarousel({
+  children,
+  secondSlide,
+}: {
+  children: ReactNode;
+  secondSlide?: ReactNode;
+}) {
   const reducedMotion = useReducedMotion();
   const swiper = useRef<SwiperInstance | null>(null);
   const resizeObserver = useRef<ResizeObserver | null>(null);
@@ -244,7 +251,8 @@ function AssessmentCarousel({ children }: { children: ReactNode }) {
           if (!activeSlide || !swiperElement) return;
 
           const syncReservedSlideHeight = () => {
-            if (instance.destroyed || !swiperElement.isConnected || !activeSlide.isConnected) return;
+            if (instance.destroyed || !swiperElement.isConnected || !activeSlide.isConnected)
+              return;
             swiperElement.style.setProperty(
               '--home-assessment-slide-height',
               `${activeSlide.getBoundingClientRect().height}px`,
@@ -260,13 +268,31 @@ function AssessmentCarousel({ children }: { children: ReactNode }) {
       >
         <SwiperSlide className="home-assessment-slide">{children}</SwiperSlide>
         <SwiperSlide
-          className="home-assessment-slide home-assessment-slide--reserved"
-          aria-hidden="true"
+          className="home-assessment-slide home-assessment-slide--secondary"
+          aria-hidden={secondSlide ? undefined : true}
         >
-          <div className="home-assessment-next-placeholder" />
+          <div className="home-assessment-secondary-card">{secondSlide}</div>
         </SwiperSlide>
       </Swiper>
     </div>
+  );
+}
+
+function SelfCareSlide() {
+  return (
+    <>
+      <div className="home-assessment-self-care-copy">
+        <h2 className="home-assessment-self-care-title">خودت، دکتر خودت باش!</h2>
+        <p>با شناخت مزاجت، انتخاب‌های سلامتت را آگاهانه‌تر کن.</p>
+        <Link href="/assessment" className="home-assessment-self-care-link">
+          شروع ارزیابی
+          <ArrowLeft size={14} aria-hidden="true" />
+        </Link>
+      </div>
+      <div className="home-assessment-self-care-portrait">
+        <Image src="/home/doctor-self-care.webp" alt="" fill unoptimized draggable={false} />
+      </div>
+    </>
   );
 }
 
@@ -289,11 +315,8 @@ function AssessmentStatus({ latest }: { latest: NonNullable<PatientHome['latestA
   ];
   const resultLink = `/assessment/result?submissionId=${encodeURIComponent(latest.id)}`;
   return (
-    <section
-      className="home-next home-assessment-status"
-      aria-label="وضعیت شما"
-    >
-      <AssessmentCarousel>
+    <section className="home-next home-assessment-status" aria-label="وضعیت شما">
+      <AssessmentCarousel secondSlide={<SelfCareSlide />}>
         <div className="home-assessment-heading">
           <span id="home-assessment-title">وضعیت شما</span>
         </div>
@@ -306,16 +329,16 @@ function AssessmentStatus({ latest }: { latest: NonNullable<PatientHome['latestA
           <div className="home-assessment-chart-layout" aria-label="درصد گرایش‌های مزاجی">
             <div className="home-assessment-scores" aria-label="گرایش‌های اول و دوم">
               {distribution.slice(0, 2).map((item) => (
-                    <div className="home-assessment-score" key={item.id}>
-                      <span
-                        className="home-assessment-score__value"
-                        style={{ color: scoreColors[item.index % scoreColors.length] }}
-                      >
-                        {item.percent.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
-                      </span>
-                      <span className="home-assessment-score__name">{item.title}</span>
-                    </div>
-                  ))}
+                <div className="home-assessment-score" key={item.id}>
+                  <span
+                    className="home-assessment-score__value"
+                    style={{ color: scoreColors[item.index % scoreColors.length] }}
+                  >
+                    {item.percent.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
+                  </span>
+                  <span className="home-assessment-score__name">{item.title}</span>
+                </div>
+              ))}
             </div>
             <div className="home-mizaj home-assessment-chart">
               {chart ? (
@@ -328,30 +351,33 @@ function AssessmentStatus({ latest }: { latest: NonNullable<PatientHome['latestA
             </div>
             <div className="home-assessment-scores" aria-label="گرایش‌های سوم و چهارم">
               {distribution.slice(2, 4).map((item) => (
-                    <div className="home-assessment-score" key={item.id}>
-                      <span
-                        className="home-assessment-score__value"
-                        style={{ color: scoreColors[item.index % scoreColors.length] }}
-                      >
-                        {item.percent.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
-                      </span>
-                      <span className="home-assessment-score__name">{item.title}</span>
-                    </div>
-                  ))}
+                <div className="home-assessment-score" key={item.id}>
+                  <span
+                    className="home-assessment-score__value"
+                    style={{ color: scoreColors[item.index % scoreColors.length] }}
+                  >
+                    {item.percent.toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪
+                  </span>
+                  <span className="home-assessment-score__name">{item.title}</span>
+                </div>
+              ))}
             </div>
           </div>
         </Link>
         <div className="home-assessment-footer">
           {ranks.some(Boolean) && (
-              <div className="home-assessment-primary-types">
-                {ranks.map((item, index) => item && (
-                  <span className="home-assessment-type home-assessment-type--result" key={index}>
-                    <small>مزاج {index === 0 ? 'اول' : 'دوم'}</small>
-                    <strong>{item.title}</strong>
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="home-assessment-primary-types">
+              {ranks.map(
+                (item, index) =>
+                  item && (
+                    <span className="home-assessment-type home-assessment-type--result" key={index}>
+                      <small>مزاج {index === 0 ? 'اول' : 'دوم'}</small>
+                      <strong>{item.title}</strong>
+                    </span>
+                  ),
+              )}
+            </div>
+          )}
           <Link
             href="/store?tab=services"
             className="home-assessment-result-link"
@@ -411,11 +437,7 @@ function AssessmentStatusSkeleton() {
   );
 }
 
-function ActionRow({
-  action,
-}: {
-  action: PatientHome['actions'][number];
-}) {
+function ActionRow({ action }: { action: PatientHome['actions'][number] }) {
   if (action.code === 'TRACK_ORDER' && action.resourceId) {
     return <HomeOrderProgress orderId={action.resourceId} />;
   }
@@ -457,11 +479,7 @@ function ActionRow({
   );
 }
 
-function PendingActions({
-  actions,
-}: {
-  actions: PatientHome['actions'];
-}) {
+function PendingActions({ actions }: { actions: PatientHome['actions'] }) {
   const [expanded, setExpanded] = useState(false);
   if (actions.length === 0) return null;
   const shown = expanded ? actions : actions.slice(0, 3);
@@ -482,10 +500,7 @@ function PendingActions({
         className="home-pending-list grid items-start gap-2.5 lg:grid-cols-3"
       >
         {shown.map((action) => (
-          <ActionRow
-            key={`${action.code}:${action.resourceId ?? ''}`}
-            action={action}
-          />
+          <ActionRow key={`${action.code}:${action.resourceId ?? ''}`} action={action} />
         ))}
       </div>
       {actions.length > 3 && (
