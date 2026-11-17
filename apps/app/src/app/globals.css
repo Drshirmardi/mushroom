@@ -3598,8 +3598,8 @@
   line-height: 1.5;
 }
 .home-assessment-carousel {
-  width: calc(100% + 20px);
-  margin-inline-end: -20px;
+  width: 100%;
+  margin-inline-end: 0;
   padding-block: 2px 8px;
   overflow: hidden;
   touch-action: pan-y;
@@ -3609,7 +3609,7 @@
 .home-assessment-slide {
   display: flex;
   height: auto;
-  width: calc(100% - 20px);
+  width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }

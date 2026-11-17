@@ -283,9 +283,9 @@ function SelfCareSlide() {
     <>
       <div className="home-assessment-self-care-copy">
         <h2 className="home-assessment-self-care-title">خودت، دکتر خودت باش!</h2>
-        <p>با شناخت مزاجت، انتخاب‌های سلامتت را آگاهانه‌تر کن.</p>
-        <Link href="/assessment" className="home-assessment-self-care-link">
-          شروع ارزیابی
+        <p>مزاجتو شناختی ؟ الان وقته درمانه </p>
+        <Link href="/store?tab=services" className="home-assessment-self-care-link">
+          دیدن خدمات
           <ArrowLeft size={14} aria-hidden="true" />
         </Link>
       </div>
