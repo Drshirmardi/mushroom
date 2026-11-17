@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -39,6 +40,8 @@ const isActivePatient = (user: { status: string; roles: { role: { code: string }
 /** This service only trusts signed Bale initData and authenticated webhook updates. */
 @Injectable()
 export class BaleAuthService {
+  private readonly logger = new Logger(BaleAuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: ConfigService,
@@ -229,12 +232,15 @@ export class BaleAuthService {
     const message = update.message as Record<string, unknown> | undefined;
     const from = message?.from as Record<string, unknown> | undefined;
     const chat = message?.chat as Record<string, unknown> | undefined;
+    const startCommand = typeof message?.text === 'string' &&
+      /^\/start(?:@[A-Za-z0-9_]+)?(?:\s|$)/u.test(message.text.trim());
+    if (typeof message?.text === 'string') {
+      this.logger.log(`Bale message update received (private=${chat?.type === 'private'}, start=${startCommand}, senderValid=${typeof from?.id === 'number' && Number.isSafeInteger(from.id)}, chatValid=${typeof chat?.id === 'number' && Number.isSafeInteger(chat.id)})`);
+    }
     if (chat?.type !== 'private' ||
       typeof update.update_id !== 'number' || !Number.isSafeInteger(update.update_id) ||
       typeof from?.id !== 'number' || !Number.isSafeInteger(from.id)) return;
 
-    const startCommand = typeof message?.text === 'string' &&
-      /^\/start(?:@[A-Za-z0-9_]+)?(?:\s|$)/u.test(message.text.trim());
     if (startCommand) {
       if (typeof chat.id === 'number' && Number.isSafeInteger(chat.id)) {
         await this.replyToStart(update.update_id, from.id, chat.id);
@@ -274,7 +280,10 @@ export class BaleAuthService {
   private async replyToStart(updateId: number, providerUserId: number, chatId: number): Promise<void> {
     const token = this.config.get<string>('BALE_BOT_TOKEN');
     const appUrl = this.miniAppUrl();
-    if (!token || !appUrl) return;
+    if (!token || !appUrl) {
+      this.logger.warn(`Bale /start reply skipped (botTokenConfigured=${Boolean(token)}, miniAppUrlConfigured=${Boolean(appUrl)})`);
+      return;
+    }
 
     const shouldReply = await this.prisma.$transaction(async tx => {
       const providerId = String(providerUserId);
@@ -302,12 +311,15 @@ export class BaleAuthService {
       }
       return allowed;
     });
-    if (!shouldReply) return;
+    if (!shouldReply) {
+      this.logger.log('Bale /start reply suppressed by rate limit or duplicate update');
+      return;
+    }
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4_000);
     try {
-      await fetch(`https://tapi.bale.ai/bot${token}/sendMessage`, {
+      const response = await fetch(`https://tapi.bale.ai/bot${token}/sendMessage`, {
         method: 'POST',
         headers: { 'content-type': 'application/json; charset=utf-8', accept: 'application/json' },
         body: JSON.stringify({
@@ -319,8 +331,15 @@ export class BaleAuthService {
         }),
         signal: controller.signal,
       });
+      const result = await response.json().catch(() => null) as Record<string, unknown> | null;
+      if (!response.ok || result?.ok !== true) {
+        this.logger.warn(`Bale sendMessage rejected (httpStatus=${response.status}, apiAccepted=${result?.ok === true})`);
+      } else {
+        this.logger.log('Bale /start reply sent successfully');
+      }
     } catch {
       // A failed send must not break contact verification or payment webhook processing.
+      this.logger.warn('Bale sendMessage request failed before a successful response');
     } finally {
       clearTimeout(timeout);
     }
