@@ -13,7 +13,7 @@ Changes affecting release artifacts also build all four production images withou
 check non-root execution and HTTP readiness, exercise API migration on disposable PostgreSQL,
 and verify Next public configuration changes with the same image ID. Runtime image scanning
 rejects every reported High/Critical finding, including unfixed findings, and retains JSON reports.
-This is artifact smoke, not real deployment or Liara capability evidence.
+This is artifact smoke, not a live deployment rehearsal on the project's personal VPS.
 
 ## Release and VPS delivery
 
@@ -34,8 +34,8 @@ SSH secrets and the automatic workflow stops. The configured owner must then run
 successful release run ID; that workflow revalidates staging and the immutable manifest before touching
 `production-sim`. Both use host-key-pinned SSH, the versioned deployment script and the job-scoped `GITHUB_TOKEN` for
 temporary private-GHCR read access. `Application rollback` is the explicit operator path and applies the same owner
-check to production-sim. This Free-plan rehearsal intentionally targets one isolated test VPS; a future real production
-target must restore separately scoped deployment credentials and an approval-capable control plane.
+check to production-sim. This Free-plan rehearsal intentionally targets one isolated test VPS; real production uses
+separately scoped deployment credentials and an approval-capable control plane.
 
 The release contract check runs for affected pull requests and main changes. Live VPS acceptance still requires a
 baseline plus two sequential update rehearsals; local workflow checks cannot claim that evidence.
@@ -55,7 +55,8 @@ The workflow is disabled unless repository variable `VPS_DEV_CD_ENABLED` is exac
 repository-scoped SSH inputs and optional `VPS_PORT`; it receives no package-write permission, GHCR credential or
 production secret. The VPS side rejects a non-`development` runtime, a project other than `mushroom-dev`, non-loopback
 ports, identity mismatches and collisions with the two release environments. Dev has its own PostgreSQL volume,
-file secrets, source/cache/state directories, public URLs and bounded CPU/memory. Sadad transport remains disabled.
+file secrets, source/cache/state directories, public URLs and bounded CPU/memory. Sadad was tested on this dev VPS;
+staging and production acceptance must be recorded separately.
 
 This is a fast internal feedback environment and may run unreviewed code, so branch protection must never treat its
 health result as release evidence. `main` still follows the complete CI, immutable-image release and staging path.

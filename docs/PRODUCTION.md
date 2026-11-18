@@ -329,24 +329,25 @@ docker compose --env-file release.env -f compose.production.yaml up -d --remove-
 قبلی با schema گسترش‌یافته اجرا شود. جزئیات در [راهنمای migration و rollback](../deploy/phase-12-migration-rollout.md)
 ثبت شده است.
 
-## ۱۴. Liara یا OCI PaaS
+## ۱۴. انتشار روی VPS شخصی
 
-در PaaS، چهار image digest به چهار service جدا وصل می‌شوند. برای هر service، port، domain، health endpoint، public
-runtime config و secret reference تعریف می‌شود. migration باید یک job یک‌باره از API image باشد. هیچ SDK، API یا
-branch مخصوص Liara در application لازم نیست.
+مقصد استقرار پروژه Linux VPS شخصی با Docker Compose است. برای آماده‌سازی rehearsal، جداسازی محیط‌ها و مسیر release
+به [راهنمای CI/CD روی VPS](../deploy/vps/README.md) و [مسیر Phase 12 روی VPS](../deploy/phase-12-vps-release.md)
+مراجعه کنید. staging و production باید database، URLها، secretها و release state مستقل داشته باشند؛
+`production-sim` فقط محیط تمرینی است و production واقعی محسوب نمی‌شود.
 
-برای profile فعلی Liara، [مسیر انتشار Liara](../deploy/phase-12-liara-release.md) و
-[تنظیمات profile](../deploy/profiles/liara.md) را ببینید. نبود evidence ارائه‌دهنده برای backup/WAL/restore، secret
-rotation یا IP خروجی ثابت را با یک environment variable دور نزنید.
+سداد روی VPS محیط dev آزمایش و پذیرفته شده است. پیش از فعال‌سازی در staging یا production، تنظیمات همان محیط،
+مسیر callback و تراکنش پذیرش را همان‌جا بررسی و نتیجه را ثبت کنید. callback مشترک را هم‌زمان به چند محیط نفرستید.
 
 ## ۱۵. سداد
 
-ساخت و استقرار image، سداد را فعال نمی‌کند. `SADAD_TRANSPORT_MODE` تا تکمیل تمام موارد زیر `disabled` می‌ماند:
+ساخت و استقرار image، به‌تنهایی سداد را فعال نمی‌کند. وضعیت dev پذیرفته شده است؛ در هر محیط جدید
+`SADAD_TRANSPORT_MODE` تا تأیید تنظیمات و پذیرش همان محیط `disabled` می‌ماند:
 
 - پذیرندگی و credential خارج از Git
 - callback HTTPS ثبت‌شده
 - redirect profile تأییدشده
-- IP خروجی ثابت ثبت‌شده نزد سداد
+- IP خروجی VPS همان محیط که نزد سداد ثبت شده باشد
 - تراکنش پذیرش کنترل‌شده
 - monitoring و reconciliation
 - تأیید نهایی مالک محصول
@@ -354,6 +355,7 @@ rotation یا IP خروجی ثابت را با یک environment variable دور 
 ## مدارک مرتبط
 
 - [قرارداد artifactهای deployment](../deploy/README.md)
+- [مسیر Phase 12 روی VPS](../deploy/phase-12-vps-release.md)
 - [Compose نمونه Production](../compose.production.example.yaml)
 - [سیاست migration و rollback](../deploy/phase-12-migration-rollout.md)
 - [ADR استقرار provider-neutral](../plan/decisions/ADR-0011-provider-neutral-oci-deployment.md)

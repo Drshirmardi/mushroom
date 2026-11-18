@@ -8,6 +8,7 @@ services:
       NODE_ENV: production
       # Optional Bale mini-app auth: disabled until a private bot token and webhook secret are provisioned.
       BALE_AUTH_ENABLED: "${BALE_AUTH_ENABLED:-false}"
+      BALE_BOT_USERNAME: "${BALE_BOT_USERNAME:-}"
       BALE_BOT_TOKEN: "${BALE_BOT_TOKEN:-}"
       BALE_WEBHOOK_SECRET: "${BALE_WEBHOOK_SECRET:-}"
       BALE_BOT_TOKEN_FILE: "${BALE_BOT_TOKEN_FILE:-}"

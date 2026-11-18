@@ -65,13 +65,11 @@ pnpm images:build
 
 ## مرزهای استقرار
 
-چهار image تولیدی provider-neutral هستند و می‌توانند روی Linux VPS با Docker Compose، Liara یا هر OCI PaaS
-سازگار اجرا شوند. URLهای عمومی frontend هنگام شروع container تزریق می‌شوند؛ بنابراین همان digest آزمایش‌شده بدون
-rebuild از staging به production منتقل می‌شود.
+مقصد استقرار پروژه VPS شخصی با Docker Compose است. چهار image تولیدی پس از بررسی روی staging همان VPS تمرین،
+با همان digest و بدون rebuild برای promotion به محیط بعدی استفاده می‌شوند.
 
-اتصال واقعی سداد تا تکمیل پذیرندگی merchant، ثبت callback، تأیید IP خروجی ثابت، نگه‌داری credential خارج از Git و
-sign-off نهایی با `SADAD_GO_LIVE_BLOCKED` مسدود است. اجرای Development، Codespaces یا ساخت image این gate را
-فعال نمی‌کند.
+اتصال سداد روی VPS محیط dev آزمایش و پذیرفته شده است. این پذیرش، بررسی تنظیمات و تراکنش محیط staging یا production
+را جایگزین نمی‌کند؛ نتیجه و callback هر محیط باید جداگانه ثبت شود و credentialها نباید وارد Git شوند.
 
 ## منبع حقیقت اجرای پروژه
 
