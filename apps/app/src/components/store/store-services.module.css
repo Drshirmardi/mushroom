@@ -137,6 +137,15 @@
 .card {
   display: grid;
   gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.featured:focus-visible,
+.card:focus-visible {
+  outline: 2px solid var(--dp-brand);
+  outline-offset: -2px;
 }
 
 .featured {

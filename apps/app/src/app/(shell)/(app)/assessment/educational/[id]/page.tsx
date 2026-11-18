@@ -1,6 +1,4 @@
 'use client';
-import { AsyncButton } from '@/components/shared/async-button';
-import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 import { useCallback, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,6 +6,7 @@ import type { components } from '@sabz-zendegi/api-client';
 import { ClipboardList } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
+import { ShellAction } from '@/components/layout/shell-slots';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { usePolicyAcceptance, PolicyAcceptance } from '@/components/shared/policy-acceptance';
 import {
@@ -15,7 +14,6 @@ import {
   acceptAssessmentConsent,
   claimFreeAssessmentAccess,
   createAssessmentPurchase,
-  withdrawAssessmentConsent,
 } from '@/lib/digital-services-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { finishOperation, useOperationKey } from '@/lib/use-operation-key';
@@ -33,6 +31,7 @@ export default function EducationalOfferingPage() {
   );
   return (
     <ServicePage
+      className="assessment-educational-detail"
       title="شرایط ارزیابی"
       description="متن پردازش، نگهداری و نمایش نتیجه را پیش از شروع بخوانید."
       icon={ClipboardList}
@@ -47,7 +46,6 @@ export default function EducationalOfferingPage() {
             offering={resource.data}
             token={authentication.accessToken}
             userId={authentication.user.id}
-            reload={() => void resource.reload()}
           />
         )}
       </div>
@@ -58,25 +56,28 @@ function FreeAccess({
   offering,
   token,
   userId,
-  reload,
 }: {
   offering: components['schemas']['EducationalAssessmentOfferingDetailDto'];
   token: string;
   userId: string;
-  reload: () => void;
 }) {
   const router = useRouter(),
     lock = useRef(false);
   const [busy, setBusy] = useState(false),
-    [confirmWithdraw, setConfirmWithdraw] = useState(false),
     [error, setError] = useState('');
   const key = useOperationKey(`${userId}:educational-assessment:${offering.id}`);
-  const [repurchasing, setRepurchasing] = useState(false);
-  const ownedGrantId = repurchasing ? null : offering.accessGrantId,
-    available = repurchasing
-      ? offering.publicPurchaseAvailable
-      : offering.accessSupported && (!offering.pendingIntentId || !!offering.accessGrantId);
   const paid = offering.priceMode === 'PAID';
+  const repurchasing = paid && Boolean(offering.accessGrantId);
+  const ownedGrantId = offering.accessGrantId;
+  const hasPendingPayment = Boolean(offering.pendingIntentId);
+  const available = hasPendingPayment
+    ? true
+    : repurchasing
+      ? offering.publicPurchaseAvailable
+      : offering.accessSupported;
+  const consentAlreadyAccepted = Boolean(
+    offering.processingConsentId && (!paid || offering.termsConsentId),
+  );
   const policies = [
     ...(offering.processingPolicy ? [offering.processingPolicy] : []),
     ...(paid && offering.termsPolicy ? [offering.termsPolicy] : []),
@@ -84,9 +85,18 @@ function FreeAccess({
   const acceptance = usePolicyAcceptance(
     JSON.stringify([offering.publicationHash, ownedGrantId, repurchasing]),
     policies,
+    repurchasing && consentAlreadyAccepted,
   );
   const canAccept = Boolean(offering.processingPolicy && (!paid || offering.termsPolicy));
   const start = async () => {
+    if (offering.pendingIntentId) {
+      router.push(`/profile/wallet/pay?intentId=${offering.pendingIntentId}`);
+      return;
+    }
+    if (ownedGrantId && !repurchasing) {
+      router.push(`/assessment/resume?grantId=${ownedGrantId}`);
+      return;
+    }
     if (
       lock.current ||
       !available ||
@@ -98,7 +108,7 @@ function FreeAccess({
     setBusy(true);
     setError('');
     try {
-      let grantId = ownedGrantId;
+      let grantId = repurchasing ? null : ownedGrantId;
       if (!grantId) {
         const policy = offering.processingPolicy;
         const body = {
@@ -158,26 +168,6 @@ function FreeAccess({
       setBusy(false);
     }
   };
-  const withdraw = async () => {
-    if (lock.current || !offering.processingConsentId) return;
-    lock.current = true;
-    setBusy(true);
-    setError('');
-    try {
-      await withdrawAssessmentConsent(
-        token,
-        offering.processingConsentId,
-        await key({ action: 'withdraw', id: offering.processingConsentId }),
-      );
-      setConfirmWithdraw(false);
-      reload();
-    } catch (reason) {
-      setError(patientErrorMessage(reason));
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  };
   return (
     <>
       <section className="space-y-3 rounded-3xl border border-border/80 bg-white p-5 shadow-xs sm:p-6">
@@ -189,14 +179,14 @@ function FreeAccess({
               : `${formatRial(BigInt(offering.amountRial ?? '0'))} تومان`}
           </strong>
         </div>
-        <p className="text-xs leading-6 text-muted-foreground sm:text-sm">
-          ویژهٔ افراد ۱۸ سال و بالاتر؛ نتیجهٔ آموزشی جایگزین بررسی پزشک نیست.
-        </p>
       </section>
       {ownedGrantId ? (
         <>
           {offering.processingPolicy && (
-            <HistoricalPolicy policy={offering.processingPolicy} accepted={!!offering.processingConsentId} />
+            <HistoricalPolicy
+              policy={offering.processingPolicy}
+              accepted={!!offering.processingConsentId}
+            />
           )}
           {paid && offering.termsPolicy && (
             <HistoricalPolicy policy={offering.termsPolicy} accepted={!!offering.termsConsentId} />
@@ -223,102 +213,38 @@ function FreeAccess({
           {error}
         </p>
       )}
-      <button
-        type="button"
-        disabled={
-          busy ||
-          !available ||
-          (!ownedGrantId && (!canAccept || !acceptance.accepted))
-        }
-        onClick={() => void start()}
-        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
-        aria-busy={Boolean(busy)}
-      >
-        {busy ? (
-          <>
-            <HeartbeatLoader />
-            {'در حال ثبت…'}
-          </>
-        ) : ownedGrantId ? (
-          'باز کردن آزمون من'
-        ) : offering.priceMode === 'PAID' ? (
-          'ثبت رضایت و ادامه به پرداخت'
-        ) : (
-          'ثبت رضایت و شروع رایگان'
-        )}
-      </button>
-      {offering.pendingIntentId && (
-        <button
-          type="button"
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-primary transition hover:border-primary/40 hover:bg-primary/5"
-          onClick={() => router.push(`/profile/wallet/pay?intentId=${offering.pendingIntentId}`)}
-        >
-          ادامهٔ پرداخت قبلی
-        </button>
-      )}
-      {offering.publicPurchaseAvailable && offering.accessGrantId && !repurchasing && (
-        <button
-          type="button"
-          disabled={busy}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-primary transition hover:border-primary/40 hover:bg-primary/5 disabled:opacity-50"
-          onClick={() => {
-            setRepurchasing(true);
-          }}
-        >
-          خرید و انجام دوبارهٔ آزمون
-        </button>
-      )}
-      {repurchasing && (
-        <button
-          type="button"
-          disabled={busy}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground transition hover:bg-muted/50 disabled:opacity-50"
-          onClick={() => setRepurchasing(false)}
-        >
-          بازگشت به نتیجهٔ قبلی
-        </button>
-      )}
-      {offering.processingConsentId && (
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => setConfirmWithdraw(true)}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-40"
-        >
-          پس‌گرفتن رضایت پردازش
-        </button>
-      )}
-      {confirmWithdraw && (
-        <BottomSheet
-          title="پس‌گرفتن رضایت پردازش"
-          onClose={() => {
-            if (!busy) setConfirmWithdraw(false);
-          }}
-        >
-          <div className="space-y-3">
-            <p className="text-sm leading-7 text-muted-foreground">
-              رضایت پردازش پس گرفته شود؟ ادامهٔ آزمون و دسترسی به نتیجه متوقف می‌شود؛ سوابق حذف
-              نمی‌شوند.
-            </p>
-            <AsyncButton
-              type="button"
-              disabled={busy}
-              onClick={() => withdraw()}
-              className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-50"
-            >
-              تأیید و پس‌گرفتن رضایت
-            </AsyncButton>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setConfirmWithdraw(false)}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-2xl border border-border bg-white px-4 py-2.5 text-sm font-bold text-foreground"
-            >
-              انصراف
-            </button>
-          </div>
-        </BottomSheet>
-      )}
+      <ShellAction>
+        <div className="assessment-purchase-action p-3 sm:p-4">
+          <button
+            type="button"
+            disabled={
+              busy ||
+              !available ||
+              (!hasPendingPayment && !ownedGrantId && (!canAccept || !acceptance.accepted))
+            }
+            onClick={() => void start()}
+            className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-busy={Boolean(busy)}
+          >
+            {busy ? (
+              <>
+                <HeartbeatLoader />
+                {'در حال ثبت…'}
+              </>
+            ) : offering.pendingIntentId ? (
+              'ادامهٔ پرداخت'
+            ) : ownedGrantId && !repurchasing ? (
+              'باز کردن آزمون من'
+            ) : repurchasing ? (
+              'خرید تست'
+            ) : offering.priceMode === 'PAID' ? (
+              'خرید تست'
+            ) : (
+              'ثبت رضایت و شروع رایگان'
+            )}
+          </button>
+        </div>
+      </ShellAction>
     </>
   );
 }

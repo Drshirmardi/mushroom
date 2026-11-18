@@ -9,18 +9,15 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { ServicePage } from '@/components/shared/service-page';
 import { ClipboardList } from 'lucide-react';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
-import { GuidanceSafety } from '@/components/shared/policy-acceptance';
-import {
-  getAssessmentResult,
-  getAssessmentQuestionnaire,
-  getAssessmentGuidance,
-  getAssessmentProvenance,
-} from '@/lib/assessment-api';
+import { getAssessmentResult, getAssessmentQuestionnaire } from '@/lib/assessment-api';
 import { usePatientResource, useSessionPatientResource } from '@/lib/use-patient-resource';
 import { MizajChart } from '@/components/assessments/mizaj-chart';
 import { MizajResult } from '@/components/assessments/mizaj-result';
 import { toP } from '@/lib/format';
-import { ResultRecommendationSections, useResultRecommendations } from '@/components/programs/result-recommendations';
+import {
+  ResultRecommendationSections,
+  useResultRecommendations,
+} from '@/components/programs/result-recommendations';
 
 function Result({ id }: { id: string }) {
   const { authentication } = useAuthSession();
@@ -28,20 +25,15 @@ function Result({ id }: { id: string }) {
 
   const result = useSessionPatientResource(
     `assessment-result:${id}`,
-    useCallback((accessToken: string, signal: AbortSignal) => getAssessmentResult(accessToken, id, signal), [id]),
+    useCallback(
+      (accessToken: string, signal: AbortSignal) => getAssessmentResult(accessToken, id, signal),
+      [id],
+    ),
   );
   const recommendations = useResultRecommendations(id, result.data !== null);
 
   const questionnaire = usePatientResource(
     useCallback(() => getAssessmentQuestionnaire(token, id), [token, id]),
-  );
-
-  const guidance = usePatientResource(
-    useCallback(() => getAssessmentGuidance(token, id), [token, id]),
-  );
-
-  const provenance = usePatientResource(
-    useCallback(() => getAssessmentProvenance(token, id), [token, id]),
   );
 
   const snapshot = result.data?.resultSnapshot;
@@ -53,8 +45,11 @@ function Result({ id }: { id: string }) {
 
   return (
     <ServicePage
+      className="!text-sm !leading-[26px]"
       title="نتیجهٔ ارزیابی"
-      description="نتیجهٔ ثبت‌شده و راهنمای آموزشی منتشرشدهٔ مربوط به ارزیابی خود را ببینید."
+      titleClassName="!text-[20px] !leading-9 sm:!text-[20px] sm:!leading-10"
+      descriptionClassName="!text-sm !leading-7"
+      description=""
       icon={ClipboardList}
       backHref={
         currentInvitationContext()
@@ -117,94 +112,6 @@ function Result({ id }: { id: string }) {
                 این نتیجه نیاز به بررسی درمانگر دارد.
               </p>
             )}
-
-            <section className="space-y-3">
-              <h2 className="text-base font-bold text-foreground">راهنمای نتیجه</h2>
-
-              <PatientResourceState
-                variant="detail"
-                {...guidance}
-                retry={() => void guidance.reload()}
-              />
-
-              {guidance.data?.status === 'READY' ? (
-                <>
-                  {guidance.data.content.map((item) => (
-                    <article
-                      key={item.id}
-                      className="space-y-3 rounded-2xl border border-border/80 bg-white p-5 shadow-xs"
-                    >
-                      <h3 className="text-sm font-bold text-foreground sm:text-base">
-                        {item.title}
-                      </h3>
-
-                      {item.summary && (
-                        <p className="text-sm leading-7 text-muted-foreground">{item.summary}</p>
-                      )}
-
-                      <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/90">
-                        {item.body}
-                      </p>
-
-                      <GuidanceSafety safety={item.safety} />
-                    </article>
-                  ))}
-
-                  {guidance.data.services.map((service) => (
-                    <Link
-                      key={service.id}
-                      href="/appointments/book"
-                      className="flex min-h-11 items-center justify-between rounded-2xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm font-bold text-primary transition hover:bg-primary/10"
-                    >
-                      <span>{service.name}</span>
-                      <span className="text-xs">رزرو نوبت ←</span>
-                    </Link>
-                  ))}
-                </>
-              ) : (
-                guidance.data && (
-                  <p className="rounded-2xl border border-border/70 bg-white p-4 text-sm leading-7 text-muted-foreground">
-                    {guidance.data.status === 'CLINICAL_REVIEW_REQUIRED'
-                      ? 'پیش از ارائهٔ راهنما، نتیجه باید توسط درمانگر بررسی شود.'
-                      : 'در حال حاضر راهنمای تأییدشده‌ای برای این نتیجه در دسترس نیست.'}
-                  </p>
-                )
-              )}
-            </section>
-
-            <details className="rounded-2xl border border-border/80 bg-white p-4 text-sm shadow-2xs">
-              <summary className="cursor-pointer font-bold text-foreground">
-                اطلاعات نسخهٔ نتیجه
-              </summary>
-
-              <PatientResourceState
-                variant="detail"
-                {...provenance}
-                retry={() => void provenance.reload()}
-              />
-
-              {questionnaire.data && (
-                <p className="mt-3 text-muted-foreground">
-                  نسخهٔ پرسش‌نامه:{' '}
-                  <strong className="text-foreground">{toP(questionnaire.data.versionNumber)}</strong>
-                </p>
-              )}
-
-              {provenance.data && (
-                <p className="mt-2 text-xs leading-6 text-muted-foreground">
-                  {provenance.data.provenanceStatus === 'RECORDED'
-                    ? 'مشخصات نسخهٔ محاسبه برای این نتیجه ثبت شده است.'
-                    : 'مشخصات کامل محاسبه در نتیجهٔ قدیمی ثبت نشده است.'}
-                </p>
-              )}
-            </details>
-
-            <Link
-              href="/appointments/book"
-              className="flex min-h-12 w-full items-center justify-center rounded-2xl bg-primary px-5 py-3 text-center text-sm font-bold text-white shadow-xs transition hover:bg-primary/90"
-            >
-              بررسی شرایط و رزرو مشاوره
-            </Link>
 
             <div className="mt-8 space-y-4">
               <ResultRecommendationSections {...recommendations} layout="horizontal" />

@@ -307,9 +307,14 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
     : pending
       ? `/programs/purchases/${encodeURIComponent(pending)}`
       : `/programs/offerings/${encodeURIComponent(item.publicationId)}`;
+  const action = owned ? 'مطالعهٔ محتوا' : pending ? 'ادامهٔ پرداخت' : 'جزئیات خدمت';
 
   return (
-    <article className={featured ? styles.featured : styles.card}>
+    <Link
+      className={featured ? styles.featured : styles.card}
+      href={href}
+      aria-label={`${action}، ${item.title}`}
+    >
       <IconPair
         icon={recommendationIcon(item)}
         size={featured ? 30 : 21}
@@ -329,17 +334,13 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
               discountPercent={item.discountPercent}
             />
           )}
-          <Link
-            className={styles.action}
-            href={href}
-            aria-label={`${owned ? 'مطالعهٔ محتوا' : pending ? 'ادامهٔ پرداخت' : 'جزئیات خدمت'}، ${item.title}`}
-          >
-            {owned ? 'مطالعهٔ محتوا' : pending ? 'ادامهٔ پرداخت' : 'جزئیات خدمت'}
+          <span className={styles.action}>
+            {action}
             <StoreIcon name="arrowLeft" size={15} />
-          </Link>
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
@@ -430,7 +431,12 @@ function OfferingCard({
 }) {
   const custom = 'physician' in item;
   return (
-    <article className={styles.card} data-tone={tone}>
+    <Link
+      className={styles.card}
+      data-tone={tone}
+      href={`/programs/${custom ? 'custom-offerings' : 'offerings'}/${encodeURIComponent(item.id)}`}
+      aria-label={`مشاهدهٔ جزئیات، ${item.title}`}
+    >
       <div className={styles.cardHeader}>
         <IconPair icon={icon} size={22} />
         <h4>{item.title}</h4>
@@ -457,17 +463,13 @@ function OfferingCard({
             original={!custom && item.discountPercent > 0 ? item.baseAmountRial : undefined}
             discountPercent={!custom ? item.discountPercent : undefined}
           />
-          <Link
-            className={styles.action}
-            href={`/programs/${custom ? 'custom-offerings' : 'offerings'}/${encodeURIComponent(item.id)}`}
-            aria-label={`مشاهدهٔ جزئیات، ${item.title}`}
-          >
+          <span className={styles.action}>
             {custom && !item.requestSupported ? 'جزئیات خدمت' : action}{' '}
             <StoreIcon name="arrowLeft" size={15} />
-          </Link>
+          </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 

@@ -73,10 +73,10 @@ export function ServiceCard({ item }: { item: MezajService }) {
       className="
         mezaj-service-card
         flex h-full w-full min-w-0 flex-col
-        gap-3 rounded-2xl
+        gap-2.5 rounded-2xl
         border border-border bg-card
-        p-3.5 text-foreground
-        shadow-sm
+        p-3 text-foreground
+        shadow-xs
         transition-colors duration-200
         hover:border-primary/30
       "
@@ -162,14 +162,14 @@ export function ServiceCard({ item }: { item: MezajService }) {
         <Link
           href={href}
           className="
-            inline-flex min-h-11 w-full
+            inline-flex min-h-10 w-full
             items-center justify-center
             gap-2 rounded-xl
-            bg-primary px-3 py-2.5
-            text-center text-xs font-bold
-            text-primary-foreground
-            transition-opacity duration-200
-            hover:opacity-90
+            border border-primary/15 bg-primary/10 px-3 py-2
+            text-center text-xs font-semibold
+            text-primary
+            transition-colors duration-200
+            hover:bg-primary/15
             focus-visible:outline-2
             focus-visible:outline-offset-2
             focus-visible:outline-primary

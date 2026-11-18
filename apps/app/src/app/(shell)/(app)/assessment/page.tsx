@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { Suspense, useCallback, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -98,9 +98,9 @@ function AssessmentHub() {
 
       <header className="mt-2 mb-6 flex items-center justify-between gap-4 rounded-3xl border border-border/70 bg-gradient-to-l from-primary/8 via-primary/4 to-transparent p-4 sm:p-5">
         <div className="min-w-0 space-y-1">
-          <h1 className="text-xl font-bold text-foreground sm:text-2xl">تست‌ها و ارزیابی‌ها</h1>
-          <p className="text-xs leading-6 text-muted-foreground sm:text-sm">
-            تست‌های فردی، زوجین و پیش از ازدواج را از اینجا شروع یا پیگیری کنید.
+          <h1 className="text-lg font-bold text-foreground sm:text-xl">تست‌ها و ارزیابی‌ها</h1>
+          <p className="text-xs leading-6 text-muted-foreground sm:text-[13px]">
+            تست‌های در دسترس را ببینید و آزمون‌های شروع‌شده را از همین‌جا پیگیری کنید.
           </p>
         </div>
         <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary/12 text-primary shadow-2xs">
@@ -153,11 +153,7 @@ function AssessmentHub() {
         </Panel>
 
         <Panel label="تست‌های در جریان">
-          <AssessmentResourceState
-            shape="row"
-            {...ongoing}
-            retry={() => void ongoing.reload()}
-          />
+          <AssessmentResourceState shape="row" {...ongoing} retry={() => void ongoing.reload()} />
           {draft && (
             <article className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200/90 bg-amber-50/70 p-4">
               <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -256,9 +252,7 @@ function NewAssessments({ token }: { token: string }) {
   const legacy = usePatientResource(
     useCallback(() => listAssessmentOfferings(token, legacyPage), [token, legacyPage]),
   );
-  const published = usePatientResource(
-    useCallback(() => listPublishedAssessments(token), [token]),
-  );
+  const published = usePatientResource(useCallback(() => listPublishedAssessments(token), [token]));
 
   const hasData = !!(
     individual.data?.total ||
@@ -294,7 +288,7 @@ function NewAssessments({ token }: { token: string }) {
           <Panel key={label} label={label} title={showTitle ? title : undefined}>
             <AssessmentResourceState {...resource} retry={() => void resource.reload()} />
             {items.length > 0 && (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3">
                 {items.map((item) => {
                   const isCouple = item.kind === 'COUPLES' || item.servicePurpose === 'MARRIAGE';
                   const href =
@@ -366,7 +360,7 @@ function NewAssessments({ token }: { token: string }) {
       >
         <AssessmentResourceState {...legacy} retry={() => void legacy.reload()} />
         {(legacy.data?.items.length ?? 0) > 0 && (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3">
             {legacy.data?.items.map((item) => (
               <Link
                 className="group flex min-w-0 flex-col justify-between rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-all hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
@@ -403,20 +397,12 @@ function NewAssessments({ token }: { token: string }) {
           </div>
         )}
         {legacy.data && (
-          <PatientPagination
-            page={legacyPage}
-            total={legacy.data.total}
-            onChange={setLegacyPage}
-          />
+          <PatientPagination page={legacyPage} total={legacy.data.total} onChange={setLegacyPage} />
         )}
       </Panel>
 
       <Panel label="نسخه‌های دیگر تست‌ها">
-        <AssessmentResourceState
-          shape="row"
-          {...published}
-          retry={() => void published.reload()}
-        />
+        <AssessmentResourceState shape="row" {...published} retry={() => void published.reload()} />
         {!!published.data?.items.length && (
           <details className="group rounded-2xl border border-border/70 bg-white px-4 py-2">
             <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-semibold text-muted-foreground [&::-webkit-details-marker]:hidden">
@@ -506,238 +492,231 @@ function MyAssessments({
     useCallback(() => listAssessmentPurchases(token, purchasePage), [token, purchasePage]),
   );
   const lists = (requests: typeof incoming, showRequestState: boolean) => {
-  const statuses: Record<string, string> = {
-    PENDING: 'منتظر پاسخ همراه',
-    ACCEPTED: 'دعوت پذیرفته شده',
-    CANCELLED: 'لغوشده',
-    REPLACED: 'جایگزین‌شده',
-  };
+    const statuses: Record<string, string> = {
+      PENDING: 'منتظر پاسخ همراه',
+      ACCEPTED: 'دعوت پذیرفته شده',
+      CANCELLED: 'لغوشده',
+      REPLACED: 'جایگزین‌شده',
+    };
 
-  const statusTone = (status: string, isInitiator: boolean) =>
-    status === 'PENDING' && !isInitiator
-      ? 'bg-primary/10 text-primary'
-      : status === 'PENDING'
-        ? 'bg-amber-50 text-amber-800'
-        : status === 'ACCEPTED'
-          ? 'bg-emerald-50 text-emerald-800'
-          : 'bg-muted text-muted-foreground';
+    const statusTone = (status: string, isInitiator: boolean) =>
+      status === 'PENDING' && !isInitiator
+        ? 'bg-primary/10 text-primary'
+        : status === 'PENDING'
+          ? 'bg-amber-50 text-amber-800'
+          : status === 'ACCEPTED'
+            ? 'bg-emerald-50 text-emerald-800'
+            : 'bg-muted text-muted-foreground';
 
-  const requestItems =
-    requests.data?.items.filter((item) => item.id !== invitationId) ?? [];
-  const historyItems =
-    history.data?.items.filter((item) => item.id !== draftId) ?? [];
-  const purchaseItems = purchases.data?.items ?? [];
+    const requestItems = requests.data?.items.filter((item) => item.id !== invitationId) ?? [];
+    const historyItems = history.data?.items.filter((item) => item.id !== draftId) ?? [];
+    const purchaseItems = purchases.data?.items ?? [];
 
-  const groups = [
-    <Panel
-      key="invitations"
-      label="دعوت‌ها"
-      title={
-        (showRequestState && (requests.loading || requests.error)) || requestItems.length > 0
-          ? 'دعوت‌های دو نفره'
-          : undefined
-      }
-    >
-      {showRequestState && (
-        <AssessmentResourceState {...requests} retry={() => void requests.reload()} />
-      )}
-      {requestItems.map((item) => (
-        <Link
-          className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
-          key={item.id}
-          href={item.invitationPath}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
-              {item.service.title}
-            </h3>
-            <span
-              className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusTone(item.status, item.isInitiator)}`}
-            >
-              {item.status === 'PENDING' && !item.isInitiator
-                ? 'منتظر پاسخ شما'
-                : statuses[item.status]}
-            </span>
-          </div>
-          <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
-            {item.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'}
-            {item.isInitiator && item.recipientPhoneMasked && (
-              <>
-                {' · همراه: '}
-                <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
-              </>
-            )}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
-            <time className="text-muted-foreground">
-              {new Date(item.createdAt).toLocaleDateString('fa-IR', {
-                timeZone: 'Asia/Tehran',
-              })}
-            </time>
-            <span className="inline-flex items-center gap-1 font-bold text-primary">
-              مشاهده دعوت
-              <ArrowLeft size={16} aria-hidden="true" />
-            </span>
-          </div>
-        </Link>
-      ))}
-      {requests.data && (
-        <PatientPagination
-          page={requestPage}
-          total={requests.data.total}
-          onChange={setRequestPage}
-        />
-      )}
-    </Panel>,
+    const groups = [
+      <Panel
+        key="invitations"
+        label="دعوت‌ها"
+        title={
+          (showRequestState && (requests.loading || requests.error)) || requestItems.length > 0
+            ? 'دعوت‌های دو نفره'
+            : undefined
+        }
+      >
+        {showRequestState && (
+          <AssessmentResourceState {...requests} retry={() => void requests.reload()} />
+        )}
+        {requestItems.map((item) => (
+          <Link
+            className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
+            key={item.id}
+            href={item.invitationPath}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
+                {item.service.title}
+              </h3>
+              <span
+                className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusTone(item.status, item.isInitiator)}`}
+              >
+                {item.status === 'PENDING' && !item.isInitiator
+                  ? 'منتظر پاسخ شما'
+                  : statuses[item.status]}
+              </span>
+            </div>
+            <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
+              {item.isInitiator ? 'دعوت ارسالی' : 'دعوت دریافتی'}
+              {item.isInitiator && item.recipientPhoneMasked && (
+                <>
+                  {' · همراه: '}
+                  <bdi dir="ltr">{item.recipientPhoneMasked}</bdi>
+                </>
+              )}
+            </p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
+              <time className="text-muted-foreground">
+                {new Date(item.createdAt).toLocaleDateString('fa-IR', {
+                  timeZone: 'Asia/Tehran',
+                })}
+              </time>
+              <span className="inline-flex items-center gap-1 font-bold text-primary">
+                مشاهده دعوت
+                <ArrowLeft size={16} aria-hidden="true" />
+              </span>
+            </div>
+          </Link>
+        ))}
+        {requests.data && (
+          <PatientPagination
+            page={requestPage}
+            total={requests.data.total}
+            onChange={setRequestPage}
+          />
+        )}
+      </Panel>,
 
-    <Panel
-      key="records"
-      label="پاسخ‌ها و نتایج"
-      title={
-        history.loading || history.error || historyItems.length > 0
-          ? 'پاسخ‌ها و نتایج'
-          : undefined
-      }
-    >
-      <AssessmentResourceState {...history} retry={() => void history.reload()} />
-      {historyItems.map((item) => (
-        <article
-          className="min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5"
-          key={item.id}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
-              {item.title}
-            </h3>
-            <span
-              className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                item.state === 'COMPLETE'
-                  ? 'bg-emerald-50 text-emerald-800'
+      <Panel
+        key="records"
+        label="پاسخ‌ها و نتایج"
+        title={
+          history.loading || history.error || historyItems.length > 0
+            ? 'پاسخ‌ها و نتایج'
+            : undefined
+        }
+      >
+        <AssessmentResourceState {...history} retry={() => void history.reload()} />
+        {historyItems.map((item) => (
+          <article
+            className="min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs sm:p-5"
+            key={item.id}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
+                {item.title}
+              </h3>
+              <span
+                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  item.state === 'COMPLETE'
+                    ? 'bg-emerald-50 text-emerald-800'
+                    : item.resumeAvailable
+                      ? 'bg-amber-50 text-amber-800'
+                      : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {item.state === 'COMPLETE'
+                  ? 'نتیجه آماده است'
                   : item.resumeAvailable
-                    ? 'bg-amber-50 text-amber-800'
-                    : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {item.state === 'COMPLETE'
-                ? 'نتیجه آماده است'
-                : item.resumeAvailable
-                  ? 'نیمه‌تمام'
-                  : 'قابل ادامه نیست'}
-            </span>
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
-            <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer py-1 font-medium hover:text-foreground">
-                جزئیات تست
-              </summary>
+                    ? 'نیمه‌تمام'
+                    : 'قابل ادامه نیست'}
+              </span>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
               <p className="mt-1">
                 نسخهٔ {toP(item.versionNumber)} · تلاش {toP(item.attemptNumber)}
               </p>
-            </details>
-            {(item.state === 'COMPLETE' || item.resumeAvailable) && (
-              <Link
-                className="inline-flex min-h-9 items-center gap-1 font-bold text-primary hover:underline"
-                href={attemptHref(item)}
-              >
-                {item.state === 'COMPLETE' ? 'مشاهده نتیجه' : 'ادامه'}
-                <ArrowLeft size={16} aria-hidden="true" />
-              </Link>
-            )}
-          </div>
-        </article>
-      ))}
-      {history.data && (
-        <PatientPagination
-          page={historyPage}
-          total={history.data.total}
-          onChange={setHistoryPage}
-        />
-      )}
-    </Panel>,
-
-    <Panel
-      key="purchases"
-      label="خریدها"
-      title={
-        purchases.loading || purchases.error || purchaseItems.length > 0
-          ? 'خریدها و دسترسی‌ها'
-          : undefined
-      }
-    >
-      <AssessmentResourceState {...purchases} retry={() => void purchases.reload()} />
-      {purchaseItems.map((item) => (
-        <Link
-          className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
-          key={item.id}
-          href={`/assessment/purchases/${item.id}`}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
-              {item.title}
-            </h3>
-            {item.intent && (
-              <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                {billingStatusLabel(item.intent.status)}
-              </span>
-            )}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
-            <span className="font-semibold text-foreground">
-              {formatRialWithUnit(BigInt(item.amountRial))}
-            </span>
-            <span className="inline-flex items-center gap-1 font-bold text-primary">
-              پرداخت و دسترسی
-              <ArrowLeft size={16} aria-hidden="true" />
-            </span>
-          </div>
-        </Link>
-      ))}
-      {purchases.data && (
-        <PatientPagination
-          page={purchasePage}
-          total={purchases.data.total}
-          onChange={setPurchasePage}
-        />
-      )}
-    </Panel>,
-  ];
-
-  if (section === 'purchases') groups.unshift(groups.splice(2, 1)[0]);
-  if (section === 'ongoing') groups.unshift(groups.splice(1, 1)[0]);
-
-  const empty = [requests, history, purchases].every(
-    (r) => r.data?.total === 0 && !r.loading && !r.error,
-  );
-
-  return (
-    <div className="grid min-w-0 gap-5">
-      {groups}
-      {empty && !invitationId && !draftId && (
-        <p className="rounded-2xl border border-dashed border-border bg-white p-8 text-center text-sm text-muted-foreground">
-          هنوز تستی در سوابق شما نیست.
-        </p>
-      )}
-      <details className="group rounded-2xl border border-border/70 bg-white px-4 py-2">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-muted-foreground [&::-webkit-details-marker]:hidden">
-          <span>سوابق دیگرِ دو نفره</span>
-          <ChevronDown
-            size={17}
-            aria-hidden="true"
-            className="transition-transform group-open:rotate-180"
+              {(item.state === 'COMPLETE' || item.resumeAvailable) && (
+                <Link
+                  className="inline-flex min-h-9 items-center gap-1 font-bold text-primary hover:underline"
+                  href={attemptHref(item)}
+                >
+                  {item.state === 'COMPLETE' ? 'مشاهده نتیجه' : 'ادامه'}
+                  <ArrowLeft size={16} aria-hidden="true" />
+                </Link>
+              )}
+            </div>
+          </article>
+        ))}
+        {history.data && (
+          <PatientPagination
+            page={historyPage}
+            total={history.data.total}
+            onChange={setHistoryPage}
           />
-        </summary>
-        <div className="border-t border-border/60 py-3">
+        )}
+      </Panel>,
+
+      <Panel
+        key="purchases"
+        label="خریدها"
+        title={
+          purchases.loading || purchases.error || purchaseItems.length > 0
+            ? 'خریدها و دسترسی‌ها'
+            : undefined
+        }
+      >
+        <AssessmentResourceState {...purchases} retry={() => void purchases.reload()} />
+        {purchaseItems.map((item) => (
           <Link
-            className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-primary hover:underline"
-            href="/assessment/couples/legacy"
+            className="group block min-w-0 rounded-2xl border border-border/80 bg-white p-4 shadow-2xs transition-colors hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:p-5"
+            key={item.id}
+            href={`/assessment/purchases/${item.id}`}
           >
-            مشاهده سوابق دو نفره
-            <ArrowLeft size={16} aria-hidden="true" />
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <h3 className="text-sm font-bold leading-7 text-foreground sm:text-base">
+                {item.title}
+              </h3>
+              {item.intent && (
+                <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                  {billingStatusLabel(item.intent.status)}
+                </span>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3 text-xs sm:text-sm">
+              <span className="font-semibold text-foreground">
+                {formatRialWithUnit(BigInt(item.amountRial))}
+              </span>
+              <span className="inline-flex items-center gap-1 font-bold text-primary">
+                پرداخت و دسترسی
+                <ArrowLeft size={16} aria-hidden="true" />
+              </span>
+            </div>
           </Link>
-        </div>
-      </details>
-    </div>
-  );
+        ))}
+        {purchases.data && (
+          <PatientPagination
+            page={purchasePage}
+            total={purchases.data.total}
+            onChange={setPurchasePage}
+          />
+        )}
+      </Panel>,
+    ];
+
+    if (section === 'purchases') groups.unshift(groups.splice(2, 1)[0]);
+    if (section === 'ongoing') groups.unshift(groups.splice(1, 1)[0]);
+
+    const empty = [requests, history, purchases].every(
+      (r) => r.data?.total === 0 && !r.loading && !r.error,
+    );
+
+    return (
+      <div className="grid min-w-0 gap-5">
+        {groups}
+        {empty && !invitationId && !draftId && (
+          <p className="rounded-2xl border border-dashed border-border bg-white p-8 text-center text-sm text-muted-foreground">
+            هنوز تستی در سوابق شما نیست.
+          </p>
+        )}
+        <details className="group rounded-2xl border border-border/70 bg-white px-4 py-2">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium text-muted-foreground [&::-webkit-details-marker]:hidden">
+            <span>سوابق دیگرِ دو نفره</span>
+            <ChevronDown
+              size={17}
+              aria-hidden="true"
+              className="transition-transform group-open:rotate-180"
+            />
+          </summary>
+          <div className="border-t border-border/60 py-3">
+            <Link
+              className="inline-flex min-h-10 items-center gap-1.5 text-sm font-bold text-primary hover:underline"
+              href="/assessment/couples/legacy"
+            >
+              مشاهده سوابق دو نفره
+              <ArrowLeft size={16} aria-hidden="true" />
+            </Link>
+          </div>
+        </details>
+      </div>
+    );
   };
   if (reuseIncoming) return lists(incoming, false);
   return (
@@ -760,7 +739,9 @@ function MarriageRequestPage({
   section: string;
   requestPage: number;
   render: (
-    requests: ReturnType<typeof usePatientResource<Awaited<ReturnType<typeof listMarriageRequests>>>>,
+    requests: ReturnType<
+      typeof usePatientResource<Awaited<ReturnType<typeof listMarriageRequests>>>
+    >,
   ) => ReactNode;
 }) {
   const requests = usePatientResource(

@@ -40,11 +40,18 @@ export function useResultRecommendations(submissionId: string, retryAfterConfirm
   const { sessionKey } = useAuthSession();
   const services = useSessionPatientResource(
     `program-recommendations:${submissionId}`,
-    useCallback((token: string, signal: AbortSignal) => getMezajServices(token, submissionId, signal), [submissionId]),
+    useCallback(
+      (token: string, signal: AbortSignal) => getMezajServices(token, submissionId, signal),
+      [submissionId],
+    ),
   );
   const products = useSessionPatientResource(
     `commerce-recommendations:${submissionId}`,
-    useCallback((token: string, signal: AbortSignal) => getCommerceRecommendations(token, submissionId, signal), [submissionId]),
+    useCallback(
+      (token: string, signal: AbortSignal) =>
+        getCommerceRecommendations(token, submissionId, signal),
+      [submissionId],
+    ),
   );
   const scope = JSON.stringify([sessionKey, submissionId]);
   useRetryAfterResult(scope, retryAfterConfirmation, services.error, services.reload);
@@ -52,7 +59,10 @@ export function useResultRecommendations(submissionId: string, retryAfterConfirm
   return { services, products };
 }
 
-export function ResultRecommendations({ submissionId, ...presentation }: PresentationProps & { submissionId: string }) {
+export function ResultRecommendations({
+  submissionId,
+  ...presentation
+}: PresentationProps & { submissionId: string }) {
   const resources = useResultRecommendations(submissionId);
   return <ResultRecommendationSections {...presentation} {...resources} />;
 }
@@ -69,7 +79,7 @@ const headingClass = 'text-base font-bold leading-7 text-foreground @sm:text-lg'
 const descriptionClass = 'mt-1 text-xs leading-6 text-muted-foreground @sm:text-sm';
 
 const railClass =
-  'flex w-full min-w-0 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-px-1 pb-3';
+  'result-recommendation-rail flex w-full min-w-0 snap-x snap-proximity gap-3 overflow-x-auto overscroll-x-contain scroll-px-1 pb-2';
 
 export function ResultRecommendationSections({
   services,
@@ -164,7 +174,7 @@ export function ResultRecommendationSections({
                 key={item.programDefinitionId}
                 className={
                   horizontal
-                    ? 'w-[clamp(13rem,68cqw,17.5rem)] max-w-[90cqw] shrink-0 snap-start [&>.mezaj-service-card]:h-full'
+                    ? 'w-[clamp(12rem,62cqw,16rem)] max-w-[88cqw] shrink-0 snap-start [&>.mezaj-service-card]:h-full'
                     : 'min-w-0 [&>.mezaj-service-card]:h-full'
                 }
               >

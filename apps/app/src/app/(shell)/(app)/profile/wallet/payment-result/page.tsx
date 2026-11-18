@@ -2,12 +2,13 @@
 import { LoadingState } from '@/components/shared/skeletons';
 
 import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
-import { Suspense, useCallback, useEffect } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckCircle2, Clock, Info, ShieldQuestion, XCircle } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { getBillingIntent, type BillingIntent } from '@/lib/wallet-billing-api';
+import { getAssessmentPurchase } from '@/lib/digital-services-api';
 import {
   billingMethodLabel,
   billingPurposeLabel,
@@ -42,6 +43,7 @@ const retryHref = (intent: BillingIntent): string | null => {
 function PaymentResult() {
   const { authentication } = useAuthSession();
   const router = useRouter();
+  const [continuing, setContinuing] = useState(false);
   const intentId = useSearchParams().get('intentId');
   const resource = usePatientResource(
     useCallback(
@@ -68,6 +70,33 @@ function PaymentResult() {
     }
   }, [intent, router, view]);
   const retry = intent ? retryHref(intent) : null;
+
+  const continueFromResult = async () => {
+    if (continuing) return;
+    if (view === 'paid' && intent?.purpose === 'ASSESSMENT' && intent.assessmentPurchaseId) {
+      setContinuing(true);
+      try {
+        const purchase = await getAssessmentPurchase(
+          authentication.accessToken,
+          intent.assessmentPurchaseId,
+        );
+        const grants = purchase.grants.filter((grant) => grant.accessAvailable);
+        if (grants.length === 1) {
+          const grant = grants[0];
+          const query = grant.submissionId
+            ? new URLSearchParams({ submissionId: grant.submissionId })
+            : new URLSearchParams({ grantId: grant.id });
+          router.push(`/assessment/resume?${query}`);
+          return;
+        }
+      } catch {
+        // The purchase page remains the safe fallback if access is not ready yet.
+      }
+      router.push(primaryTarget.href);
+      return;
+    }
+    router.push(primaryTarget.href);
+  };
 
   const invitation = currentInvitationContext();
   const primaryTarget =
@@ -97,7 +126,10 @@ function PaymentResult() {
                       href: intent.assessmentPurchaseId
                         ? `/assessment/purchases/${encodeURIComponent(intent.assessmentPurchaseId)}`
                         : '/assessment/couples',
-                      label: 'پیگیری ارزیابی و دسترسی',
+                      label:
+                        view === 'paid' && intent.assessmentPurchaseId
+                          ? 'شروع آزمون'
+                          : 'پیگیری ارزیابی و دسترسی',
                     }
                   : intent.purpose === 'PROGRAM'
                     ? {
@@ -208,10 +240,12 @@ function PaymentResult() {
 
             <button
               type="button"
-              onClick={() => router.push(primaryTarget.href)}
+              onClick={() => void continueFromResult()}
+              disabled={continuing}
+              aria-busy={continuing}
               className="w-full rounded-2xl bg-primary py-4 text-sm font-bold text-white"
             >
-              {primaryTarget.label}
+              {continuing ? 'در حال بررسی دسترسی…' : primaryTarget.label}
             </button>
 
             <div className="flex gap-3">

@@ -588,8 +588,12 @@ test('services uses the latest mezaj result and preserves product filters betwee
   ).toBe(true);
   await page.reload();
   await expect(services).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('heading', { name: 'پیشنهاد نخست' })).toBeVisible();
-  await page.getByRole('link', { name: /جزئیات خدمت، پیشنهاد نخست/ }).click();
+  const activeEducation = educationRail.locator('.swiper-slide-active');
+  await activeEducation.getByRole('heading', { name: 'آموزش 2', exact: true }).click();
+  await expect(page).toHaveURL(/\/programs\/offerings\/education-1-1$/);
+  await page.goBack();
+  await page.getByRole('link', { name: /جزئیات خدمت، پیشنهاد نخست/ }).focus();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/programs\/offerings\/featured$/);
   await page.goto(`${origin}/programs`);
   await expect(page.getByRole('heading', { name: 'برنامه‌های سلامت' })).toBeVisible();

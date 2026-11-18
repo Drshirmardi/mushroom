@@ -26,11 +26,11 @@ export function MizajResult({
       INSUFFICIENT_DATA: 'اطلاعات کافی برای تعیین گرایش وجود ندارد.',
       PRIMARY_TIE: 'پاسخ‌ها هنوز گرایش غالب مشخصی نشان نمی‌دهند.',
       SECONDARY_TIE: 'گرایش غالب مشخص است، اما گرایش همراه هنوز قابل تفکیک نیست.',
-      FOLLOW_UP_UNAVAILABLE: 'برای تفکیک این ترکیب از گرایش‌ها، بررسی تکمیلی کلینیک لازم است.',
+      FOLLOW_UP_UNAVAILABLE: 'برای تفکیک این ترکیب از گرایش‌ها، بررسی تکمیلی لازم است.',
     } as Record<string, string>
   )[status];
   return (
-    <section className="space-y-5 rounded-3xl border border-border/80 bg-white p-5 shadow-xs sm:p-6">
+    <section className="space-y-6">
       <div>
         <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
           الگوی پاسخ‌های {subjectLabel ?? 'شما'}
@@ -44,24 +44,31 @@ export function MizajResult({
           {unresolved}
         </p>
       )}
-      <MizajChart
-        scores={object(snapshot.scores) as Record<string, number>}
-        dimensions={dimensions.map((item) => ({ id: text(item.id), title: text(item.title) }))}
-      />
-      <dl className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-          <dt className="text-xs font-medium text-muted-foreground">گرایش غالب</dt>
-          <dd className="mt-1.5 text-base font-bold text-primary">
-            {name(snapshot.primary) || 'مشخص نشده'}
-          </dd>
-        </div>
-        <div className="rounded-2xl border border-border/80 bg-muted/40 p-4">
-          <dt className="text-xs font-medium text-muted-foreground">گرایش همراه</dt>
-          <dd className="mt-1.5 text-base font-bold text-foreground">
-            {name(snapshot.secondary) || 'مشخص نشده'}
-          </dd>
-        </div>
-      </dl>
+      <div className="flex flex-col gap-6">
+        <MizajChart
+          scores={object(snapshot.scores) as Record<string, number>}
+          dimensions={dimensions.map((item) => ({ id: text(item.id), title: text(item.title) }))}
+          variant="semi"
+        />
+        <dl className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="min-w-0 rounded-2xl border border-primary/20 bg-primary/5 p-2.5 sm:p-4">
+            <dt className="min-w-0 text-[11px] font-medium leading-5 text-muted-foreground sm:text-xs">
+              گرایش غالب
+            </dt>
+            <dd className="mt-1.5 min-w-0 text-sm font-bold text-primary sm:text-base">
+              {name(snapshot.primary) || 'مشخص نشده'}
+            </dd>
+          </div>
+          <div className="min-w-0 rounded-2xl border border-border/80 bg-muted/40 p-2.5 sm:p-4">
+            <dt className="min-w-0 text-[11px] font-medium leading-5 text-muted-foreground sm:text-xs">
+              گرایش همراه
+            </dt>
+            <dd className="mt-1.5 min-w-0 text-sm font-bold text-foreground sm:text-base">
+              {name(snapshot.secondary) || 'مشخص نشده'}
+            </dd>
+          </div>
+        </dl>
+      </div>
       {Array.isArray(snapshot.tiedDimensions) && snapshot.tiedDimensions.length > 0 && (
         <p className="rounded-2xl border border-border/70 bg-muted/30 p-3.5 text-sm leading-7 text-muted-foreground">
           گرایش‌های نزدیک در این پاسخ‌ها:{' '}

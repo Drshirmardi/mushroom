@@ -26,8 +26,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     (pathname.startsWith('/assessment/') &&
       pathname !== '/assessment/result' &&
       /^\/assessment\/[^/]+$/.test(pathname));
+  const isEducationalAssessmentDetail = /^\/assessment\/educational\/[^/]+\/?$/.test(pathname);
   const immersive = useUiStore((state) => state.immersive);
-  const hasNavigation = !isProduct && !isDoctorProfile && !isAssessmentWizard && !immersive;
+  const hasNavigation =
+    !isProduct &&
+    !isDoctorProfile &&
+    !isAssessmentWizard &&
+    !isEducationalAssessmentDetail &&
+    !immersive;
   const framed = session?.status === 'authenticated' || isStore;
   const showTabs = hasNavigation && framed;
   const [action, setAction] = useState<HTMLElement | null>(null);
