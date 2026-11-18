@@ -31,6 +31,8 @@ if ! flock -n 9; then
   printf 'another dev sync is active; waiting for it to finish\n'
   flock -w 600 9 || die 'timed out waiting for the active dev sync'
 fi
+[[ ! -f $state_root/database-maintenance ]] || die 'resume the interrupted database recovery before dev synchronization'
+touch "$state_root/recovery-lock-compatible"
 
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $compose_file ]] || die 'versioned dev Compose file is missing from the synced workspace'

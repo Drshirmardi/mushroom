@@ -36,7 +36,7 @@ fi
 [[ $registry_user =~ ^[A-Za-z0-9_.-]+$ || $registry_user =~ ^[A-Za-z0-9_.-]+\[bot\]$ ]] \
   || die "invalid registry user"
 
-for command in docker jq curl; do
+for command in docker jq curl flock; do
   command -v "$command" >/dev/null 2>&1 || die "$command is required"
 done
 docker compose version >/dev/null 2>&1 || die "Docker Compose v2 is required"
@@ -53,7 +53,6 @@ cleanup() {
   if [[ -n $docker_config && -d $docker_config ]]; then
     rm -rf -- "$docker_config"
   fi
-  rmdir -- "$lock_dir" 2>/dev/null || true
   if [[ $incoming_dir == "$HOME/.mushroom-incoming/"* ]]; then
     rm -rf -- "$incoming_dir"
   fi
@@ -61,7 +60,11 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p -- "$environment_root" "$state_root" "$releases_root"
-mkdir -- "$lock_dir" 2>/dev/null || die "another deployment is active for $environment"
+[[ ! -e $lock_dir ]] || die "a deployment using the older lock is active for $environment"
+exec 9>"$state_root/deploy.lock"
+flock -n 9 || die "another deployment or database recovery is active for $environment"
+[[ ! -f $state_root/database-maintenance ]] || die "resume the interrupted database recovery before deployment"
+touch "$state_root/recovery-lock-compatible"
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
 [[ -f $compose_source ]] || die "versioned compose file is missing"
@@ -82,7 +85,10 @@ expected_project="mushroom-${environment}"
 [[ $(env_value COMPOSE_PROJECT_NAME) == "$expected_project" ]] || die "Compose project boundary mismatch"
 [[ $(env_value MUSHROOM_ENV_ROOT) == "$environment_root" ]] || die "environment root boundary mismatch"
 
-if [[ $environment != production ]]; then
+managed_postgres=false
+postgres_overlay="$environment_root/postgres.compose.yaml"
+if [[ $environment != production || -f $postgres_overlay ]]; then
+  managed_postgres=true
   case $(env_value POSTGRES_DB) in
     *"${environment//-/_}"*) ;;
     *) die "database name does not identify $environment" ;;
@@ -112,7 +118,7 @@ required_secrets=(database_url jwt_access_secret refresh_token_pepper \
   otp_pepper sms_credential_encryption_key \
   payment_credential_encryption_key
 )
-[[ $environment == production ]] || required_secrets+=(postgres_password)
+if [[ $managed_postgres == true ]]; then required_secrets+=(postgres_password); fi
 for secret in "${required_secrets[@]}"; do
   [[ -s "$environment_root/secrets/$secret" ]] || die "required secret file is missing: $secret"
 done
@@ -156,6 +162,8 @@ compose_for() {
   local release_dir=$1
   local network_args=()
   local chat_database_args=()
+  local postgres_args=()
+  [[ $environment != production || $managed_postgres != true ]] || postgres_args=(--file "$postgres_overlay")
   [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
   [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
@@ -164,6 +172,7 @@ compose_for() {
     --file "$release_dir/compose.yaml" \
     --file "$environment_root/chat.compose.yaml" \
     "${chat_database_args[@]}" \
+    "${postgres_args[@]}" \
     "${network_args[@]}" \
     "${@:2}"
 }
@@ -225,7 +234,7 @@ NODE
     --cap-add FOWNER \
     --cap-add DAC_OVERRIDE \
     --env "SECRET_OWNER_UID=$host_uid" \
-    --env "PREPARE_POSTGRES_SECRET=$([[ $environment == production ]] && printf false || printf true)" \
+    --env "PREPARE_POSTGRES_SECRET=$managed_postgres" \
     --mount "type=bind,src=$environment_root/secrets,dst=/run/secrets" \
     --entrypoint /nodejs/bin/node \
     "$api_image" \
@@ -318,8 +327,8 @@ compose_for "$release_dir" run --rm --no-deps \
   api prisma/manage-consent-policy.mjs validate
 
 # The database may start before migration, but application services do not switch until migration succeeds.
-if [[ $environment != production ]]; then
-  compose_for "$release_dir" up -d postgres
+if [[ $managed_postgres == true ]]; then
+  compose_for "$release_dir" up -d --wait --wait-timeout 90 postgres
 fi
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy
 if [[ -f $environment_root/bootstrap/first-run.json ]]; then
