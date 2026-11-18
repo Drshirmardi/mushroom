@@ -93,21 +93,29 @@
 
 .category[data-tone='mint'] { --service-tint: var(--dp-success-tint); }
 .category[data-tone='mint'],
-.card[data-tone='mint'] { --service-ink: #24864c; }
+.card[data-tone='mint'],
+.featured[data-tone='mint'] { --service-tint: var(--dp-success-tint); --service-ink: #24864c; }
 .category[data-tone='violet'],
-.card[data-tone='violet'] { --service-tint: #eee9fa; --service-ink: #7552b8; }
+.card[data-tone='violet'],
+.featured[data-tone='violet'] { --service-tint: #eee9fa; --service-ink: #7552b8; }
 .category[data-tone='rose'],
-.card[data-tone='rose'] { --service-tint: #f9e9f1; --service-ink: #bd527d; }
+.card[data-tone='rose'],
+.featured[data-tone='rose'] { --service-tint: #f9e9f1; --service-ink: #bd527d; }
 .category[data-tone='lilac'],
-.card[data-tone='lilac'] { --service-tint: #f0ebff; --service-ink: #7455b5; }
+.card[data-tone='lilac'],
+.featured[data-tone='lilac'] { --service-tint: #f0ebff; --service-ink: #7455b5; }
 .category[data-tone='ruby'],
-.card[data-tone='ruby'] { --service-tint: #fce9ed; --service-ink: #b95068; }
+.card[data-tone='ruby'],
+.featured[data-tone='ruby'] { --service-tint: #fce9ed; --service-ink: #b95068; }
 .category[data-tone='amber'],
-.card[data-tone='amber'] { --service-tint: #fff1df; --service-ink: #b66a18; }
+.card[data-tone='amber'],
+.featured[data-tone='amber'] { --service-tint: #fff1df; --service-ink: #b66a18; }
 .category[data-tone='aqua'],
-.card[data-tone='aqua'] { --service-tint: #e4f4f4; --service-ink: #24858a; }
+.card[data-tone='aqua'],
+.featured[data-tone='aqua'] { --service-tint: #e4f4f4; --service-ink: #24858a; }
 .category[data-tone='blue'],
-.card[data-tone='blue'] { --service-ink: var(--dp-brand); }
+.card[data-tone='blue'],
+.featured[data-tone='blue'] { --service-ink: var(--dp-brand); }
 
 .category > h3 {
   display: flex;
@@ -133,6 +141,11 @@
   overflow-wrap: anywhere;
 }
 
+.card {
+  --service-tint: var(--dp-brand-tint);
+  --service-ink: var(--dp-brand);
+}
+
 .featured,
 .card {
   display: grid;
@@ -149,10 +162,87 @@
 }
 
 .featured {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: 150px;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
-  background: linear-gradient(135deg, var(--dp-brand-tint), #f2edfc 75%, var(--dp-surface-elevated));
+  border-color: color-mix(in srgb, var(--service-ink, var(--dp-brand)) 20%, var(--shop-line));
+  background: linear-gradient(125deg, color-mix(in srgb, var(--service-tint, var(--dp-brand-tint)) 88%, white), color-mix(in srgb, var(--service-tint, #f4f1fc) 45%, white) 68%, var(--dp-surface-elevated));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--service-ink, var(--dp-brand)) 9%, transparent);
+}
+
+.featured > :not(.recommendationWave) {
+  position: relative;
+  z-index: 1;
+}
+
+.recommendations .card > :not(.recommendationWave) {
+  position: relative;
+  z-index: 1;
+}
+
+.featured::before {
+  position: absolute;
+  z-index: 0;
+  inset: -36%;
+  background:
+    radial-gradient(ellipse at 20% 25%, color-mix(in srgb, var(--service-ink, var(--dp-brand)) 19%, transparent), transparent 46%),
+    radial-gradient(ellipse at 82% 78%, color-mix(in srgb, var(--service-ink, #8b78d1) 12%, transparent), transparent 42%);
+  content: '';
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.recommendationWave {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: linear-gradient(
+      108deg,
+      transparent 34%,
+      color-mix(in srgb, var(--service-ink, var(--dp-brand)) 7%, transparent) 43%,
+      color-mix(in srgb, white 66%, transparent) 50%,
+      color-mix(in srgb, var(--service-ink, #8b78d1) 8%, transparent) 57%,
+      transparent 66%
+    ) 0 0 / 300% 100% no-repeat;
+  animation: recommendation-wave 6.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) 0.8s infinite;
+  pointer-events: none;
+}
+
+@keyframes recommendation-wave {
+  0%, 12% { opacity: 0; background-position: 120% 0; }
+  22%, 78% { opacity: 1; }
+  100% { opacity: 0; background-position: -20% 0; }
+}
+
+.recommendations .card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--service-ink, var(--dp-brand)) 15%, var(--shop-line));
+  background: linear-gradient(
+    138deg,
+    color-mix(in srgb, var(--service-tint) 92%, white),
+    color-mix(in srgb, var(--service-tint) 62%, white) 76%,
+    var(--dp-surface-elevated)
+  );
+  box-shadow: 0 5px 15px color-mix(in srgb, var(--service-ink, var(--dp-brand)) 7%, transparent);
+  transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+}
+
+.recommendations .card .cardIcon {
+  background: color-mix(in srgb, var(--service-tint) 64%, white);
+  color: var(--service-ink);
+}
+
+.recommendations .card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--service-ink, var(--dp-brand)) 30%, var(--shop-line));
+  box-shadow: 0 9px 20px color-mix(in srgb, var(--service-ink, var(--dp-brand)) 12%, transparent);
 }
 
 .card {
@@ -363,5 +453,14 @@
   .tabs::after,
   .tabs a,
   .slide .card,
-  .dots button span { transition: none; }
+  .dots button span,
+  .recommendations .card { transition: none; }
+
+  .recommendationWave { display: none; }
+}
+
+@media (forced-colors: active) {
+  .featured { border: 1px solid CanvasText; }
+  .featured::before,
+  .recommendationWave { display: none; }
 }

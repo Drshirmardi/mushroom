@@ -300,6 +300,7 @@ function Price({
 }
 
 function RecommendedCard({ item, featured = false }: { item: MezajService; featured?: boolean }) {
+  const tone = categoryStyle(`${item.title} ${item.summary}`, false).tone;
   const owned = item.state === 'OWNED' && item.accessGrantId;
   const pending = item.state === 'PENDING' && item.purchaseId;
   const href = owned
@@ -312,6 +313,7 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
   return (
     <Link
       className={featured ? styles.featured : styles.card}
+      data-tone={tone}
       href={href}
       aria-label={`${action}، ${item.title}`}
     >
@@ -340,6 +342,7 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
           </span>
         </div>
       </div>
+      <span className={styles.recommendationWave} aria-hidden="true" />
     </Link>
   );
 }
@@ -403,7 +406,7 @@ function categoryStyle(
     return { tone: 'mint', icon: 'pillBox', action: 'مشاهدهٔ برنامهٔ وزن' };
   if (/تغذیه|خوراک|غذا/.test(category))
     return { tone: 'amber', icon: 'medicalBag', action: 'مطالعهٔ راهنمای تغذیه' };
-  if (/خواب|آرامش|استرس/.test(category))
+  if (/خواب|آرامش|استرس|اضطراب|افسردگی|روان/.test(category))
     return { tone: 'violet', icon: 'star', action: 'مشاهدهٔ برنامهٔ خواب' };
   if (/گروه.*خونی|خون/.test(category))
     return { tone: 'ruby', icon: 'bloodDrop', action: 'مطالعهٔ راهنمای گروه خونی' };
