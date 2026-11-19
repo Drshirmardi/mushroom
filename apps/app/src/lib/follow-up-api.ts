@@ -1,6 +1,6 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 import { apiBaseUrl, sessionFetch } from "@/lib/api";
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from "@/lib/patient-request";
+import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData } from "@/lib/patient-request";
 
 export type HealthObservation = components["schemas"]["HealthObservationResponseDto"];
 export type HealthMetric = HealthObservation["metric"];
@@ -36,7 +36,7 @@ export const readAllNotifications = (accessToken: string) => request<{ ok: true 
 export const listNotificationPreferences = (accessToken: string) => request<{ items: NotificationPreference[] }>(accessToken, "/v1/patients/me/notifications/preferences");
 export const updateNotificationPreference = (accessToken: string, category: NotificationCategory, inAppEnabled: boolean) => request<NotificationPreference>(accessToken, "/v1/patients/me/notifications/preferences", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ category, inAppEnabled }) });
 export const fetchPatientArticles = (accessToken: string, signal?: AbortSignal) => request<{ items: PatientArticle[] }>(accessToken, "/v1/patients/me/articles", { signal });
-export const listPatientArticles = (accessToken: string) => patientCachedData(patientCacheKey(accessToken, "articles"), PATIENT_CATALOG_TTL_MS, () => fetchPatientArticles(accessToken));
+export const listPatientArticles = (accessToken: string) => patientCachedData(patientCacheKey(accessToken, "articles"), PATIENT_CACHE_TTL_MS.articles, () => fetchPatientArticles(accessToken));
 export const getPatientArticle = (accessToken: string, slug: string) => request<PatientArticle>(accessToken, `/v1/patients/me/articles/${encodeURIComponent(slug)}`);
 
 export function followUpErrorMessage(error: unknown, fallback = "دریافت اطلاعات ممکن نشد؛ دوباره تلاش کنید.") {

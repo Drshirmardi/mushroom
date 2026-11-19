@@ -33,8 +33,18 @@ export async function patientData<T>(
 
 export const patientAuthorization = (token: string) => ({ authorization: `Bearer ${token}` });
 
-export const PATIENT_CATALOG_TTL_MS = 15_000;
-export const PATIENT_CACHE_LIMIT = 12;
+export const PATIENT_CACHE_TTL_MS = {
+  recommendations: 180_000,
+  storeCatalog: 500_000,
+  assessmentCatalog: 120_000,
+  commerceCatalog: 120_000,
+  doctorDirectory: 120_000,
+  articles: 300_000,
+  banners: 120_000,
+  profile: 300_000,
+  home: 30_000,
+} as const;
+export const PATIENT_CACHE_LIMIT = 20;
 
 type CacheRecord = { expiresAt: number; value: unknown };
 
@@ -111,20 +121,30 @@ export function patientCachedData<T>(
   return request;
 }
 
-export function patientSessionData<T>(key: string, ttlMs: number, load: (signal: AbortSignal) => Promise<T>, refresh = false): Promise<T> {
-  return patientCachedData(key, ttlMs, async () => {
-    const controller = new AbortController();
-    sessionRequests.add(controller);
-    const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
-    try {
-      const value = await load(controller.signal);
-      controller.signal.throwIfAborted();
-      return value;
-    } finally {
-      clearTimeout(timeout);
-      sessionRequests.delete(controller);
-    }
-  }, refresh);
+export function patientSessionData<T>(
+  key: string,
+  ttlMs: number,
+  load: (signal: AbortSignal) => Promise<T>,
+  refresh = false,
+): Promise<T> {
+  return patientCachedData(
+    key,
+    ttlMs,
+    async () => {
+      const controller = new AbortController();
+      sessionRequests.add(controller);
+      const timeout = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
+      try {
+        const value = await load(controller.signal);
+        controller.signal.throwIfAborted();
+        return value;
+      } finally {
+        clearTimeout(timeout);
+        sessionRequests.delete(controller);
+      }
+    },
+    refresh,
+  );
 }
 
 export async function patientEmpty(

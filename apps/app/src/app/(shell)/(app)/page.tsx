@@ -17,7 +17,7 @@ import { ArrowLeft, BookOpen } from 'lucide-react';
 import { useAuthSession } from '@/components/auth/session-gate';
 import { PatientResourceState } from '@/components/shared/patient-resource-state';
 import { fetchArticlePreviews, getPatientHome } from '@/lib/patient-journey-api';
-import { PATIENT_CATALOG_TTL_MS } from '@/lib/patient-request';
+import { PATIENT_CACHE_TTL_MS } from '@/lib/patient-request';
 import { HomeJourney, HomeJourneyOverview } from '@/components/home/home-journey';
 import { HomeBanners } from '@/components/home/home-banners';
 import { useOptionalPatientEntry } from '@/components/auth/patient-entry-gate';
@@ -74,8 +74,8 @@ export default function HomePage() {
   const { authentication, sessionKey } = useAuthSession();
   const entry = useOptionalPatientEntry();
   const token = authentication.accessToken;
-  const journey = useSessionPatientResource('home', getPatientHome, PATIENT_CATALOG_TTL_MS);
-  const articles = useSessionPatientResource('article-previews', fetchArticlePreviews, PATIENT_CATALOG_TTL_MS);
+  const journey = useSessionPatientResource('home', getPatientHome, PATIENT_CACHE_TTL_MS.home);
+  const articles = useSessionPatientResource('article-previews', fetchArticlePreviews, PATIENT_CACHE_TTL_MS.articles);
   const notifications = useSessionPatientResource('notifications', listNotifications);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [entryBusy, setEntryBusy] = useState(false),

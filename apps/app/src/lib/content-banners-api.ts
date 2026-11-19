@@ -1,7 +1,7 @@
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient, apiBaseUrl } from "./api";
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from "./patient-request";
+import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData } from "./patient-request";
 
 export type StoreBanner = import("@sabz-zendegi/api-client").components["schemas"]["PublicBannerDto"];
 
@@ -9,7 +9,7 @@ export const storeBannersCacheKey = () => patientCacheKey("public", "store-banne
 
 export async function listStoreBanners(): Promise<StoreBanner[]> {
   try {
-    return await patientCachedData(storeBannersCacheKey(), PATIENT_CATALOG_TTL_MS, async () => {
+    return await patientCachedData(storeBannersCacheKey(), PATIENT_CACHE_TTL_MS.banners, async () => {
       const result = await withRequestTimeout(apiClient.GET("/v1/content/banners", { cache: "no-store", signal: AbortSignal.timeout(10000) }));
       if (result.response.ok && result.data) return result.data.items;
       throw new Error("STORE_BANNERS_UNAVAILABLE");

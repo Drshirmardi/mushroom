@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createApiClient, createSessionAwareFetch, DEFAULT_REQUEST_TIMEOUT_MS } from "@sabz-zendegi/api-client";
-import { PATIENT_CACHE_LIMIT, PATIENT_CATALOG_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache } from "./patient-request";
+import { PATIENT_CACHE_LIMIT, PATIENT_CACHE_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache } from "./patient-request";
 
 it("refreshes the store page without duplicating an in-flight refresh", async () => {
   const key = patientCacheKey("store-test-session", "store-offerings:custom:1");
-  await patientSessionData(key, PATIENT_CATALOG_TTL_MS, async () => "old");
+  await patientSessionData(key, PATIENT_CACHE_TTL_MS.storeCatalog, async () => "old");
   const load = vi.fn(async () => "new");
-  const refresh = patientSessionData(key, PATIENT_CATALOG_TTL_MS, load, true);
-  expect(patientSessionData(key, PATIENT_CATALOG_TTL_MS, load, true)).toBe(refresh);
+  const refresh = patientSessionData(key, PATIENT_CACHE_TTL_MS.storeCatalog, load, true);
+  expect(patientSessionData(key, PATIENT_CACHE_TTL_MS.storeCatalog, load, true)).toBe(refresh);
   await expect(refresh).resolves.toBe("new");
-  await expect(patientSessionData(key, PATIENT_CATALOG_TTL_MS, load)).resolves.toBe("new");
+  await expect(patientSessionData(key, PATIENT_CACHE_TTL_MS.storeCatalog, load)).resolves.toBe("new");
   expect(load).toHaveBeenCalledTimes(1);
   clearPatientRequestCache();
 });
@@ -35,8 +35,8 @@ describe("patient request cache", () => {
       return new Promise<string>((resolve) => { finish = resolve; });
     };
 
-    const first = patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory);
-    const second = patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory);
+    const first = patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory);
+    const second = patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory);
     expect(calls).toBe(1);
     finish("catalog");
     await expect(first).resolves.toBe("catalog");
@@ -47,11 +47,11 @@ describe("patient request cache", () => {
     let calls = 0;
     const factory = () => Promise.resolve(`value-${++calls}`);
 
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory)).resolves.toBe("value-1");
-    vi.setSystemTime(new Date(Date.now() + PATIENT_CATALOG_TTL_MS - 1));
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory)).resolves.toBe("value-1");
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory)).resolves.toBe("value-1");
+    vi.setSystemTime(new Date(Date.now() + PATIENT_CACHE_TTL_MS.storeCatalog - 1));
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory)).resolves.toBe("value-1");
     vi.setSystemTime(new Date(Date.now() + 1));
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory)).resolves.toBe("value-2");
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory)).resolves.toBe("value-2");
     expect(calls).toBe(2);
   });
 
@@ -62,9 +62,9 @@ describe("patient request cache", () => {
       return Promise.resolve(token);
     };
 
-    await expect(patientCachedData(patientCacheKey("token-a", "doctors"), PATIENT_CATALOG_TTL_MS, factory("token-a"))).resolves.toBe("token-a");
-    await expect(patientCachedData(patientCacheKey("token-b", "doctors"), PATIENT_CATALOG_TTL_MS, factory("token-b"))).resolves.toBe("token-b");
-    await expect(patientCachedData(patientCacheKey("token-a", "doctors"), PATIENT_CATALOG_TTL_MS, factory("token-a-again"))).resolves.toBe("token-a");
+    await expect(patientCachedData(patientCacheKey("token-a", "doctors"), PATIENT_CACHE_TTL_MS.storeCatalog, factory("token-a"))).resolves.toBe("token-a");
+    await expect(patientCachedData(patientCacheKey("token-b", "doctors"), PATIENT_CACHE_TTL_MS.storeCatalog, factory("token-b"))).resolves.toBe("token-b");
+    await expect(patientCachedData(patientCacheKey("token-a", "doctors"), PATIENT_CACHE_TTL_MS.storeCatalog, factory("token-a-again"))).resolves.toBe("token-a");
     expect(seen).toEqual(["token-a", "token-b"]);
     expect(patientCacheKey("token-a", "doctors")).not.toBe(patientCacheKey("token-b", "doctors"));
   });
@@ -76,33 +76,33 @@ describe("patient request cache", () => {
       return Promise.reject(new Error("offline"));
     };
 
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory)).rejects.toThrow("offline");
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, factory)).rejects.toThrow("offline");
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory)).rejects.toThrow("offline");
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, factory)).rejects.toThrow("offline");
     expect(calls).toBe(2);
   });
 
   it("drops a response that finishes after the cache is cleared", async () => {
     let finish: (value: string) => void = () => {};
-    const pending = patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => new Promise<string>((resolve) => { finish = resolve; }));
+    const pending = patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, () => new Promise<string>((resolve) => { finish = resolve; }));
     clearPatientRequestCache();
     finish("stale");
     await expect(pending).resolves.toBe("stale");
 
-    await expect(patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => Promise.resolve("fresh"))).resolves.toBe("fresh");
+    await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, () => Promise.resolve("fresh"))).resolves.toBe("fresh");
   });
 
   it("drops the oldest record after the memory limit", async () => {
     for (let index = 0; index <= PATIENT_CACHE_LIMIT; index += 1) {
-      await patientCachedData(`entry-${index}`, PATIENT_CATALOG_TTL_MS, () => Promise.resolve(index));
+      await patientCachedData(`entry-${index}`, PATIENT_CACHE_TTL_MS.storeCatalog, () => Promise.resolve(index));
     }
     expect(peekPatientCache("entry-0")).toBeUndefined();
     expect(peekPatientCache(`entry-${PATIENT_CACHE_LIMIT}`)).toBe(PATIENT_CACHE_LIMIT);
   });
 
   it("reads a fresh value without starting another request", async () => {
-    await patientCachedData("articles", PATIENT_CATALOG_TTL_MS, () => Promise.resolve("catalog"));
+    await patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, () => Promise.resolve("catalog"));
     expect(peekPatientCache("articles")).toBe("catalog");
-    vi.setSystemTime(new Date(Date.now() + PATIENT_CATALOG_TTL_MS));
+    vi.setSystemTime(new Date(Date.now() + PATIENT_CACHE_TTL_MS.storeCatalog));
     expect(peekPatientCache("articles")).toBeUndefined();
   });
 
@@ -131,7 +131,7 @@ describe("patient request cache", () => {
   });
 
   it("aborts old requests and clears cached data when the session is cleared", async () => {
-    await patientSessionData("articles", PATIENT_CATALOG_TTL_MS, async () => "private");
+    await patientSessionData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, async () => "private");
     const pending = patientSessionData("journey", 0, signal => new Promise((_, reject) => {
       signal.addEventListener("abort", () => reject(signal.reason), { once: true });
     }));

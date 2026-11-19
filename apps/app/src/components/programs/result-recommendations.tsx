@@ -8,6 +8,7 @@ import { ProductCard } from '@/components/store/product-card';
 
 import { getCommerceRecommendations } from '@/lib/commerce-catalog-api';
 import { getMezajServices } from '@/lib/mezaj-services-api';
+import { PATIENT_CACHE_TTL_MS } from '@/lib/patient-request';
 import { useSessionPatientResource } from '@/lib/use-patient-resource';
 import { useAuthSession } from '@/components/auth/session-gate';
 
@@ -44,6 +45,7 @@ export function useResultRecommendations(submissionId: string, retryAfterConfirm
       (token: string, signal: AbortSignal) => getMezajServices(token, submissionId, signal),
       [submissionId],
     ),
+    PATIENT_CACHE_TTL_MS.recommendations,
   );
   const products = useSessionPatientResource(
     `commerce-recommendations:${submissionId}`,
@@ -52,6 +54,7 @@ export function useResultRecommendations(submissionId: string, retryAfterConfirm
         getCommerceRecommendations(token, submissionId, signal),
       [submissionId],
     ),
+    PATIENT_CACHE_TTL_MS.recommendations,
   );
   const scope = JSON.stringify([sessionKey, submissionId]);
   useRetryAfterResult(scope, retryAfterConfirmation, services.error, services.reload);

@@ -8,7 +8,7 @@ import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceAddresses, type CommerceAddress } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
 import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type OnboardingStatus, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData, peekPatientCache } from "@/lib/patient-request";
+import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData, peekPatientCache } from "@/lib/patient-request";
 
 import { StoreIcon, type StoreIconName } from '@/components/store/store-icon';
 
@@ -82,8 +82,8 @@ export default function ProfilePage() {
     void (async () => {
       try {
         const [profileResponse, statusResponse] = await Promise.all([
-          patientCachedData(profileKey, PATIENT_CATALOG_TTL_MS, () => loadSelfProfile(token)),
-          patientCachedData(statusKey, PATIENT_CATALOG_TTL_MS, () => loadOnboardingStatus(token)),
+          patientCachedData(profileKey, PATIENT_CACHE_TTL_MS.profile, () => loadSelfProfile(token)),
+          patientCachedData(statusKey, PATIENT_CACHE_TTL_MS.profile, () => loadOnboardingStatus(token)),
         ]);
         if (cancelled) return;
         setProfile(profileResponse);

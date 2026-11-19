@@ -4,6 +4,7 @@ import { HeartbeatLoader } from '@/components/shared/heartbeat-loader';
 import { LoadingState } from '@/components/shared/skeletons';
 
 import { registerAssessmentHistoryGuard } from '@/lib/assessment-history';
+import { invalidateStoreMezajRecommendations } from '@/lib/mezaj-services-api';
 import { BottomSheet } from '@/components/shared/bottom-sheet';
 import { currentInvitationContext, marriageHref } from '@/lib/marriage-context';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -410,6 +411,7 @@ function AssessmentAttempt({
         command.key,
         command.revision,
       );
+      invalidateStoreMezajRecommendations();
       leaving.current = true;
       if (entry) entry.onComplete();
       else router.push(marriageHref(`/assessment/result?submissionId=${completed.id}`));

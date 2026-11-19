@@ -2,7 +2,7 @@ import { browserAnalyticsEvent } from '../../../../config/analytics-browser';
 import { type components, withRequestTimeout } from '@sabz-zendegi/api-client';
 
 import { apiClient, apiBaseUrl, sessionFetch } from './api';
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientCachedData } from './patient-request';
+import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData } from './patient-request';
 
 export type CommerceProduct = components['schemas']['PatientCommerceProductDto'];
 export type CommerceCart = components['schemas']['PatientCartDto'];
@@ -71,7 +71,7 @@ export const listCommerceProducts = (query?: {
   query?: string;
   categoryId?: string;
 }) =>
-  patientCachedData(commerceProductsCacheKey(query), PATIENT_CATALOG_TTL_MS, () =>
+  patientCachedData(commerceProductsCacheKey(query), PATIENT_CACHE_TTL_MS.commerceCatalog, () =>
     expectData<components['schemas']['PatientCommerceProductPageDto']>(
       apiClient.GET('/v1/commerce/products', { params: { query } }),
     ),

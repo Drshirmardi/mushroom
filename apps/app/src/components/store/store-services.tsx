@@ -14,7 +14,7 @@ import { authSessionKey } from '@/auth/session';
 import { LoadingState, SkeletonBox, SkeletonCard } from '@/components/shared/skeletons';
 import { loginUrl } from '@/lib/api';
 import { listCustomOfferingCards, listProgramOfferingCards } from '@/lib/digital-services-api';
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientSessionData, peekPatientCache } from '@/lib/patient-request';
+import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientSessionData, peekPatientCache } from '@/lib/patient-request';
 import { toP } from '@/lib/format';
 import { loadStoreMezajRecommendations, STORE_MEZAJ_RECOMMENDATIONS, type MezajService } from '@/lib/mezaj-services-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
@@ -350,7 +350,7 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
 function Recommendations({ sessionKey }: { sessionKey: string }) {
   const cacheKey = patientCacheKey(sessionKey, STORE_MEZAJ_RECOMMENDATIONS);
   const load = useCallback(
-    () => patientSessionData(cacheKey, PATIENT_CATALOG_TTL_MS, signal =>
+    () => patientSessionData(cacheKey, PATIENT_CACHE_TTL_MS.recommendations, signal =>
       loadStoreMezajRecommendations(accessTokenForSession(sessionKey), signal),
     ),
     [cacheKey, sessionKey],
@@ -510,7 +510,7 @@ function Offerings({ sessionKey, kind }: { sessionKey: string; kind: 'education'
         nextCursor: string | null;
       }>(
         patientCacheKey(sessionKey, `store-offering-cards:${kind}:${cursor ?? ''}`),
-        PATIENT_CATALOG_TTL_MS,
+        PATIENT_CACHE_TTL_MS.storeCatalog,
         (signal) => {
           const token = accessTokenForSession(sessionKey);
           return custom ? listCustomOfferingCards(token, cursor, signal) : listProgramOfferingCards(token, cursor, signal);
