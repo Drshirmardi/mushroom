@@ -499,22 +499,10 @@ function PurchaseDetails({
             </p>
           </div>
         )}
-
-        <button
-          type="button"
-          disabled={refreshing}
-          onClick={onRefresh}
-          aria-busy={refreshing}
-          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl text-sm font-medium text-primary transition-colors hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <RefreshCw size={17} aria-hidden="true" className={refreshing ? 'animate-spin' : ''} />
-
-          {refreshing ? 'در حال به‌روزرسانی…' : 'به‌روزرسانی وضعیت'}
-        </button>
       </section>
 
       {/* Additional financial details */}
-      {purchase.intent &&
+      {/* {purchase.intent &&
         paymentView !== 'pending' &&
         paymentView !== 'ambiguous' &&
         paymentView !== 'failed' && (
@@ -525,7 +513,7 @@ function PurchaseDetails({
             <span>مشاهده وضعیت و جزئیات پرداخت</span>
             <ArrowLeft size={17} aria-hidden="true" />
           </Link>
-        )}
+        )} */}
     </div>
   );
 }

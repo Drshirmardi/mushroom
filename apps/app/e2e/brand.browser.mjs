@@ -54,5 +54,5 @@ try {
   await page.locator('.entry-screen--quiz').waitFor();
   expect(await page.locator('.entry-header .app-brand-logo').count()).toBe(0);
   expect(errors).toEqual([]);
-  console.log('PASS: exact landing icons, static marks, metadata, 5 widths, reduced motion; zero page exceptions/writes.');
+  console.log('PASS: app icon responses, static marks, metadata, 5 widths, reduced motion; zero page exceptions/writes.');
 } finally { await browser.close(); }
