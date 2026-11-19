@@ -23,13 +23,7 @@ export class PrismaPublicAuthRateLimiter extends PublicAuthRateLimiter {
       key: bucketKey(request.scope, subject.kind, subject.value),
     }));
     const windowStartedAfter = new Date(request.at.getTime() - request.windowMs);
-    const expiredBefore = new Date(request.at.getTime() - request.windowMs * 4);
-
     return this.prisma.$transaction(async (transaction) => {
-      await transaction.authRateLimitBucket.deleteMany({
-        where: { updatedAt: { lt: expiredBefore } },
-      });
-
       for (const key of subjects.map(({ key }) => key).sort()) {
         await transaction.$queryRaw`
           SELECT pg_advisory_xact_lock(hashtextextended(${key}, 0))::text AS locked

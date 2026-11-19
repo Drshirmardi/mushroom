@@ -7,6 +7,48 @@ import type { PrismaService } from '../src/database/prisma/prisma.service';
 const percentile = (values: number[], p: number) =>
   [...values].sort((a, b) => a - b)[Math.ceil(values.length * p) - 1] ?? 0;
 
+export async function measureConcurrentProgramStore(
+  app: NestFastifyApplication,
+  tokens: readonly string[],
+  output: string,
+) {
+  expect(new Set(tokens).size).toBe(50);
+  const routes = ['program-recommendations', 'program-offering-cards', 'custom-program-offering-cards'];
+  const samples: { users: number; round: number; route: string; ms: number; status: number; requestId: string; hasRecommendations?: boolean }[] = [];
+  for (const users of [2, 10, 25, 50]) {
+    for (let round = 1; round <= (users === 50 ? 3 : 1); round++) {
+      const burst = await Promise.all(tokens.slice(0, users).flatMap(token => routes.map(async route => {
+        const started = performance.now();
+        const response = await app.inject({
+          method: 'GET',
+          url: `/v1/patients/me/${route}`,
+          headers: { authorization: `Bearer ${token}` },
+        });
+        const ms = performance.now() - started;
+        const recommendations = route === 'program-recommendations' && response.statusCode === 200
+          ? response.json<{ status: string; items: unknown[] }>()
+          : undefined;
+        return {
+          users, round, route, ms, status: response.statusCode,
+          requestId: String(response.headers['x-request-id'] ?? ''),
+          hasRecommendations: recommendations
+            ? recommendations.status === 'READY' && recommendations.items.length > 0
+            : undefined,
+        };
+      })));
+      samples.push(...burst);
+    }
+  }
+  await writeFile(output, JSON.stringify(samples, null, 2));
+  expect(samples.filter(sample => sample.status !== 200 || sample.ms >= 10_000 || sample.hasRecommendations === false)).toEqual([]);
+  for (let round = 1; round <= 3; round++) {
+    const recommendations = samples.filter(sample =>
+      sample.users === 50 && sample.round === round && sample.route === 'program-recommendations',
+    );
+    expect(percentile(recommendations.map(sample => sample.ms), 0.95)).toBeLessThanOrEqual(3_000);
+  }
+}
+
 const sqlGroups = [
   ['publication-rank-and-ownership', /WITH shortlisted/i],
   ['catalog-availability-and-count', /program_publication_current.*|WITH candidates/i],

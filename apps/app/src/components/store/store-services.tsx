@@ -678,6 +678,34 @@ function Offerings({ sessionKey, kind }: { sessionKey: string; kind: 'education'
   );
 }
 
+function DeferredOfferings(props: Parameters<typeof Offerings>[0]) {
+  const [started, setStarted] = useState(false);
+  const placeholder = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const target = placeholder.current;
+    if (!target || started) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setStarted(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        observer.disconnect();
+        setStarted(true);
+      }
+    }, { root: target.closest('.patient-shell-content'), rootMargin: '200px 0px' });
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [started]);
+
+  return started ? <Offerings {...props} /> : (
+    <div ref={placeholder} aria-hidden="true">
+      <SkeletonBox className={styles.featuredSkeleton} />
+    </div>
+  );
+}
+
 function GuestServices() {
   const [href, setHref] = useState(loginUrl);
   useEffect(() => {
@@ -710,8 +738,8 @@ export function StoreServices() {
         <div className={styles.sections} key={sessionKey}>
           <StoreServiceBanners />
           <Recommendations sessionKey={sessionKey} />
-          <Offerings kind="education" sessionKey={sessionKey} />
-          <Offerings kind="custom" sessionKey={sessionKey} />
+          <DeferredOfferings kind="education" sessionKey={sessionKey} />
+          <DeferredOfferings kind="custom" sessionKey={sessionKey} />
         </div>
       ) : session?.status === 'unavailable' ? (
         <LoadError message="اطلاعات حساب دریافت نشد." retry={() => window.location.reload()} />

@@ -7,12 +7,30 @@ export type AssessmentResultProvenance = { status: 'PROVENANCE_UNRECORDED' | 'PR
 
 // Validate persisted engine metadata without querying responses or running another scoring engine.
 export function assessmentResultProvenance(source: { contentHash: string; structure: unknown }, rawSnapshot: unknown, completionPayloadHash: string | null): AssessmentResultProvenance {
+  return verifyAssessmentResultProvenance(source.contentHash, () => prepareAssessmentResultBands(source.structure), rawSnapshot, completionPayloadHash);
+}
+
+export function prepareAssessmentResultBands(structure: unknown) {
+  validateAssessmentStructure(structure, true);
+  const bands = (structure as { resultBands?: Record<string, unknown>[] }).resultBands ?? [];
+  const byId = new Map<string, Record<string, unknown>>();
+  for (const band of bands) {
+    if (typeof band.id === 'string' && !byId.has(band.id)) byId.set(band.id, band);
+  }
+  return byId;
+}
+
+export function verifyAssessmentResultProvenance(
+  contentHash: string,
+  getBands: () => ReturnType<typeof prepareAssessmentResultBands>,
+  rawSnapshot: unknown,
+  completionPayloadHash: string | null,
+): AssessmentResultProvenance {
   const snapshot = object(rawSnapshot);
   if (snapshot.algorithmId == null || snapshot.algorithmVersion == null || snapshot.questionnaireContentHash == null || snapshot.answerPayloadHash == null) return { status: 'PROVENANCE_UNRECORDED' };
-  if (snapshot.algorithmId !== ASSESSMENT_SCORING_IDENTITY.algorithmId || snapshot.algorithmVersion !== ASSESSMENT_SCORING_IDENTITY.algorithmVersion || snapshot.questionnaireContentHash !== source.contentHash || typeof snapshot.answerPayloadHash !== 'string' || !/^[a-f0-9]{64}$/u.test(snapshot.answerPayloadHash) || snapshot.answerPayloadHash !== completionPayloadHash) return { status: 'PROVENANCE_UNSUPPORTED' };
+  if (snapshot.algorithmId !== ASSESSMENT_SCORING_IDENTITY.algorithmId || snapshot.algorithmVersion !== ASSESSMENT_SCORING_IDENTITY.algorithmVersion || snapshot.questionnaireContentHash !== contentHash || typeof snapshot.answerPayloadHash !== 'string' || !/^[a-f0-9]{64}$/u.test(snapshot.answerPayloadHash) || snapshot.answerPayloadHash !== completionPayloadHash) return { status: 'PROVENANCE_UNSUPPORTED' };
   try {
-    validateAssessmentStructure(source.structure, true);
-    const actualBand = (source.structure as { resultBands?: Record<string, unknown>[] }).resultBands?.find(b => b.id === String(object(snapshot.resultBand).id));
+    const actualBand = getBands().get(String(object(snapshot.resultBand).id));
     if (!actualBand) return { status: 'PROVENANCE_UNSUPPORTED' };
     const expected = { id: actualBand.id, title: actualBand.title, riskLevel: actualBand.riskLevel ?? 'NONE', requiresReview: actualBand.requiresReview ?? false };
     if (canonicalAssessmentJson(expected) !== canonicalAssessmentJson(snapshot.resultBand)) return { status: 'PROVENANCE_UNSUPPORTED' };

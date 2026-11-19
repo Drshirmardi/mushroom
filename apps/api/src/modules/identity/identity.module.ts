@@ -31,6 +31,7 @@ import { PrismaAccountRepository } from './infrastructure/prisma-account.reposit
 import { HmacRefreshTokenManager } from './infrastructure/hmac-refresh-token-manager';
 import { PrismaLoginRepository } from './infrastructure/prisma-login.repository';
 import { PrismaPublicAuthRateLimiter } from './infrastructure/prisma-public-auth-rate-limiter';
+import { RateLimitCleanupWorker } from './infrastructure/rate-limit-cleanup.worker';
 import { PrismaRegistrationRepository } from './infrastructure/prisma-registration.repository';
 import { PrismaSessionRepository } from './infrastructure/prisma-session.repository';
 import { AuthController } from './presentation/http/auth.controller';
@@ -54,6 +55,7 @@ import { AuditViewerService } from './audit/audit-viewer.service';
       useExisting: PrismaRegistrationRepository,
     },
     PrismaPublicAuthRateLimiter,
+    RateLimitCleanupWorker,
     {
       provide: PublicAuthRateLimiter,
       useExisting: PrismaPublicAuthRateLimiter,

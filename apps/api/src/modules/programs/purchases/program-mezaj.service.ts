@@ -12,7 +12,7 @@ import {
   GuidanceAuthorityService,
   type GuidanceActorContext as Context,
 } from '../../content/guidance/guidance-authority.service';
-import { MEZAJ_PAIR_CODES, resolveMezajRecommendationSource } from '../../assessments/domain/mezaj-recommendation-source';
+import { MEZAJ_PAIR_CODES, type MezajPairCode, resolveMezajRecommendationSource } from '../../assessments/domain/mezaj-recommendation-source';
 import { ProgramPurchaseService } from './program-purchase.service';
 import { programPrice } from '../publication/program-pricing';
 import type {
@@ -21,6 +21,157 @@ import type {
   SaveProgramMezajDto,
 } from './program-mezaj.dto';
 import type { ProgramPurchaseQueryDto } from './program-purchase.dto';
+
+// Shared with the isolated store benchmark so EXPLAIN measures the exact serving query.
+export function programRecommendationCardsSql(
+  patient: { id: string; clinicId: string; userId: string },
+  source: { primary: MezajPairCode; secondary: MezajPairCode },
+): Prisma.Sql {
+  const exactPair = `${source.primary}/${source.secondary}`;
+  const primaryPairs = MEZAJ_PAIR_CODES.map(code => `${source.primary}/${code}`);
+  const secondaryPairs = MEZAJ_PAIR_CODES.map(code => `${code}/${source.secondary}`);
+  const candidates = [...new Set([...primaryPairs, ...secondaryPairs])];
+  return Prisma.sql`
+    WITH shortlisted AS MATERIALIZED (
+      SELECT candidate.*
+      FROM (
+        SELECT
+          pub.id,
+          d.id AS "definitionId",
+          service.id AS "serviceId",
+          d.title,
+          d.summary,
+          m.icon,
+          pub.amount_rial AS amount,
+          pub.discount_percent AS "discountPercent",
+          pub.discount_starts_at AS "discountStartsAt",
+          pub.discount_ends_at AS "discountEndsAt",
+          d.clinic_id AS "clinicId",
+          d.program_key AS "programKey",
+          d.locale,
+          pub.created_at AS "createdAt",
+          CASE
+            WHEN ${exactPair} = ANY(m.pairs) THEN 0
+            WHEN m.pairs && ARRAY[${Prisma.join(primaryPairs)}]::text[] THEN 1
+            ELSE 2
+          END AS "matchRank"
+
+        FROM program_mezaj_presentations m
+
+        JOIN program_definition_versions d
+          ON d.id = m.program_definition_id
+          AND d.clinic_id = m.clinic_id
+
+        JOIN program_offering_publications pub
+          ON pub.program_definition_id = d.id
+          AND pub.clinic_id = d.clinic_id
+
+        JOIN program_services service
+          ON service.clinic_id = d.clinic_id
+          AND service.program_key = d.program_key
+          AND service.locale = d.locale
+
+        WHERE
+          m.clinic_id = ${patient.clinicId}::uuid
+          AND m.enabled
+          AND m.pairs && ARRAY[${Prisma.join(candidates)}]::text[]
+
+          AND (
+            service.audience = 'SHARED'
+            OR service.audience = (
+              SELECT profile.gender
+              FROM user_profiles profile
+              WHERE profile.user_id =
+                ${patient.userId}::uuid
+            )
+          )
+
+          AND d.kind = 'READY_EDUCATION'
+          AND pub.status = 'ACTIVE'
+
+        ORDER BY "matchRank" ASC, pub.created_at DESC, pub.id DESC
+        -- Preserve this ordered subquery as a boundary for the publication check.
+        OFFSET 0
+      ) candidate
+      WHERE program_publication_current(candidate.id)
+      ORDER BY candidate."matchRank" ASC, candidate."createdAt" DESC, candidate.id DESC
+      LIMIT 12
+    )
+
+    SELECT
+      shortlisted.id,
+      shortlisted."definitionId",
+      shortlisted."serviceId",
+      shortlisted.title,
+      shortlisted.summary,
+      shortlisted.icon,
+      shortlisted.amount,
+      shortlisted."discountPercent",
+      shortlisted."discountStartsAt",
+      shortlisted."discountEndsAt",
+      owned.id AS "grantId",
+      COALESCE(
+        owned.purchase_id,
+        pending.id
+      ) AS "purchaseId",
+      shortlisted."matchRank",
+      CURRENT_TIMESTAMP AS now
+
+    FROM shortlisted
+
+    LEFT JOIN LATERAL (
+      SELECT
+        g.id,
+        g.purchase_id
+      FROM program_access_grants g
+      JOIN program_purchases p
+        ON p.id = g.purchase_id
+      JOIN program_definition_versions historical
+        ON historical.id = p.program_definition_id
+      WHERE
+        historical.clinic_id = shortlisted."clinicId"
+        AND historical.program_key = shortlisted."programKey"
+        AND historical.locale = shortlisted.locale
+        AND g.patient_id = ${patient.id}::uuid
+        AND g.clinic_id = ${patient.clinicId}::uuid
+        AND program_grant_readable(
+          g.id,
+          ${patient.id}::uuid
+        )
+      ORDER BY
+        g.granted_at DESC,
+        g.id DESC
+      LIMIT 1
+    ) owned ON true
+
+    LEFT JOIN LATERAL (
+      SELECT
+        p.id
+      FROM program_purchases p
+      JOIN billing_intents b
+        ON b.program_purchase_id = p.id
+      JOIN program_definition_versions historical
+        ON historical.id = p.program_definition_id
+      WHERE
+        historical.clinic_id = shortlisted."clinicId"
+        AND historical.program_key = shortlisted."programKey"
+        AND historical.locale = shortlisted.locale
+        AND p.patient_id = ${patient.id}::uuid
+        AND p.clinic_id = ${patient.clinicId}::uuid
+        AND b.status = 'PENDING'
+        AND b.expires_at > CURRENT_TIMESTAMP
+      ORDER BY
+        p.created_at DESC,
+        p.id DESC
+      LIMIT 1
+    ) pending ON true
+
+    ORDER BY
+      shortlisted."matchRank" ASC,
+      shortlisted."createdAt" DESC,
+      shortlisted.id DESC
+  `;
+}
 
 @Injectable()
 export class ProgramMezajService {
@@ -253,10 +404,12 @@ export class ProgramMezajService {
     submissionId?: string,
   ): Promise<MezajProgramRecommendationsDto> {
     const startedAt = performance.now();
+    let transactionEntryMs: number | undefined;
     let sourceMs: number | undefined;
     let queryMs: number | undefined;
     const response = await this.prisma.$transaction(
       async (tx) => {
+        transactionEntryMs = Math.round(performance.now() - startedAt);
         const patient = await this.purchases.patient(tx, ctx);
 
         const sourceStartedAt = performance.now();
@@ -269,10 +422,6 @@ export class ProgramMezajService {
         };
 
         if (source.status === 'READY') {
-          const exactPair = `${source.primary}/${source.secondary}`;
-          const primaryPairs = MEZAJ_PAIR_CODES.map(code => `${source.primary}/${code}`);
-          const secondaryPairs = MEZAJ_PAIR_CODES.map(code => `${code}/${source.secondary}`);
-          const candidates = [...new Set([...primaryPairs, ...secondaryPairs])];
           const queryStartedAt = performance.now();
 
           const rows = await tx.$queryRaw<
@@ -292,146 +441,7 @@ export class ProgramMezajService {
               matchRank: number;
               now: Date;
             }[]
-          >(Prisma.sql`
-          WITH shortlisted AS MATERIALIZED (
-            SELECT candidate.*
-            FROM (
-              SELECT
-                pub.id,
-                d.id AS "definitionId",
-                service.id AS "serviceId",
-                d.title,
-                d.summary,
-                m.icon,
-                pub.amount_rial AS amount,
-                pub.discount_percent AS "discountPercent",
-                pub.discount_starts_at AS "discountStartsAt",
-                pub.discount_ends_at AS "discountEndsAt",
-                d.clinic_id AS "clinicId",
-                d.program_key AS "programKey",
-                d.locale,
-                pub.created_at AS "createdAt",
-                CASE
-                  WHEN ${exactPair} = ANY(m.pairs) THEN 0
-                  WHEN m.pairs && ARRAY[${Prisma.join(primaryPairs)}]::text[] THEN 1
-                  ELSE 2
-                END AS "matchRank"
-
-              FROM program_mezaj_presentations m
-
-              JOIN program_definition_versions d
-                ON d.id = m.program_definition_id
-                AND d.clinic_id = m.clinic_id
-
-              JOIN program_offering_publications pub
-                ON pub.program_definition_id = d.id
-                AND pub.clinic_id = d.clinic_id
-
-              JOIN program_services service
-                ON service.clinic_id = d.clinic_id
-                AND service.program_key = d.program_key
-                AND service.locale = d.locale
-
-              WHERE
-                m.clinic_id = ${patient.clinicId}::uuid
-                AND m.enabled
-                AND m.pairs && ARRAY[${Prisma.join(candidates)}]::text[]
-
-                AND (
-                  service.audience = 'SHARED'
-                  OR service.audience = (
-                    SELECT profile.gender
-                    FROM user_profiles profile
-                    WHERE profile.user_id =
-                      ${patient.userId}::uuid
-                  )
-                )
-
-                AND d.kind = 'READY_EDUCATION'
-                AND pub.status = 'ACTIVE'
-
-              ORDER BY "matchRank" ASC, pub.created_at DESC, pub.id DESC
-              -- Preserve this ordered subquery as a boundary for the publication check.
-              OFFSET 0
-            ) candidate
-            WHERE program_publication_current(candidate.id)
-            ORDER BY candidate."matchRank" ASC, candidate."createdAt" DESC, candidate.id DESC
-            LIMIT 12
-          )
-
-          SELECT
-            shortlisted.id,
-            shortlisted."definitionId",
-            shortlisted."serviceId",
-            shortlisted.title,
-            shortlisted.summary,
-            shortlisted.icon,
-            shortlisted.amount,
-            shortlisted."discountPercent",
-            shortlisted."discountStartsAt",
-            shortlisted."discountEndsAt",
-            owned.id AS "grantId",
-            COALESCE(
-              owned.purchase_id,
-              pending.id
-            ) AS "purchaseId",
-            shortlisted."matchRank",
-            CURRENT_TIMESTAMP AS now
-
-          FROM shortlisted
-
-          LEFT JOIN LATERAL (
-            SELECT
-              g.id,
-              g.purchase_id
-            FROM program_access_grants g
-            JOIN program_purchases p
-              ON p.id = g.purchase_id
-            JOIN program_definition_versions historical
-              ON historical.id = p.program_definition_id
-            WHERE
-              historical.clinic_id = shortlisted."clinicId"
-              AND historical.program_key = shortlisted."programKey"
-              AND historical.locale = shortlisted.locale
-              AND g.patient_id = ${patient.id}::uuid
-              AND g.clinic_id = ${patient.clinicId}::uuid
-              AND program_grant_readable(
-                g.id,
-                ${patient.id}::uuid
-              )
-            ORDER BY
-              g.granted_at DESC,
-              g.id DESC
-            LIMIT 1
-          ) owned ON true
-
-          LEFT JOIN LATERAL (
-            SELECT
-              p.id
-            FROM program_purchases p
-            JOIN billing_intents b
-              ON b.program_purchase_id = p.id
-            JOIN program_definition_versions historical
-              ON historical.id = p.program_definition_id
-            WHERE
-              historical.clinic_id = shortlisted."clinicId"
-              AND historical.program_key = shortlisted."programKey"
-              AND historical.locale = shortlisted.locale
-              AND p.patient_id = ${patient.id}::uuid
-              AND p.clinic_id = ${patient.clinicId}::uuid
-              AND b.status = 'PENDING'
-              AND b.expires_at > CURRENT_TIMESTAMP
-            ORDER BY
-              p.created_at DESC,
-              p.id DESC
-            LIMIT 1
-          ) pending ON true
-
-          ORDER BY
-            shortlisted."matchRank" ASC,
-            shortlisted."createdAt" DESC,
-            shortlisted.id DESC
-        `);
+          >(programRecommendationCardsSql(patient, source));
 
           queryMs = Math.round(performance.now() - queryStartedAt);
 
@@ -470,6 +480,7 @@ export class ProgramMezajService {
         operation: 'program-recommendations',
         requestId: ctx.requestId,
         durationMs: Math.round(performance.now() - startedAt),
+        transactionEntryMs,
         sourceMs,
         queryMs,
         status: error instanceof HttpException ? error.getStatus() : 500,
@@ -481,6 +492,7 @@ export class ProgramMezajService {
       operation: 'program-recommendations',
       requestId: ctx.requestId,
       durationMs: Math.round(performance.now() - startedAt),
+      transactionEntryMs,
       sourceMs,
       queryMs,
       rows: response.items.length,

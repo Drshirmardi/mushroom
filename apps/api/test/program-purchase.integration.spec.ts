@@ -16,7 +16,9 @@ import { PaymentCredentialCryptoService } from '../src/modules/commerce/payments
 import { SadadRuntimeConfigService } from '../src/modules/commerce/payments/sadad-runtime-config.service';
 import type { PaymentProviderPort } from '../src/modules/commerce/payments/payment-provider.port';
 import { assertPatientJourneyTestDatabase, createTestAccessToken } from './auth-test-support';
-import { ProgramMezajService } from '../src/modules/programs/purchases/program-mezaj.service';
+import { ProgramMezajService, programRecommendationCardsSql } from '../src/modules/programs/purchases/program-mezaj.service';
+import { resolveMezajRecommendationSource } from '../src/modules/assessments/domain/mezaj-recommendation-source';
+import { RateLimitCleanupWorker } from '../src/modules/identity/infrastructure/rate-limit-cleanup.worker';
 import { MIZAJ_DRAFT_PRESET } from '../src/modules/assessments/domain/mizaj-draft-preset';
 import { previewTieBreakDraft, TIEBREAK_ALGORITHM } from '../src/modules/assessments/domain/assessment-tiebreak-draft';
 import { readFile, writeFile } from 'node:fs/promises';
@@ -24,7 +26,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { PublicAuthRateLimiter } from '../src/modules/identity/application/ports/public-auth-rate-limiter';
-import { explainProgramStore, measureProgramStore } from './program-store-benchmark';
+import { explainProgramStore, measureConcurrentProgramStore, measureProgramStore } from './program-store-benchmark';
 import { offeringCardBoundary } from '../src/modules/programs/publication/program-offering-card.dto';
 
 describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready program purchase/access (disposable PostgreSQL, synthetic PSP)', () => {
@@ -182,6 +184,13 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     `);
     await writeFile(resolve(output, `catalog-${size}.json`), JSON.stringify(counts, null, 2));
     await explainProgramStore(db, clinicId, resolve(output, `explain-${size}.json`));
+    const plan = await db.$transaction(async tx => {
+      const p = await tx.patientProfile.findUniqueOrThrow({ where: { userId: fixture.userId } });
+      const source = await resolveMezajRecommendationSource(tx, p, fixture.submissionId);
+      if (source.status !== 'READY') throw new Error('Synthetic recommendation fixture must be ready');
+      return tx.$queryRaw(Prisma.sql`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${programRecommendationCardsSql(p, source)}`);
+    });
+    await writeFile(resolve(output, `recommendation-explain-${process.env.STORE_PERF_PHASE}-${size}.json`), JSON.stringify(plan, null, 2));
     if (process.env.STORE_PERF_SEED_ONLY === '1') return;
     const freshToken = async () => (await createTestAccessToken(db, app.get(AccessTokenService), ['PATIENT'], fixture.userId)).token;
     const built = createRequire(resolve('package.json'));
@@ -189,6 +198,24 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
     try {
       await measured.init();
       const measuredDb = measured.get<PrismaService>(built(resolve(builtDir, 'database/prisma/prisma.service.js')).PrismaService);
+      if (process.env.STORE_PERF_BURST === '1') {
+        const template = await db.patientAssessmentSubmission.findUniqueOrThrow({ where: { id: fixture.submissionId } });
+        const tokens: string[] = [];
+        for (let i = 0; i < 50; i++) {
+          const p = await patient();
+          await db.patientAssessmentSubmission.create({
+            data: {
+              patientId: p.profile.id, assessmentVersionId: template.assessmentVersionId,
+              attemptNumber: 1, state: 'COMPLETE', completedAt: new Date(),
+              completionPayloadHash: template.completionPayloadHash, completionIdempotencyKey: randomUUID(),
+              resultSnapshot: template.resultSnapshot as Prisma.InputJsonValue,
+            },
+          });
+          tokens.push(p.token);
+        }
+        await measureConcurrentProgramStore(measured, tokens, resolve(output, `burst-${process.env.STORE_PERF_PHASE}-${size}.json`));
+        return;
+      }
       const rateLimiter = measured.get<PublicAuthRateLimiter>(built(resolve(builtDir, 'modules/identity/application/ports/public-auth-rate-limiter.js')).PublicAuthRateLimiter);
       const noLabThrottle = vi.spyOn(rateLimiter, 'consume').mockResolvedValue(true);
       try {
@@ -200,6 +227,29 @@ describe.skipIf(process.env.PATIENT_JOURNEY_TEST_ISOLATED !== '1')('ready progra
       await measured.close();
     }
   }, 900_000);
+  it('cleans up expired rate-limit buckets without blocking a locked bucket or deleting an active one', async () => {
+    const bucketKey = () => createHash('sha256').update(randomUUID()).digest('hex');
+    const locked = bucketKey(), expired = bucketKey(), active = bucketKey();
+    const keys = [locked, expired, active];
+    const old = new Date(Date.now() - 25 * 60 * 60 * 1000);
+    await db.authRateLimitBucket.createMany({ data: keys.map(key => {
+      const at = key === active ? new Date() : old;
+      return { key, requestCount: 1, windowStartedAt: at, updatedAt: at };
+    }) });
+    const worker = app.get(RateLimitCleanupWorker);
+    try {
+      await db.$transaction(async tx => {
+        await tx.$queryRaw`SELECT key FROM auth_rate_limit_buckets WHERE key = ${locked} FOR UPDATE`;
+        await worker.runOnce();
+        const remaining = await tx.authRateLimitBucket.findMany({ where: { key: { in: keys } } });
+        expect(remaining.map(row => row.key).sort()).toEqual([locked, active].sort());
+      });
+      await worker.runOnce();
+      expect(await db.authRateLimitBucket.count({ where: { key: { in: [locked, expired] } } })).toBe(0);
+    } finally {
+      await db.authRateLimitBucket.deleteMany({ where: { key: { in: keys } } });
+    }
+  });
   it('Mezaj exact result recommendations support11+1 canonical IDs, private bodies, reverse pairs and source tamper without older fallback', async()=>{
     const f=await setup(),p=await patient(),q=await patient(),service=app.get(ProgramMezajService);
     await service.settings(f.definition.id,ctx(),{expectedRevision:0,enabled:true,icon:'compass',pairs:['damavi/safravi']});
