@@ -14,9 +14,9 @@ import { authSessionKey } from '@/auth/session';
 import { LoadingState, SkeletonBox, SkeletonCard } from '@/components/shared/skeletons';
 import { loginUrl } from '@/lib/api';
 import { listCustomOfferingCards, listProgramOfferingCards } from '@/lib/digital-services-api';
-import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientSessionData } from '@/lib/patient-request';
+import { PATIENT_CATALOG_TTL_MS, patientCacheKey, patientSessionData, peekPatientCache } from '@/lib/patient-request';
 import { toP } from '@/lib/format';
-import { getMezajServices, type MezajService } from '@/lib/mezaj-services-api';
+import { loadStoreMezajRecommendations, STORE_MEZAJ_RECOMMENDATIONS, type MezajService } from '@/lib/mezaj-services-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
 import { formatToman, rialRemainderLabel, rialToToman } from '@/lib/wallet-money';
 import { StoreIcon, type StoreIconName } from './store-icon';
@@ -347,8 +347,18 @@ function RecommendedCard({ item, featured = false }: { item: MezajService; featu
   );
 }
 
-function Recommendations({ token }: { token: string }) {
-  const resource = usePatientResource(useCallback(() => getMezajServices(token), [token]));
+function Recommendations({ sessionKey }: { sessionKey: string }) {
+  const cacheKey = patientCacheKey(sessionKey, STORE_MEZAJ_RECOMMENDATIONS);
+  const load = useCallback(
+    () => patientSessionData(cacheKey, PATIENT_CATALOG_TTL_MS, signal =>
+      loadStoreMezajRecommendations(accessTokenForSession(sessionKey), signal),
+    ),
+    [cacheKey, sessionKey],
+  );
+  const resource = usePatientResource(
+    load,
+    peekPatientCache<Awaited<ReturnType<typeof load>>>(cacheKey),
+  );
   const [featured, ...remaining] = resource.data?.items ?? [];
   const status = resource.data?.status;
 
@@ -359,8 +369,8 @@ function Recommendations({ token }: { token: string }) {
         <LoadingState label="در حال دریافت پیشنهادها…" variant="card">
           <SkeletonBox className={styles.featuredSkeleton} />
         </LoadingState>
-      ) : resource.error ? (
-        <LoadError message="پیشنهادهای خدمات دریافت نشد." retry={() => void resource.reload()} />
+      ) : resource.error && !resource.data ? (
+        <LoadError message={resource.error} retry={() => void resource.reload()} />
       ) : status === 'READY' && featured ? (
         <>
           <RecommendedCard item={featured} featured />
@@ -389,6 +399,9 @@ function Recommendations({ token }: { token: string }) {
             </Link>
           )}
         </ServiceMessage>
+      )}
+      {resource.error && resource.data && (
+        <LoadError message={resource.error} retry={() => void resource.reload()} />
       )}
     </section>
   );
@@ -696,7 +709,7 @@ export function StoreServices() {
       {session?.status === 'authenticated' && sessionKey ? (
         <div className={styles.sections} key={sessionKey}>
           <StoreServiceBanners />
-          <Recommendations token={session.authentication.accessToken} />
+          <Recommendations sessionKey={sessionKey} />
           <Offerings kind="education" sessionKey={sessionKey} />
           <Offerings kind="custom" sessionKey={sessionKey} />
         </div>

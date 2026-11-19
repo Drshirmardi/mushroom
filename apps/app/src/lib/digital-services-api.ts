@@ -1,5 +1,6 @@
 import type { components } from "@sabz-zendegi/api-client";
 import { apiClient } from "./api";
+import { invalidateStoreMezajRecommendations } from "./mezaj-services-api";
 import { PATIENT_CATALOG_TTL_MS, patientAuthorization as auth, patientCacheKey, patientCachedData, patientData as data } from "./patient-request";
 
 type Schema = components["schemas"];
@@ -20,7 +21,15 @@ export const listProgramOfferingCards = (token: string, cursor: string | null, s
   data(apiClient.GET("/v1/patients/me/program-offering-cards", { headers: auth(token), params: { query: { cursor: cursor ?? undefined } }, signal }));
 export const getProgramOffering = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-offerings/{id}", { headers: auth(token), params: { path: { id } } }));
 export const acceptProgramConsent = (token: string, body: Schema["ProgramConsentAcceptDto"], key: string) => data(apiClient.POST("/v1/patients/me/program-consents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
-export const createProgramPurchase = (token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) => data(apiClient.POST("/v1/patients/me/billing/program-intents", { headers: auth(token), params: { header: { "Idempotency-Key": key } }, body }));
+export async function createProgramPurchase(token: string, body: Schema["ProgramPurchaseIntentDto"], key: string) {
+  const intent = await data(apiClient.POST("/v1/patients/me/billing/program-intents", {
+    headers: auth(token),
+    params: { header: { "Idempotency-Key": key } },
+    body,
+  }));
+  invalidateStoreMezajRecommendations();
+  return intent;
+}
 export const listProgramPurchases = (token: string, page = 1) => data(apiClient.GET("/v1/patients/me/program-purchases", { cache: 'no-store', headers: auth(token), params: { query: { page: page as never, pageSize: 20 as never } } }));
 export const getProgramPurchase = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-purchases/{id}", { cache: 'no-store', headers: auth(token), params: { path: { id } } }));
 export const getProgramContent = (token: string, id: string) => data(apiClient.GET("/v1/patients/me/program-access-grants/{id}/content", { cache: 'no-store', headers: auth(token), params: { path: { id } } }));

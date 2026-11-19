@@ -9,6 +9,7 @@ import { useAuthSession } from '@/components/auth/session-gate';
 import { PageHeader } from '@/components/shared/page-header';
 import { getBillingIntent, type BillingIntent } from '@/lib/wallet-billing-api';
 import { getAssessmentPurchase } from '@/lib/digital-services-api';
+import { invalidateStoreMezajRecommendations } from '@/lib/mezaj-services-api';
 import {
   billingMethodLabel,
   billingPurposeLabel,
@@ -59,6 +60,13 @@ function PaymentResult() {
   usePaymentRefresh(intent?.status === 'PENDING' || (intent != null && intentResultView(intent) === 'ambiguous'), resource.refresh);
 
   const view: View = intent ? intentResultView(intent) : error ? 'error' : 'loading';
+  const programPaymentStatus = intent?.purpose === 'PROGRAM' ? intent.status : undefined;
+  useEffect(() => {
+    if (programPaymentStatus && programPaymentStatus !== 'PENDING') {
+      invalidateStoreMezajRecommendations();
+    }
+  }, [intentId, programPaymentStatus]);
+
   useEffect(() => {
     if (view === 'paid' && intent?.purpose === 'ORDER' && intent.orderId) {
       router.replace(

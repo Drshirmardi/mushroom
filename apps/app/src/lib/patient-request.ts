@@ -41,18 +41,26 @@ type CacheRecord = { expiresAt: number; value: unknown };
 const cachedValues = new Map<string, CacheRecord>();
 const cachedRequests = new Map<string, Promise<unknown>>();
 const sessionRequests = new Set<AbortController>();
-let cacheGeneration = 0;
 
 export function patientCacheKey(token: string, resource: string): string {
   return `${resource}\0${token}`;
 }
 
 export function clearPatientRequestCache(): void {
-  cacheGeneration += 1;
   cachedValues.clear();
   cachedRequests.clear();
   for (const controller of sessionRequests) controller.abort();
   sessionRequests.clear();
+}
+
+export function invalidatePatientResource(resource: string): void {
+  const prefix = `${resource}\0`;
+  for (const key of cachedValues.keys()) {
+    if (key.startsWith(prefix)) cachedValues.delete(key);
+  }
+  for (const key of cachedRequests.keys()) {
+    if (key.startsWith(prefix)) cachedRequests.delete(key);
+  }
 }
 
 function remember(cacheKey: string, record: CacheRecord) {
@@ -86,12 +94,12 @@ export function patientCachedData<T>(
   const current = cachedRequests.get(cacheKey);
   if (current) return current as Promise<T>;
 
-  const generation = cacheGeneration;
   const request = factory().then(
     (value) => {
-      if (cachedRequests.get(cacheKey) === request) cachedRequests.delete(cacheKey);
-      if (ttlMs > 0 && generation === cacheGeneration)
-        remember(cacheKey, { expiresAt: Date.now() + ttlMs, value });
+      if (cachedRequests.get(cacheKey) === request) {
+        cachedRequests.delete(cacheKey);
+        if (ttlMs > 0) remember(cacheKey, { expiresAt: Date.now() + ttlMs, value });
+      }
       return value;
     },
     (error: unknown) => {

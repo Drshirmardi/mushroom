@@ -1,9 +1,10 @@
-import { Body, type CanActivate, Controller, type ExecutionContext, Get, Header, Headers, HttpException, Injectable, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, type CanActivate, Controller, type ExecutionContext, Get, Header, Headers, HttpException, Injectable, Logger, Param, ParseUUIDPipe, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions, RequireRoles } from '../../../common/auth/authorization.decorator';
 import { PERMISSIONS } from '../../../common/auth/authorization.policy';
 import { ApiErrorResponse } from '../../../common/errors/api-error-response.decorator';
+import { Prisma } from '../../../generated/prisma/client';
 import { PublicAuthRateLimiter } from '../../identity/application/ports/public-auth-rate-limiter';
 import { ProgramDefinitionApprovalDto, ProgramDefinitionCreateDto, ProgramDefinitionPageDto, ProgramDefinitionQueryDto, ProgramDefinitionResponseDto } from './program-definition.dto';
 import { ProgramDefinitionService } from './program-definition.service';
@@ -11,11 +12,42 @@ const context = (r: AuthenticatedRequest) => ({ actorUserId: r.auth.userId, acto
 const uuid = () => new ParseUUIDPipe({ version: '4' });
 @Injectable()
 export class ProgramDefinitionRateGuard implements CanActivate {
+  private readonly logger = new Logger(ProgramDefinitionRateGuard.name);
+
   constructor(private readonly limiter: PublicAuthRateLimiter) {}
+
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest<AuthenticatedRequest>(), read = request.method === 'GET';
-    const allowed = await this.limiter.consume({ scope: read ? 'program-definition-read' : 'program-definition-write', subjects: [{ kind: 'user', value: request.auth.userId, limit: read ? 120 : 30 }], windowMs: 60_000, at: new Date() });
-    if (!allowed) throw new HttpException({ code: 'PROGRAM_RATE_LIMITED', message: 'Program request limit exceeded.', details: {} }, 429); return true;
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const read = request.method === 'GET';
+    const measure = read && /\/(program-recommendations|program-offering-cards|custom-program-offering-cards)\/?$/.test(request.url.split('?')[0]);
+    const startedAt = performance.now();
+    const metrics = () => ({
+      operation: 'program-rate-limit',
+      requestId: request.id,
+      durationMs: Math.round(performance.now() - startedAt),
+    });
+
+    const allowed = await this.limiter.consume({
+      scope: read ? 'program-definition-read' : 'program-definition-write',
+      subjects: [{ kind: 'user', value: request.auth.userId, limit: read ? 120 : 30 }],
+      windowMs: 60_000,
+      at: new Date(),
+    }).catch((error: unknown) => {
+      if (measure) {
+        this.logger.warn({
+          ...metrics(),
+          status: 500,
+          prismaCode: error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined,
+        });
+      }
+      throw error;
+    });
+    if (!allowed) {
+      if (measure) this.logger.warn({ ...metrics(), status: 429 });
+      throw new HttpException({ code: 'PROGRAM_RATE_LIMITED', message: 'Program request limit exceeded.', details: {} }, 429);
+    }
+    if (measure) this.logger.debug({ ...metrics(), status: 'allowed' });
+    return true;
   }
 }
 @ApiTags('Program definitions') @ApiBearerAuth('bearerAuth') @RequireRoles('ADMIN') @RequirePermissions(PERMISSIONS.CONTENT_MANAGE) @UseGuards(ProgramDefinitionRateGuard)

@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import styles from "@/components/billing/payment.module.css";
 import { PatientResourceState } from "@/components/shared/patient-resource-state";
 import { getBillingIntent } from "@/lib/wallet-billing-api";
+import { invalidateStoreMezajRecommendations } from "@/lib/mezaj-services-api";
 import { returnFromPayment } from "@/lib/payment-return";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
 import { usePatientResource } from "@/lib/use-patient-resource";
@@ -40,8 +41,15 @@ function Payment() {
             <Link href={marriageHref(`/profile/wallet/payment-result?intentId=${intent.id}`)} className="block rounded-xl bg-primary p-4 text-center font-bold text-white">مشاهدهٔ نتیجه و ادامه</Link>
           ) : intent.status === "PENDING" ? (
             <PaymentChooser key={intent.id} accessToken={authentication.accessToken} intent={intent}
-              onPaid={() => router.replace(marriageHref(`/profile/wallet/payment-result?intentId=${intent.id}`))}
-              onCancelled={() => void resource.reload()} onRefresh={() => void resource.reload()} />
+              onPaid={() => {
+                if (intent.purpose === "PROGRAM") invalidateStoreMezajRecommendations();
+                router.replace(marriageHref(`/profile/wallet/payment-result?intentId=${intent.id}`));
+              }}
+              onCancelled={() => {
+                if (intent.purpose === "PROGRAM") invalidateStoreMezajRecommendations();
+                void resource.reload();
+              }}
+              onRefresh={() => void resource.reload()} />
           ) : intent.status === "CANCELLED" ? (
             <div role="status" className="space-y-3 rounded-2xl border border-border bg-white p-4">
               <p className="text-sm">{intent.purpose === "TOPUP" ? "درخواست شارژ کیف پول لغو شده است." : "این درخواست پرداخت لغو شده است."} این لغو فقط مربوط به همین درخواست است؛ درخواست‌های دیگر جداگانه پیگیری می‌شوند.</p>

@@ -1,6 +1,8 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -10,7 +12,7 @@ import {
   GuidanceAuthorityService,
   type GuidanceActorContext as Context,
 } from '../../content/guidance/guidance-authority.service';
-import { resolveMezajRecommendationSource } from '../../assessments/domain/mezaj-recommendation-source';
+import { MEZAJ_PAIR_CODES, resolveMezajRecommendationSource } from '../../assessments/domain/mezaj-recommendation-source';
 import { ProgramPurchaseService } from './program-purchase.service';
 import { programPrice } from '../publication/program-pricing';
 import type {
@@ -22,6 +24,8 @@ import type { ProgramPurchaseQueryDto } from './program-purchase.dto';
 
 @Injectable()
 export class ProgramMezajService {
+  private readonly logger = new Logger(ProgramMezajService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly authority: GuidanceAuthorityService,
@@ -248,11 +252,16 @@ export class ProgramMezajService {
     ctx: Context,
     submissionId?: string,
   ): Promise<MezajProgramRecommendationsDto> {
-    return this.prisma.$transaction(
+    const startedAt = performance.now();
+    let sourceMs: number | undefined;
+    let queryMs: number | undefined;
+    const response = await this.prisma.$transaction(
       async (tx) => {
         const patient = await this.purchases.patient(tx, ctx);
 
+        const sourceStartedAt = performance.now();
         const source = await resolveMezajRecommendationSource(tx, patient, submissionId);
+        sourceMs = Math.round(performance.now() - sourceStartedAt);
 
         const response: MezajProgramRecommendationsDto = {
           ...source,
@@ -261,6 +270,9 @@ export class ProgramMezajService {
 
         if (source.status === 'READY') {
           const exactPair = `${source.primary}/${source.secondary}`;
+          const primaryPairs = MEZAJ_PAIR_CODES.map(code => `${source.primary}/${code}`);
+          const secondaryPairs = MEZAJ_PAIR_CODES.map(code => `${code}/${source.secondary}`);
+          const candidates = [...new Set([...primaryPairs, ...secondaryPairs])];
           const queryStartedAt = performance.now();
 
           const rows = await tx.$queryRaw<
@@ -278,94 +290,72 @@ export class ProgramMezajService {
               grantId: string | null;
               purchaseId: string | null;
               matchRank: number;
+              now: Date;
             }[]
           >(Prisma.sql`
           WITH shortlisted AS MATERIALIZED (
-            SELECT
-              pub.id,
-              d.id AS "definitionId",
-              service.id AS "serviceId",
-              d.title,
-              d.summary,
-              m.icon,
-              pub.amount_rial AS amount,
-              pub.discount_percent AS "discountPercent",
-              pub.discount_starts_at AS "discountStartsAt",
-              pub.discount_ends_at AS "discountEndsAt",
-              d.clinic_id AS "clinicId",
-              d.program_key AS "programKey",
-              d.locale,
-              pub.created_at AS "createdAt",
-              relevance."matchRank" AS "matchRank"
+            SELECT candidate.*
+            FROM (
+              SELECT
+                pub.id,
+                d.id AS "definitionId",
+                service.id AS "serviceId",
+                d.title,
+                d.summary,
+                m.icon,
+                pub.amount_rial AS amount,
+                pub.discount_percent AS "discountPercent",
+                pub.discount_starts_at AS "discountStartsAt",
+                pub.discount_ends_at AS "discountEndsAt",
+                d.clinic_id AS "clinicId",
+                d.program_key AS "programKey",
+                d.locale,
+                pub.created_at AS "createdAt",
+                CASE
+                  WHEN ${exactPair} = ANY(m.pairs) THEN 0
+                  WHEN m.pairs && ARRAY[${Prisma.join(primaryPairs)}]::text[] THEN 1
+                  ELSE 2
+                END AS "matchRank"
 
-            FROM program_mezaj_presentations m
+              FROM program_mezaj_presentations m
 
-            JOIN program_definition_versions d
-              ON d.id = m.program_definition_id
-              AND d.clinic_id = m.clinic_id
+              JOIN program_definition_versions d
+                ON d.id = m.program_definition_id
+                AND d.clinic_id = m.clinic_id
 
-            JOIN program_offering_publications pub
-              ON pub.program_definition_id = d.id
-              AND pub.clinic_id = d.clinic_id
+              JOIN program_offering_publications pub
+                ON pub.program_definition_id = d.id
+                AND pub.clinic_id = d.clinic_id
 
-            JOIN program_services service
-              ON service.clinic_id = d.clinic_id
-              AND service.program_key = d.program_key
-              AND service.locale = d.locale
+              JOIN program_services service
+                ON service.clinic_id = d.clinic_id
+                AND service.program_key = d.program_key
+                AND service.locale = d.locale
 
-            CROSS JOIN LATERAL (
-              SELECT CASE
-                WHEN ${exactPair} = ANY(m.pairs)
-                  THEN 0
+              WHERE
+                m.clinic_id = ${patient.clinicId}::uuid
+                AND m.enabled
+                AND m.pairs && ARRAY[${Prisma.join(candidates)}]::text[]
 
-                WHEN EXISTS (
-                  SELECT 1
-                  FROM unnest(m.pairs)
-                    AS configured(pair_code)
-                  WHERE split_part(
-                    configured.pair_code, '/', 1
-                  ) = ${source.primary}
+                AND (
+                  service.audience = 'SHARED'
+                  OR service.audience = (
+                    SELECT profile.gender
+                    FROM user_profiles profile
+                    WHERE profile.user_id =
+                      ${patient.userId}::uuid
+                  )
                 )
-                  THEN 1
 
-                WHEN EXISTS (
-                  SELECT 1
-                  FROM unnest(m.pairs)
-                    AS configured(pair_code)
-                  WHERE split_part(
-                    configured.pair_code, '/', 2
-                  ) = ${source.secondary}
-                )
-                  THEN 2
+                AND d.kind = 'READY_EDUCATION'
+                AND pub.status = 'ACTIVE'
 
-                ELSE NULL
-              END AS "matchRank"
-            ) relevance
-
-            WHERE
-              m.clinic_id = ${patient.clinicId}::uuid
-              AND m.enabled
-              AND relevance."matchRank" IS NOT NULL
-
-              AND (
-                service.audience = 'SHARED'
-                OR service.audience = (
-                  SELECT profile.gender
-                  FROM user_profiles profile
-                  WHERE profile.user_id =
-                    ${patient.userId}::uuid
-                )
-              )
-
-              AND d.kind = 'READY_EDUCATION'
-              AND pub.status = 'ACTIVE'
-              AND program_publication_current(pub.id)
-
-            ORDER BY
-              relevance."matchRank" ASC,
-              pub.created_at DESC,
-              pub.id DESC
-
+              ORDER BY "matchRank" ASC, pub.created_at DESC, pub.id DESC
+              -- Preserve this ordered subquery as a boundary for the publication check.
+              OFFSET 0
+            ) candidate
+            WHERE program_publication_current(candidate.id)
+            ORDER BY candidate."matchRank" ASC, candidate."createdAt" DESC, candidate.id DESC
             LIMIT 12
           )
 
@@ -385,7 +375,8 @@ export class ProgramMezajService {
               owned.purchase_id,
               pending.id
             ) AS "purchaseId",
-            shortlisted."matchRank"
+            shortlisted."matchRank",
+            CURRENT_TIMESTAMP AS now
 
           FROM shortlisted
 
@@ -442,14 +433,7 @@ export class ProgramMezajService {
             shortlisted.id DESC
         `);
 
-          console.info('[MEZAJ_QUERY_PERFORMANCE]', {
-            durationMs: Math.round(performance.now() - queryStartedAt),
-            rows: rows.length,
-          });
-
-          const [clock] = await tx.$queryRaw<{ now: Date }[]>(Prisma.sql`
-          SELECT CURRENT_TIMESTAMP AS now
-        `);
+          queryMs = Math.round(performance.now() - queryStartedAt);
 
           response.items = rows.map((row) => ({
             programDefinitionId: row.definitionId,
@@ -459,7 +443,7 @@ export class ProgramMezajService {
             summary: row.summary,
             icon: row.icon,
 
-            ...programPrice({ ...row, amountRial: row.amount }, clock.now),
+            ...programPrice({ ...row, amountRial: row.amount }, row.now),
 
             currency: 'IRR',
 
@@ -481,7 +465,27 @@ export class ProgramMezajService {
         isolationLevel: 'RepeatableRead',
         timeout: 15_000,
       },
-    );
+    ).catch((error: unknown) => {
+      this.logger.warn({
+        operation: 'program-recommendations',
+        requestId: ctx.requestId,
+        durationMs: Math.round(performance.now() - startedAt),
+        sourceMs,
+        queryMs,
+        status: error instanceof HttpException ? error.getStatus() : 500,
+        prismaCode: error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined,
+      });
+      throw error;
+    });
+    this.logger.debug({
+      operation: 'program-recommendations',
+      requestId: ctx.requestId,
+      durationMs: Math.round(performance.now() - startedAt),
+      sourceMs,
+      queryMs,
+      rows: response.items.length,
+    });
+    return response;
   }
 
   private audit(tx: Prisma.TransactionClient, action: string, id: string, ctx: Context) {
