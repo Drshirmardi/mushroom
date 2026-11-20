@@ -116,7 +116,7 @@ for (const required of [
   'api prisma/manage-consent-policy.mjs publish',
   'api prisma/manage-consent-policy.mjs verify',
   'candidate verification failed; restoring previous staging application release',
-  'another deployment is active',
+  'another deployment or database recovery is active',
 ]) assert(deployScript.includes(required), `deployment script is missing: ${required}`);
 
 assert(
@@ -351,6 +351,7 @@ try {
     'DEV_GID=1000',
     'POSTGRES_DB=mushroom_dev',
     'POSTGRES_USER=mushroom_dev',
+    'CHAT_DB_PASSWORD=synthetic-chat-db-password',
     'PUBLIC_API_URL=https://dev-api.example.test',
     'PUBLIC_WEB_URL=https://dev.example.test',
     'PUBLIC_APP_URL=https://dev-app.example.test',

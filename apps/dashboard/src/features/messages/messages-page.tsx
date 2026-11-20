@@ -169,7 +169,6 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
     if (!canAccessChat) return;
     if (visitId) {
       let active = true;
-      setFocusedVisit(null);
       void getVisit(
         authentication.accessToken,
         !authentication.user.roles.includes('ADMIN'),
@@ -185,7 +184,6 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
         active = false;
       };
     }
-    setFocusedVisit(null);
     loadAppointments();
     return () => {
       listGeneration.current++;
