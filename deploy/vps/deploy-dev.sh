@@ -36,7 +36,7 @@ touch "$state_root/recovery-lock-compatible"
 
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
 [[ -f $compose_file ]] || die 'versioned dev Compose file is missing from the synced workspace'
-[[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
+[[ -f $environment_root/communications.compose.yaml ]] || die 'communications.compose.yaml is required; see deploy/mirotalk/README.md'
 
 env_value() {
   local key=$1
@@ -125,15 +125,12 @@ done
 
 compose() {
   local network_args=()
-  local chat_database_args=()
   [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
-  [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
     --project-name mushroom-dev \
     --env-file "$runtime_env" \
     --file "$compose_file" \
-    --file "$environment_root/chat.compose.yaml" \
-    "${chat_database_args[@]}" \
+    --file "$environment_root/communications.compose.yaml" \
     "${network_args[@]}" \
     "$@"
 }
@@ -216,6 +213,7 @@ api_client_hash=$(hash_paths \
   "$workspace/packages/api-client/src")
 prisma_hash=$(hash_paths \
   "$workspace/apps/api/prisma.config.ts" \
+  "$workspace/apps/api/prisma.chat.config.ts" \
   "$workspace/apps/api/prisma")
 api_hash=$(hash_api_inputs)
 api_artifact_hash=''
@@ -305,7 +303,7 @@ if [[ $runtime_hash != "$previous_runtime_hash" ]] || ! docker image inspect mus
   runtime_changed=true
 fi
 
-compose up -d --wait postgres
+compose up -d --wait postgres communications-postgres
 
 install_dependencies=false
 if [[ $dependency_hash != "$previous_dependency_hash" || ! -d "$workspace/node_modules/.pnpm" ]]; then
@@ -338,7 +336,7 @@ if [[ $install_dependencies == true || $api_client_hash != "$previous_api_client
   build_api_client=true
 fi
 if [[ $install_dependencies == true || $prisma_hash != "$previous_prisma_hash" \
-  || ! -d $workspace/apps/api/src/generated/prisma ]]; then
+  || ! -d $workspace/apps/api/src/generated/chat-prisma || ! -d $workspace/apps/api/src/generated/prisma ]]; then
   generate_prisma=true
 fi
 if [[ $prisma_hash != "$previous_prisma_hash" ]]; then

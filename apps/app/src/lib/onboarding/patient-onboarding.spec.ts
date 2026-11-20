@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApiClient } from "@sabz-zendegi/api-client";
 
-import { loadConsentPolicy, loadPatientOnboarding, loadSelfProfile, onboardingErrorMessage, PatientOnboardingRequestError, updateSelfProfile } from "./patient-onboarding";
+import { completeMedicalIntake, loadConsentPolicy, loadPatientOnboarding, loadSelfProfile, onboardingErrorMessage, PatientOnboardingRequestError, saveMedicalIntake, updateSelfProfile } from "./patient-onboarding";
+import { subscribePatientResource } from "../patient-request";
 
 describe("patient onboarding request errors", () => {
   it('loads health from profile, entry and intake without requiring policy or journey services', async () => {
@@ -45,6 +46,34 @@ describe("patient onboarding request errors", () => {
     expect(patch).toHaveBeenCalledWith("/v1/patients/me", expect.objectContaining({
       body: expect.objectContaining({ email: null, cityName: null }),
     }));
+  });
+
+  it("refreshes only the affected resources after successful writes", async () => {
+    const resources = ["self-profile", "onboarding-status", "home", "patient-entry"];
+    const seen: string[] = [];
+    const subscriptions = resources.map(resource => subscribePatientResource(resource, () => { seen.push(resource); }));
+    const patch = vi.fn().mockResolvedValueOnce({ response: new Response(null, { status: 422 }) })
+      .mockResolvedValueOnce({ data: { firstName: "مینا" }, response: new Response(null, { status: 200 }) });
+    const client = { PATCH: patch, POST: patch, PUT: patch } as never;
+    const body = { firstName: "مینا" };
+    try {
+      await expect(updateSelfProfile("token", body, client)).rejects.toMatchObject({ status: 422 });
+      expect(seen).toEqual([]);
+      await expect(updateSelfProfile("token", body, client)).resolves.toMatchObject(body);
+      expect(seen).toEqual(resources);
+
+      seen.length = 0;
+      patch.mockResolvedValueOnce({ data: {}, response: new Response(null, { status: 200 }) });
+      await saveMedicalIntake("token", { expectedRevision: 0 }, client);
+      expect(seen).toEqual(["onboarding-status", "home"]);
+
+      seen.length = 0;
+      patch.mockResolvedValueOnce({ data: {}, response: new Response(null, { status: 200 }) });
+      await completeMedicalIntake("token", 1, client);
+      expect(seen).toEqual(["onboarding-status", "home"]);
+    } finally {
+      subscriptions.forEach(unsubscribe => unsubscribe());
+    }
   });
 
   it("explains generic validation responses", () => {

@@ -3,7 +3,6 @@ ARG APP
 WORKDIR /workspace
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY patches ./patches
 COPY apps/${APP}/package.json apps/${APP}/package.json
 COPY packages/api-client/package.json packages/api-client/package.json
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \

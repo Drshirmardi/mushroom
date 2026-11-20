@@ -66,7 +66,7 @@ flock -n 9 || die "another deployment or database recovery is active for $enviro
 [[ ! -f $state_root/database-maintenance ]] || die "resume the interrupted database recovery before deployment"
 touch "$state_root/recovery-lock-compatible"
 [[ -f $runtime_env ]] || die "$runtime_env is missing"
-[[ -f $environment_root/chat.compose.yaml ]] || die 'ejabberd chat.compose.yaml is required; follow deploy/ejabberd/README.md before deploying this branch'
+[[ -f $environment_root/communications.compose.yaml ]] || die 'communications.compose.yaml is required; see deploy/mirotalk/README.md'
 [[ -f $compose_source ]] || die "versioned compose file is missing"
 if [[ $action == deploy ]]; then
   [[ -f $consent_policy_source ]] || die "environment-approved consent policy is missing"
@@ -161,17 +161,14 @@ release_env_from_manifest() {
 compose_for() {
   local release_dir=$1
   local network_args=()
-  local chat_database_args=()
   local postgres_args=()
   [[ $environment != production || $managed_postgres != true ]] || postgres_args=(--file "$postgres_overlay")
   [[ ! -f $environment_root/network.yaml ]] || network_args=(--file "$environment_root/network.yaml")
-  [[ ! -f $environment_root/chat.database.yaml ]] || chat_database_args=(--file "$environment_root/chat.database.yaml")
   docker compose \
     --project-name "$expected_project" \
     --env-file "$release_dir/release.env" \
     --file "$release_dir/compose.yaml" \
-    --file "$environment_root/chat.compose.yaml" \
-    "${chat_database_args[@]}" \
+    --file "$environment_root/communications.compose.yaml" \
     "${postgres_args[@]}" \
     "${network_args[@]}" \
     "${@:2}"
@@ -331,6 +328,8 @@ if [[ $managed_postgres == true ]]; then
   compose_for "$release_dir" up -d --wait --wait-timeout 90 postgres
 fi
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy
+compose_for "$release_dir" up -d --wait communications-postgres
+compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy --config prisma.chat.config.ts
 if [[ -f $environment_root/bootstrap/first-run.json ]]; then
   # Only this one-time helper receives the first administrator password; normal API startup never does.
   docker run --rm --user 0:0 --network none --read-only --cap-drop ALL \

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createApiClient, createSessionAwareFetch, DEFAULT_REQUEST_TIMEOUT_MS } from "@sabz-zendegi/api-client";
-import { PATIENT_CACHE_LIMIT, PATIENT_CACHE_TTL_MS, clearPatientRequestCache, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache } from "./patient-request";
+import { PATIENT_CACHE_LIMIT, PATIENT_CACHE_TTL_MS, clearPatientRequestCache, invalidatePatientResource, patientCacheKey, patientCachedData, patientSessionData, peekPatientCache, subscribePatientResource } from "./patient-request";
 
 it("refreshes the store page without duplicating an in-flight refresh", async () => {
   const key = patientCacheKey("store-test-session", "store-offerings:custom:1");
@@ -89,6 +89,39 @@ describe("patient request cache", () => {
     await expect(pending).resolves.toBe("stale");
 
     await expect(patientCachedData("articles", PATIENT_CACHE_TTL_MS.storeCatalog, () => Promise.resolve("fresh"))).resolves.toBe("fresh");
+  });
+
+  it("notifies subscribers after removing stale values and detaching older requests", async () => {
+    const home = patientCacheKey("session", "home");
+    const articles = patientCacheKey("session", "articles");
+    const ttl = PATIENT_CACHE_TTL_MS.home;
+    await patientCachedData(home, ttl, async () => "old home");
+    await patientCachedData(articles, ttl, async () => "articles");
+    let finish = (_value: string) => {};
+    const stale = patientCachedData(home, ttl, () => new Promise<string>(resolve => { finish = resolve; }), true);
+    const fresh = vi.fn(async () => "fresh home");
+    const listener = vi.fn(() => { void patientCachedData(home, ttl, fresh); });
+    const second = vi.fn(() => { void patientCachedData(home, ttl, fresh); });
+    const unsubscribe = subscribePatientResource("home", listener);
+    const unsubscribeSecond = subscribePatientResource("home", second);
+    try {
+      invalidatePatientResource("home");
+      expect(listener).toHaveBeenCalledOnce();
+      expect(second).toHaveBeenCalledOnce();
+      expect(fresh).toHaveBeenCalledOnce();
+      finish("stale");
+      await stale;
+      expect(peekPatientCache(home)).toBe("fresh home");
+      expect(peekPatientCache(articles)).toBe("articles");
+      unsubscribe();
+      unsubscribeSecond();
+      invalidatePatientResource("home");
+      expect(listener).toHaveBeenCalledOnce();
+      expect(peekPatientCache(home)).toBeUndefined();
+    } finally {
+      unsubscribe();
+      unsubscribeSecond();
+    }
   });
 
   it("drops the oldest record after the memory limit", async () => {

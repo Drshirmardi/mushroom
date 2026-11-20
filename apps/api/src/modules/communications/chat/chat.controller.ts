@@ -1,5 +1,9 @@
-import { Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, PayloadTooLargeException, Post, Query, Req, Res, Sse, StreamableFile } from '@nestjs/common';
+import type { FastifyReply } from 'fastify';
+import { ChatAttachmentsService, MAX_CHAT_ATTACHMENT } from './chat-attachments.service';
+import { exhaustMap, filter, map, merge, takeUntil, timer } from 'rxjs';
+import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import type { AuthenticatedRequest } from '../../../common/auth/access-token.guard';
 import { RequirePermissions } from '../../../common/auth/authorization.decorator';
@@ -8,6 +12,7 @@ import { ApiErrorResponse } from '../../../common/errors/api-error-response.deco
 import {
   ChangeChatVisibilityDto,
   ChatConversationResponseDto,
+  PreviousChatPageDto,
   ChatAccessResponseDto,
   ChatHistoryQueryDto,
   ChatHistoryResponseDto,
@@ -16,6 +21,7 @@ import {
   ChatVisibilityReconciliationResponseDto,
   CreateChatReportDto,
   ResolveChatReportDto,
+  SendChatMessageDto,
 } from './chat.dto';
 import { ChatService } from './chat.service';
 
@@ -23,7 +29,7 @@ import { ChatService } from './chat.service';
 @ApiBearerAuth('bearerAuth')
 @Controller('chat')
 export class ChatController {
-  constructor(private readonly chat: ChatService) {}
+  constructor(private readonly chat: ChatService, private readonly publisher: ChatRealtimePublisher, private readonly attachments: ChatAttachmentsService) {}
 
   @Get('appointments/:appointmentId/conversation')
   @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
@@ -32,6 +38,19 @@ export class ChatController {
   @ApiErrorResponse(HttpStatus.FORBIDDEN, 'The appointment conversation is unavailable to this account.')
   appointmentConversation(@Param('appointmentId', new ParseUUIDPipe({ version: '4' })) appointmentId: string, @Req() request: AuthenticatedRequest) {
     return this.chat.appointmentConversation(request.auth, appointmentId);
+  }
+
+  @Get('appointments/:appointmentId/previous-conversations')
+  @Header('Cache-Control', 'private, no-store')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiQuery({ name: 'before', required: false, schema: { type: 'string', format: 'uuid' } })
+  @ApiOkResponse({ type: PreviousChatPageDto })
+  previousConversations(
+    @Param('appointmentId', new ParseUUIDPipe({ version: '4' })) appointmentId: string,
+    @Query('before', new ParseUUIDPipe({ version: '4', optional: true })) before: string | undefined,
+    @Req() request: AuthenticatedRequest,
+  ) {
+    return this.chat.previousConversations(request.auth, appointmentId, before);
   }
 
   @Get('conversations/:conversationId/access')
@@ -53,6 +72,65 @@ export class ChatController {
   @ApiOkResponse({ type: ChatConversationResponseDto })
   close(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
     return this.chat.closeConversation(request.auth, id);
+  }
+
+  @Post('conversations/:conversationId/messages')
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions(PERMISSIONS.CHAT_MESSAGE_SEND)
+  @ApiOperation({ operationId: 'chatConversationSend' })
+  @ApiOkResponse({ type: ChatMessageResponseDto })
+  send(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: SendChatMessageDto, @Req() request: AuthenticatedRequest) {
+    return this.chat.send(request.auth, id, body);
+  }
+
+  @Post('conversations/:conversationId/attachments/:clientMessageId')
+  @RequirePermissions(PERMISSIONS.CHAT_MESSAGE_SEND)
+  @ApiOperation({ operationId: 'chatAttachmentSend' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', required: ['file'], properties: { file: { type: 'string', format: 'binary' } } } })
+  @ApiCreatedResponse({ type: ChatMessageResponseDto })
+  async upload(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Param('clientMessageId', new ParseUUIDPipe({ version: '4' })) clientMessageId: string, @Req() request: AuthenticatedRequest) {
+    if (!(await this.chat.engineAccess(request.auth, id)).canSend) throw new BadRequestException('Chat is read-only');
+    const file = await request.file({ limits: { fileSize: MAX_CHAT_ATTACHMENT, files: 1, parts: 1 } });
+    if (!file) throw new BadRequestException('Attachment required');
+    const bytes = await file.toBuffer();
+    if (file.file.truncated) throw new PayloadTooLargeException('Attachment too large');
+    const attachment = await this.attachments.save(id, clientMessageId, request.auth.userId, file.filename, bytes);
+    return this.chat.send(request.auth, id, { clientMessageId, body: '' }, attachment);
+  }
+
+  @Get('conversations/:conversationId/attachments/:messageId')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiOperation({ operationId: 'chatAttachmentDownload' })
+  @ApiProduces('application/octet-stream')
+  @ApiOkResponse({ schema: { type: 'string', format: 'binary' } })
+  async download(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Param('messageId', new ParseUUIDPipe({ version: '4' })) messageId: string, @Req() request: AuthenticatedRequest, @Res({ passthrough: true }) response: FastifyReply) {
+    const attachment = await this.chat.attachment(request.auth, id, messageId);
+    response.header('Cache-Control', 'private, no-store').header('X-Content-Type-Options', 'nosniff');
+    return new StreamableFile(await this.attachments.download(attachment.key), {
+      type: attachment.mime, length: attachment.size,
+      disposition: "attachment; filename*=UTF-8''" + encodeURIComponent(attachment.name).replace(/['()*]/g, char => '%' + char.charCodeAt(0).toString(16)),
+    });
+  }
+
+  @Sse('conversations/:conversationId/events')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  async events(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
+    await this.chat.engineAccess(request.auth, id);
+    return merge(timer(0, 10_000), this.publisher.changes.pipe(filter(changed => changed === id))).pipe(
+      exhaustMap(() => this.chat.engineAccess(request.auth, id)),
+      map(() => ({ data: { changed: true } })),
+      takeUntil(timer(Math.max(0, request.auth.expiresAt * 1000 - Date.now()))),
+    );
+  }
+
+  @Post('conversations/:conversationId/receipts/:messageId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiOperation({ operationId: 'chatMessageReceipt' })
+  @ApiNoContentResponse()
+  async receipt(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Param('messageId', new ParseUUIDPipe({ version: '4' })) messageId: string, @Req() request: AuthenticatedRequest) {
+    await this.chat.engineReceipt(request.auth, id, messageId, true);
   }
 
   @Get('conversations/:conversationId/messages')

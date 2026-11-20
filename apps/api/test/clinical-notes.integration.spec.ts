@@ -184,22 +184,27 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
   it('requires both a configured clinical capability and a matching clinic resource grant', async () => {
     const { clinician, patient } = await fixture();
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
-    const role = await prisma.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } });
-    expect(await clinicalPermissions.allows(['DOCTOR'], ['clinical:record:view'])).toBe(false);
-    await prisma.clinicalRolePermission.create({ data: { roleId: role.id, permission: 'CLINICAL_RECORD_VIEW' } });
+    expect(await clinicalPermissions.allows(['PATIENT'], ['clinical:record:view'])).toBe(false);
+    expect(await clinicalPermissions.allows(['DOCTOR'], ['clinical:record:view', 'clinical:record:edit'])).toBe(true);
+    await expect(clinicalAccess.patient(clinician.id, patient.id)).rejects.toMatchObject({ response: { code: 'CLINICAL_RESOURCE_FORBIDDEN' } });
     await prisma.clinicalClinicAccess.create({ data: { userId: clinician.id, clinicId: clinic.id } });
-    expect(await clinicalPermissions.allows(['DOCTOR'], ['clinical:record:view'])).toBe(true);
     await expect(clinicalAccess.patient(clinician.id, patient.id)).resolves.toMatchObject({ id: patient.id, clinicId: clinic.id });
     await expect(clinicalAccess.patient(clinician.id, randomUUID())).rejects.toMatchObject({ response: { code: 'CLINICAL_RESOURCE_FORBIDDEN' } });
-    await prisma.clinicalRolePermission.delete({ where: { roleId_permission: { roleId: role.id, permission: 'CLINICAL_RECORD_VIEW' } } });
   });
 
-  it('returns and mutates a clinic-granted dashboard workspace with revision and publication audit', async () => {
+  it('returns and mutates a clinic-granted dashboard workspace with revision and publication audit', async ({ onTestFinished }) => {
     const { encounter, clinician, clinicianSession, patient } = await fixture();
     const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
     const role = await prisma.role.findUniqueOrThrow({ where: { code: 'DOCTOR' } });
-    const permissions: ClinicalPermission[] = ['CLINICAL_RECORD_VIEW', 'CLINICAL_RECORD_EDIT', 'CLINICAL_RECORD_SIGN', 'CLINICAL_RECORD_AMEND'];
-    await prisma.clinicalRolePermission.createMany({ data: permissions.map((permission) => ({ roleId: role.id, permission })), skipDuplicates: true });
+    const permissions: ClinicalPermission[] = ['CLINICAL_RECORD_SIGN', 'CLINICAL_RECORD_AMEND'];
+    const addedPermissions = await prisma.clinicalRolePermission.createManyAndReturn({
+      data: permissions.map((permission) => ({ roleId: role.id, permission })),
+      select: { permission: true },
+      skipDuplicates: true,
+    });
+    onTestFinished(async () => {
+      await prisma.clinicalRolePermission.deleteMany({ where: { roleId: role.id, permission: { in: addedPermissions.map(({ permission }) => permission) } } });
+    });
     await prisma.clinicalClinicAccess.create({ data: { userId: clinician.id, clinicId: clinic.id } });
     const actor = { actorUserId: clinician.id, actorSessionId: clinicianSession.id, requestId: 'dashboard-workspace-test', ipAddress: '127.0.0.1', roles: ['DOCTOR'] as RoleCode[] };
     await expect(workspace.get(patient.id, actor)).resolves.toMatchObject({ patientId: patient.id, encounters: [expect.objectContaining({ id: encounter.id })], notes: [], records: [] });
@@ -211,6 +216,5 @@ describe('clinical note revisions (PostgreSQL integration)', () => {
     const audit = await prisma.patientAccessAudit.findMany({ where: { patientId: patient.id, requestId: 'dashboard-workspace-test' } });
     expect(audit.map((entry) => entry.action)).toEqual(expect.arrayContaining(['READ', 'CREATE', 'SIGN', 'UPDATE']));
     expect(JSON.stringify(audit.map((entry) => entry.metadata))).not.toContain('PRIVATE:');
-    await prisma.clinicalRolePermission.deleteMany({ where: { roleId: role.id, permission: { in: permissions } } });
   });
 });

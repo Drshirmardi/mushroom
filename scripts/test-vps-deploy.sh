@@ -18,7 +18,7 @@ cat >"$fake_bin/docker" <<'EOF'
 set -Eeuo pipefail
 printf '%s\n' "$*" >>"$FAKE_DOCKER_LOG"
 if [[ ${1:-} == compose && ${2:-} == version ]]; then exit 0; fi
-if [[ ${1:-} == compose && " $* " == *" --wait "* && -f $FAKE_FAIL_NEXT_WAIT ]]; then
+if [[ ${1:-} == compose && " $* " == *" up -d --remove-orphans --wait "* && -f $FAKE_FAIL_NEXT_WAIT ]]; then
   rm -f -- "$FAKE_FAIL_NEXT_WAIT"
   exit 1
 fi
@@ -41,8 +41,7 @@ environment_file() {
   local root="$test_home/mushroom/$environment"
   local suffix=${environment//-/_}
   mkdir -p "$root/secrets"
-  cp "$repository_root/deploy/ejabberd/compose.yaml" "$root/chat.compose.yaml"
-  cp "$repository_root/deploy/ejabberd/compose.database.yaml" "$root/chat.database.yaml"
+  cp "$repository_root/deploy/mirotalk/compose.yaml" "$root/communications.compose.yaml"
   cat >"$root/runtime.env" <<EOF
 MUSHROOM_ENVIRONMENT=$environment
 COMPOSE_PROJECT_NAME=mushroom-$environment
@@ -119,8 +118,8 @@ run_deploy() {
 }
 
 run_deploy deploy staging "$scratch/release-1.json" 1
-grep -Fq -- "--file $MUSHROOM_ROOT/staging/chat.compose.yaml" "$FAKE_DOCKER_LOG" \
-  || { printf 'staging deployment did not include the required ejabberd compose overlay\n' >&2; exit 1; }
+grep -Fq -- "--file $MUSHROOM_ROOT/staging/communications.compose.yaml" "$FAKE_DOCKER_LOG" \
+  || { printf 'staging deployment did not include the required communications compose overlay\n' >&2; exit 1; }
 first_staging=$(<"$MUSHROOM_ROOT/staging/state/current")
 [[ $first_staging == *0000000000000000000000000000000000000001-1 ]] || exit 1
 
@@ -183,7 +182,7 @@ first_migration=$(grep -nm 1 'migrate deploy' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_policy_publish=$(grep -nm 1 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_policy_verify=$(grep -nm 1 'manage-consent-policy.mjs verify' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_secret_prepare=$(grep -nm 1 -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | cut -d: -f1)
-first_switch=$(grep -nm 1 -- '--wait' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_switch=$(grep -Fnm 1 -- ' up -d --remove-orphans --wait ' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 [[ $first_secret_prepare -lt $first_migration ]] || { printf 'secret permissions were not prepared before migration\n' >&2; exit 1; }
 [[ $first_migration -lt $first_policy_publish && $first_policy_publish -lt $first_policy_verify && $first_policy_verify -lt $first_switch ]] \
   || { printf 'migration, policy publication and verification did not precede application switching\n' >&2; exit 1; }

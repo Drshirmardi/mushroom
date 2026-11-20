@@ -21,6 +21,16 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U sabz_zendegi -d sabz_zendegi"
           --health-interval 10s --health-timeout 5s --health-retries 5
+      communications-postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mushroom_communications
+          POSTGRES_USER: mushroom_communications
+          POSTGRES_PASSWORD: ci-communications-password
+        ports: ['5432/tcp']
+        options: >-
+          --health-cmd "pg_isready -U mushroom_communications -d mushroom_communications"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/sabz_zendegi?schema=public
       JWT_ACCESS_SECRET: ci-only-jwt-access-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
@@ -29,6 +39,10 @@ jobs:
       NODE_ENV: test
       LOG_LEVEL: error
     steps:
+      - name: Set isolated chat database URL
+        env:
+          CHAT_DB_PORT: ${{ job.services.communications-postgres.ports['5432'] }}
+        run: printf 'CHAT_DATABASE_URL=postgresql://mushroom_communications:ci-communications-password@127.0.0.1:%s/mushroom_communications\n' "$CHAT_DB_PORT" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
@@ -39,4 +53,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @sabz-zendegi/api prisma:generate
+      - run: pnpm --filter @sabz-zendegi/api prisma:chat:migrate:deploy
       - run: pnpm test:capacity

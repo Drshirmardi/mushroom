@@ -5,6 +5,7 @@
     "lib": ["DOM", "ES2022"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
     "rootDir": "src",
     "outDir": "dist",
     "noEmit": false,
@@ -13,6 +14,6 @@
     "sourceMap": true,
     "allowJs": false
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["dist", "node_modules"]
 }

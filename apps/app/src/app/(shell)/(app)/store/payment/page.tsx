@@ -14,6 +14,7 @@ import { createOrderIntent, getBillingIntent, walletErrorMessage, type BillingIn
 import { returnFromPayment } from "@/lib/payment-return";
 import { intentResultView } from "@/lib/wallet-labels";
 import { usePaymentRefresh } from "@/lib/use-payment-refresh";
+import { invalidatePatientResource } from "@/lib/patient-request";
 import { toP } from "@/lib/format";
 import styles from "@/components/billing/payment.module.css";
 
@@ -48,6 +49,7 @@ function PaymentScreen() {
         if (!current()) return;
         setOrder(nextOrder);
         if (nextOrder.status === "PAID") {
+          invalidatePatientResource("home");
           router.replace(`/store/order-success?orderId=${encodeURIComponent(nextOrder.id)}`);
           return;
         }

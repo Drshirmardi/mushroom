@@ -1,5 +1,6 @@
 import { createApiClient } from "@sabz-zendegi/api-client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { patientCacheKey, patientCachedData, peekPatientCache } from "./patient-request";
 
 import {
   AssessmentRequestError, getAssessmentResult, getAssessmentSubmission, getBookingEligibility,
@@ -33,10 +34,13 @@ describe("patient assessment API", () => {
   });
 
   it("submits with the caller's stable idempotency key", async () => {
+    const home = patientCacheKey("session", "home");
+    await patientCachedData(home, 10_000, async () => "before assessment");
     fetchMock.mockResolvedValue(json({ ...submission, state: "COMPLETE" }));
     await submitAssessment("token", submission.id, "stable-completion-key");
     const request = fetchMock.mock.calls[0]?.[0] as Request;
     expect(request.headers.get("idempotency-key")).toBe("stable-completion-key");
+    expect(peekPatientCache(home)).toBeUndefined();
   });
 
   it("loads the server eligibility decision without a client-side score", async () => {

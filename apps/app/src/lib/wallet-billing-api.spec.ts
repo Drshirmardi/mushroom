@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("./api", () => ({ apiClient: { GET: vi.fn(), POST: vi.fn() } }));
 
 import { apiClient } from "./api";
+import { subscribePatientResource } from "./patient-request";
 import {
   WalletRequestError,
   cancelBillingIntent,
@@ -21,6 +22,23 @@ const response = (status = 200) => new Response(null, { status });
 
 describe("wallet billing API adapter", () => {
   afterEach(() => vi.clearAllMocks());
+
+  it("refreshes home for confirmed order and appointment payments", async () => {
+    const listener = vi.fn();
+    const unsubscribe = subscribePatientResource("home", listener);
+    try {
+      for (const [purpose, status] of [["ORDER", "PENDING"], ["TOPUP", "PAID"], ["ORDER", "PAID"]]) {
+        vi.mocked(apiClient.GET).mockResolvedValueOnce({ data: { purpose, status }, response: response() } as never);
+        await getBillingIntent("token", "intent");
+      }
+      expect(listener).toHaveBeenCalledOnce();
+      vi.mocked(apiClient.POST).mockResolvedValueOnce({ data: { purpose: "APPOINTMENT", status: "PAID" }, response: response() } as never);
+      await payWithWallet("token", "intent", "key");
+      expect(listener).toHaveBeenCalledTimes(2);
+    } finally {
+      unsubscribe();
+    }
+  });
 
   it("reads the patient wallet summary with the bearer token and keeps IRR strings intact", async () => {
     vi.mocked(apiClient.GET).mockResolvedValue({

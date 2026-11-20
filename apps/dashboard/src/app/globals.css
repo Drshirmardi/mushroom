@@ -1,9 +1,37 @@
 @import 'tailwindcss' source(none);
 @source '../**/*.{js,ts,jsx,tsx}';
+@source '../../../../packages/api-client/src/chat-ui.tsx';
 
 @import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
+
+.chat-scroll-rail {
+  direction: ltr;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent) transparent;
+  scrollbar-width: thin;
+}
+.chat-scroll-rail > * {
+  direction: rtl;
+}
+.chat-scroll-rail::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll-rail::-webkit-scrollbar-track,
+.chat-scroll-rail::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.chat-scroll-rail::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted-foreground) 42%, transparent);
+  background-clip: padding-box;
+}
+.chat-scroll-rail::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
 
 @font-face {
   font-family: 'Vazirmatn';

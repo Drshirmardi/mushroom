@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="no-referrer">
+    <title>تماس ویزیت</title>
+    <link rel="stylesheet" href="/mushroom-call.css">
+    <script defer src="/socket.io/socket.io.js"></script>
+    <script defer src="/mushroom-call.js"></script>
+  </head>
+  <body>
+    <main>
+      <div class="stage">
+        <div class="avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/></svg></div>
+        <video id="remote" autoplay playsinline aria-label="تصویر طرف مقابل"></video>
+        <video id="local" autoplay muted playsinline aria-label="تصویر شما"></video>
+        <div class="status">
+          <p id="status" role="status">برای ورود به تماس، دکمهٔ اتصال را بزنید.</p>
+          <p id="duration" dir="ltr"></p>
+          <p id="media-note" role="status"></p>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="connect">اتصال به تماس</button>
+        <button id="microphone" aria-label="میکروفون" title="میکروفون" aria-pressed="true" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2m-7 9v3m-3 0h6"/><path class="slash" d="M3 3l18 18"/></svg></button>
+        <button id="camera" aria-label="دوربین" title="دوربین" aria-pressed="false" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="14" rx="2"/><path d="m16 10 6-4v12l-6-4"/><path class="slash" d="M3 3l18 18"/></svg></button>
+        <button id="audio" hidden>پخش صدا</button>
+        <button id="end" aria-label="قطع تماس" title="قطع تماس" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 15v-2a2 2 0 0 0-1-2 18 18 0 0 0-18 0 2 2 0 0 0-1 2v2a1 1 0 0 0 1 1l4-1a1 1 0 0 0 1-1v-2a12 12 0 0 1 8 0v2a1 1 0 0 0 1 1l4 1a1 1 0 0 0 1-1Z"/></svg></button>
+      </div>
+    </main>
+  </body>
+</html>

@@ -39,6 +39,6 @@ export class AssignedConsultationContextDto extends AssignedAppointmentDto {
   @ApiProperty({ type: AssignedEncounterDto, nullable: true }) encounter!: AssignedEncounterDto | null;
   @ApiProperty() textConsultationSupported!: boolean;
   @ApiProperty({ type: String, nullable: true, format: 'uuid' }) conversationId!: string | null;
-  @ApiProperty({ enum: [false] }) voiceSupported!: false;
-  @ApiProperty({ enum: [false] }) videoSupported!: false;
+  @ApiProperty() voiceSupported!: boolean;
+  @ApiProperty() videoSupported!: boolean;
 }

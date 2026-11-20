@@ -1,11 +1,23 @@
 import type { components } from './schema.generated';
-import type { Agent, Stanzas } from 'stanza';
 
 export type ChatMessage = components['schemas']['ChatMessageResponseDto'];
 export type ChatConversation = components['schemas']['ChatConversationResponseDto'];
 export type ChatState = 'connected' | 'reconnecting' | 'offline' | 'read-only' | 'recovery-failed';
-export type ChatSession = components['schemas']['EjabberdSessionDto'];
 export type ChatAccess = components['schemas']['ChatAccessResponseDto'];
+export const maxChatAttachment = 20 * 1024 * 1024;
+export const chatMediaExtensions = ".jpg,.jpeg,.png,.mp4";
+export const chatDocumentExtensions = ".pdf,.docx";
+export type PreviousChat = components['schemas']['PreviousChatDto'];
+export type ChatCall = components['schemas']['ChatCallDto'];
+type ChatReason = components['schemas']['CreateChatReportDto']['reasonCategory'];
+export const chatReportReasons: Record<ChatReason, string> = {
+  ABUSE_OR_HARASSMENT: 'توهین یا آزار',
+  THREAT_OR_SAFETY: 'تهدید یا نگرانی ایمنی',
+  SENSITIVE_DATA_EXPOSURE: 'افشای اطلاعات حساس',
+  SPAM_OR_SCAM: 'هرزنامه یا کلاهبرداری',
+  MALICIOUS_CONTENT: 'محتوای مخرب',
+  OTHER: 'سایر',
+};
 type History = components['schemas']['ChatHistoryResponseDto'];
 type Visibility = components['schemas']['ChatVisibilityReconciliationResponseDto'];
 export interface LoadedChat { conversation: ChatConversation; messages: ChatMessage[]; olderCursor: string | null; checkpointCursor: string }
@@ -26,7 +38,11 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
       method, headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
       cache: 'no-store', signal: AbortSignal.timeout(10_000), ...(body ? { body: JSON.stringify(body) } : {}),
     });
-    if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      throw new Error(error?.code ?? `CHAT_REQUEST_${response.status}`);
+    }
+    if (response.status === 204) return undefined as T;
     return response.json() as Promise<T>;
   }
   const history = (token: string, id: string, direction: 'after' | 'before' | 'latest', cursor?: string) =>
@@ -42,185 +58,129 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
   }
 
   function connect(token: string, loaded: LoadedChat, onMessage: (message: ChatMessage) => void, onState: (state: ChatState, access?: ChatAccess) => void): ChatConnection {
-    let stopped = false;
-    let client: Agent | undefined;
-    let session: ChatSession | undefined;
-    let ready = false;
-    let generation = 0;
-    let retries = 0;
-    let retryTimer: ReturnType<typeof setTimeout> | undefined;
-    let renewTimer: ReturnType<typeof setTimeout> | undefined;
-    let pollTimer: ReturnType<typeof setInterval> | undefined;
+    const events = new AbortController();
+    const path = `/v1/chat/conversations/${loaded.conversation.id}`;
     let checkpoint = loaded.checkpointCursor;
     let visibilityCursor: string | undefined;
-    let recovery: Promise<void> | undefined;
-    let recoveryAgain = false;
-    const cache = new Map(loaded.messages.map(message => [message.id, message]));
-    const pending = new Map<string, { resolve: (message: ChatMessage) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> }>();
-    const publish = (message: ChatMessage) => { if (!stopped) { cache.set(message.id, message); onMessage(message); } };
+    let acknowledged: string | undefined;
+    let latest = loaded.messages.at(-1);
+    let recovering = false;
+    let pending = false;
 
-    const recover = (): Promise<void> => {
-      if (recovery) { recoveryAgain = true; return recovery; }
-      recovery = (async () => {
+    async function refresh() {
+      if (events.signal.aborted) return;
+      if (recovering) { pending = true; return; }
+      recovering = true;
+      try {
         do {
-          recoveryAgain = false;
-          // Advance only through returned server cursors, never a live-event sequence.
+          pending = false;
+          const access = await request<ChatAccess>(token, `${path}/access`);
           let page: History;
           do {
             page = await history(token, loaded.conversation.id, 'after', checkpoint);
-            if (stopped) return;
-            page.items.forEach(publish);
+            if (events.signal.aborted) return;
+            page.items.forEach(onMessage);
+            latest = page.items.at(-1) ?? latest;
             checkpoint = page.checkpointCursor;
-          } while (page.nextCursor && !stopped);
+          } while (page.nextCursor);
           let changes: Visibility;
           do {
-            changes = await request<Visibility>(token, `/v1/chat/conversations/${loaded.conversation.id}/visibility-reconciliation?limit=100${visibilityCursor ? `&cursor=${encodeURIComponent(visibilityCursor)}` : ''}`);
-            if (stopped) return;
-            changes.items.forEach(item => publish(item.message));
-            visibilityCursor = typeof changes.checkpointCursor === 'string' ? changes.checkpointCursor : visibilityCursor;
-          } while (changes.nextCursor && !stopped);
-        } while (recoveryAgain && !stopped);
-      })().finally(() => { recovery = undefined; });
-      return recovery;
-    };
-
-    const failPending = () => {
-      for (const item of pending.values()) { clearTimeout(item.timer); item.reject(new Error('CHAT_CONNECTION_LOST')); }
-      pending.clear();
-    };
-    const schedule = () => {
-      if (stopped || retryTimer) return;
-      ready = false; failPending(); onState('offline');
-      retryTimer = setTimeout(() => { retryTimer = undefined; void start(); }, Math.min(30_000, 1000 * 2 ** Math.min(retries++, 5)));
-    };
-    type NativeMessage = Stanzas.ReceivedMessage & {
-      sabzId?: string; sabzSequence?: string; sabzSender?: string; sabzCreated?: string; sabzVisibility?: string;
-      sabzEvent?: string; sabzEventId?: string; sabzEventVisibility?: string;
-    };
-
-    async function start() {
-      if (stopped) return;
-      const current = ++generation;
-      ready = false; failPending(); onState('reconnecting');
-      clearTimeout(renewTimer);
-      const previous = client; client = undefined;
-      void Promise.resolve(previous?.disconnect()).catch(() => undefined);
-      try {
-        const next = await request<ChatSession>(token, `/v1/chat/appointments/${loaded.conversation.appointmentId}/session`, 'POST');
-        if (stopped || current !== generation) return;
-        if (next.transport !== 'ejabberd' || next.conversationId !== loaded.conversation.id) throw new Error('CHAT_SESSION_INVALID');
-        session = next;
-        // Read-only conversations use retained REST history and need no room join.
-        if (!next.canSend) {
-          await recover();
-          if (stopped || current !== generation) return;
-          retries = 0; onState('read-only', next);
-          renewTimer = setTimeout(() => void start(), Math.max(1000, Date.parse(next.expiresAt) - Date.now() - 15_000));
-          return;
-        }
-        const { createClient, JXT } = await import('stanza');
-        if (stopped || current !== generation) return;
-        const xmpp = createClient({
-          jid: next.jid, password: next.token, resource: next.resource,
-          transports: { websocket: next.websocketUrl, bosh: false }, transportPreferenceOrder: ['websocket'],
-          autoReconnect: false, allowResumption: false, timeout: 10,
-          sendReceipts: false, chatMarkers: false,
-        });
-        // Native JWT auth verifies the password; OAuth mechanisms use a different token backend.
-        xmpp.sasl.disable('X-OAUTH2');
-        xmpp.sasl.disable('OAUTHBEARER');
-        client = xmpp;
-        renewTimer = setTimeout(() => { if (!stopped && current === generation && !ready) schedule(); }, 15_000);
-        const ns = 'urn:sabz:chat:1';
-        xmpp.stanzas.define(JXT.extendMessage({
-          sabzId: JXT.childAttribute(ns, 'sabz', 'id'), sabzSequence: JXT.childAttribute(ns, 'sabz', 'sequence'),
-          sabzSender: JXT.childAttribute(ns, 'sabz', 'sender-kind'), sabzCreated: JXT.childAttribute(ns, 'sabz', 'created-at'),
-          sabzVisibility: JXT.childAttribute(ns, 'sabz', 'visibility'),
-          sabzEvent: JXT.childAttribute(ns, 'sabz-event', 'type'), sabzEventId: JXT.childAttribute(ns, 'sabz-event', 'message-id'),
-          sabzEventVisibility: JXT.childAttribute(ns, 'sabz-event', 'visibility'),
-        }));
-        const live = () => !stopped && current === generation && client === xmpp;
-        xmpp.on('message', (incoming) => {
-          if (!live() || (incoming.from ?? '').split('/')[0] !== next.roomJid) return;
-          const message = incoming as NativeMessage;
-          if (!message.id) return;
-          if (message.type === 'error') {
-            const item = pending.get(message.id);
-            if (item) { clearTimeout(item.timer); pending.delete(message.id); item.reject(new Error('CHAT_SEND_REJECTED')); }
-            return;
+            changes = await request<Visibility>(token, `${path}/visibility-reconciliation?limit=100${visibilityCursor ? `&cursor=${encodeURIComponent(visibilityCursor)}` : ''}`);
+            if (events.signal.aborted) return;
+            changes.items.forEach(item => onMessage(item.message));
+            visibilityCursor = changes.checkpointCursor ?? visibilityCursor;
+          } while (changes.nextCursor);
+          const last = latest;
+          if (last && last.id !== acknowledged && access.canSend && document.visibilityState === 'visible') {
+            acknowledged = last.id;
+            void request<void>(token, `${path}/receipts/${last.id}`, 'POST').catch(() => { acknowledged = undefined; });
           }
-          if (message.sabzEvent === 'visibility') {
-            const cached = cache.get(message.sabzEventId ?? '');
-            if (cached && message.sabzEventVisibility === 'RESTRICTED') publish({ ...cached, visibility: 'RESTRICTED', body: undefined, tombstone: 'محتوای این پیام محدود شده است.' });
-            void recover().catch(() => { if (live()) onState('recovery-failed'); });
-            return;
-          }
-          if (!message.sabzId || message.id !== message.sabzId || !/^\d+$/u.test(message.sabzSequence ?? '') ||
-            !['PATIENT', 'DOCTOR', 'CLINIC_OPERATOR'].includes(message.sabzSender ?? '') ||
-            !['VISIBLE', 'RESTRICTED'].includes(message.sabzVisibility ?? '') || !Number.isFinite(Date.parse(message.sabzCreated ?? '')) || typeof message.body !== 'string') return;
-          const canonical: ChatMessage = {
-            id: message.id, sequence: message.sabzSequence!, senderKind: message.sabzSender as ChatMessage['senderKind'],
-            createdAt: message.sabzCreated!, visibility: message.sabzVisibility as ChatMessage['visibility'],
-            ...(message.sabzVisibility === 'VISIBLE' ? { body: message.body } : { tombstone: message.body }),
-          };
-          publish(canonical);
-          const item = pending.get(message.originId ?? '');
-          if (item) { clearTimeout(item.timer); pending.delete(message.originId!); item.resolve(canonical); }
-          void recover().catch(() => { if (live()) onState('recovery-failed'); });
-        });
-        xmpp.on('disconnected', () => { if (live()) schedule(); });
-        xmpp.on('auth:failed', () => { if (live()) schedule(); });
-        xmpp.on('session:started', () => void (async () => {
-          await Promise.race([xmpp.joinRoom(next.roomJid, next.jid.split('@')[0]!), new Promise<never>((_, reject) => setTimeout(() => reject(new Error('CHAT_JOIN_TIMEOUT')), 10_000))]);
-          await recover();
-          if (!live()) return;
-          ready = true; retries = 0; onState('connected', next);
-          clearTimeout(renewTimer);
-          renewTimer = setTimeout(() => void start(), Math.max(1000, Date.parse(next.expiresAt) - Date.now() - 15_000));
-        })().catch(() => { if (live()) schedule(); }));
-        await xmpp.connect();
-      } catch { if (!stopped && current === generation) schedule(); }
+          onState(access.canSend ? 'connected' : 'read-only', access);
+        } while (pending && !events.signal.aborted);
+      } catch {
+        if (!events.signal.aborted) onState('recovery-failed');
+      } finally { recovering = false; }
     }
-    const visible = () => { if (!stopped && document.visibilityState === 'visible') { void recover().catch(() => onState('recovery-failed')); if (!ready && !retryTimer) void start(); } };
-    document.addEventListener('visibilitychange', visible);
-    let polling = false;
-    pollTimer = setInterval(() => {
-      if (stopped || polling || document.visibilityState !== 'visible') return;
-      polling = true;
-      const current = generation;
-      void Promise.all([recover(), request<ChatAccess>(token, `/v1/chat/conversations/${loaded.conversation.id}/access`)]).then(([, access]) => {
-        if (stopped || current !== generation) return;
-        if (!access.canSend) {
-          ready = false; failPending();
-          const previous = client; client = undefined;
-          void Promise.resolve(previous?.disconnect()).catch(() => undefined);
-          onState('read-only', access);
-        } else if (!ready && !retryTimer) void start();
-        else if (ready) onState('connected', access);
-      }).catch(() => { if (!stopped && current === generation) onState('recovery-failed'); }).finally(() => { polling = false; });
-    }, 15_000);
-    void start();
-    return {
-      send(body, clientMessageId) {
-        if (!ready || !client || !session?.canSend || Date.parse(session.expiresAt) <= Date.now()) return Promise.reject(new Error('CHAT_NOT_CONNECTED'));
-        if (pending.has(clientMessageId)) return Promise.reject(new Error('CHAT_SEND_PENDING'));
-        return new Promise<ChatMessage>((resolve, reject) => {
-          const timer = setTimeout(() => { pending.delete(clientMessageId); reject(new Error('CHAT_SEND_UNCONFIRMED')); }, 10_000);
-          pending.set(clientMessageId, { resolve, reject, timer });
-          try { client!.sendMessage({ to: session!.roomJid, type: 'groupchat', id: clientMessageId, originId: clientMessageId, body }); }
-          catch { clearTimeout(timer); pending.delete(clientMessageId); reject(new Error('CHAT_SEND_FAILED')); }
+
+    async function stream() {
+      try {
+        const response = await fetchImpl(`${baseUrl}${path}/events`, {
+          headers: { authorization: `Bearer ${token}` }, signal: events.signal, cache: 'no-store',
         });
-      },
-      disconnect() {
-        stopped = true; generation++; ready = false;
-        clearTimeout(retryTimer); clearTimeout(renewTimer); clearInterval(pollTimer);
-        document.removeEventListener('visibilitychange', visible); failPending();
-        void Promise.resolve(client?.disconnect()).catch(() => undefined); client = undefined; session = undefined; cache.clear();
-      },
+        if (!response.ok || !response.body) return;
+        const reader = response.body.getReader();
+        try {
+          while (!(await reader.read()).done) void refresh();
+        } finally { reader.releaseLock(); }
+      } catch { /* Periodic reconciliation supports clients with buffered streaming. */ }
+    }
+    const timer = setInterval(() => void refresh(), 5_000);
+    const visible = () => { if (document.visibilityState === 'visible') void refresh(); };
+    document.addEventListener('visibilitychange', visible);
+    onState('reconnecting');
+    void refresh();
+    void stream();
+    return {
+      send: (body, clientMessageId) => request<ChatMessage>(token, `${path}/messages`, 'POST', { body, clientMessageId }),
+      disconnect() { events.abort(); clearInterval(timer); document.removeEventListener('visibilitychange', visible); },
     };
   }
+
   const close = (token: string, conversationId: string) => request<ChatConversation>(token, `/v1/chat/conversations/${encodeURIComponent(conversationId)}/close`, 'POST');
-  return { load, older, connect, close };
+  async function upload(token: string, conversationId: string, file: File, clientMessageId: string) {
+    const form = new FormData();
+    form.append('file', file);
+    const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${clientMessageId}`, {
+      method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store', body: form, signal: AbortSignal.timeout(60_000),
+    });
+    if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
+    return response.json() as Promise<ChatMessage>;
+  }
+  async function attachmentBlob(token: string, conversationId: string, messageId: string, signal?: AbortSignal) {
+    const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${messageId}`, {
+      headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
+    });
+    if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
+    return response.blob();
+  }
+  async function download(token: string, conversationId: string, message: ChatMessage) {
+    if (!message.attachment) return;
+    const url = URL.createObjectURL(await attachmentBlob(token, conversationId, message.id));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = message.attachment.name;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  }
+  return {
+    load, older, connect, close, upload, download, attachmentBlob,
+    previousConversations: (token: string, appointmentId: string, before?: string) =>
+      request<components['schemas']['PreviousChatPageDto']>(token, `/v1/chat/appointments/${encodeURIComponent(appointmentId)}/previous-conversations${before ? '?before=' + encodeURIComponent(before) : ''}`),
+    archivedMessages: (token: string, conversationId: string) => history(token, conversationId, 'latest'),
+    video: (token: string) => request<{ available: boolean }>(token, '/v1/chat/video'),
+    incoming: (token: string) => request<{ call: ChatCall | null }>(token, '/v1/chat/calls/incoming'),
+    startCall: (token: string, appointmentId: string, mode: ChatCall['mode'] = 'VIDEO') =>
+      request<ChatCall>(token, `/v1/chat/appointments/${appointmentId}/calls`, 'POST', { mode }),
+    currentCall: (token: string, appointmentId: string) =>
+      request<{ call: ChatCall | null }>(token, `/v1/chat/appointments/${appointmentId}/calls/current`),
+    historyCall: (token: string, conversationId: string, id: string) =>
+      request<ChatCall>(token, `/v1/chat/conversations/${conversationId}/calls/${id}`),
+    call: (token: string, id: string) => request<ChatCall>(token, `/v1/chat/calls/${id}`),
+    callAction: (token: string, id: string, action: 'answer' | 'decline' | 'end') => request<ChatCall>(token, `/v1/chat/calls/${id}/action`, 'POST', { action }),
+    callGrant: (token: string, id: string) => request<{ url: string }>(token, `/v1/chat/calls/${id}/grant`, 'POST'),
+    report: (token: string, id: string, reasonCategory: ChatReason) =>
+      request(token, `/v1/chat/messages/${id}/reports`, 'POST', { reasonCategory }),
+    reports: (token: string, id: string) =>
+      request<{ items: { id: string; messageId: string; reasonCategory: ChatReason; decision: object | null }[] }>(token, `/v1/chat/conversations/${id}/reports`),
+    moderation: (token: string, id: string, visibility: 'RESTRICTED' | 'VISIBLE', reasonCategory?: ChatReason, safeNote?: string) =>
+      request<ChatMessage>(token, `/v1/chat/messages/${id}/visibility`, 'POST', { visibility, reasonCategory, safeNote }),
+    restrictedContent: (token: string, id: string) =>
+      request<{ body: string }>(token, `/v1/chat/messages/${id}/restricted-content`),
+    resolveReport: (token: string, id: string, restriction: boolean) =>
+      request(token, `/v1/chat/reports/${id}/resolve`, 'POST', restriction
+        ? { resolution: 'UPHELD_POLICY_VIOLATION', action: 'RESTRICT_MESSAGE' }
+        : { resolution: 'DISMISSED_NO_VIOLATION', action: 'NO_ADDITIONAL_ACTION' }),
+  };
 }
 
 export function chatAccessLabel(access: ChatAccess | null | undefined) {

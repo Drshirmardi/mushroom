@@ -1,0 +1,21 @@
+# Used only by scripts/dev.mjs in development. Starts the main application database
+# (sabz_zendegi) on localhost:5432 when no local PostgreSQL is already bound to that port.
+services:
+  main-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sabz_zendegi
+      POSTGRES_USER: sabz_zendegi
+      POSTGRES_PASSWORD: local-development-password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - chat_main_sql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sabz_zendegi -d sabz_zendegi"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  chat_main_sql:

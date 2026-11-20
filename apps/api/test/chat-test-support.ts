@@ -2,29 +2,16 @@ import { completeTestPatientEntry } from './patient-entry-test-support';
 import { randomUUID } from 'node:crypto';
 
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
-import { vi } from 'vitest';
 
 import { AccessTokenService } from '../src/common/auth/access-token.service';
+import { ChatDatabaseService } from '../src/modules/communications/chat/chat-database.service';
 import { PrismaService } from '../src/database/prisma/prisma.service';
-import { EjabberdApiClient } from '../src/modules/communications/chat/ejabberd/ejabberd-api.client';
-import { EjabberdConfig } from '../src/modules/communications/chat/ejabberd/ejabberd.config';
-import type { EjabberdSessionDto } from '../src/modules/communications/chat/ejabberd/ejabberd.dto';
 
 export type ChatFixture = Awaited<ReturnType<typeof createChatFixture>>;
 
 const phone = () => `+989${Math.floor(Math.random() * 900_000_000 + 100_000_000)}`;
 
-export function isolateChatEngineAdministration(app: NestFastifyApplication) {
-  // These tests exercise real PostgreSQL, HTTP authorization and engine policy.
-  // External XMPP administration is isolated; native delivery has a separate gate.
-  const engine = app.get(EjabberdApiClient);
-  for (const command of ['ensureRoom', 'addMember', 'removeMember', 'disconnect', 'visibility'] as const) {
-    vi.spyOn(engine, command).mockResolvedValue(undefined);
-  }
-}
-
 export async function createChatFixture(app: NestFastifyApplication) {
-  isolateChatEngineAdministration(app);
   const prisma = app.get(PrismaService);
   const clinic = await prisma.clinic.findFirstOrThrow({ where: { status: 'ACTIVE' } });
   const baseOffering = await prisma.doctorService.findFirstOrThrow({ where: { clinicId: clinic.id, visitMode: 'ONLINE', isActive: true, publicationStatus: 'PUBLISHED' }, select: { serviceId: true, durationMinutes: true, priceAmount: true, currency: true } });
@@ -66,33 +53,13 @@ export async function createChatFixture(app: NestFastifyApplication) {
     app.get(AccessTokenService).issue({ userId: admin.id, sessionId: sessionIds[3]!, roles: ['ADMIN'] }),
     app.get(AccessTokenService).issue({ userId: staff.id, sessionId: sessionIds[4]!, roles: ['STAFF'] }),
   ]);
-  return { prisma, clinic, offering, appointment, users: { patient, outsider, doctor, admin, staff }, tokens: { patient: tokens[0], outsider: tokens[1], doctor: tokens[2], admin: tokens[3], staff: tokens[4] } };
+  return { prisma, chat: app.get(ChatDatabaseService).client, clinic, offering, appointment, users: { patient, outsider, doctor, admin, staff }, tokens: { patient: tokens[0], outsider: tokens[1], doctor: tokens[2], admin: tokens[3], staff: tokens[4] } };
 }
 
 export const auth = (token: string) => ({ authorization: `Bearer ${token}`, origin: 'http://localhost:3000' });
 
-export async function openTestEngineSession(app: NestFastifyApplication, token: string, conversationId: string) {
-  const conversation = await app.get(PrismaService).chatConversation.findUniqueOrThrow({ where: { id: conversationId }, select: { appointmentId: true } });
-  return app.inject({ method: 'POST', url: `/v1/chat/appointments/${conversation.appointmentId}/session`, headers: auth(token) });
-}
-
-const engineSessions = new WeakMap<NestFastifyApplication, Map<string, ReturnType<typeof openTestEngineSession>>>();
-
-/** Issue credentials through the public API, then exercise the private native SEND callback. */
-export async function sendEngineMessage(app: NestFastifyApplication, token: string, conversationId: string, payload: Record<string, unknown>) {
-  let sessions = engineSessions.get(app);
-  if (!sessions) { sessions = new Map(); engineSessions.set(app, sessions); }
-  const key = `${token}:${conversationId}`;
-  let pending = sessions.get(key);
-  if (!pending) { pending = openTestEngineSession(app, token, conversationId); sessions.set(key, pending); }
-  const response = await pending;
-  if (response.statusCode !== 201) { sessions.delete(key); return response; }
-  const session = response.json<EjabberdSessionDto>();
-  return app.inject({
-    method: 'POST', url: '/v1/chat/ejabberd/policy',
-    headers: { 'x-chat-policy-key': app.get(EjabberdConfig).policySecret },
-    payload: { ...payload, action: 'SEND', actorJid: `${session.jid}/${session.resource}`, roomJid: session.roomJid },
-  });
+export function sendChatMessage(app: NestFastifyApplication, token: string, conversationId: string, payload: Record<string, unknown>) {
+  return app.inject({ method: 'POST', url: '/v1/chat/conversations/' + conversationId + '/messages', headers: auth(token), payload });
 }
 
 export async function destroyChatFixture(fixture: ChatFixture) {

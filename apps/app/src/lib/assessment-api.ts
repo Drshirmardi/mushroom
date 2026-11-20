@@ -1,6 +1,7 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient } from "@/lib/api";
+import { invalidatePatientResourcesOnSuccess } from "./patient-request";
 
 export type PublishedAssessment = components["schemas"]["PatientAssessmentListItemDto"];
 export type AssessmentSubmission = components["schemas"]["PatientAssessmentSubmissionResponseDto"];
@@ -44,9 +45,9 @@ export const saveAssessmentAnswers = (accessToken: string, id: string, body: Sav
   apiClient.PUT("/v1/assessment-submissions/{id}", { headers: authorization(accessToken), params: { path: { id } }, body }),
 );
 
-export const submitAssessment = (accessToken: string, id: string, idempotencyKey: string, expectedRevision?: number) => expectData<AssessmentSubmission>(
+export const submitAssessment = (accessToken: string, id: string, idempotencyKey: string, expectedRevision?: number) => invalidatePatientResourcesOnSuccess(expectData<AssessmentSubmission>(
   apiClient.POST("/v1/assessment-submissions/{id}/submit", { headers: authorization(accessToken), params: { path: { id }, header: { "Idempotency-Key": idempotencyKey } }, body: { expectedRevision } }),
-);
+), "home");
 
 export const getAssessmentQuestionnaire = (accessToken: string, id: string) => expectData<AssessmentQuestionnaire>(apiClient.GET("/v1/assessment-submissions/{id}/questionnaire", { headers: authorization(accessToken), params: { path: { id } } }));
 export const listAssessmentHistory = (accessToken: string, page = 1, state?: "IN_PROGRESS" | "COMPLETE" | "INVALIDATED") => expectData<components["schemas"]["PatientAssessmentHistoryResponseDto"]>(apiClient.GET("/v1/patients/me/assessment-submissions", { headers: authorization(accessToken), params: { query: { page, pageSize: 20, state } } }));

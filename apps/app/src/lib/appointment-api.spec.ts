@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AppointmentRequestError, cancelPatientAppointment, createPatientAppointment, listPatientAppointments, reschedulePatientAppointment } from "./appointment-api";
+import { patientCacheKey, patientCachedData, peekPatientCache } from "./patient-request";
 
 const { fetchMock } = vi.hoisted(() => ({ fetchMock: vi.fn() }));
 vi.stubGlobal("fetch", fetchMock);
@@ -22,5 +23,19 @@ describe("patient appointment API", () => {
   it("preserves appointment API failures", async () => {
     fetchMock.mockResolvedValueOnce(json({ code: "APPOINTMENT_SLOT_CONFLICT" }, 409));
     await expect(createPatientAppointment("token", { doctorServiceId: "service-1", startsAt: "2026-09-10T10:00:00.000Z" }, "key-1")).rejects.toEqual(expect.objectContaining<Partial<AppointmentRequestError>>({ status: 409, code: "APPOINTMENT_SLOT_CONFLICT" }));
+  });
+
+  it("clears home after both cancelling and rescheduling a visit", async () => {
+    const home = patientCacheKey("session", "home");
+    const operations = [
+      () => cancelPatientAppointment("token", "a1"),
+      () => reschedulePatientAppointment("token", "a1", { doctorServiceId: "service-1", startsAt: "2026-09-11T10:00:00.000Z" }),
+    ];
+    for (const update of operations) {
+      await patientCachedData(home, 10_000, async () => "old appointment");
+      fetchMock.mockResolvedValueOnce(json({ id: "a1" }));
+      await update();
+      expect(peekPatientCache(home)).toBeUndefined();
+    }
   });
 });

@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getCommerceAddresses, type CommerceAddress } from "@/lib/commerce-catalog-api";
 import { toP } from "@/lib/format";
-import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type OnboardingStatus, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
-import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData, peekPatientCache } from "@/lib/patient-request";
+import { loadOnboardingStatus, loadSelfProfile, onboardingErrorMessage, type SelfProfile } from "@/lib/onboarding/patient-onboarding";
+import { PATIENT_CACHE_TTL_MS } from "@/lib/patient-request";
+import { useSessionPatientResource } from "@/lib/use-patient-resource";
 
 import { StoreIcon, type StoreIconName } from '@/components/store/store-icon';
 
@@ -65,37 +66,20 @@ const AVATAR_SRC: Record<ProfileGender, string> = {
   female: "/avatars/avatar-female.png",
 };
 
-/** Ring geometry for the medical-record progress dial. */
+const fetchProfile = (token: string, signal: AbortSignal) => loadSelfProfile(token, undefined, signal);
+const fetchOnboardingStatus = (token: string, signal: AbortSignal) => loadOnboardingStatus(token, undefined, signal);
+const loadErrorMessage = (error: unknown) => onboardingErrorMessage(error, "load");
 
 export default function ProfilePage() {
   const router = useRouter(); const { authentication, logout } = useAuthSession();
-  const token = authentication.accessToken;
-  const profileKey = patientCacheKey(token, "self-profile");
-  const statusKey = patientCacheKey(token, "onboarding-status");
-  const [profile, setProfile] = useState<SelfProfile | null>(() => peekPatientCache<SelfProfile>(profileKey) ?? null);
-  const [status, setStatus] = useState<OnboardingStatus | null>(() => peekPatientCache<OnboardingStatus>(statusKey) ?? null);
+  const profileResource = useSessionPatientResource("self-profile", fetchProfile, PATIENT_CACHE_TTL_MS.profile, undefined, loadErrorMessage);
+  const statusResource = useSessionPatientResource("onboarding-status", fetchOnboardingStatus, PATIENT_CACHE_TTL_MS.profile, undefined, loadErrorMessage);
+  const profile = profileResource.data;
+  const status = statusResource.data;
   const [addresses, setAddresses] = useState<CommerceAddress[] | null>(null);
-  const [loading, setLoading] = useState(() => peekPatientCache(profileKey) == null || peekPatientCache(statusKey) == null);
-  const [error, setError] = useState<string | null>(null); const [loggingOut, setLoggingOut] = useState(false); const [logoutError, setLogoutError] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const [profileResponse, statusResponse] = await Promise.all([
-          patientCachedData(profileKey, PATIENT_CACHE_TTL_MS.profile, () => loadSelfProfile(token)),
-          patientCachedData(statusKey, PATIENT_CACHE_TTL_MS.profile, () => loadOnboardingStatus(token)),
-        ]);
-        if (cancelled) return;
-        setProfile(profileResponse);
-        setStatus(statusResponse);
-      } catch (cause) {
-        if (!cancelled) setError(onboardingErrorMessage(cause, "load"));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [profileKey, statusKey, token]);
+  const loading = profileResource.loading || statusResource.loading;
+  const error = profileResource.error ?? statusResource.error;
+  const [loggingOut, setLoggingOut] = useState(false); const [logoutError, setLogoutError] = useState(false);
   useEffect(() => { void getCommerceAddresses(authentication.accessToken).then(setAddresses).catch(() => setAddresses(null)); }, [authentication.accessToken]);
   const defaultAddress = addresses?.find((address) => address.isDefault) ?? addresses?.[0] ?? null;
   const name = profile && [profile.firstName, profile.lastName].filter((value) => typeof value === "string").join(" ");

@@ -1,6 +1,7 @@
 import { type components, withRequestTimeout } from '@sabz-zendegi/api-client';
 
 import { apiClient } from '../api';
+import { invalidatePatientResourcesOnSuccess } from '../patient-request';
 
 type Client = typeof apiClient;
 
@@ -43,13 +44,13 @@ async function expectData<T>(
   }
 }
 
-export function loadSelfProfile(accessToken: string, client: Client = apiClient) {
-  return expectData(client.GET('/v1/patients/me', { headers: authorizationHeaders(accessToken) }));
+export function loadSelfProfile(accessToken: string, client: Client = apiClient, signal?: AbortSignal) {
+  return expectData(client.GET('/v1/patients/me', { headers: authorizationHeaders(accessToken), cache: 'no-store', signal }));
 }
 
-export function loadOnboardingStatus(accessToken: string, client: Client = apiClient) {
+export function loadOnboardingStatus(accessToken: string, client: Client = apiClient, signal?: AbortSignal) {
   return expectData(
-    client.GET('/v1/patients/me/onboarding-status', { headers: authorizationHeaders(accessToken) }),
+    client.GET('/v1/patients/me/onboarding-status', { headers: authorizationHeaders(accessToken), cache: 'no-store', signal }),
   );
 }
 
@@ -61,7 +62,7 @@ export function loadConsentPolicy(accessToken: string, client: Client = apiClien
 
 export function loadMedicalIntake(accessToken: string, client: Client = apiClient) {
   return expectData(
-    client.GET('/v1/patients/me/medical-intake', { headers: authorizationHeaders(accessToken) }),
+    client.GET('/v1/patients/me/medical-intake', { headers: authorizationHeaders(accessToken), cache: 'no-store' }),
   );
 }
 
@@ -90,12 +91,12 @@ export function updateSelfProfile(
     cityName: optionalText(body.cityName),
     gender: body.gender === '' ? null : body.gender,
   };
-  return expectData(
+  return invalidatePatientResourcesOnSuccess(expectData(
     client.PATCH('/v1/patients/me', {
       headers: authorizationHeaders(accessToken),
       body: normalizedBody,
     }),
-  );
+  ), 'self-profile', 'onboarding-status', 'home', 'patient-entry');
 }
 
 export function acceptConsent(
@@ -130,12 +131,12 @@ export function saveMedicalIntake(
   body: SaveIntakeDraft,
   client: Client = apiClient,
 ) {
-  return expectData(
+  return invalidatePatientResourcesOnSuccess(expectData(
     client.PUT('/v1/patients/me/medical-intake', {
       headers: authorizationHeaders(accessToken),
       body,
     }),
-  );
+  ), 'onboarding-status', 'home', 'medical-intake');
 }
 
 export function completeMedicalIntake(
@@ -143,13 +144,13 @@ export function completeMedicalIntake(
   expectedRevision: number,
   client: Client = apiClient,
 ) {
-  return expectData(
+  return invalidatePatientResourcesOnSuccess(expectData(
     client.POST('/v1/patients/me/medical-intake/complete', {
       headers: authorizationHeaders(accessToken),
       params: { header: { 'Idempotency-Key': idempotencyKey() } },
       body: { expectedRevision },
     }),
-  );
+  ), 'onboarding-status', 'home', 'medical-intake');
 }
 
 export function onboardingErrorMessage(error: unknown, operation: 'load' | 'save' = 'save') {

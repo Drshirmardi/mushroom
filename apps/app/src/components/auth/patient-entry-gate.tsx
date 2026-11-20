@@ -3,9 +3,9 @@ import { BrandLogo } from '@/components/shared/brand-logo';
 import { AppLoading } from '@/components/shared/heartbeat-loader';
 import { invitationContext, invitationServiceRoute, rememberInvitationActor, restoredInvitation, subscribeInvitation } from '@/lib/marriage-context';
 import { rememberOnboardingReturn, marriageReturn, clearOnboardingReturn } from '@/lib/marriage-return';
-import { createContext, useCallback, useContext, useEffect, useRef, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useAuthSessionSnapshot, useOptionalAuthSession } from './session-gate';
+import { accessTokenForSession, useAuthSessionSnapshot, useOptionalAuthSession } from './session-gate';
 import { getPatientEntry, type PatientEntryStatus } from '@/lib/patient-entry-api';
 import { usePatientResource } from '@/lib/use-patient-resource';
 
@@ -17,16 +17,18 @@ function EntryWait({ error, retry }: { error?: string | null; retry?: () => void
 export function PatientEntryGate({ children }: { children: ReactNode }) {
   const session = useOptionalAuthSession(); const snapshot = useAuthSessionSnapshot();
   const pathname = usePathname(); const search = useSearchParams(); const query = search.toString(); const directContext = invitationContext(pathname,query); const router = useRouter();
-  const token = session?.authentication.accessToken;
+  const sessionKey = session?.sessionKey;
   const userId = session?.authentication.user.id;
   const stored = useSyncExternalStore(subscribeInvitation, () => userId ? restoredInvitation(userId) : null, () => null);
   const contextId = directContext ?? (invitationServiceRoute(pathname) ? stored : null);
   useEffect(() => { rememberInvitationActor(userId,directContext); }, [userId,directContext,pathname,query]);
-  const currentToken = useRef(token);
-  useEffect(() => { currentToken.current = token; }, [token]);
   const roles = session?.authentication.user.roles;
   const patient = !!roles?.includes('PATIENT') && !roles.some(role => ['ADMIN', 'DOCTOR', 'STAFF'].includes(role));
-  const resource = usePatientResource(useCallback(() => userId && currentToken.current && patient ? getPatientEntry(currentToken.current) : Promise.resolve(null), [userId, patient]));
+  const resource = usePatientResource(
+    useCallback(() => sessionKey && patient ? getPatientEntry(accessTokenForSession(sessionKey)) : Promise.resolve(null), [sessionKey, patient]),
+    undefined,
+    patient ? 'patient-entry' : undefined,
+  );
   const required = resource.data?.required;
   const invitationRoute = !!contextId && invitationServiceRoute(pathname);
   useEffect(() => {

@@ -1,5 +1,6 @@
 @import 'tailwindcss' source(none);
 @source '../../**/*.{js,ts,jsx,tsx}';
+@source '../../../../packages/api-client/src/chat-ui.tsx';
 
 @import 'tw-animate-css';
 
@@ -295,6 +296,13 @@
 }
 
 /* Shared light palette and patient interface foundations. */
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Variable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
 @font-face {
   font-family: 'Yekan Bakh';
   src: url('/fonts/yekan-bakh-variable.woff') format('woff');
@@ -3453,6 +3461,19 @@
 .patient-app-shell:not(.patient-home-shell) .patient-shell-content {
   background-color: var(--dp-surface-elevated);
 }
+.patient-app-shell:has(.patient-chat-room),
+.patient-app-shell:has(.patient-chat-room) .patient-app-frame,
+.patient-app-shell:has(.patient-chat-room) .patient-shell-content {
+  background: transparent;
+}
+html:has(.patient-chat-room),
+body:has(.patient-chat-room) {
+  background: transparent;
+}
+.patient-app-shell:has(.patient-chat-room) .patient-chat-room textarea:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
 .patient-app-shell.patient-doctor-profile-shell {
   --doctor-profile-canvas: linear-gradient(
     140deg,
@@ -4528,13 +4549,13 @@ button.home-content-link {
   background: var(--patient-soft);
 }
 .service-intro h1 {
-  font-size: 26px;
-  line-height: 42px;
+  font-size: 22px;
+  line-height: 32px;
   font-weight: 800;
 }
 .service-page.assessment-educational-detail .service-intro h1 {
-  font-size: 23px;
-  line-height: 36px;
+  font-size: 22px;
+  line-height: 32px;
 }
 .service-intro p {
   color: var(--patient-muted);
@@ -4799,12 +4820,12 @@ button.home-content-link {
     padding: 24px 32px 40px;
   }
   .service-intro h1 {
-    font-size: 30px;
-    line-height: 48px;
+    font-size: 24px;
+    line-height: 36px;
   }
   .service-page.assessment-educational-detail .service-intro h1 {
-    font-size: 26px;
-    line-height: 40px;
+    font-size: 24px;
+    line-height: 36px;
   }
   .service-empty {
     padding: 28px;
@@ -4815,7 +4836,8 @@ button.home-content-link {
     padding-inline: 16px;
   }
   .service-intro h1 {
-    font-size: 24px;
+    font-size: 21px;
+    line-height: 30px;
   }
   .service-tabs button {
     font-size: 12px;
@@ -4827,6 +4849,36 @@ button.home-content-link {
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
+}
+.treatment-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 58px;
+  list-style: none;
+}
+.treatment-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.treatment-section-count {
+  display: inline-grid;
+  min-width: 26px;
+  height: 26px;
+  margin-inline-start: auto;
+  padding-inline: 6px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--patient-soft);
+  color: var(--patient-action);
+  font-size: 12px;
+  line-height: 1;
+}
+.treatment-task-card {
+  padding: 16px;
+  background: color-mix(in srgb, var(--dp-surface-elevated) 94%, var(--patient-soft));
+}
+.treatment-task-card > .service-text-action {
+  margin-top: 8px;
 }
 .service-disclosure[open] > summary {
   margin-bottom: 12px;
@@ -4910,6 +4962,115 @@ button.home-content-link {
 }
 .service-treatment-item:last-child {
   border: 0;
+}
+.prescription-card {
+  padding: 0 16px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--dp-surface-elevated) 92%, var(--patient-soft));
+}
+.prescription-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 76px;
+  padding-block: 12px;
+  list-style: none;
+}
+.prescription-card > summary::-webkit-details-marker {
+  display: none;
+}
+.prescription-summary-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--patient-soft);
+  color: var(--patient-action);
+}
+.prescription-summary-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+.prescription-summary-title {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 24px;
+}
+.prescription-summary-meta {
+  overflow: hidden;
+  color: var(--patient-muted);
+  font-size: 12px;
+  line-height: 21px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.prescription-summary-chevron {
+  flex: 0 0 auto;
+  color: var(--patient-muted);
+  transition: transform 180ms ease;
+}
+.prescription-card[open] > summary {
+  border-bottom: 1px solid var(--patient-divider);
+}
+.prescription-card[open] .prescription-summary-chevron {
+  transform: rotate(180deg);
+}
+.prescription-medicine-list {
+  display: grid;
+  gap: 0;
+  padding-bottom: 4px;
+}
+.prescription-medicine {
+  padding-block: 16px;
+  border-bottom: 1px solid var(--patient-divider);
+}
+.prescription-medicine:last-child {
+  border-bottom: 0;
+}
+.prescription-medicine h3 {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 26px;
+}
+.prescription-medicine-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.prescription-medicine-fields > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--patient-soft) 58%, transparent);
+}
+.prescription-medicine-fields dt {
+  color: var(--patient-muted);
+  font-size: 11px;
+  line-height: 19px;
+}
+.prescription-medicine-fields dd {
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+  color: var(--patient-ink);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+}
+.prescription-instructions {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-inline-start: 3px solid var(--patient-action);
+  border-radius: 0 10px 10px 0;
+  background: var(--patient-soft);
+  color: var(--patient-ink) !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 .service-disclosure summary > svg {
   display: inline;
@@ -6108,6 +6269,68 @@ html[data-keyboard-open='true'] .patient-shell-footer {
 
 .patient-chat-room {
   min-height: 0;
+  font-family: 'Vazirmatn', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.patient-chat-wallpaper {
+  --patient-chat-wallpaper-color: #fff;
+  background-color: var(--patient-chat-wallpaper-color);
+  background-image: url('/patient-chat-pattern.png');
+  background-position: center top;
+  background-repeat: repeat;
+  background-size: 70% auto;
+}
+@keyframes patient-chat-message-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .patient-chat-room .chat-message-enter {
+    animation: patient-chat-message-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+.chat-message-stack > * + * {
+  margin-block-start: 0.5rem;
+}
+.chat-message-stack > .chat-message--joined {
+  margin-block-start: 0.25rem;
+}
+.chat-scroll-rail {
+  direction: ltr;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 42%, transparent) transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
+}
+.chat-scroll-rail > * {
+  direction: rtl;
+}
+.chat-scroll-rail::-webkit-scrollbar {
+  width: 6px;
+}
+.chat-scroll-rail::-webkit-scrollbar-track,
+.chat-scroll-rail::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.chat-scroll-rail::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted-foreground) 42%, transparent);
+  background-clip: padding-box;
+}
+.chat-scroll-rail::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .patient-product-actions {

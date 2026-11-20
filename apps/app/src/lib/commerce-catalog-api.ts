@@ -2,7 +2,7 @@ import { browserAnalyticsEvent } from '../../../../config/analytics-browser';
 import { type components, withRequestTimeout } from '@sabz-zendegi/api-client';
 
 import { apiClient, apiBaseUrl, sessionFetch } from './api';
-import { PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData } from './patient-request';
+import { invalidatePatientResourcesOnSuccess, PATIENT_CACHE_TTL_MS, patientCacheKey, patientCachedData } from './patient-request';
 
 export type CommerceProduct = components['schemas']['PatientCommerceProductDto'];
 export type CommerceCart = components['schemas']['PatientCartDto'];
@@ -192,12 +192,12 @@ export const checkoutCommerceOrder = (
   idempotencyKey: string,
   body: components['schemas']['CheckoutCommerceOrderDto'],
 ) =>
-  expectData<CommerceOrder>(
+  invalidatePatientResourcesOnSuccess(expectData<CommerceOrder>(
     apiClient.POST('/v1/patients/me/orders', {
       headers: { ...authorization(accessToken), 'idempotency-key': idempotencyKey },
       body,
     }),
-  );
+  ), 'home');
 
 export const getCommerceOrders = (accessToken: string) =>
   expectData<CommerceOrder[]>(
