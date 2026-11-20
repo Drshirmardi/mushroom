@@ -1,5 +1,6 @@
 import { withRequestTimeout } from "@sabz-zendegi/api-client";
 import { apiBaseUrl, sessionFetch } from "@/lib/api";
+import { invalidatePatientResourcesOnSuccess } from "./patient-request";
 
 export type PatientAppointment = {
   visitMode?: "ONLINE" | "IN_PERSON";
@@ -38,9 +39,12 @@ const request = async <T>(accessToken: string, path: string, init?: RequestInit)
 
 export const listPatientAppointments = (accessToken: string) => request<PatientAppointmentPage>(accessToken, "/v1/appointments?page=1&pageSize=100");
 export const getPatientAppointment = (accessToken: string, id: string) => request<PatientAppointment>(accessToken, `/v1/appointments/${encodeURIComponent(id)}`);
-export const createPatientAppointment = (accessToken: string, body: { doctorServiceId: string; startsAt: string }, idempotencyKey: string) => request<PatientAppointment>(accessToken, "/v1/appointments", { method: "POST", headers: { "content-type": "application/json", "idempotency-key": idempotencyKey }, body: JSON.stringify(body) });
-export const cancelPatientAppointment = (accessToken: string, id: string, reason?: string) => request<PatientAppointment>(accessToken, `/v1/appointments/${encodeURIComponent(id)}/cancel`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(reason ? { reason } : {}) });
-export const reschedulePatientAppointment = (accessToken: string, id: string, body: { doctorServiceId: string; startsAt: string }) => request<PatientAppointment>(accessToken, `/v1/appointments/${encodeURIComponent(id)}/reschedule`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+export const createPatientAppointment = (accessToken: string, body: { doctorServiceId: string; startsAt: string }, idempotencyKey: string) =>
+  invalidatePatientResourcesOnSuccess(request<PatientAppointment>(accessToken, "/v1/appointments", { method: "POST", headers: { "content-type": "application/json", "idempotency-key": idempotencyKey }, body: JSON.stringify(body) }), "home");
+export const cancelPatientAppointment = (accessToken: string, id: string, reason?: string) =>
+  invalidatePatientResourcesOnSuccess(request<PatientAppointment>(accessToken, `/v1/appointments/${encodeURIComponent(id)}/cancel`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(reason ? { reason } : {}) }), "home");
+export const reschedulePatientAppointment = (accessToken: string, id: string, body: { doctorServiceId: string; startsAt: string }) =>
+  invalidatePatientResourcesOnSuccess(request<PatientAppointment>(accessToken, `/v1/appointments/${encodeURIComponent(id)}/reschedule`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }), "home");
 
 export function appointmentErrorMessage(error: unknown) {
   if (!(error instanceof AppointmentRequestError) || error.status === 0) return "سرویس نوبت‌دهی در دسترس نیست؛ دوباره تلاش کنید.";

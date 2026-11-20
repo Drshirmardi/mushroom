@@ -41,7 +41,7 @@ function Lifestyle({ snapshot }: { snapshot: MedicalIntake['snapshot'] }) {
 export default function MedicalProfilePage() {
   const router = useRouter();
   const { authentication } = useAuthSession();
-  const resource = usePatientResource(useCallback(() => loadMedicalIntake(authentication.accessToken), [authentication.accessToken]));
+  const resource = usePatientResource(useCallback(() => loadMedicalIntake(authentication.accessToken), [authentication.accessToken]), undefined, 'medical-intake');
   const complete = resource.data?.submissionState === 'COMPLETE';
   const snapshot = resource.data?.snapshot;
   return <main dir="rtl"><PageHeader title="پرونده پزشکی" onBack={() => router.push(new URLSearchParams(window.location.search).get('from') === 'home' ? '/' : '/profile')} />

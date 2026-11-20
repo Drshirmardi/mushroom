@@ -1,5 +1,6 @@
 import { AppLoading } from "@/components/shared/heartbeat-loader";
 import { VisibleViewport } from '@/components/layout/visible-viewport';
+import { OfflineSupport } from '@/components/layout/offline-support';
 import { AssessmentHistoryTracking } from '@/lib/assessment-history';
 import { Suspense } from 'react';
 import { AnalyticsTracking } from '@/components/analytics-tracking';
@@ -40,6 +41,7 @@ export default function RootLayout({
         <script src="/runtime-config.js" />
       </head>
       <body className="antialiased">
+        <OfflineSupport />
         <AnalyticsTracking />
         <VisibleViewport /><AssessmentHistoryTracking /><SessionProvider><Suspense fallback={<AppLoading />}><PatientEntryGate>{children}</PatientEntryGate></Suspense></SessionProvider>
       </body>

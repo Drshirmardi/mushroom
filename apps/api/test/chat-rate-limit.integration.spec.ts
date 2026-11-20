@@ -5,7 +5,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { AccessTokenService } from '../src/common/auth/access-token.service';
 import { createApiApplication } from '../src/app.factory';
-import { sendEngineMessage, auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
+import { sendChatMessage, auth, createChatFixture, destroyChatFixture, type ChatFixture } from './chat-test-support';
 
 describe('chat send rate limits (PostgreSQL integration)', () => {
   let app: NestFastifyApplication;
@@ -19,7 +19,7 @@ describe('chat send rate limits (PostgreSQL integration)', () => {
     fixture = await createChatFixture(app);
     const conversation = await app.inject({ method: 'GET', url: `/v1/chat/appointments/${fixture.appointment.id}/conversation`, headers: auth(fixture.tokens.patient) });
     const id = conversation.json().id as string;
-    const send = (index: number) => sendEngineMessage(app, fixture!.tokens.patient, id, { clientMessageId: `a9200000-0000-4000-8000-${String(index).padStart(12, '0')}`, body: `synthetic ${index}` });
+    const send = (index: number) => sendChatMessage(app, fixture!.tokens.patient, id, { clientMessageId: `a9200000-0000-4000-8000-${String(index).padStart(12, '0')}`, body: `synthetic ${index}` });
     for (let index = 1; index <= 5; index += 1) expect((await send(index)).statusCode).toBe(200);
     const burst = await send(6);
     expect(burst.statusCode).toBe(429); expect(burst.json().code).toBe('CHAT_RATE_LIMITED');
@@ -47,10 +47,10 @@ describe('chat send rate limits (PostgreSQL integration)', () => {
       return issuer.issue({ userId: user.id, sessionId, roles: ['ADMIN'] });
     }));
     for (let index = 0; index < 120; index += 1) {
-      const response = await sendEngineMessage(app, tokens[index % tokens.length]!, id, { clientMessageId: `a9300000-0000-4000-8000-${String(index).padStart(12, '0')}`, body: `conversation synthetic ${index}` });
+      const response = await sendChatMessage(app, tokens[index % tokens.length]!, id, { clientMessageId: `a9300000-0000-4000-8000-${String(index).padStart(12, '0')}`, body: `conversation synthetic ${index}` });
       expect(response.statusCode).toBe(200);
     }
-    const rejected = await sendEngineMessage(app, tokens[0]!, id, { clientMessageId: 'a9300000-0000-4000-8000-000000000999', body: 'over conversation limit' });
+    const rejected = await sendChatMessage(app, tokens[0]!, id, { clientMessageId: 'a9300000-0000-4000-8000-000000000999', body: 'over conversation limit' });
     expect(rejected.statusCode).toBe(429); expect(rejected.json().code).toBe('CHAT_RATE_LIMITED');
   }, 60_000);
 });

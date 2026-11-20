@@ -34,7 +34,7 @@ const services = [
 ];
 const followUps = [
   { href: '/appointments', title: 'نوبت‌های من', icon: 'appointments' },
-  { href: '/treatment', title: 'درمان من', icon: 'treatment' },
+  { href: '/treatment', title: 'نسخه‌های من', icon: 'treatment' },
   { href: '/chat', title: 'گفتگو با پزشک', icon: 'chat' },
   { href: '/profile/medical?from=home', title: 'پرونده پزشکی', icon: 'medical' },
   { href: '/profile/wallet', title: 'کیف پول', icon: 'wallet' },

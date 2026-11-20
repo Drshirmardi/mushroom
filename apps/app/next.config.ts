@@ -8,6 +8,12 @@ const allowedDevOrigins = allowedDevOriginsFromEnvironment();
 const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: join(__dirname, "../.."),
+  async headers() {
+    return [
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' }] },
+      { source: '/offline.html', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
+    ];
+  },
   ...(allowedDevOrigins ? { allowedDevOrigins } : {}),
   experimental: {
     agentUpgrade: "security",

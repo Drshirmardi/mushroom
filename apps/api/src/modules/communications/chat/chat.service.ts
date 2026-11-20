@@ -9,7 +9,6 @@ import {
 import { createHash } from 'node:crypto';
 
 import {
-  AppointmentStatus,
   ChatAuditAction,
   ChatBlockScope,
   ChatBlockStatus,
@@ -19,7 +18,10 @@ import {
   ChatReportResolution,
   ChatReportResolutionAction,
   Prisma,
-} from '../../../generated/prisma/client';
+} from '../../../generated/chat-prisma/client';
+import { AppointmentStatus } from '../../../generated/prisma/client';
+import type { ChatAttachment } from './chat-attachments.service';
+import { ChatDatabaseService } from './chat-database.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import type { AccessTokenPrincipal } from '../../../common/auth/access-token.service';
 import type {
@@ -30,7 +32,7 @@ import type {
 } from './chat.dto';
 import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 
-type Db = PrismaService | Prisma.TransactionClient;
+type Db = Prisma.TransactionClient;
 type ChatActor = { userId: string; kind: ChatParticipantKind; isAdmin: boolean };
 type Conversation = Awaited<ReturnType<ChatService['conversation']>>;
 /**
@@ -73,19 +75,21 @@ const ACTIVE_BLOCKS = [ChatBlockStatus.PENDING_REVIEW, ChatBlockStatus.CONFIRMED
 
 @Injectable()
 export class ChatService {
-  constructor(private readonly prisma: PrismaService, private readonly publisher: ChatRealtimePublisher) {}
+  constructor(private readonly main: PrismaService, private readonly publisher: ChatRealtimePublisher, private readonly database: ChatDatabaseService) {}
+
+  private get prisma() { return this.database.client; }
 
   /** Shared policy for the engine bridge; room membership is never an authority. */
   async closeConversation(principal: AccessTokenPrincipal, conversationId: string) {
     return this.prisma.$transaction(async (tx) => {
       await this.lock(tx, `chat:conversation:${conversationId}`);
       const conversation = await this.conversation(conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       if (actor.kind !== ChatParticipantKind.DOCTOR && !actor.isAdmin) throw forbidden();
       if (!conversation.closedAt) {
         const now = new Date();
         await tx.chatConversation.update({ where: { id: conversationId }, data: { closedAt: now } });
-        await tx.auditEvent.create({ data: { action: 'CHAT_CONVERSATION_CLOSED', actorUserId: principal.userId, actorSessionId: principal.sessionId, subjectType: 'CHAT_CONVERSATION', subjectId: conversationId, metadata: { appointmentId: conversation.appointmentId } } });
+        await this.audit(tx, conversation, principal.userId, ChatAuditAction.MESSAGE_CREATED, 'CONVERSATION', conversationId, 'CONVERSATION_CLOSED');
       }
       return this.conversationResponse(await this.conversation(conversationId, tx));
     });
@@ -119,6 +123,60 @@ export class ChatService {
   async engineReceipt(principal: AccessTokenPrincipal, conversationId: string, messageId: string, read: boolean) {
     const message = await this.engineMessage(principal, conversationId, messageId);
     return this.acknowledgeReceipt(principal, conversationId, BigInt(message.sequence), read ? BigInt(message.sequence) : 0n);
+  }
+
+  async previousConversations(principal: AccessTokenPrincipal, appointmentId: string, before?: string) {
+    const anchor = await this.appointment(appointmentId);
+    const actor = await this.actorFor(principal, anchor);
+    const scope = {
+      clinicId: anchor.clinicId,
+      patientId: anchor.patientId,
+      doctorService: { visitMode: 'ONLINE' as const },
+      ...(actor.kind === ChatParticipantKind.DOCTOR ? { doctorId: anchor.doctorId } : {}),
+    };
+    const olderThanAnchor = { OR: [
+      { startsAt: { lt: anchor.startsAt } },
+      { startsAt: anchor.startsAt, id: { lt: anchor.id } },
+    ] };
+    let cursor: { startsAt: Date; id: string } = anchor;
+    if (before) {
+      const previous = await this.main.appointment.findFirst({
+        where: { ...scope, ...olderThanAnchor, id: before },
+        select: { id: true, startsAt: true },
+      });
+      if (!previous) throw forbidden();
+      cursor = previous;
+    }
+
+    const items: { conversationId: string; appointmentId: string; startsAt: Date; doctorName: string }[] = [];
+    const batch = 20;
+    for (let pass = 0; pass < 5; pass++) {
+      const appointments = await this.main.appointment.findMany({
+        where: { ...scope, OR: [
+          { startsAt: { lt: cursor.startsAt } },
+          { startsAt: cursor.startsAt, id: { lt: cursor.id } },
+        ] },
+        orderBy: [{ startsAt: 'desc' }, { id: 'desc' }],
+        take: batch + 1,
+        select: { id: true, doctorId: true, startsAt: true, doctor: { select: { displayName: true } } },
+      });
+      const candidates = appointments.slice(0, batch);
+      if (!candidates.length) return { items, nextCursor: null };
+      const existing = await this.prisma.chatConversation.findMany({
+        where: { clinicId: anchor.clinicId, patientId: anchor.patientId, appointmentId: { in: candidates.map(item => item.id) } },
+        select: { id: true, appointmentId: true, doctorId: true },
+      });
+      const conversations = new Map(existing.map(item => [item.appointmentId, item]));
+      for (const previous of candidates) {
+        const conversation = conversations.get(previous.id);
+        if (conversation?.doctorId !== previous.doctorId) continue;
+        items.push({ conversationId: conversation.id, appointmentId: previous.id, startsAt: previous.startsAt, doctorName: previous.doctor.displayName });
+      }
+      if (appointments.length <= batch) return { items, nextCursor: null };
+      cursor = candidates.at(-1)!;
+      if (items.length) break;
+    }
+    return { items, nextCursor: cursor.id };
   }
 
   async appointmentConversation(principal: AccessTokenPrincipal, appointmentId: string) {
@@ -195,7 +253,7 @@ export class ChatService {
     if (delivered < 0n || read < 0n || read > delivered) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt high-water marks are invalid.', details: {} });
     const receipt = await this.prisma.$transaction(async (tx) => {
       const conversation = await this.conversation(conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       this.assertSendEligibility(conversation.appointment, conversation);
       const max = await tx.chatMessage.aggregate({ where: { conversationId }, _max: { sequence: true } });
       if (delivered > (max._max.sequence ?? 0n)) throw new BadRequestException({ code: 'CHAT_SEQUENCE_INVALID', message: 'Receipt exceeds committed history.', details: {} });
@@ -247,19 +305,19 @@ export class ChatService {
     };
   }
 
-  async send(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto) {
-    return this.persistText(principal, conversationId, input);
+  async send(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto, attachment?: ChatAttachment) {
+    return this.persistText(principal, conversationId, input, attachment);
   }
 
-  private async persistText(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto) {
+  private async persistText(principal: AccessTokenPrincipal, conversationId: string, input: SendChatMessageDto, attachment?: ChatAttachment) {
     const body = input.body.normalize('NFC').trim();
-    if (!body) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A text message cannot be empty.', details: {} });
+    if (!body && !attachment) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A text message cannot be empty.', details: {} });
     if (Array.from(body).length > 4_000) throw tooLong();
-    const requestPayloadHash = createHash('sha256').update(JSON.stringify({ body })).digest('hex');
+    const requestPayloadHash = createHash('sha256').update(JSON.stringify({ body, attachment })).digest('hex');
 
     const outcome = await this.prisma.$transaction(async (tx) => {
       let conversation = await this.conversation(conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       await this.lock(tx, `chat:user:${actor.userId}`);
       await this.lock(tx, `chat:conversation:${conversation.id}`);
       conversation = await this.conversation(conversationId, tx);
@@ -279,19 +337,12 @@ export class ChatService {
       const last = await tx.chatMessage.aggregate({ where: { conversationId: conversation.id }, _max: { sequence: true } });
       const message = await tx.chatMessage.create({ data: {
         clinicId: conversation.clinicId, conversationId: conversation.id, sequence: (last._max.sequence ?? 0n) + 1n,
-        senderUserId: actor.userId, senderKind: actor.kind, clientMessageId: input.clientMessageId, requestPayloadHash, body,
+        senderUserId: actor.userId, senderKind: actor.kind, clientMessageId: input.clientMessageId, requestPayloadHash, body, ...(attachment ? { attachment } : {}),
       } });
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.MESSAGE_CREATED, 'MESSAGE', message.id);
-      await tx.outboxEvent.upsert({
-        where: { idempotencyKey: `chat-message:${message.id}` },
-        create: {
-          eventType: 'CHAT_MESSAGE_COMMITTED', aggregateType: 'CHAT_CONVERSATION', aggregateId: conversation.id,
-          idempotencyKey: `chat-message:${message.id}`,
-          payload: { conversationId: conversation.id, messageId: message.id, clinicId: conversation.clinicId },
-        }, update: {},
-      });
       return { message: this.messageResponse(message), committed: true, conversationId: conversation.id };
     }, { maxWait: 30_000, timeout: 30_000 });
+    if (outcome.committed) this.publisher.conversationChanged(outcome.conversationId);
     return outcome.message;
   }
 
@@ -300,7 +351,7 @@ export class ChatService {
       const message = await tx.chatMessage.findUnique({ where: { id: messageId } });
       if (!message) throw forbidden();
       const conversation = await this.conversation(message.conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       if (!actor.isAdmin && message.senderUserId === actor.userId) throw moderationForbidden();
       if (!actor.isAdmin && !this.canReport(actor.kind, message.senderKind)) throw moderationForbidden();
       const existing = await tx.chatModerationReport.findUnique({ where: { messageId_reporterUserId: { messageId: message.id, reporterUserId: actor.userId } } });
@@ -327,7 +378,7 @@ export class ChatService {
       const message = await tx.chatMessage.findUnique({ where: { id: messageId } });
       if (!message) throw moderationForbidden();
       const conversation = await this.conversation(message.conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       if (!actor.isAdmin) throw moderationForbidden();
       if (input.visibility === 'RESTRICTED' && !input.reasonCategory) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A restriction reason is required.', details: {} });
       if (input.reasonCategory === 'OTHER' && !this.safeNote(input.safeNote)) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'A non-sensitive note is required for OTHER.', details: {} });
@@ -351,7 +402,7 @@ export class ChatService {
       const message = await tx.chatMessage.findUnique({ where: { id: messageId } });
       if (!message) throw moderationForbidden();
       const conversation = await this.conversation(message.conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       if (!actor.isAdmin || message.visibility !== ChatMessageVisibility.RESTRICTED) throw moderationForbidden();
       await this.audit(tx, conversation, actor.userId, ChatAuditAction.RESTRICTED_CONTENT_REVIEWED, 'MESSAGE', message.id, message.restrictedReasonCategory ?? undefined);
       return { id: message.id, body: message.body, sequence: String(message.sequence), restrictedReasonCategory: message.restrictedReasonCategory };
@@ -363,7 +414,7 @@ export class ChatService {
       const report = await tx.chatModerationReport.findUnique({ where: { id: reportId }, include: { message: true } });
       if (!report) throw moderationForbidden();
       const conversation = await this.conversation(report.conversationId, tx);
-      const actor = await this.actorFor(principal, conversation.appointment, tx);
+      const actor = await this.actorFor(principal, conversation.appointment);
       if (!actor.isAdmin) throw moderationForbidden();
       this.assertResolutionCompatible(input);
       const existing = await tx.chatModerationReportDecision.findUnique({ where: { reportId: report.id } });
@@ -378,6 +429,35 @@ export class ChatService {
     });
     if (outcome.restrictedTransition) this.publisher.messageVisibilityChanged(outcome.restrictedTransition.conversationId, outcome.restrictedTransition.message);
     return outcome.response;
+  }
+
+  async attachment(principal: AccessTokenPrincipal, conversationId: string, messageId: string) {
+    const conversation = await this.conversation(conversationId);
+    await this.actorFor(principal, conversation.appointment);
+    const message = await this.prisma.chatMessage.findFirst({ where: { id: messageId, conversationId, visibility: ChatMessageVisibility.VISIBLE } });
+    if (!message?.attachment) throw forbidden();
+    return message.attachment as ChatAttachment;
+  }
+
+  async callHistoryAccess(principal: AccessTokenPrincipal, conversationId: string, callId: string) {
+    const conversation = await this.conversation(conversationId);
+    await this.actorFor(principal, conversation.appointment);
+    const marker = await this.prisma.chatMessage.findFirst({
+      where: { conversationId, callId, visibility: ChatMessageVisibility.VISIBLE },
+      select: { id: true },
+    });
+    if (!marker) throw forbidden();
+    return conversation.appointment.id;
+  }
+
+  async callAccess(principal: AccessTokenPrincipal, appointmentId: string) {
+    const appointment = await this.appointment(appointmentId);
+    const actor = await this.actorFor(principal, appointment);
+    const conversation = await this.ensureConversation(appointment, actor);
+    this.assertSendEligibility(appointment, conversation);
+    if (appointment.status === AppointmentStatus.COMPLETED) throw closed();
+    await this.assertNotBlocked(this.prisma, conversation, actor);
+    return { actor, patientUserId: appointment.patient.userId, conversation };
   }
 
   private async ensureConversation(appointment: Awaited<ReturnType<ChatService['appointment']>>, actor: ChatActor) {
@@ -400,24 +480,26 @@ export class ChatService {
     }
   }
 
-  private async appointment(id: string, tx: Db = this.prisma) {
-    const appointment = await tx.appointment.findUnique({ where: { id }, include: { clinic: { select: { status: true } }, doctorService: { select: { visitMode: true } }, patient: { select: { userId: true } }, doctor: { select: { userId: true } } } });
+  private async appointment(id: string) {
+    const appointment = await this.main.appointment.findUnique({ where: { id }, include: { clinic: { select: { status: true } }, doctorService: { select: { visitMode: true } }, patient: { select: { userId: true } }, doctor: { select: { userId: true } } } });
     if (!appointment || appointment.clinic.status !== 'ACTIVE' || appointment.doctorService.visitMode !== 'ONLINE') throw forbidden();
     return appointment;
   }
 
   private async conversation(id: string, tx: Db = this.prisma) {
-    const conversation = await tx.chatConversation.findUnique({ where: { id }, include: { appointment: { include: { clinic: { select: { status: true } }, doctorService: { select: { visitMode: true } }, patient: { select: { userId: true } }, doctor: { select: { userId: true } } } } } });
-    if (!conversation || conversation.appointment.clinic.status !== 'ACTIVE' || conversation.appointment.doctorService.visitMode !== 'ONLINE') throw forbidden();
-    return conversation;
+    const conversation = await tx.chatConversation.findUnique({ where: { id } });
+    if (!conversation) throw forbidden();
+    const appointment = await this.appointment(conversation.appointmentId);
+    if (conversation.clinicId !== appointment.clinicId || conversation.patientId !== appointment.patientId || conversation.doctorId !== appointment.doctorId) throw forbidden();
+    return { ...conversation, appointment };
   }
 
-  private async actorFor(principal: AccessTokenPrincipal, appointment: Awaited<ReturnType<ChatService['appointment']>>, tx: Db = this.prisma): Promise<ChatActor> {
+  private async actorFor(principal: AccessTokenPrincipal, appointment: Awaited<ReturnType<ChatService['appointment']>>): Promise<ChatActor> {
     // Access tokens deliberately remain short lived, but chat access also has to
     // follow the server-side session lifecycle.  In particular, a token whose
     // session was revoked must not remain usable for REST history or mutations
     // until its JWT expiry.
-    const active = await tx.user.findFirst({
+    const active = await this.main.user.findFirst({
       where: {
         id: principal.userId,
         status: 'ACTIVE',
@@ -433,7 +515,7 @@ export class ChatService {
     });
     if (!active) throw forbidden();
     if (principal.roles.includes('ADMIN')) {
-      const clinicAccess = await tx.clinicalClinicAccess.findFirst({ where: { userId: principal.userId, clinicId: appointment.clinicId }, select: { userId: true } });
+      const clinicAccess = await this.main.clinicalClinicAccess.findFirst({ where: { userId: principal.userId, clinicId: appointment.clinicId }, select: { userId: true } });
       if (clinicAccess) return { userId: principal.userId, kind: ChatParticipantKind.CLINIC_OPERATOR, isAdmin: true };
     }
     if (principal.roles.includes('PATIENT') && appointment.patient.userId === principal.userId) return { userId: principal.userId, kind: ChatParticipantKind.PATIENT, isAdmin: false };
@@ -448,7 +530,7 @@ export class ChatService {
     if (Date.now() < appointment.startsAt.getTime() - 15 * 60_000) throw new ForbiddenException({ code: 'CHAT_WINDOW_CLOSED', message: 'Chat opens fifteen minutes before the appointment.', details: { opensAt: new Date(appointment.startsAt.getTime() - 15 * 60_000).toISOString() } });
   }
 
-  private async assertNotBlocked(tx: Db, conversation: Conversation, actor: ChatActor) {
+  private async assertNotBlocked(tx: Db, conversation: Pick<Conversation, "id">, actor: ChatActor) {
     const scopes = actor.kind === ChatParticipantKind.DOCTOR ? [ChatBlockScope.PATIENT_DOCTOR] : actor.kind === ChatParticipantKind.CLINIC_OPERATOR ? [ChatBlockScope.PATIENT_CLINIC_OPERATOR] : [ChatBlockScope.PATIENT_DOCTOR, ChatBlockScope.PATIENT_CLINIC_OPERATOR];
     const active = await tx.chatConversationBlock.findFirst({ where: { conversationId: conversation.id, scope: { in: scopes }, status: { in: ACTIVE_BLOCKS } }, select: { id: true } });
     if (active) throw blocked();
@@ -536,8 +618,8 @@ export class ChatService {
     await tx.chatAuditEvent.create({ data: { clinicId: conversation.clinicId, conversationId: conversation.id, actorUserId, action, targetType, targetId, safeCategory } });
   }
 
-  private messageResponse(message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; body: string; visibility: ChatMessageVisibility; restrictedReasonCategory: any; createdAt: Date }) {
-    return { id: message.id, sequence: String(message.sequence), senderKind: message.senderKind, createdAt: message.createdAt, visibility: message.visibility, ...(message.visibility === ChatMessageVisibility.VISIBLE ? { body: message.body } : { restrictedReasonCategory: message.restrictedReasonCategory, tombstone: 'Conversation content has been restricted under policy.' }) };
+  private messageResponse(message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; body: string; callId?: string | null; attachment?: Prisma.JsonValue; visibility: ChatMessageVisibility; restrictedReasonCategory: any; createdAt: Date }) {
+    return { id: message.id, sequence: String(message.sequence), senderKind: message.senderKind, createdAt: message.createdAt, visibility: message.visibility, ...(message.visibility === ChatMessageVisibility.VISIBLE ? { body: message.body, ...(message.callId ? { callId: message.callId } : {}), attachment: this.attachmentMetadata(message.attachment) } : { restrictedReasonCategory: message.restrictedReasonCategory, tombstone: 'Conversation content has been restricted under policy.' }) };
   }
 
   private restrictionTransition(conversation: { id: string }, message: { id: string; sequence: bigint; senderKind: ChatParticipantKind; createdAt: Date; visibility: ChatMessageVisibility; restrictedReasonCategory: string | null }): RestrictedMessageTransition {
@@ -560,8 +642,14 @@ export class ChatService {
     return { conversationId: conversation.id, messageId: message.id, sequence: String(message.sequence), visibility: message.visibility as 'RESTRICTED' | 'VISIBLE' };
   }
 
+  private attachmentMetadata(raw?: Prisma.JsonValue) {
+    if (!raw) return undefined;
+    const { name, mime, size } = raw as ChatAttachment;
+    return { name, mime, size };
+  }
+
   private conversationResponse(conversation: { id: string; appointmentId: string; clinicId: string; patientId: string; doctorId: string; createdAt: Date; closedAt?: Date | null }) {
-    return { id: conversation.id, appointmentId: conversation.appointmentId, clinicId: conversation.clinicId, patientId: conversation.patientId, doctorId: conversation.doctorId, createdAt: conversation.createdAt, closedAt: conversation.closedAt ?? null, transport: 'ejabberd' as const };
+    return { id: conversation.id, appointmentId: conversation.appointmentId, clinicId: conversation.clinicId, patientId: conversation.patientId, doctorId: conversation.doctorId, createdAt: conversation.createdAt, closedAt: conversation.closedAt ?? null, transport: 'mushroom' as const };
   }
   private safeNote(note?: string) { const normalized = note?.normalize('NFC').trim(); return normalized || null; }
   private cursor(conversationId: string, sequence: bigint) { return Buffer.from(JSON.stringify({ v: 1, c: conversationId, s: String(sequence) })).toString('base64url'); }

@@ -1,4 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ChatDatabaseService } from '../../communications/chat/chat-database.service';
+import { ChatCallService } from '../../communications/chat/chat-call.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { Prisma, type Appointment, type AppointmentStatus } from '../../../generated/prisma/client';
 import { GuidanceAuthorityService, type GuidanceActorContext as Context } from '../../content/guidance/guidance-authority.service';
@@ -11,13 +13,13 @@ const missing = () => new NotFoundException({ code: 'ASSIGNED_CONSULTATION_NOT_F
 const forbidden = () => new ForbiddenException({ code: 'FORBIDDEN', message: 'Current assigned physician clinical capability required.', details: {} });
 const select = { id: true, clinicId: true, doctorId: true, patientId: true, doctorServiceId: true, status: true, startsAt: true, endsAt: true, startedAt: true, completedAt: true,
   patient: { select: { user: { select: { userProfile: { select: { firstName: true, lastName: true } } } } } },
-  doctorService: { select: { visitMode: true, service: { select: { name: true } } } }, encounter: { select: { id: true, state: true } }, chatConversation: { select: { id: true, patientId: true, doctorId: true, clinicId: true } },
+  doctorService: { select: { visitMode: true, service: { select: { name: true } } } }, encounter: { select: { id: true, state: true } },
 } satisfies Prisma.AppointmentSelect;
 type Row = Prisma.AppointmentGetPayload<{ select: typeof select }>;
 
 @Injectable()
 export class AssignedAppointmentService {
-  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly audit: ClinicalAccessAuditService, private readonly operations: AdminAppointmentsService) {}
+  constructor(private readonly prisma: PrismaService, private readonly authority: GuidanceAuthorityService, private readonly audit: ClinicalAccessAuditService, private readonly operations: AdminAppointmentsService, private readonly chat: ChatDatabaseService, private readonly calls: ChatCallService) {}
   async list(query: AssignedAppointmentQueryDto, ctx: Context) {
     const offset = (query.page - 1) * query.pageSize; if (!Number.isSafeInteger(offset) || offset > 2_147_483_647) throw new BadRequestException({ code: 'BAD_REQUEST', message: 'Pagination offset exceeds the supported range.', details: {} });
     return this.prisma.$transaction(async tx => {
@@ -56,8 +58,10 @@ export class AssignedAppointmentService {
   private view(row: Row): AssignedAppointmentDto { const name = row.patient.user.userProfile; return { id: row.id, patientId: row.patientId, patientDisplayName: [name?.firstName, name?.lastName].filter(Boolean).join(' ') || null, doctorServiceId: row.doctorServiceId, serviceName: row.doctorService.service.name, visitMode: row.doctorService.visitMode, status: row.status, startsAt: row.startsAt, endsAt: row.endsAt, startedAt: row.startedAt, completedAt: row.completedAt }; }
   private async context(tx: Tx, row: Row, actor: Actor): Promise<AssignedConsultationContextDto> {
     const [window, busy, sharing] = await Promise.all([this.open(tx, row), tx.appointment.count({ where: { clinicId: actor.clinicId, doctorId: actor.doctorId, status: 'IN_PROGRESS', id: { not: row.id } } }), tx.$queryRaw<{ allowed: boolean }[]>(Prisma.sql`SELECT EXISTS(SELECT 1 FROM assessment_care_shares WHERE appointment_id=${row.id}::uuid AND patient_id=${row.patientId}::uuid AND doctor_id=${actor.doctorId}::uuid AND clinic_id=${actor.clinicId}::uuid AND withdrawn_at IS NULL AND assessment_care_share_current(id,true)) AS allowed`)]);
-    const conversation = row.chatConversation; const same = conversation && conversation.patientId === row.patientId && conversation.doctorId === actor.doctorId && conversation.clinicId === actor.clinicId;
-    return { ...this.view(row), canStart: actor.canEdit && window && !busy && ['CHECKED_IN', 'QUEUED'].includes(row.status), canComplete: actor.canEdit && window && !busy && row.status === 'IN_PROGRESS' && row.encounter?.state === 'IN_PROGRESS', canOpenAssessmentContext: !!sharing[0]?.allowed, encounter: row.encounter, textConsultationSupported: row.doctorService.visitMode === 'ONLINE', conversationId: row.doctorService.visitMode === 'ONLINE' && same ? conversation.id : null, voiceSupported: false, videoSupported: false };
+    const conversation = row.doctorService.visitMode === 'ONLINE' && this.chat.configured
+      ? await this.chat.client.chatConversation.findUnique({ where: { appointmentId: row.id } }).catch(() => null)
+      : null; const same = conversation && conversation.patientId === row.patientId && conversation.doctorId === actor.doctorId && conversation.clinicId === actor.clinicId;
+    return { ...this.view(row), canStart: actor.canEdit && window && !busy && ['CHECKED_IN', 'QUEUED'].includes(row.status), canComplete: actor.canEdit && window && !busy && row.status === 'IN_PROGRESS' && row.encounter?.state === 'IN_PROGRESS', canOpenAssessmentContext: !!sharing[0]?.allowed, encounter: row.encounter, textConsultationSupported: row.doctorService.visitMode === 'ONLINE', conversationId: row.doctorService.visitMode === 'ONLINE' && same ? conversation.id : null, voiceSupported: row.doctorService.visitMode === 'ONLINE' && this.calls.available, videoSupported: row.doctorService.visitMode === 'ONLINE' && this.calls.available };
   }
   private async open(tx: Tx, appointment: { status: AppointmentStatus; startsAt: Date; endsAt: Date }) {
     if (!['CONFIRMED', 'CHECKED_IN', 'QUEUED', 'IN_PROGRESS'].includes(appointment.status)) return false;

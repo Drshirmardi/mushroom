@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { Subject } from 'rxjs';
 
 @Injectable()
 export class ChatRealtimePublisher {
-  private engineVisibility?: (conversationId: string, message: unknown) => void;
+  readonly changes = new Subject<string>();
 
-  bindEngineVisibility(handler?: (conversationId: string, message: unknown) => void) { this.engineVisibility = handler; }
+  conversationChanged(id: string) { this.changes.next(id); }
 
-  /** A body-free post-commit state replacement for an already delivered message. */
-  messageVisibilityChanged(conversationId: string, message: unknown) {
-    this.engineVisibility?.(conversationId, message);
+  messageVisibilityChanged(conversationId: string, _message: unknown) {
+    this.conversationChanged(conversationId);
   }
 }

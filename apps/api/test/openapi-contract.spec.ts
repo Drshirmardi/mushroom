@@ -233,12 +233,12 @@ describe('identity OpenAPI contract', () => {
     }
   });
 
-  it('publishes protected engine sessions and retained REST reads without the retired send operation', () => {
+  it('publishes protected communication routes', () => {
     const paths = document.paths;
     const chatOperations = [
       ['/v1/chat/appointments/{appointmentId}/conversation', 'get', 'chatAppointmentConversationGet'],
       ['/v1/chat/conversations/{conversationId}/messages', 'get', 'chatConversationHistory'],
-      ['/v1/chat/appointments/{appointmentId}/session', 'post', 'chatAppointmentEngineSessionCreate'],
+      ['/v1/chat/conversations/{conversationId}/messages', 'post', 'chatConversationSend'],
       ['/v1/chat/conversations/{conversationId}/close', 'post', 'chatConversationClose'],
       ['/v1/chat/messages/{messageId}/reports', 'post', 'chatMessageReportCreate'],
       ['/v1/chat/messages/{messageId}/visibility', 'post', 'chatMessageVisibilityChange'],
@@ -249,17 +249,16 @@ describe('identity OpenAPI contract', () => {
       expect(paths[path][method].operationId).toBe(operationId);
       expect(paths[path][method].security).toEqual([{ bearerAuth: [] }]);
     }
-    expect(paths['/v1/chat/conversations/{conversationId}/messages'].post).toBeUndefined();
-    expect(paths['/v1/chat/ejabberd/policy']).toBeUndefined();
-    expect(document.components.schemas.EjabberdSessionDto.properties.transport.enum).toEqual(['ejabberd']);
-    const appointmentIdParameter = paths['/v1/chat/appointments/{appointmentId}/session'].post.parameters.find(
+    expect(paths['/v1/chat/internal/video-lease']).toBeUndefined();
+    expect(document.components.schemas.ChatConversationResponseDto.properties.transport.enum).toEqual(['mushroom']);
+    const appointmentIdParameter = paths['/v1/chat/appointments/{appointmentId}/conversation'].get.parameters.find(
       (parameter: { name: string; in: string }) => parameter.name === 'appointmentId' && parameter.in === 'path',
     );
     expect(appointmentIdParameter).toMatchObject({
       name: 'appointmentId',
       in: 'path',
       required: true,
-      schema: { type: 'string', format: 'uuid' },
+      schema: { type: 'string' },
     });
     const errors = document.components.schemas.ApiErrorResponseDto.properties.code.enum;
     expect(errors).toEqual(expect.arrayContaining([

@@ -27,7 +27,18 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U sabz_zendegi -d sabz_zendegi"
           --health-interval 10s --health-timeout 5s --health-retries 5
+      communications-postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mushroom_communications
+          POSTGRES_USER: mushroom_communications
+          POSTGRES_PASSWORD: ci-communications-password
+        ports: ['55420:5432']
+        options: >-
+          --health-cmd "pg_isready -U mushroom_communications -d mushroom_communications"
+          --health-interval 5s --health-timeout 5s --health-retries 10
     env:
+      CHAT_DATABASE_URL: postgresql://mushroom_communications:ci-communications-password@localhost:55420/mushroom_communications
       DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/sabz_zendegi?schema=public
       JWT_ACCESS_SECRET: ci-only-jwt-access-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
       REFRESH_TOKEN_PEPPER: ci-only-refresh-token-pepper-9876543210-ZYXWVUTSRQPONMLKJIHGFEDCBA
@@ -45,6 +56,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @sabz-zendegi/api prisma:generate
+      - run: pnpm --filter @sabz-zendegi/api prisma:chat:migrate:deploy
       - run: pnpm --filter @sabz-zendegi/api exec prisma validate
       - run: pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
       - run: pnpm --filter @sabz-zendegi/api prisma:seed

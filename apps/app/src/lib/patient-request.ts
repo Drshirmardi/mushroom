@@ -42,7 +42,7 @@ export const PATIENT_CACHE_TTL_MS = {
   articles: 300_000,
   banners: 120_000,
   profile: 300_000,
-  home: 30_000,
+  home: 300_000,
 } as const;
 export const PATIENT_CACHE_LIMIT = 20;
 
@@ -51,6 +51,19 @@ type CacheRecord = { expiresAt: number; value: unknown };
 const cachedValues = new Map<string, CacheRecord>();
 const cachedRequests = new Map<string, Promise<unknown>>();
 const sessionRequests = new Set<AbortController>();
+const resourceListeners = new Map<string, Set<() => void>>();
+
+export function subscribePatientResource(resource: string, listener: () => void): () => void {
+  const listeners = resourceListeners.get(resource) ?? new Set<() => void>();
+  listeners.add(listener);
+  resourceListeners.set(resource, listeners);
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0 && resourceListeners.get(resource) === listeners) {
+      resourceListeners.delete(resource);
+    }
+  };
+}
 
 export function patientCacheKey(token: string, resource: string): string {
   return `${resource}\0${token}`;
@@ -71,6 +84,16 @@ export function invalidatePatientResource(resource: string): void {
   for (const key of cachedRequests.keys()) {
     if (key.startsWith(prefix)) cachedRequests.delete(key);
   }
+  for (const listener of resourceListeners.get(resource) ?? []) listener();
+}
+
+export async function invalidatePatientResourcesOnSuccess<T>(
+  request: Promise<T>,
+  ...resources: string[]
+): Promise<T> {
+  const value = await request;
+  for (const resource of resources) invalidatePatientResource(resource);
+  return value;
 }
 
 function remember(cacheKey: string, record: CacheRecord) {

@@ -60,6 +60,7 @@ case "$command_name" in
     fi
     if [[ ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
+      pnpm --filter @sabz-zendegi/api prisma:chat:migrate:deploy
     fi
     if [[ ${DEV_COMPILE_API:-false} == true ]]; then
       [[ ${DEV_API_SOURCE_HASH:-} =~ ^[0-9a-f]{64}$ ]] || {

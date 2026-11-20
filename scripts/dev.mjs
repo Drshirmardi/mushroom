@@ -1,7 +1,7 @@
-import { createHash, createPublicKey, generateKeyPairSync, randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
-import { dirname, resolve, sep } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import net from 'net';
 import { parseEnv } from 'node:util';
@@ -14,6 +14,7 @@ const children = new Set();
 let stopping = false;
 let ownsLock = false;
 let composeStarted = false;
+let ownsLocalMainDatabase = false;
 let composeEnvironment;
 
 function terminate(child) {
@@ -89,7 +90,7 @@ const compose = (...args) =>
       '--project-directory',
       root,
       '--file',
-      resolve(root, 'deploy/ejabberd/compose.local.yaml'),
+      resolve(root, 'deploy/mirotalk/compose.local.yaml'),
       ...args,
     ],
     composeEnvironment,
@@ -129,9 +130,9 @@ const composeDb = (...args) =>
       '--project-directory',
       root,
       '--file',
-      resolve(root, 'deploy/ejabberd/compose.local.yaml'),
+      resolve(root, 'deploy/mirotalk/compose.local.yaml'),
       '--file',
-      resolve(root, 'deploy/ejabberd/compose.main-db.local.yaml'),
+      resolve(root, 'deploy/mirotalk/compose.main-db.local.yaml'),
       ...args,
     ],
     composeEnvironment,
@@ -156,13 +157,14 @@ function claim() {
 }
 
 function prepareSecrets() {
-  const path = resolve(state, 'credentials.json');
+  const path = resolve(state, 'communications-credentials.json');
   if (!existsSync(path))
     writeFileSync(
       path,
       JSON.stringify({
         sqlPassword: randomBytes(32).toString('base64url'),
-        policySecret: randomBytes(32).toString('base64url'),
+        videoSecret: randomBytes(32).toString('base64url'),
+        storageSecret: randomBytes(32).toString('base64url'),
       }),
       { flag: 'wx', mode: 0o600 },
     );
@@ -176,46 +178,16 @@ function prepareSecrets() {
   }
   if (
     !credentials ||
-    ![credentials.sqlPassword, credentials.policySecret].every(
+    ![credentials.sqlPassword, credentials.videoSecret, credentials.storageSecret].every(
       (value) => typeof value === 'string' && /^[\w-]{43}$/u.test(value),
     ) ||
-    credentials.sqlPassword === credentials.policySecret
+    credentials.sqlPassword === credentials.videoSecret
   ) {
     throw new Error(
       'Local chat credentials are invalid; restore .local/chat from your local backup.',
     );
   }
-  const privateKey = resolve(state, 'private.pem');
-  const publicKey = resolve(state, 'public.pem');
-  if (!existsSync(privateKey)) {
-    if (existsSync(publicKey))
-      throw new Error('Local chat private key is missing; restore it before continuing.');
-    const pair = generateKeyPairSync('rsa', {
-      modulusLength: 3072,
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-    });
-    writeFileSync(privateKey, pair.privateKey, { flag: 'wx', mode: 0o600 });
-    writeFileSync(publicKey, pair.publicKey, { flag: 'wx', mode: 0o644 });
-  }
-  const expected = createPublicKey(readFileSync(privateKey)).export({
-    type: 'spki',
-    format: 'pem',
-  });
-  if (!existsSync(publicKey)) writeFileSync(publicKey, expected, { flag: 'wx', mode: 0o644 });
-  if (createPublicKey(readFileSync(publicKey)).export({ type: 'spki', format: 'pem' }) !== expected)
-    throw new Error('Local chat signing keys do not match.');
-  // ejabberd's jwt_key loader accepts JSON JWK, not PEM.
-  const jwkPath = resolve(state, 'public.jwk');
-  const jwk =
-    JSON.stringify({
-      ...createPublicKey(expected).export({ format: 'jwk' }),
-      alg: 'RS256',
-      use: 'sig',
-    }) + '\n';
-  if (!existsSync(jwkPath) || readFileSync(jwkPath, 'utf8') !== jwk)
-    writeFileSync(jwkPath, jwk, { mode: 0o644 });
-  return { ...credentials, privateKey };
+  return credentials;
 }
 
 try {
@@ -235,10 +207,12 @@ try {
   }
   if (!process.env.npm_execpath) throw new Error('Start development with pnpm dev.');
   const apiPort = port(api.PORT, 3003);
-  const wsPort = port(api.DEV_CHAT_WS_PORT, 5444);
-  const adminPort = port(api.DEV_CHAT_ADMIN_PORT, 5445);
-  if (new Set([apiPort, wsPort, adminPort]).size !== 3)
-    throw new Error('API and chat ports must be different.');
+  const videoPort = port(api.DEV_CHAT_VIDEO_PORT, 5444);
+  const dbPort = port(api.DEV_CHAT_DB_PORT, 5546);
+  const storagePort = port(api.DEV_CHAT_S3_PORT, 5446);
+  const scannerPort = port(api.DEV_CHAT_SCAN_PORT, 3310);
+  if (new Set([apiPort, videoPort, dbPort, storagePort, scannerPort]).size !== 5)
+    throw new Error('API and communications ports must be different.');
   claim();
   console.log('[dev] Preparing local chat. Docker Desktop/Engine must be running.');
   try {
@@ -266,22 +240,28 @@ try {
   const secrets = prepareSecrets();
   composeEnvironment = {
     ...process.env,
-    DEV_CHAT_INSTANCE: instance,
-    DEV_CHAT_SOURCE_ROOT: root.split(sep).join('/'),
-    DEV_CHAT_STATE_ROOT: state.split(sep).join('/'),
     DEV_CHAT_API_PORT: apiPort,
-    DEV_CHAT_WS_PORT: wsPort,
-    DEV_CHAT_ADMIN_PORT: adminPort,
+    DEV_CHAT_VIDEO_PORT: videoPort,
+    DEV_CHAT_DB_PORT: dbPort,
+    DEV_CHAT_S3_PORT: storagePort,
+    DEV_CHAT_SCAN_PORT: scannerPort,
     DEV_CHAT_SQL_PASSWORD: secrets.sqlPassword,
-    DEV_CHAT_POLICY_SECRET: secrets.policySecret,
+    DEV_CHAT_VIDEO_SECRET: secrets.videoSecret,
+    DEV_CHAT_STORAGE_SECRET: secrets.storageSecret,
   };
   composeStarted = true;
   // A stopped project keeps its volumes and credentials; never reset SQL on startup.
   const mainDbPort = 5432;
   if (await isPortInUse(mainDbPort)) {
-    await compose('up', '--detach', '--build', '--wait', '--wait-timeout', '120');
+    await compose('up', '--detach', '--build', '--wait', '--wait-timeout', '120', 'chat-postgres', 'chat-storage', 'mirotalk');
   } else {
-    await composeDb('up', '--detach', '--build', '--wait', '--wait-timeout', '120');
+    ownsLocalMainDatabase = true;
+    await composeDb('up', '--detach', '--build', '--wait', '--wait-timeout', '120', 'main-postgres', 'chat-postgres', 'chat-storage', 'mirotalk');
+  }
+  try {
+    await compose('up', '--detach', 'chat-scanner');
+  } catch {
+    console.error('[dev] ClamAV did not start. Message and video are available, and attachment upload requires ClamAV.');
   }
   if (stopping) throw new Error('Development startup cancelled.');
   const environment = {
@@ -289,13 +269,24 @@ try {
     NODE_ENV: 'development',
     PORT: apiPort,
     HOSTNAME: '0.0.0.0',
-    EJABBERD_DOMAIN: 'chat.localhost',
-    EJABBERD_WEBSOCKET_URL: `ws://127.0.0.1:${wsPort}/xmpp-websocket`,
-    EJABBERD_API_URL: `http://127.0.0.1:${adminPort}/api/v2`,
-    EJABBERD_POLICY_SECRET: secrets.policySecret,
-    EJABBERD_JWT_PRIVATE_KEY_FILE: secrets.privateKey,
-    EJABBERD_REQUEST_TIMEOUT_MS: '3000',
+    CHAT_DATABASE_URL: 'postgresql://mushroom_communications:' + secrets.sqlPassword + '@127.0.0.1:' + dbPort + '/mushroom_communications',
+    CHAT_VIDEO_ENABLED: 'true',
+    CHAT_VIDEO_ORIGIN: 'http://localhost:' + videoPort,
+    CHAT_VIDEO_SECRET: secrets.videoSecret,
+    CHAT_S3_ENDPOINT: 'http://127.0.0.1:' + storagePort,
+    CHAT_S3_BUCKET: 'mushroom-communications',
+    CHAT_S3_ACCESS_KEY: 'mushroom-communications',
+    CHAT_S3_SECRET_KEY: secrets.storageSecret,
+    CHAT_CLAMAV_HOST: '127.0.0.1',
+    CHAT_CLAMAV_PORT: scannerPort,
   };
+  for (const args of [
+    ['exec', 'prisma', 'generate', '--config', 'prisma.chat.config.ts'],
+    ['prisma:chat:migrate:deploy'],
+    ['exec', 'node', 'scripts/prepare-local-chat-storage.mjs'],
+  ]) {
+    await run(process.execPath, [process.env.npm_execpath, '--filter', '@sabz-zendegi/api', ...args], environment);
+  }
   console.log(
     '[dev] Chat dependencies are running. Preparing the shared client, then starting applications.',
   );
@@ -318,7 +309,7 @@ try {
   if (composeStarted) {
     console.log('[dev] Stopping local chat containers; data and keys are retained.');
     try {
-      await compose('stop', '--timeout', '5');
+      await (ownsLocalMainDatabase ? composeDb : compose)('stop', '--timeout', '5');
     } catch {
       console.error(
         '[dev] Chat shutdown could not complete. Check the local Docker project; no volumes were removed.',

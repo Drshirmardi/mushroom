@@ -11,6 +11,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./chat-ui": {
+      "types": "./dist/chat-ui.d.ts",
+      "import": "./dist/chat-ui.js"
     }
   },
   "files": [
@@ -24,13 +28,16 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "events": "3.3.0",
     "openapi-fetch": "^0.15.0",
-    "stanza": "12.22.1"
+    "lucide-react": "0.487.0"
   },
   "devDependencies": {
     "openapi-typescript": "^7.10.0",
     "typescript": "^5.8.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "@types/react": "^19.2.18"
+  },
+  "peerDependencies": {
+    "react": "^19.2.8"
   }
 }

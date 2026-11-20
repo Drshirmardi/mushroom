@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("./api", () => ({ apiClient: { GET: vi.fn(), PUT: vi.fn(), POST: vi.fn() } }));
 
 import { apiClient } from "./api";
-import { clearPatientRequestCache } from "./patient-request";
+import { clearPatientRequestCache, patientCacheKey, patientCachedData, peekPatientCache } from "./patient-request";
 import { CommerceRequestError, checkoutCommerceOrder, commerceErrorMessage, createPaymentAttempt, getCommerceReceipt, listCommerceProducts, updateCommerceCart } from "./commerce-catalog-api";
 
 describe("commerce catalog API adapter", () => {
@@ -24,9 +24,12 @@ describe("commerce catalog API adapter", () => {
   });
 
   it("submits only the shipping selection with an idempotency key; amount is never client input", async () => {
+    const home = patientCacheKey("session", "home");
+    await patientCachedData(home, 10_000, async () => "before checkout");
     vi.mocked(apiClient.POST).mockResolvedValue({ data: { id: "11111111-1111-4111-8111-111111111111" }, response: new Response(null, { status: 201 }) } as never);
     await checkoutCommerceOrder("access-token", "checkout-key", { shippingMethod: "PICKUP" });
     expect(apiClient.POST).toHaveBeenCalledWith("/v1/patients/me/orders", { headers: { authorization: "Bearer access-token", "idempotency-key": "checkout-key" }, body: { shippingMethod: "PICKUP" } });
+    expect(peekPatientCache(home)).toBeUndefined();
   });
 
   it("maps stable checkout failures to actionable patient messages", () => {

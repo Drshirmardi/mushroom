@@ -1,6 +1,7 @@
 import { type components, withRequestTimeout } from "@sabz-zendegi/api-client";
 
 import { apiClient, baleSessionHeaders } from "./api";
+import { invalidatePatientResource } from "./patient-request";
 
 export type WalletSummary = components["schemas"]["WalletSummaryDto"];
 export type WalletTransaction = components["schemas"]["WalletTransactionDto"];
@@ -8,6 +9,13 @@ export type WalletTransactionPage = components["schemas"]["WalletTransactionPage
 export type BillingIntent = components["schemas"]["BillingIntentDto"];
 export type BillingPaymentMethod = components["schemas"]["BillingPaymentMethodDto"];
 export type BillingGatewayAttempt = components["schemas"]["BillingGatewayAttemptDto"];
+
+function refreshHomeForPaidIntent(intent: BillingIntent): BillingIntent {
+  if (intent.status === "PAID" && (intent.purpose === "APPOINTMENT" || intent.purpose === "ORDER")) {
+    invalidatePatientResource("home");
+  }
+  return intent;
+}
 
 export class WalletRequestError extends Error {
   constructor(
@@ -78,7 +86,7 @@ export const createAppointmentIntent = (
       params: { header: idempotentHeader(idempotencyKey) },
       body,
     }),
-  );
+  ).then(refreshHomeForPaidIntent);
 
 export const getBillingIntent = (accessToken: string, intentId: string) =>
   expectData<BillingIntent>(
@@ -86,7 +94,7 @@ export const getBillingIntent = (accessToken: string, intentId: string) =>
       headers: authorization(accessToken),
       params: { path: { id: intentId } },
     }),
-  );
+  ).then(refreshHomeForPaidIntent);
 
 export const cancelBillingIntent = (accessToken: string, intentId: string, idempotencyKey: string) =>
   expectData<BillingIntent>(
@@ -102,7 +110,7 @@ export const payWithWallet = (accessToken: string, intentId: string, idempotency
       headers: authorization(accessToken),
       params: { path: { id: intentId }, header: idempotentHeader(idempotencyKey) },
     }),
-  );
+  ).then(refreshHomeForPaidIntent);
 
 export const createGatewayAttempt = (accessToken: string, intentId: string, idempotencyKey: string) =>
   expectData<BillingGatewayAttempt>(

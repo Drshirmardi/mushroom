@@ -1,0 +1,61 @@
+services:
+  chat-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: mushroom_communications
+      POSTGRES_USER: mushroom_communications
+      POSTGRES_PASSWORD: "${DEV_CHAT_SQL_PASSWORD:?}"
+    ports:
+      - "127.0.0.1:${DEV_CHAT_DB_PORT:-5546}:5432"
+    volumes:
+      - communications_sql:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, mushroom_communications, -d, mushroom_communications]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  chat-storage:
+    build:
+      context: ./deploy/mirotalk
+      dockerfile: Dockerfile.storage
+    command: [mini, "-dir=/data", "-bucket=mushroom-communications", "-volume.max=2"]
+    environment:
+      AWS_ACCESS_KEY_ID: mushroom-communications
+      AWS_SECRET_ACCESS_KEY: "${DEV_CHAT_STORAGE_SECRET:?}"
+    ports:
+      - "127.0.0.1:${DEV_CHAT_S3_PORT:-5446}:8333"
+    volumes:
+      - communications_objects:/data
+    healthcheck:
+      test: [CMD, curl, -sS, "http://127.0.0.1:8333/"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  chat-scanner:
+    image: "${DEV_CHAT_CLAMAV_IMAGE:-clamav/clamav:1.4}"
+    ports:
+      - "127.0.0.1:${DEV_CHAT_SCAN_PORT:-3310}:3310"
+    volumes:
+      - communications_scan:/var/lib/clamav
+
+  mirotalk:
+    build: ./deploy/mirotalk
+    environment:
+      CHAT_VIDEO_SECRET: "${DEV_CHAT_VIDEO_SECRET:?}"
+      MUSHROOM_VIDEO_LEASE_URL: "http://host.docker.internal:${DEV_CHAT_API_PORT:-3003}/v1/chat/internal/video-lease"
+      MUSHROOM_VIDEO_ORIGIN: "http://localhost:${DEV_CHAT_VIDEO_PORT:-5444}"
+      HTTPS: "false"
+      OIDC_ENABLED: "false"
+      ALLOWED_EMBED_ORIGINS: "http://localhost:3001,http://localhost:3002,http://127.0.0.1:3001,http://127.0.0.1:3002"
+      LOGS_DEBUG: "false"
+    ports:
+      - "127.0.0.1:${DEV_CHAT_VIDEO_PORT:-5444}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  communications_sql:
+  communications_objects:
+  communications_scan:

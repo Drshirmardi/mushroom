@@ -56,6 +56,7 @@ services:
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
       DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"
       DEV_GENERATE_PRISMA: "${DEV_GENERATE_PRISMA:-false}"
+      CHAT_DATABASE_URL: "postgresql://mushroom_communications:${CHAT_DB_PASSWORD:?}@chat-postgres:5432/mushroom_communications"
       DEV_RUN_MIGRATIONS: "${DEV_RUN_MIGRATIONS:-false}"
       DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
       DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
@@ -72,6 +73,7 @@ services:
       - "${DEV_CACHE_PATH:?set the absolute dev cache path}:/home/dev"
       - "${MUSHROOM_ENV_ROOT:?set the dev root}/bootstrap:/run/mushroom-installation"
     secrets: [database_url]
+    networks: [default, communications-db]
     command: ["bash", "deploy/vps/dev-service.sh", "bootstrap"]
     profiles: [tools]
 
@@ -212,3 +214,7 @@ secrets:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_encryption_key"
   sms_credential_decryption_keys:
     file: "${MUSHROOM_ENV_ROOT:?set the dev environment root}/secrets/sms_credential_decryption_keys"
+
+networks:
+  communications-db:
+    internal: true

@@ -104,7 +104,15 @@ export class ResolveChatReportDto {
   @IsOptional() @IsString() @MaxLength(500) safeNote?: string;
 }
 
+export class ChatAttachmentDto {
+  @ApiProperty() name!: string;
+  @ApiProperty() mime!: string;
+  @ApiProperty() size!: number;
+}
+
 export class ChatMessageResponseDto {
+  @ApiPropertyOptional({ format: 'uuid' }) callId?: string;
+  @ApiPropertyOptional({ type: ChatAttachmentDto }) attachment?: ChatAttachmentDto;
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty() sequence!: string;
   @ApiProperty({ enum: ['PATIENT', 'DOCTOR', 'CLINIC_OPERATOR'] }) senderKind!: string;
@@ -115,9 +123,20 @@ export class ChatMessageResponseDto {
   @ApiPropertyOptional({ description: 'Safe tombstone shown instead of restricted text.' }) tombstone?: string;
 }
 
+export class PreviousChatDto {
+  @ApiProperty({ format: 'uuid' }) conversationId!: string;
+  @ApiProperty({ format: 'uuid' }) appointmentId!: string;
+  @ApiProperty({ type: String, format: 'date-time' }) startsAt!: Date;
+  @ApiProperty() doctorName!: string;
+}
+export class PreviousChatPageDto {
+  @ApiProperty({ type: [PreviousChatDto] }) items!: PreviousChatDto[];
+  @ApiProperty({ type: String, format: 'uuid', nullable: true }) nextCursor!: string | null;
+}
+
 export class ChatConversationResponseDto {
   @ApiPropertyOptional({ type: String, format: 'date-time', nullable: true }) closedAt?: Date | null;
-  @ApiProperty({ enum: ['ejabberd'] }) transport!: 'ejabberd';
+  @ApiProperty({ enum: ['mushroom'] }) transport!: 'mushroom';
   @ApiProperty({ format: 'uuid' }) id!: string;
   @ApiProperty({ format: 'uuid' }) appointmentId!: string;
   @ApiProperty({ format: 'uuid' }) clinicId!: string;

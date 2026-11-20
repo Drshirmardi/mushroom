@@ -26,8 +26,7 @@ cp "$repo_root/deploy/vps/Dockerfile.dev" "$workspace/deploy/vps/Dockerfile.dev"
 cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.yaml"
 cp "$repo_root/deploy/vps/deploy-dev.sh" "$workspace/deploy/vps/deploy-dev.sh"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
-cp "$repo_root/deploy/ejabberd/compose.yaml" "$dev_root/chat.compose.yaml"
-cp "$repo_root/deploy/ejabberd/compose.database.yaml" "$dev_root/chat.database.yaml"
+cp "$repo_root/deploy/mirotalk/compose.yaml" "$dev_root/communications.compose.yaml"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
 mkdir -p "$workspace/apps/api/scripts" "$workspace/raw-data/markdown"
 cp "$repo_root/apps/api/scripts/build-program-catalog.mjs" "$workspace/apps/api/scripts/"
@@ -35,7 +34,7 @@ printf '{}\n' >"$workspace/raw-data/services.catalog.json"
 printf 'Synthetic source\n' >"$workspace/raw-data/markdown/service.md"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
-  "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$workspace/apps/api/"
+  "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$repo_root/apps/api/prisma.chat.config.ts" "$workspace/apps/api/"
 cp "$repo_root/packages/api-client/package.json" "$repo_root/packages/api-client/tsconfig.json" \
   "$repo_root/packages/api-client/openapi.json" "$workspace/packages/api-client/"
 printf 'export {};\n' >"$workspace/apps/api/src/main.ts"
@@ -130,7 +129,7 @@ if [[ " $* " == *' run --rm --no-deps bootstrap '* ]]; then
     : >"$FAKE_WORKSPACE/packages/api-client/dist/index.js"
   fi
   if [[ ${DEV_GENERATE_PRISMA:-false} == true ]]; then
-    mkdir -p "$FAKE_WORKSPACE/apps/api/src/generated/prisma"
+    mkdir -p "$FAKE_WORKSPACE/apps/api/src/generated/prisma" "$FAKE_WORKSPACE/apps/api/src/generated/chat-prisma"
   fi
   if [[ ${DEV_COMPILE_API:-false} == true ]]; then
     mkdir -p "$FAKE_WORKSPACE/apps/api/dist"
@@ -182,10 +181,8 @@ run_deploy() {
 
 run_deploy
 grep -q 'build bootstrap' "$docker_log" || fail 'first sync did not build the dev runtime'
-grep -Fq -- "--file $dev_root/chat.compose.yaml" "$docker_log" \
-  || fail 'dev deployment did not include the required ejabberd compose overlay'
-grep -Fq -- "--file $dev_root/chat.database.yaml" "$docker_log" \
-    || fail 'dev deployment omitted the installer-managed chat database overlay'
+grep -Fq -- "--file $dev_root/communications.compose.yaml" "$docker_log" \
+  || fail 'dev deployment did not include the required communications compose overlay'
 grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=true' "$docker_log" \
   || fail 'first sync did not install dependencies and seed once'
 grep -q 'run --rm --no-deps bootstrap.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \

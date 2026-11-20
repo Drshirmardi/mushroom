@@ -106,6 +106,41 @@
         ]
       }
     },
+    "/v1/health/video": {
+      "get": {
+        "operationId": "HealthController_videoReady",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Health"
+        ]
+      }
+    },
     "/v1/auth/otp/challenges": {
       "post": {
         "operationId": "authOtpChallengeCreate",
@@ -1922,6 +1957,451 @@
         ]
       }
     },
+    "/v1/chat/video": {
+      "get": {
+        "operationId": "ChatCallController_capabilities",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/appointments/{appointmentId}/calls": {
+      "post": {
+        "operationId": "ChatCallController_start",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartChatCallDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/incoming": {
+      "get": {
+        "operationId": "ChatCallController_incoming",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncomingCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/calls/{id}": {
+      "get": {
+        "operationId": "ChatCallController_history",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/appointments/{appointmentId}/calls/current": {
+      "get": {
+        "operationId": "ChatCallController_current",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IncomingCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/{id}": {
+      "get": {
+        "operationId": "ChatCallController_get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/{id}/action": {
+      "post": {
+        "operationId": "ChatCallController_action",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCallActionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCallDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/{id}/grant": {
+      "post": {
+        "operationId": "ChatCallController_grant",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoGrantDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
     "/v1/chat/appointments/{appointmentId}/conversation": {
       "get": {
         "operationId": "chatAppointmentConversationGet",
@@ -1983,6 +2463,70 @@
           }
         ],
         "summary": "Get or create the authorized appointment-bound conversation",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/appointments/{appointmentId}/previous-conversations": {
+      "get": {
+        "operationId": "ChatController_previousConversations",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviousChatPageDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "tags": [
           "Chat consultation"
         ]
@@ -2103,6 +2647,70 @@
       }
     },
     "/v1/chat/conversations/{conversationId}/messages": {
+      "post": {
+        "operationId": "chatConversationSend",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendChatMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Chat consultation"
+        ]
+      },
       "get": {
         "operationId": "chatConversationHistory",
         "parameters": [
@@ -2191,6 +2799,259 @@
           }
         ],
         "summary": "Read an authorized bounded ascending message history page",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/attachments/{clientMessageId}": {
+      "post": {
+        "operationId": "chatAttachmentSend",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "clientMessageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatMessageResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/attachments/{messageId}": {
+      "get": {
+        "operationId": "chatAttachmentDownload",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/events": {
+      "get": {
+        "operationId": "ChatController_events",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/receipts/{messageId}": {
+      "post": {
+        "operationId": "chatMessageReceipt",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "messageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
         "tags": [
           "Chat consultation"
         ]
@@ -2637,63 +3498,6 @@
           }
         ],
         "summary": "Get server-evaluated appointment waiting-room readiness",
-        "tags": [
-          "Chat consultation"
-        ]
-      }
-    },
-    "/v1/chat/appointments/{appointmentId}/session": {
-      "post": {
-        "operationId": "chatAppointmentEngineSessionCreate",
-        "parameters": [
-          {
-            "in": "header",
-            "name": "X-Analytics-Context",
-            "required": false,
-            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
-            "schema": {
-              "type": "string",
-              "maxLength": 1024
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Marriage-Request-Id",
-            "required": false,
-            "description": "Invitation context locator; grants no access without server identity and resource checks.",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "appointmentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EjabberdSessionDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "Issue an authorized short-lived ejabberd session for one consultation",
         "tags": [
           "Chat consultation"
         ]
@@ -43011,6 +43815,7 @@
               "PAYMENT_START_RATE_LIMITED",
               "CHAT_FORBIDDEN",
               "CHAT_ENGINE_UNAVAILABLE",
+              "CHAT_PATIENT_OFFLINE",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
               "CHAT_WINDOW_CLOSED",
               "CHAT_BLOCKED",
@@ -43547,6 +44352,130 @@
           "ticket"
         ]
       },
+      "StartChatCallDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIO",
+              "VIDEO"
+            ],
+            "default": "VIDEO"
+          }
+        }
+      },
+      "ChatCallDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "callerName": {
+            "type": "string"
+          },
+          "callerKind": {
+            "type": "string",
+            "enum": [
+              "DOCTOR",
+              "CLINIC_OPERATOR"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RINGING",
+              "ACTIVE",
+              "DECLINED",
+              "MISSED",
+              "ENDED",
+              "CANCELLED",
+              "FAILED"
+            ]
+          },
+          "ringsUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIO",
+              "VIDEO"
+            ]
+          },
+          "connectedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "callerName",
+          "callerKind",
+          "status",
+          "ringsUntil",
+          "mode",
+          "connectedAt",
+          "endedAt"
+        ]
+      },
+      "IncomingCallDto": {
+        "type": "object",
+        "properties": {
+          "call": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatCallDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "call"
+        ]
+      },
+      "ChatCallActionDto": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "answer",
+              "decline",
+              "end"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "VideoGrantDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
       "ChatConversationResponseDto": {
         "type": "object",
         "properties": {
@@ -43558,7 +44487,7 @@
           "transport": {
             "type": "string",
             "enum": [
-              "ejabberd"
+              "mushroom"
             ]
           },
           "id": {
@@ -43596,6 +44525,52 @@
           "createdAt"
         ]
       },
+      "PreviousChatDto": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "doctorName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "conversationId",
+          "appointmentId",
+          "startsAt",
+          "doctorName"
+        ]
+      },
+      "PreviousChatPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PreviousChatDto"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "items",
+          "nextCursor"
+        ]
+      },
       "ChatAccessResponseDto": {
         "type": "object",
         "properties": {
@@ -43627,9 +44602,53 @@
           "canClose"
         ]
       },
+      "SendChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "clientMessageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Client-generated idempotency identifier."
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "clientMessageId",
+          "body"
+        ]
+      },
+      "ChatAttachmentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "mime": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "mime",
+          "size"
+        ]
+      },
       "ChatMessageResponseDto": {
         "type": "object",
         "properties": {
+          "callId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attachment": {
+            "$ref": "#/components/schemas/ChatAttachmentDto"
+          },
           "id": {
             "type": "string",
             "format": "uuid"
@@ -43853,102 +44872,6 @@
         "required": [
           "resolution",
           "action"
-        ]
-      },
-      "EjabberdSessionDto": {
-        "type": "object",
-        "properties": {
-          "canSend": {
-            "type": "boolean"
-          },
-          "readOnlyReason": {
-            "type": "string",
-            "nullable": true
-          },
-          "opensAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "closedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "canClose": {
-            "type": "boolean"
-          },
-          "transport": {
-            "type": "string",
-            "enum": [
-              "ejabberd"
-            ]
-          },
-          "conversationId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "appointmentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "websocketUrl": {
-            "type": "string"
-          },
-          "jid": {
-            "type": "string"
-          },
-          "token": {
-            "type": "string",
-            "description": "Short-lived XMPP password. Keep in memory; never log or persist."
-          },
-          "resource": {
-            "type": "string",
-            "enum": [
-              "sabz"
-            ]
-          },
-          "roomJid": {
-            "type": "string"
-          },
-          "senderKind": {
-            "type": "string",
-            "enum": [
-              "PATIENT",
-              "DOCTOR",
-              "CLINIC_OPERATOR"
-            ]
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "historyUrl": {
-            "type": "string",
-            "description": "Authoritative retained history; use its opaque cursor for recovery."
-          },
-          "visibilityUrl": {
-            "type": "string",
-            "description": "Durable moderation changes must also be reconciled on reconnect."
-          }
-        },
-        "required": [
-          "canSend",
-          "readOnlyReason",
-          "opensAt",
-          "closedAt",
-          "canClose",
-          "transport",
-          "conversationId",
-          "appointmentId",
-          "websocketUrl",
-          "jid",
-          "token",
-          "resource",
-          "roomJid",
-          "senderKind",
-          "expiresAt",
-          "historyUrl",
-          "visibilityUrl"
         ]
       },
       "VisitProductDto": {
@@ -55572,16 +56495,10 @@
             "format": "uuid"
           },
           "voiceSupported": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
+            "type": "boolean"
           },
           "videoSupported": {
-            "type": "boolean",
-            "enum": [
-              false
-            ]
+            "type": "boolean"
           }
         },
         "required": [

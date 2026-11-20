@@ -1,0 +1,12 @@
+FROM node:24-bookworm-slim
+ARG TARGETARCH
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN case "$TARGETARCH" in \
+      amd64) checksum=e7424a82eee327809bfa449fda4924c9a0f42f6669a01288eebb1b79674c8196 ;; \
+      arm64) checksum=e4eeae433dc6f5111034b8b1cc0c1a08b9b094b4eea101a36650ddc3a7c0ce58 ;; \
+      *) exit 1 ;; \
+    esac && \
+    curl --fail --location --silent --show-error "https://github.com/seaweedfs/seaweedfs/releases/download/4.54/linux_${TARGETARCH}.tar.gz" -o /tmp/seaweed.tar.gz && \
+    echo "$checksum  /tmp/seaweed.tar.gz" | sha256sum -c - && \
+    tar -xzf /tmp/seaweed.tar.gz -C /usr/local/bin weed && rm /tmp/seaweed.tar.gz
+ENTRYPOINT ["weed"]
