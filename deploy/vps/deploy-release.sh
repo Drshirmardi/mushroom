@@ -328,7 +328,7 @@ if [[ $managed_postgres == true ]]; then
   compose_for "$release_dir" up -d --wait --wait-timeout 90 postgres
 fi
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy
-compose_for "$release_dir" up -d --wait chat-postgres
+compose_for "$release_dir" up -d --wait communications-postgres
 compose_for "$release_dir" run --rm --no-deps api node_modules/prisma/build/index.js migrate deploy --config prisma.chat.config.ts
 if [[ -f $environment_root/bootstrap/first-run.json ]]; then
   # Only this one-time helper receives the first administrator password; normal API startup never does.

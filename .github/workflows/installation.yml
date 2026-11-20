@@ -6,6 +6,7 @@ on:
     paths:
       - 'installation/**'
       - 'deploy/ejabberd/**'
+      - 'deploy/mirotalk/**'
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'
@@ -22,6 +23,7 @@ on:
     paths:
       - 'installation/**'
       - 'deploy/ejabberd/**'
+      - 'deploy/mirotalk/**'
       - 'deploy/vps/**'
       - 'compose.production.example.yaml'
       - 'scripts/*installation*.mjs'

@@ -27,12 +27,11 @@ jobs:
           POSTGRES_DB: mushroom_communications
           POSTGRES_USER: mushroom_communications
           POSTGRES_PASSWORD: ci-communications-password
-        ports: ['55420:5432']
+        ports: ['5432/tcp']
         options: >-
           --health-cmd "pg_isready -U mushroom_communications -d mushroom_communications"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      CHAT_DATABASE_URL: postgresql://mushroom_communications:ci-communications-password@localhost:55420/mushroom_communications
       DATABASE_URL: postgresql://sabz_zendegi:ci-password@localhost:5432/sabz_zendegi?schema=public
       JWT_ACCESS_SECRET: ci-only-jwt-access-secret-0123456789-ABCDEFGHIJKLMNOPQRSTUVWXYZ
       REFRESH_TOKEN_PEPPER: ci-only-refresh-token-pepper-9876543210-ZYXWVUTSRQPONMLKJIHGFEDCBA
@@ -40,6 +39,10 @@ jobs:
       NODE_ENV: test
       LOG_LEVEL: error
     steps:
+      - name: Set isolated chat database URL
+        env:
+          CHAT_DB_PORT: ${{ job.services.communications-postgres.ports[5432] }}
+        run: printf 'CHAT_DATABASE_URL=postgresql://mushroom_communications:ci-communications-password@127.0.0.1:%s/mushroom_communications\n' "$CHAT_DB_PORT" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:

@@ -352,6 +352,17 @@ try {
     'POSTGRES_DB=mushroom_dev',
     'POSTGRES_USER=mushroom_dev',
     'CHAT_DB_PASSWORD=synthetic-chat-db-password',
+    'CHAT_VIDEO_IMAGE=ghcr.io/example/mirotalk@sha256:' + '0'.repeat(64),
+    'CHAT_VIDEO_ORIGIN=https://calls.example.test',
+    'CHAT_VIDEO_EMBED_ORIGINS=https://dev-app.example.test,https://dev-dashboard.example.test',
+    'CHAT_VIDEO_SECRET=synthetic-video-secret-for-compose-contract-check',
+    'CHAT_TURN_SECRET=synthetic-turn-secret-for-compose-contract-check',
+    'CHAT_STUN_URL=stun:turn.example.test:3478',
+    'CHAT_TURN_URLS=turn:turn.example.test:3478?transport=udp',
+    'CHAT_S3_ENDPOINT=https://objects.example.test',
+    'CHAT_S3_BUCKET=synthetic-communications',
+    'CHAT_S3_ACCESS_KEY=synthetic-access-key',
+    'CHAT_S3_SECRET_KEY=synthetic-secret-key',
     'PUBLIC_API_URL=https://dev-api.example.test',
     'PUBLIC_WEB_URL=https://dev.example.test',
     'PUBLIC_APP_URL=https://dev-app.example.test',
@@ -366,8 +377,15 @@ try {
   ].join('\n'));
   const rendered = JSON.parse(run('docker', [
     'compose', '--profile', 'tools', '--env-file', envPath,
-    '--file', 'deploy/vps/compose.dev.yaml', 'config', '--format', 'json',
+    '--file', 'deploy/vps/compose.dev.yaml', '--file', 'deploy/mirotalk/compose.yaml',
+    'config', '--format', 'json',
   ]));
+  const chatDatabaseUrl = new URL(rendered.services.api.environment.CHAT_DATABASE_URL);
+  assert(chatDatabaseUrl.hostname === 'communications-postgres', 'API chat must resolve the separate communications PostgreSQL');
+  assert(rendered.services.bootstrap.environment.CHAT_DATABASE_URL === chatDatabaseUrl.href,
+    'API and migration bootstrap must share the same communications database');
+  assert(rendered.networks['communications-db'].internal, 'communications PostgreSQL network must be private');
+  assert(!rendered.services['communications-postgres'].ports?.length, 'communications PostgreSQL must not expose a host port');
   assert(
     resolve(rendered.services.bootstrap.build.context) === root,
     `dev build context must resolve to the synced workspace, got ${rendered.services.bootstrap.build.context}`,

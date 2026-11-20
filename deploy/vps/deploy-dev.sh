@@ -303,7 +303,7 @@ if [[ $runtime_hash != "$previous_runtime_hash" ]] || ! docker image inspect mus
   runtime_changed=true
 fi
 
-compose up -d --wait postgres chat-postgres
+compose up -d --wait postgres communications-postgres
 
 install_dependencies=false
 if [[ $dependency_hash != "$previous_dependency_hash" || ! -d "$workspace/node_modules/.pnpm" ]]; then

@@ -18,7 +18,7 @@ cat >"$fake_bin/docker" <<'EOF'
 set -Eeuo pipefail
 printf '%s\n' "$*" >>"$FAKE_DOCKER_LOG"
 if [[ ${1:-} == compose && ${2:-} == version ]]; then exit 0; fi
-if [[ ${1:-} == compose && " $* " == *" --wait "* && " $* " != *" --wait chat-postgres "* && -f $FAKE_FAIL_NEXT_WAIT ]]; then
+if [[ ${1:-} == compose && " $* " == *" up -d --remove-orphans --wait "* && -f $FAKE_FAIL_NEXT_WAIT ]]; then
   rm -f -- "$FAKE_FAIL_NEXT_WAIT"
   exit 1
 fi
@@ -182,7 +182,7 @@ first_migration=$(grep -nm 1 'migrate deploy' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_policy_publish=$(grep -nm 1 'manage-consent-policy.mjs publish' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_policy_verify=$(grep -nm 1 'manage-consent-policy.mjs verify' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 first_secret_prepare=$(grep -nm 1 -- '--cap-add CHOWN' "$FAKE_DOCKER_LOG" | cut -d: -f1)
-first_switch=$(grep -nm 1 -- '--wait' "$FAKE_DOCKER_LOG" | cut -d: -f1)
+first_switch=$(grep -Fnm 1 -- ' up -d --remove-orphans --wait ' "$FAKE_DOCKER_LOG" | cut -d: -f1)
 [[ $first_secret_prepare -lt $first_migration ]] || { printf 'secret permissions were not prepared before migration\n' >&2; exit 1; }
 [[ $first_migration -lt $first_policy_publish && $first_policy_publish -lt $first_policy_verify && $first_policy_verify -lt $first_switch ]] \
   || { printf 'migration, policy publication and verification did not precede application switching\n' >&2; exit 1; }

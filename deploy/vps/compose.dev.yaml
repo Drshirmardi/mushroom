@@ -56,7 +56,7 @@ services:
       DEV_RUN_SEED: "${DEV_RUN_SEED:-false}"
       DEV_BUILD_API_CLIENT: "${DEV_BUILD_API_CLIENT:-false}"
       DEV_GENERATE_PRISMA: "${DEV_GENERATE_PRISMA:-false}"
-      CHAT_DATABASE_URL: "postgresql://mushroom_communications:${CHAT_DB_PASSWORD:?}@chat-postgres:5432/mushroom_communications"
+      CHAT_DATABASE_URL: "postgresql://mushroom_communications:${CHAT_DB_PASSWORD:?}@communications-postgres:5432/mushroom_communications"
       DEV_RUN_MIGRATIONS: "${DEV_RUN_MIGRATIONS:-false}"
       DEV_COMPILE_API: "${DEV_COMPILE_API:-false}"
       DEV_API_SOURCE_HASH: "${DEV_API_SOURCE_HASH:-}"
