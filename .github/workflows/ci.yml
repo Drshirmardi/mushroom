@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Set isolated chat database URL
         env:
-          CHAT_DB_PORT: ${{ job.services.communications-postgres.ports[5432] }}
+          CHAT_DB_PORT: ${{ job.services.communications-postgres.ports['5432'] }}
         run: printf 'CHAT_DATABASE_URL=postgresql://mushroom_communications:ci-communications-password@127.0.0.1:%s/mushroom_communications\n' "$CHAT_DB_PORT" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
