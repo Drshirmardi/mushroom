@@ -96,7 +96,18 @@ function stop(message) {
   status.textContent = message;
 }
 
-function failed() {
+function reportCallFailure(stage, error) {
+  console.warn('[Mushroom call]', {
+    stage,
+    errorType: error instanceof DOMException ? error.name : error instanceof Error ? 'Error' : undefined,
+    signalingState: peer?.signalingState,
+    iceConnectionState: peer?.iceConnectionState,
+    connectionState: peer?.connectionState,
+  });
+}
+
+function failed(stage, error) {
+  reportCallFailure(stage, error);
   stop('اتصال قطع شد. برای اتصال مجدد از پنل ویزیت استفاده کنید.');
   notifyParent('mushroom-call:recover');
 }
@@ -107,7 +118,8 @@ async function connect() {
   let acquired;
   try {
     acquired = await navigator.mediaDevices.getUserMedia({ audio: true });
-  } catch {
+  } catch (error) {
+    reportCallFailure('microphone', error);
     status.textContent = 'دسترسی به دوربین یا میکروفون ممکن نیست. مجوز مرورگر را بررسی کنید.';
     byId('connect').disabled = false;
     notifyParent('mushroom-call:recover');
@@ -133,17 +145,17 @@ async function connect() {
   status.textContent = 'در حال اتصال به ویزیت…';
   socket = io({ transports: ['websocket'], auth: { code: signal }, reconnection: false });
   let joined = false;
-  lease = setTimeout(failed, 12_000);
+  lease = setTimeout(() => failed('signaling-lease-timeout'), 12_000);
   socket.on('mushroom-lease', ({ callId }) => {
     clearTimeout(lease);
-    lease = setTimeout(failed, 12_000);
+    lease = setTimeout(() => failed('signaling-lease-timeout'), 12_000);
     if (!joined) {
       joined = true;
       socket.emit('join', { channel: callId, peerInfo: {} });
     }
   });
-  socket.on('connect_error', failed);
-  socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed(); });
+  socket.on('connect_error', () => failed('signaling-connect'));
+  socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed('signaling-disconnect'); });
   socket.on('mushroom-ended', () => stop('تماس پایان یافته است.'));
   socket.on('serverInfo', () => {
     byId('end').disabled = false;
@@ -179,6 +191,9 @@ async function connect() {
       connection.onicecandidate = ({ candidate }) => {
         if (candidate) socket.emit('relayICE', { peerId: id, iceCandidate: candidate.toJSON() });
       };
+      connection.onicecandidateerror = ({ errorCode }) => {
+        if (peer === connection) console.warn('[Mushroom call]', { stage: 'ice-gathering', errorCode });
+      };
       connection.onconnectionstatechange = () => {
         if (peer !== connection) return;
         clearTimeout(peerTimer);
@@ -188,17 +203,17 @@ async function connect() {
           startClock();
           confirmConnection(connection);
         }
-        if (connection.connectionState === 'failed') failed();
+        if (connection.connectionState === 'failed') failed('peer-connection-failed');
         if (connection.connectionState === 'disconnected') {
           status.textContent = 'در حال بازیابی اتصال…';
-          peerTimer = setTimeout(() => { if (peer === connection && connection.connectionState === 'disconnected') failed(); }, 15_000);
+          peerTimer = setTimeout(() => { if (peer === connection && connection.connectionState === 'disconnected') failed('peer-disconnect-timeout'); }, 15_000);
         }
       };
       if (shouldCreateOffer) {
         await connection.setLocalDescription(await connection.createOffer());
         socket.emit('relaySDP', { peerId: id, sessionDescription: connection.localDescription });
       }
-    } catch { failed(); }
+    } catch (error) { failed('peer-setup', error); }
   });
   socket.on('sessionDescription', async ({ peerId: id, sessionDescription }) => {
     if (!peer || id !== peerId) return;
@@ -217,14 +232,14 @@ async function connect() {
         await connection.setLocalDescription(await connection.createAnswer());
         if (peer === connection) socket.emit('relaySDP', { peerId: id, sessionDescription: connection.localDescription });
       }
-    } catch { failed(); }
+    } catch (error) { failed('session-description', error); }
   });
   socket.on('iceCandidate', async ({ peerId: id, iceCandidate }) => {
     if (!peer || id !== peerId || !iceCandidate) return;
     try {
       if (peer.remoteDescription) await peer.addIceCandidate(iceCandidate);
       else candidates.push(iceCandidate);
-    } catch { /* Later valid candidates may still establish the call. */ }
+    } catch (error) { reportCallFailure('remote-ice-candidate', error); }
   });
   socket.on('removePeer', ({ peerId: id }) => {
     if (id !== peerId) return;
@@ -239,7 +254,7 @@ byId('end').addEventListener('click', () => {
   byId('end').disabled = true;
   socket.timeout(5000).emit('mushroom-end', (error, closed) => {
     if (error || !closed) {
-      if (!socket?.connected) { failed(); return; }
+      if (!socket?.connected) { failed('signaling-end'); return; }
       byId('end').disabled = false;
       status.textContent = 'پایان تماس تأیید نشد. دوباره تلاش کنید.';
       return;
