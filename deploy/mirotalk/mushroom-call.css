@@ -14,7 +14,8 @@ main { min-height: 100dvh; display: grid; grid-template-rows: minmax(0, 1fr) aut
 .stage { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; }
 video { position: absolute; object-fit: contain; pointer-events: none; }
 #remote { inset: 0; width: 100%; height: 100%; opacity: 0; }
-#local { inset-inline-end: 1rem; top: max(4.5rem, env(safe-area-inset-top)); width: min(26%, 9rem); max-height: 48%; aspect-ratio: 3 / 4; border-radius: var(--call-preview-radius); background: var(--call-surface); transform: scaleX(-1); opacity: 0; }
+#local { inset-inline-end: 1rem; top: max(4.5rem, env(safe-area-inset-top)); width: min(112px, 28%); aspect-ratio: 4 / 3; object-fit: cover; border: 1px solid rgb(255 255 255 / 30%); border-radius: var(--call-preview-radius); background: var(--call-surface); box-shadow: 0 4px 16px rgb(0 0 0 / 40%); transform: scaleX(-1); opacity: 0; }
+[data-floating] #local { top: 1rem; }
 [data-remote-video="true"] #remote, [data-local-video="true"] #local { opacity: 1; }
 .avatar { display: grid; width: clamp(3.5rem, 23vw, 7rem); aspect-ratio: 1; place-items: center; border-radius: var(--call-round); }
 .avatar svg { width: 45%; }
@@ -27,5 +28,10 @@ video { position: absolute; object-fit: contain; pointer-events: none; }
 .controls button[hidden] { display: none; }
 .controls button[aria-pressed="true"] { background: var(--call-accent); }
 .controls svg { width: 22px; height: 22px; }
+@media (max-width: 600px) and (pointer: coarse) {
+  body:not([data-floating]) .controls { gap: 1.1rem; }
+  body:not([data-floating]) .controls button { width: 56px; height: 56px; }
+  body:not([data-floating]) .controls svg { width: 25px; height: 25px; }
+}
 svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 button[aria-pressed="true"] .slash { display: none; }

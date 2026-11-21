@@ -29,6 +29,7 @@
 }
 
 .mushroom-call-button:disabled { cursor: default; }
+.mushroom-call-mobile .mushroom-call-button { width: 54px; height: 54px; }
 .mushroom-call-answer { background: var(--call-accent); }
 .mushroom-call-end { background: var(--call-danger); }
 .mushroom-call-avatar { background: var(--call-surface); }

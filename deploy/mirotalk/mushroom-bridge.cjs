@@ -72,8 +72,12 @@ module.exports = function protectCalls(io) {
     socket.on('disconnect', () => clearTimeout(leaseTimer));
     socket.on('mushroom-end', async reply => {
       if (typeof reply !== 'function') return;
-      try { await verify({ callId, userId, action: 'end' }); reply(true); }
-      catch { reply(false); }
+      try { await verify({ callId, userId, action: 'end' }); }
+      catch { reply(false); return; }
+      reply(true);
+      for (const peer of io.sockets.sockets.values()) {
+        if (peer.id !== socket.id && peer.mushroom?.callId === callId) peer.emit('mushroom-ended');
+      }
     });
   });
 };

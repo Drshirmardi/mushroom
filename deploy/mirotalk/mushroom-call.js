@@ -9,6 +9,7 @@ const relayOnly = params.get('relayOnly') === 'true';
 const embedOrigin = params.get('embedOrigin');
 const embedded = Boolean(embedOrigin && parent !== window);
 const autoJoin = embedded && params.get('autoJoin') === '1';
+const managedHangup = embedded && params.get('managedHangup') === '1';
 function notifyParent(type, details) {
   if (!embedded) return;
   try {
@@ -26,6 +27,7 @@ const local = byId('local');
 const connectButton = byId('connect');
 const endButton = byId('end');
 if (embedded) document.body.dataset.embedded = 'true';
+if (embedded && params.get('floating') === '1') document.body.dataset.floating = 'true';
 let socket;
 let stream;
 let peer;
@@ -41,6 +43,43 @@ let clock;
 let connectionEpoch = 0;
 let peerTimer;
 let audioTimer;
+let standaloneAudio;
+let finishing = false;
+
+function prepareStandaloneAudio() {
+  if (embedded || typeof AudioContext === 'undefined') return;
+  try {
+    standaloneAudio ??= new AudioContext();
+    void standaloneAudio.resume().catch(() => {});
+  } catch { /* Sound is optional when the browser blocks audio. */ }
+}
+
+function finishCall(reason) {
+  if (finishing) return;
+  finishing = true;
+  stop('تماس قطع شد');
+  byId('duration').textContent = '';
+  if (embedded) {
+    notifyParent('mushroom-call:ended', { reason });
+    return;
+  }
+  if (standaloneAudio?.state === 'running' && document.visibilityState === 'visible') {
+    [480, 383].forEach((frequency, index) => {
+      const start = standaloneAudio.currentTime + 0.06 + index * 0.19;
+      const note = standaloneAudio.createOscillator();
+      const gain = standaloneAudio.createGain();
+      note.frequency.value = frequency;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.13, start + 0.015);
+      gain.gain.linearRampToValueAtTime(0, start + 0.14);
+      note.connect(gain).connect(standaloneAudio.destination);
+      note.onended = () => { note.disconnect(); gain.disconnect(); };
+      note.start(start);
+      note.stop(start + 0.15);
+    });
+  }
+  setTimeout(() => window.close(), 1000);
+}
 
 function showCamera(kind, enabled) {
   document.body.dataset[kind + 'Video'] = String(enabled);
@@ -120,7 +159,7 @@ function closePeer() {
   playAudioButton.hidden = true;
 }
 
-function stop(message) {
+function stop(message, disconnectSocket = true) {
   ++connectionEpoch;
   clearTimeout(lease);
   clearInterval(clock);
@@ -130,7 +169,7 @@ function stop(message) {
   stream = undefined;
   showCamera('local', false);
   local.srcObject = null;
-  socket?.disconnect();
+  if (disconnectSocket) socket?.disconnect();
   byId('microphone').disabled = true;
   byId('camera').disabled = true;
   byId('end').disabled = true;
@@ -204,6 +243,7 @@ async function connect() {
   let leaseDelayed = false;
   lease = setTimeout(() => failed('signaling-lease-timeout'), 30_000);
   socket.on('mushroom-lease', ({ callId }) => {
+    if (!stream) return;
     if (leaseDelayed && peer?.connectionState === 'connected') {
       status.textContent = 'تماس برقرار است.';
       notifyParent('mushroom-call:connected');
@@ -221,14 +261,16 @@ async function connect() {
     stop('تماس در تب یا دستگاه دیگری ادامه دارد.');
     notifyParent('mushroom-call:replaced');
   });
-  socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed('signaling-disconnect'); });
+  socket.on('disconnect', reason => { if (stream && reason !== 'io client disconnect') failed('signaling-disconnect'); });
   socket.on('mushroom-lease-delayed', () => {
+    if (!stream) return;
     leaseDelayed = true;
     status.textContent = 'در حال اتصال مجدد…';
     notifyParent('mushroom-call:recovering');
   });
-  socket.on('mushroom-ended', ({ reason } = {}) => { stop('تماس پایان یافته است.'); notifyParent('mushroom-call:ended', { reason }); });
+  socket.on('mushroom-ended', ({ reason } = {}) => finishCall(reason));
   socket.on('serverInfo', () => {
+    if (!stream) return;
     endButton.hidden = false;
     endButton.disabled = false;
     notifyParent('mushroom-call:ready');
@@ -238,6 +280,7 @@ async function connect() {
     if (!peer) status.textContent = 'در انتظار اتصال طرف مقابل…';
   });
   socket.on('addPeer', async ({ peerId: id, shouldCreateOffer, iceServers }) => {
+    if (!stream) return;
     try {
       if (peer) closePeer();
       peerId = id;
@@ -348,18 +391,27 @@ async function connect() {
   });
 }
 
-connectButton.addEventListener('click', connect);
+connectButton.addEventListener('click', () => {
+  prepareStandaloneAudio();
+  void connect();
+});
 byId('end').addEventListener('click', () => {
-  byId('end').disabled = true;
+  if (managedHangup) {
+    finishing = true;
+    stop('در حال پایان تماس…');
+    notifyParent('mushroom-call:hang-up');
+    return;
+  }
+  prepareStandaloneAudio();
+  stop('در حال پایان تماس…', false);
   socket.timeout(5000).emit('mushroom-end', (error, closed) => {
     if (error || !closed) {
-      if (!socket?.connected) { failed('signaling-end'); return; }
+      if (finishing) return;
       byId('end').disabled = false;
       status.textContent = 'پایان تماس تأیید نشد. دوباره تلاش کنید.';
       return;
     }
-    stop('تماس پایان یافت.');
-    notifyParent('mushroom-call:ended');
+    finishCall();
   });
 });
 playAudioButton.addEventListener('click', playRemoteAudio);

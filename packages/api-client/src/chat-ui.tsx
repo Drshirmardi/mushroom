@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
-import { Download, FileText, GripVertical, Maximize2, Mic, MicOff, Minimize2, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, VideoOff, X } from "lucide-react";
+import { Download, FileText, GripVertical, Maximize2, Mic, MicOff, Minimize2, MoveVertical, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, VideoOff, X } from "lucide-react";
 import { chatDocumentExtensions, chatMediaExtensions, createChatId, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine.js";
+import { playCallEndTone, unlockCallAudio } from "./call-audio.js";
+export { startCallRingtone } from "./call-audio.js";
 
 type Engine = ReturnType<typeof createChatEngine>;
 type ChatCredentials = { engine: Engine; token: string; conversationId: string };
@@ -301,7 +303,43 @@ const frameErrorText: Record<CallFrameError, string> = {
   retryable: "ورود به تماس ممکن نشد. دوباره تلاش کنید.",
 };
 
-export function CallPanel({ call, name, frame, error, frameError, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded, expandRequest, returnLink }: { call: ChatCall; name: string; frame: string; error: string; frameError?: CallFrameError; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: (reason?: string) => void; expandRequest?: number; returnLink?: ReactNode }) {
+export function useCallEndFeedback<T extends ChatCall>(call: T | null, owner: boolean) {
+  const previous = useRef<T | null>(null);
+  const [finished, setFinished] = useState<T | null>(null);
+  useLayoutEffect(() => {
+    if (call?.status === "ACTIVE") {
+      previous.current = owner ? call : null;
+    } else if (!callLive(call)) {
+      if (previous.current && (!call || call.id === previous.current.id)) setFinished(previous.current);
+      previous.current = null;
+    } else if (call?.id !== previous.current?.id) previous.current = null;
+  }, [call, owner]);
+  useEffect(() => {
+    window.addEventListener("click", unlockCallAudio);
+    window.addEventListener("keydown", unlockCallAudio);
+    return () => {
+      window.removeEventListener("click", unlockCallAudio);
+      window.removeEventListener("keydown", unlockCallAudio);
+    };
+  }, []);
+  useEffect(() => {
+    if (!finished) return;
+    const stop = playCallEndTone();
+    const timeout = setTimeout(() => setFinished(null), 1000);
+    const stopWhenHidden = () => { if (document.visibilityState !== "visible") stop(); };
+    document.addEventListener("visibilitychange", stopWhenHidden);
+    window.addEventListener("pagehide", stop);
+    return () => {
+      clearTimeout(timeout);
+      stop();
+      document.removeEventListener("visibilitychange", stopWhenHidden);
+      window.removeEventListener("pagehide", stop);
+    };
+  }, [finished]);
+  return callLive(call) ? null : finished;
+}
+
+export function CallPanel({ call, name, frame, error, frameError, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded, onHangUp, disconnecting = false, finished = false, expandRequest, returnLink }: { call: ChatCall; name: string; frame: string; error: string; frameError?: CallFrameError; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: (reason?: string) => void; onHangUp?: () => void; disconnecting?: boolean; finished?: boolean; expandRequest?: number; returnLink?: ReactNode }) {
   const [minimized, setMinimized] = useState(false);
   useEffect(() => { setMinimized(false); }, [expandRequest]);
   const [recovering, setRecovering] = useState(false);
@@ -315,8 +353,8 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
     recovery.current = null;
     setRecovering(false);
   }
-  const callbacks = useRef({ recover, onEnded });
-  useLayoutEffect(() => { callbacks.current = { recover, onEnded }; }, [recover, onEnded]);
+  const callbacks = useRef({ recover, onEnded, onHangUp });
+  useLayoutEffect(() => { callbacks.current = { recover, onEnded, onHangUp }; }, [recover, onEnded, onHangUp]);
   useEffect(() => {
     const online = () => retryNow.current();
     window.addEventListener("online", online);
@@ -333,7 +371,7 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
   const [media, setMedia] = useState<{ microphone: boolean; camera: boolean; denied: boolean }>();
   const [cameraNotice, setCameraNotice] = useState(false);
   useEffect(() => {
-    onMinimizedChange?.(minimized, cameraNotice ? 80 : 56);
+    onMinimizedChange?.(minimized, cameraNotice ? 88 : 64);
     return () => onMinimizedChange?.(false);
   }, [minimized, cameraNotice, onMinimizedChange]);
   const [duration, setDuration] = useState(0);
@@ -383,6 +421,7 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
   }
   useLayoutEffect(() => {
     retryNow.current = () => { if (recovery.current?.retry) scheduleRecovery(true); };
+    if (disconnecting || finished) { clearRecovery(); return; }
     if (frameError === "unavailable") { clearRecovery(); return; }
     if (!frame && frameError === "retryable") {
       if (recovery.current || callbacks.current.recover) {
@@ -401,8 +440,13 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
     }, 10_000) : undefined;
     function receive(event: MessageEvent) {
       if (event.origin !== expectedOrigin || event.source !== player.current?.contentWindow) return;
-      if (recovery.current && recovery.current.deadline <= Date.now() && event.data?.type !== "mushroom-call:ended") return;
-      switch (event.data?.type) {
+      const type = event.data?.type;
+      if (recovery.current && recovery.current.deadline <= Date.now() && type !== "mushroom-call:ended" && type !== "mushroom-call:hang-up") return;
+      switch (type) {
+        case "mushroom-call:hang-up":
+          unlockCallAudio();
+          callbacks.current.onHangUp?.();
+          break;
         case "mushroom-call:ended":
           clearRecovery();
           callbacks.current.onEnded?.(typeof event.data.reason === "string" ? event.data.reason : undefined);
@@ -466,7 +510,7 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
     }
     window.addEventListener("message", receive);
     return () => { clearTimeout(connectTimeout); window.removeEventListener("message", receive); };
-  }, [frame, frameError]);
+  }, [frame, frameError, disconnecting, finished]);
 
   function anchorAt(left: number, top: number, width: number, height: number) {
     const box = keepCallWindowVisible(left, top, width, height);
@@ -508,11 +552,13 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
   const playing = Boolean(frame && failedFrame !== frame);
   const ready = playing && readyFrame === frame;
   const label = callLabel(call.mode);
-  const size = manualSize ?? (videoFrame === frame && aspect
+  const size = manualSize ?? ((videoFrame === frame || disconnecting || finished) && aspect
     ? aspect < 1 ? { width: 400, height: 520 } : { width: 560, height: 420 }
     : { width: 360, height: 380 });
   const width = `min(${minimized ? Math.max(320, size.width) : size.width}px, clamp(320px, 45vw, 640px), calc(100vw - 24px))`;
-  const height = minimized ? (cameraNotice ? "76px" : "56px") : `min(${size.height}px, 640px, 75dvh, calc(100dvh - 24px))`;
+  const height = minimized ? (cameraNotice ? "76px" : "56px") : manualSize
+    ? `min(${size.height}px, calc(100dvh - 24px))`
+    : `min(${size.height}px, 640px, 75dvh, calc(100dvh - 24px))`;
   const floatingStyle = floating ? {
     width, height,
     [anchor.right ? "right" : "left"]: `clamp(12px, ${anchor.x}px, calc(100vw - ${width} - 12px))`,
@@ -522,7 +568,7 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
     : minimized ? "inset-x-2 top-[max(8px,env(safe-area-inset-top))] mx-auto max-w-sm rounded-2xl shadow-xl" : "inset-0 overflow-hidden";
   const MicIcon = media?.microphone ? Mic : MicOff;
   const CameraIcon = media?.camera ? Video : VideoOff;
-  const compactControls = minimized && <div className="flex shrink-0 items-center gap-0.5 pe-1">
+  const compactControls = minimized && <div className={"flex shrink-0 items-center pe-1 " + (floating ? "gap-0.5" : "gap-1.5")}>
     <button type="button" className={callIconButton} aria-label="میکروفون" aria-pressed={media?.microphone} disabled={!ready || !media} onClick={() => sendControl("microphone")}><MicIcon size={18} /></button>
     <button type="button" className={callIconButton} aria-label="دوربین" aria-pressed={media?.camera} disabled={!ready || !media} onClick={() => sendControl("camera")}><CameraIcon size={18} /></button>
     {endControl}
@@ -530,7 +576,50 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
   </div>;
   const summary = recovering ? "در حال اتصال مجدد…" : call.connectedAt
     ? [Math.floor(duration / 60), duration % 60].map(value => String(value).padStart(2, "0")).join(":") : callStatus(call);
-  return <section ref={windowRef} dir="rtl" aria-label={label} style={floatingStyle} className={"mushroom-call-surface fixed isolate z-[1000] " + panelClass}>
+  const surfaceClass = "mushroom-call-surface fixed isolate z-[1000] " + (floating ? "" : "mushroom-call-mobile ") + panelClass;
+
+  function resizeHandle(edge: "top" | "bottom" | "corner") {
+    const corner = edge === "corner";
+    const top = edge === "top";
+    const title = corner ? "تغییر اندازهٔ پنجره تماس" : top ? "تغییر ارتفاع از لبهٔ بالا" : "تغییر ارتفاع از لبهٔ پایین";
+    const position = corner ? "bottom-0 right-0 size-8 cursor-nwse-resize"
+      : (top ? "top-0" : "bottom-0") + " left-1/2 h-5 w-14 -translate-x-1/2 cursor-ns-resize";
+    return <button type="button" aria-label={title} title={title} className={"absolute z-40 grid touch-none place-items-center opacity-70 hover:opacity-100 " + position}
+      onPointerDown={event => {
+        const rect = windowRef.current?.getBoundingClientRect();
+        if (!rect || event.button !== 0 || !event.isPrimary) return;
+        resize.current = { x: event.clientX, y: event.clientY, width: rect.width, height: rect.height };
+        setAnchor({ right: false, bottom: top, x: rect.left, y: top ? document.documentElement.clientHeight - rect.bottom : rect.top });
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={event => {
+        const start = resize.current;
+        if (!start || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
+        setManualSize({ width: Math.max(300, start.width + (corner ? event.clientX - start.x : 0)),
+          height: Math.max(295, start.height + (top ? start.y - event.clientY : event.clientY - start.y)) });
+      }}
+      onLostPointerCapture={() => {
+        resize.current = null;
+        const rect = windowRef.current?.getBoundingClientRect();
+        if (rect) anchorAt(rect.left, rect.top, rect.width, rect.height);
+      }}
+      onKeyDown={event => {
+        const step = keyboardMove[event.key];
+        const rect = windowRef.current?.getBoundingClientRect();
+        if (!step || !rect || !corner && step[1] === 0) return;
+        event.preventDefault();
+        setManualSize({ width: Math.max(300, rect.width + (corner ? step[0] : 0)),
+          height: Math.max(295, rect.height + (top ? -step[1] : step[1])) });
+      }}>{corner ? <GripVertical size={16} className="rotate-45" aria-hidden="true" /> : <MoveVertical size={14} aria-hidden="true" />}</button>;
+  }
+
+  if (disconnecting || finished) return <section ref={windowRef} dir="rtl" aria-label={label} style={floatingStyle}
+    className={surfaceClass + " gap-2 px-4 text-center " + (minimized ? "flex min-h-14 items-center justify-center" : "grid place-content-center justify-items-center")}>
+    <p role="status" className="font-semibold">{finished ? "تماس قطع شد" : error || "در حال پایان تماس…"}</p>
+    {disconnecting && error && endControl}
+  </section>;
+
+  return <section ref={windowRef} dir="rtl" aria-label={label} style={floatingStyle} className={surfaceClass}>
     {floating && <header className="absolute inset-x-0 top-0 z-30 flex h-14 border-b border-white/15">
       <button type="button" aria-label={"جابجایی پنجره تماس با " + name} title="برای جابجایی بکشید یا از کلیدهای جهت‌نما استفاده کنید"
         className="flex min-w-0 flex-1 touch-none cursor-grab select-none items-center gap-2 px-4 text-start active:cursor-grabbing"
@@ -547,38 +636,14 @@ export function CallPanel({ call, name, frame, error, frameError, controls, endC
         {minimized ? <Maximize2 size={18} aria-hidden="true" /> : <Minimize2 size={18} aria-hidden="true" />}
       </button>}
     </header>}
-    {!floating && minimized && <header className="flex h-14 items-center justify-between gap-1 ps-3">
+    {!floating && minimized && <header className="flex h-16 items-center justify-between gap-1 ps-3">
       <div className="min-w-0"><p className="truncate text-sm font-bold">{name}</p><p className="truncate text-xs opacity-75">{summary}</p></div>
       {compactControls}
     </header>}
     {!floating && !minimized && active && <button type="button" aria-label="کوچک‌کردن تماس" onClick={() => setMinimized(true)}
       className={callIconButton + " absolute start-3 top-[max(12px,env(safe-area-inset-top))] z-30"}><Minimize2 size={18} /></button>}
     {minimized && cameraNotice && <p role="status" className={floating ? "absolute inset-x-2 top-14 text-xs" : "absolute inset-x-0 top-full rounded-b-xl bg-[var(--call-background)] px-2 py-1 text-xs"}>مجوز دوربین را از تنظیمات مرورگر فعال کنید.</p>}
-    {floating && !minimized && <button type="button" aria-label="تغییر اندازهٔ پنجره تماس" title="تغییر اندازهٔ پنجره"
-      className="absolute bottom-0 right-0 z-30 grid size-8 touch-none cursor-nwse-resize place-items-center opacity-70"
-      onPointerDown={event => {
-        const rect = windowRef.current?.getBoundingClientRect();
-        if (!rect || event.button !== 0 || !event.isPrimary) return;
-        resize.current = { x: event.clientX, y: event.clientY, width: rect.width, height: rect.height };
-        setAnchor({ right: false, bottom: false, x: rect.left, y: rect.top });
-        event.currentTarget.setPointerCapture(event.pointerId);
-      }}
-      onPointerMove={event => {
-        const start = resize.current;
-        if (!start || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
-        setManualSize({ width: Math.max(300, start.width + event.clientX - start.x), height: Math.max(295, start.height + event.clientY - start.y) });
-      }}
-      onLostPointerCapture={() => {
-        resize.current = null;
-        const rect = windowRef.current?.getBoundingClientRect();
-        if (rect) anchorAt(rect.left, rect.top, rect.width, rect.height);
-      }}
-      onKeyDown={event => {
-        const step = keyboardMove[event.key];
-        if (!step) return;
-        event.preventDefault();
-        setManualSize({ width: Math.max(300, size.width + step[0]), height: Math.max(295, size.height + step[1]) });
-      }}><GripVertical size={16} className="rotate-45" aria-hidden="true" /></button>}
+    {floating && !minimized && <>{resizeHandle("top")}{resizeHandle("bottom")}{resizeHandle("corner")}</>}
     <div inert={minimized} aria-hidden={minimized} className={minimized ? "pointer-events-none fixed inset-0 invisible" : floating ? "absolute inset-x-0 bottom-0 top-14" : "absolute inset-0"}>
       {frame && abandonedFrame !== frame && <iframe key={frame} ref={player} title={label} className={"mushroom-call-frame absolute inset-0 size-full border-0 " + (playing ? "" : "invisible")} src={frame} sandbox="allow-scripts allow-same-origin" allow="camera; microphone; autoplay" referrerPolicy="no-referrer" />}
       {!floating && active && <p className="mushroom-call-name pointer-events-none absolute inset-x-16 top-[max(20px,env(safe-area-inset-top))] z-10 truncate text-center text-lg font-bold">{name}</p>}
@@ -662,7 +727,7 @@ export function useCallTab(sessionKey: string, callId: string | undefined) {
   return { owner, transfer: (id = callId) => { if (id && id !== ownedCall) setClaim({ id }); } };
 }
 
-export function useCallFrame(engine: Engine, token: string, id: string | undefined) {
+export function useCallFrame(engine: Engine, token: string, id: string | undefined, floating = false) {
   const [granted, setGranted] = useState<{ id: string; url: string; version: number } | null>(null);
   const [failure, setFailure] = useState<{ id: string; version: number; code: CallFrameError }>();
   const [version, refresh] = useState(0);
@@ -681,6 +746,8 @@ export function useCallFrame(engine: Engine, token: string, id: string | undefin
       const frameUrl = new URL(url);
       frameUrl.searchParams.set("embedOrigin", window.location.origin);
       frameUrl.searchParams.set("autoJoin", "1");
+      frameUrl.searchParams.set("managedHangup", "1");
+      if (floating) frameUrl.searchParams.set("floating", "1");
       if (resumed && !allowPrompt.current) frameUrl.searchParams.set("resume", "1");
       allowPrompt.current = false;
       if (preferences.current?.id === id) {
@@ -694,7 +761,7 @@ export function useCallFrame(engine: Engine, token: string, id: string | undefin
       setFailure({ id, version, code: terminal.includes(error?.message) ? "unavailable" : "retryable" });
     });
     return () => { active = false; };
-  }, [engine, id, version]);
+  }, [engine, id, version, floating]);
   const frame = granted && granted.id === id && granted.version === version ? granted.url : "";
   const frameError = failure?.id === id && failure?.version === version ? failure.code : undefined;
   return { frame, frameError, joining: Boolean(id && !frame && !frameError), reconnect: (media?: CallMediaPreferences, automatic = false) => { allowPrompt.current = !automatic; if (id && media) preferences.current = { id, media }; refresh(previous => previous + 1); } };

@@ -8,7 +8,7 @@ const origin = process.env.CHAT_VIDEO_TEST_ORIGIN ?? 'http://127.0.0.1:5444';
 const browser = await chromium.launch({ args: ['--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] });
 let hostServer;
 try {
-  const context = await browser.newContext({ permissions: ['camera', 'microphone'], viewport: { width: 320, height: 720 } });
+  const context = await browser.newContext({ permissions: ['camera', 'microphone'], viewport: { width: 320, height: 720 }, hasTouch: true });
   hostServer = createServer((_request, response) => {
     response.setHeader('Content-Type', 'text/html');
     response.end('<style>body{margin:0}iframe{width:100vw;height:100vh;border:0}</style><iframe title="Call" allow="camera; microphone; autoplay" sandbox="allow-scripts allow-same-origin"></iframe>');
@@ -26,8 +26,10 @@ try {
   const pages = await Promise.all([context.newPage(), context.newPage()]);
   const joined = new Set();
   let connected = 0;
+  let confirmHangUp;
+  const hangUpAck = new Promise(resolve => { confirmHangUp = resolve; });
   const deliver = (page, event, payload) => page.evaluate(([name, value]) => window.dispatchCallEvent(name, value), [event, payload]);
-  await context.exposeBinding('callSignal', ({ frame }, event, payload) => {
+  await context.exposeBinding('callSignal', async ({ frame }, event, payload) => {
     const page = frame.page();
     const other = pages.find(candidate => candidate !== page).frames()[1];
     if (event === 'join') {
@@ -42,7 +44,10 @@ try {
     if (event === 'relaySDP') void deliver(other, 'sessionDescription', { ...payload, peerId }).catch(() => {});
     if (event === 'relayICE') void deliver(other, 'iceCandidate', { ...payload, peerId }).catch(() => {});
     if (event === 'mushroom-connected') connected += 1;
-    if (event === 'mushroom-end') void deliver(other, 'mushroom-ended').catch(() => {});
+    if (event === 'mushroom-end') {
+      await hangUpAck;
+      void deliver(other, 'mushroom-ended').catch(() => {});
+    }
     return true;
   });
   await context.addInitScript(() => {
@@ -95,7 +100,9 @@ try {
     assert.equal(await page.locator('#connect').isVisible(), false);
     assert.equal(await page.locator('.avatar').isVisible(), false);
     const end = await page.locator('#end').boundingBox();
-    assert.ok(end.width >= 48 && end.height >= 48);
+    assert.ok(end.width >= 56 && end.height >= 56);
+    assert.ok(await page.locator('#local').evaluate(video => getComputedStyle(video).objectFit === 'cover'));
+    assert.ok(await page.locator('.controls').evaluate(controls => parseFloat(getComputedStyle(controls).columnGap) >= 16));
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth === innerWidth));
   }
   await Promise.all(frames.map(page => page.waitForFunction(() => {
@@ -150,9 +157,11 @@ try {
     await other.waitForFunction(() => document.body.dataset.remoteVideo === 'false');
     assert.equal(await other.locator('#status').textContent(), 'تماس برقرار است.');
   }
+  await frames[0].evaluate(() => { window.localMic = window.testPeer.getSenders().find(sender => sender.track?.kind === 'audio').track; });
   await frames[0].locator('#end').click();
-  await frames[0].waitForFunction(() => document.querySelector('#status').textContent.includes('پایان یافت'));
-  await frames[1].waitForFunction(() => document.querySelector('#status').textContent.includes('پایان یافته'));
+  await frames[0].waitForFunction(() => window.localMic.readyState === 'ended' && document.querySelector('#status').textContent === 'در حال پایان تماس…');
+  confirmHangUp();
+  for (const page of frames) await page.waitForFunction(() => document.querySelector('#status').textContent === 'تماس قطع شد');
   console.log('Audio-only join, two-way camera switching, and hang-up passed.');
 } finally {
   await browser.close();

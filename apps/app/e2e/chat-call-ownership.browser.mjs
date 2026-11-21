@@ -49,6 +49,19 @@ try {
       const style = document.createElement('style');
       style.textContent = 'nextjs-portal { pointer-events: none !important; }';
       document.addEventListener('DOMContentLoaded', () => document.head.append(style), { once: true });
+      window.callSounds = { ringStarts: 0, ringStops: 0, endNotes: 0, mediaRingStarts: 0 };
+      for (const [kind, method, counter] of [
+        [AudioBufferSourceNode, 'start', 'ringStarts'], [AudioBufferSourceNode, 'stop', 'ringStops'],
+        [OscillatorNode, 'start', 'endNotes'],
+      ]) {
+        const original = kind.prototype[method];
+        kind.prototype[method] = function (...args) { window.callSounds[counter]++; return original.apply(this, args); };
+      }
+      const nativePlay = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function (...args) {
+        if (this.src.endsWith('/consultation-ring.wav')) window.callSounds.mediaRingStarts++;
+        return nativePlay.apply(this, args);
+      };
     });
     let failedVideo = false;
     let outgoingFails = false;
@@ -127,7 +140,20 @@ try {
     first.on('dialog', dialog => void dialog.accept());
     await first.goto(base + routePath);
     if (patient) {
+      await first.waitForFunction(() => window.callSounds.ringStarts === 1);
+      await first.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      await first.waitForFunction(() => window.callSounds.ringStops === 1);
+      await first.evaluate(() => {
+        delete document.visibilityState;
+        document.dispatchEvent(new Event('visibilitychange'));
+      });
+      await first.waitForFunction(() => window.callSounds.ringStarts === 2);
       await first.getByRole('button', { name: 'پاسخ', exact: true }).click();
+      await first.waitForFunction(() => window.callSounds.ringStops === 2);
+      assert.equal(await first.evaluate(() => window.callSounds.mediaRingStarts), 0);
     } else {
       await first.getByRole('button', { name: new RegExp(patientName) }).click();
       await first.getByRole('button', { name: 'تماس صوتی', exact: true }).click();
@@ -152,8 +178,21 @@ try {
       publish({ ...state, connectedAt: new Date(Date.now() - 10_000).toISOString() });
       await expect(panel.getByText(/^00:\d\d$/)).toBeVisible();
       assert.equal(grants.length, beforeSpoof);
+      await first.getByRole('button', { name: 'باز کردن تماس جاری' }).click();
+      const before = await panel.boundingBox();
+      const heightHandle = first.getByRole('button', { name: 'تغییر ارتفاع از لبهٔ بالا' });
+      const handle = await heightHandle.boundingBox();
+      await first.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+      await first.mouse.down();
+      await first.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2 - 72, { steps: 6 });
+      await first.mouse.up();
+      const after = await panel.boundingBox();
+      assert.equal(after.width, before.width);
+      assert.ok(after.height >= before.height + 60);
+      assert.ok(after.y >= 12);
+      assert.ok(Math.abs(after.y + after.height - before.y - before.height) <= 1);
       const src = await frame(first).getAttribute('src');
-      await first.getByRole('link', { name: 'بازگشت به بیمار' }).click();
+      await first.getByRole('link', { name: 'بازگشت به ویزیت بیمار' }).click();
       await first.waitForURL('**/appointments/' + appointmentId);
       await expect(frame(first)).toHaveAttribute('src', src);
       assert.equal(grants.length, 2);
@@ -189,17 +228,33 @@ try {
       publish({ ...state, status: 'ACTIVE' });
       await expect(frame(second)).toBeAttached();
 
+      const previousNotes = await second.evaluate(() => window.callSounds.endNotes);
       let finishEnd;
       const endRequested = new Promise(resolve => { requestEnd = resolve; });
       holdEnd = new Promise(resolve => { finishEnd = resolve; });
       await second.getByRole('button', { name: 'کوچک‌کردن تماس' }).click();
       await second.getByRole('button', { name: 'پایان تماس', exact: true }).click();
       await endRequested;
+      await expect(frame(second)).toHaveCount(0);
+      await expect(second.getByText('در حال پایان تماس…')).toBeVisible();
       outgoingFails = true;
       publish({ ...state, status: 'ENDED', endedAt: new Date().toISOString(), endReason: 'lease_expired' });
-      await expect(frame(second)).toBeAttached();
       finishEnd();
+      await expect(second.getByText('تماس قطع شد')).toBeVisible();
+      await expect.poll(() => second.evaluate(() => window.callSounds.endNotes)).toBe(previousNotes + 2);
+      await expect(second.getByText('تماس قطع شد')).toHaveCount(0);
+    } else {
+      await second.frameLocator('iframe[title="تماس صوتی"]').getByText('Mock call player').evaluate(element => {
+        const child = element.ownerDocument.defaultView;
+        const params = new URL(child.location.href).searchParams;
+        if (params.get('managedHangup') !== '1') throw new Error('Host hang-up was not enabled');
+        child.parent.postMessage({ type: 'mushroom-call:hang-up' }, params.get('embedOrigin'));
+      });
+      await expect.poll(() => state?.status).toBe('ENDED');
+      await expect(second.getByText('تماس قطع شد')).toBeVisible();
       await expect(frame(second)).toHaveCount(0);
+      await second.waitForFunction(() => window.callSounds.endNotes === 2);
+      await expect(second.getByText('تماس قطع شد')).toHaveCount(0);
     }
     await context.close();
     console.log(role + ': reload, single-tab ownership and transfer passed.');
