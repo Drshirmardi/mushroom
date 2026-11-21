@@ -5,7 +5,7 @@ export type ChatConversation = components['schemas']['ChatConversationResponseDt
 export type ChatState = 'connected' | 'reconnecting' | 'offline' | 'read-only' | 'recovery-failed';
 export type ChatAccess = components['schemas']['ChatAccessResponseDto'];
 export const maxChatAttachment = 20 * 1024 * 1024;
-export const chatMediaExtensions = ".jpg,.jpeg,.png,.mp4";
+export const chatMediaExtensions = ".jpg,.jpeg,.png,.mp4,.mov";
 export const chatDocumentExtensions = ".pdf,.docx";
 export type PreviousChat = components['schemas']['PreviousChatDto'];
 export type ChatCall = components['schemas']['ChatCallDto'];
@@ -32,19 +32,43 @@ export function reconcileChatMessages(messages: ChatMessage[], next: ChatMessage
     .sort((a, b) => BigInt(a.sequence) < BigInt(b.sequence) ? -1 : BigInt(a.sequence) > BigInt(b.sequence) ? 1 : 0);
 }
 
+export function createChatId() {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  return [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
+}
+
+async function withChatTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<T>, signal?: AbortSignal) {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  if (signal?.aborted) abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  const timer = setTimeout(abort, ms);
+  try { return await run(controller.signal); }
+  finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
+  }
+}
+
 /** Shared patient/dashboard transport. Credentials and drafts never leave memory. */
 export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
   async function request<T>(token: string, path: string, method = 'GET', body?: unknown): Promise<T> {
-    const response = await fetchImpl(`${baseUrl}${path}`, {
-      method, headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
-      cache: 'no-store', signal: AbortSignal.timeout(10_000), ...(body ? { body: JSON.stringify(body) } : {}),
+    return withChatTimeout(10_000, async signal => {
+      const response = await fetchImpl(`${baseUrl}${path}`, {
+        method, headers: { authorization: `Bearer ${token}`, ...(body ? { 'content-type': 'application/json' } : {}) },
+        cache: 'no-store', signal, ...(body ? { body: JSON.stringify(body) } : {}),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.code ?? `CHAT_REQUEST_${response.status}`);
+      }
+      if (response.status === 204) return undefined as T;
+      return response.json() as Promise<T>;
     });
-    if (!response.ok) {
-      const error = await response.json().catch(() => null);
-      throw new Error(error?.code ?? `CHAT_REQUEST_${response.status}`);
-    }
-    if (response.status === 204) return undefined as T;
-    return response.json() as Promise<T>;
   }
   const history = (token: string, id: string, direction: 'after' | 'before' | 'latest', cursor?: string) =>
     request<History>(token, `/v1/chat/conversations/${encodeURIComponent(id)}/messages?limit=50&direction=${direction}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
@@ -302,7 +326,7 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     const stop = new AbortController();
     const channel = typeof BroadcastChannel === 'function' && navigator.locks
       ? new BroadcastChannel(`mushroom-incoming:${sessionKey}`) : undefined;
-    const tabId = crypto.randomUUID();
+    const tabId = createChatId();
     const visibleTabs = new Map<string, number>();
     let stream: ReturnType<typeof watchEvents> | undefined;
     let presenceId: string | undefined;
@@ -565,18 +589,27 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
   async function upload(token: string, conversationId: string, file: File, clientMessageId: string) {
     const form = new FormData();
     form.append('file', file);
-    const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${clientMessageId}`, {
-      method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store', body: form, signal: AbortSignal.timeout(60_000),
+    return withChatTimeout(60_000, async signal => {
+      try {
+        const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${clientMessageId}`, {
+          method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store', body: form, signal,
+        });
+        if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
+        return await response.json() as ChatMessage;
+      } catch (error) {
+        if (signal.aborted || error instanceof TypeError) throw new Error('CHAT_UPLOAD_CONNECTION_FAILED', { cause: error });
+        throw error;
+      }
     });
-    if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
-    return response.json() as Promise<ChatMessage>;
   }
   async function attachmentBlob(token: string, conversationId: string, messageId: string, signal?: AbortSignal) {
-    const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${messageId}`, {
-      headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30_000)]) : AbortSignal.timeout(30_000),
-    });
-    if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
-    return response.blob();
+    return withChatTimeout(30_000, async requestSignal => {
+      const response = await fetchImpl(`${baseUrl}/v1/chat/conversations/${conversationId}/attachments/${messageId}`, {
+        headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: requestSignal,
+      });
+      if (!response.ok) throw new Error(`CHAT_REQUEST_${response.status}`);
+      return response.blob();
+    }, signal);
   }
   async function download(token: string, conversationId: string, message: ChatMessage) {
     if (!message.attachment) return;

@@ -14,6 +14,7 @@ const types: Record<string, string> = {
   jpeg: 'image/jpeg',
   png: 'image/png',
   mp4: 'video/mp4',
+  mov: 'video/quicktime',
 };
 
 function isWordDocument(bytes: Buffer) {
@@ -30,11 +31,13 @@ function isWordDocument(bytes: Buffer) {
     && ![...names].some(name => /vbaproject|activex|embeddings/i.test(name));
 }
 
-function isMp4(bytes: Buffer) {
+const mp4Brands = new Set(['isom', 'iso2', 'iso5', 'iso6', 'mp41', 'mp42', 'avc1', 'M4V ']);
+const quickTimeBrands = new Set(['qt  ']);
+
+function isVideoContainer(bytes: Buffer, brands: ReadonlySet<string>) {
   if (bytes.length < 16 || bytes.toString('ascii', 4, 8) !== 'ftyp') return false;
   const headerSize = bytes.readUInt32BE(0);
   if (headerSize < 16 || headerSize > bytes.length || headerSize % 4 !== 0) return false;
-  const brands = new Set(['isom', 'iso2', 'iso5', 'iso6', 'mp41', 'mp42', 'avc1', 'M4V ']);
   let compatible = brands.has(bytes.toString('ascii', 8, 12));
   for (let i = 16; !compatible && i < headerSize; i += 4) compatible = brands.has(bytes.toString('ascii', i, i + 4));
   if (!compatible) return false;
@@ -61,7 +64,8 @@ export function validateChatAttachment(filename: string, bytes: Buffer) {
   const header = bytes.subarray(0, 8).toString('hex');
   const valid = ext === 'pdf' ? header.startsWith('255044462d')
     : ext === 'png' ? header === '89504e470d0a1a0a'
-    : ext === 'mp4' ? isMp4(bytes)
+    : ext === 'mp4' ? isVideoContainer(bytes, mp4Brands)
+    : ext === 'mov' ? isVideoContainer(bytes, quickTimeBrands)
     : ext === 'docx' ? isWordDocument(bytes)
     : header.startsWith('ffd8ff');
   if (!valid) throw new BadRequestException('Invalid attachment');

@@ -80,3 +80,15 @@ it('validates bounded MP4 boxes before allowing a video attachment', () => {
   expect(() => validateChatAttachment('sample.mp4', file.subarray(0, -1))).toThrow();
   expect(() => validateChatAttachment('sample.mp4', Buffer.concat([brands, data]))).toThrow();
 });
+
+it('accepts a bounded QuickTime container and rejects mislabeled or truncated MOV files', () => {
+  const brands = Buffer.from('0000001466747970717420200000000071742020', 'hex');
+  const movie = Buffer.from('000000096d6f6f7600', 'hex');
+  const data = Buffer.from('000000096d64617400', 'hex');
+  const file = Buffer.concat([brands, movie, data]);
+  expect(validateChatAttachment('camera.MOV', file)).toEqual({ name: 'camera.MOV', mime: 'video/quicktime', size: file.length });
+  expect(() => validateChatAttachment('camera.mov', file.subarray(0, -1))).toThrow();
+  expect(() => validateChatAttachment('camera.mov', Buffer.concat([brands, data]))).toThrow();
+  expect(() => validateChatAttachment('camera.mp4', file)).toThrow();
+  expect(() => validateChatAttachment('camera.heic', file)).toThrow();
+});

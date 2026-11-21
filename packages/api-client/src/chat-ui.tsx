@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ChangeEvent, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { Download, FileText, GripVertical, Maximize2, Mic, MicOff, Minimize2, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, VideoOff, X } from "lucide-react";
-import { chatDocumentExtensions, chatMediaExtensions, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine.js";
+import { chatDocumentExtensions, chatMediaExtensions, createChatId, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine.js";
 
 type Engine = ReturnType<typeof createChatEngine>;
 type ChatCredentials = { engine: Engine; token: string; conversationId: string };
@@ -12,6 +12,10 @@ const fileSize = (size: number) => size >= 1024 * 1024
   : numbers.format(Math.max(1, size / 1024)) + " کیلوبایت";
 const sizeError = "حجم فایل باید حداکثر ۲۰ مگابایت باشد.";
 const formatError = "فرمت یا محتوای فایل قابل پذیرش نیست.";
+const attachmentOptions = [
+  { id: "media", label: "عکس و ویدئو", extensions: chatMediaExtensions, mime: "image/jpeg,image/png,video/mp4,video/quicktime" },
+  { id: "document", label: "سند", extensions: chatDocumentExtensions, mime: "application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" },
+] as const;
 const iconButton = "inline-flex size-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50";
 
 function FileInfo({ name, size }: { name: string; size: number }) {
@@ -31,23 +35,64 @@ export function AttachmentPicker({ engine, token, conversationId, disabled, butt
   const [menu, setMenu] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const picker = useRef<HTMLInputElement>(null);
+  const pickerId = useId();
+  const root = useRef<HTMLDivElement>(null);
   const paperclip = useRef<HTMLButtonElement>(null);
-  const firstChoice = useRef<HTMLButtonElement>(null);
+  const firstChoice = useRef<HTMLInputElement>(null);
+  const [focusedChoice, setFocusedChoice] = useState<string>();
   const flight = useRef(false);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
   }, []);
-  useEffect(() => { if (menu) firstChoice.current?.focus(); }, [menu]);
+  const menuOpen = menu && !disabled && !busy;
+  useEffect(() => {
+    if (!menuOpen) return;
+    const pickerRoot = root.current;
+    firstChoice.current?.focus();
+    function dismissOutside(event: globalThis.PointerEvent) {
+      if (event.target instanceof Node && !root.current?.contains(event.target)) setMenu(false);
+    }
+    function cancelSelection(event: Event) {
+      if (event.target instanceof HTMLInputElement && event.target.type === "file") {
+        setMenu(false);
+        paperclip.current?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", dismissOutside, true);
+    pickerRoot?.addEventListener("cancel", cancelSelection, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside, true);
+      pickerRoot?.removeEventListener("cancel", cancelSelection, true);
+    };
+  }, [menuOpen]);
 
-  function choose(accept: string) {
+  function closeMenu() {
     setMenu(false);
-    if (!picker.current) return;
-    picker.current.accept = accept;
-    picker.current.click();
     paperclip.current?.focus();
+  }
+
+  function selectFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = "";
+    if (!file || disabled || busy) return;
+    closeMenu();
+    setSent(false);
+    try {
+      const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? "";
+      if (!file.size) { setError("فایل خالی است یا خوانده نشد."); return; }
+      if (file.size > maxChatAttachment) { setError(sizeError); return; }
+      if (extension === ".heic" || extension === ".heif") {
+        setError("برای ارسال این عکس آیفون، آن را با فرمت JPEG یا PNG ذخیره و دوباره انتخاب کنید.");
+        return;
+      }
+      if (!attachmentOptions.some(option => option.extensions.split(",").includes(extension))) { setError(formatError); return; }
+      setDraft({ file, id: createChatId() });
+      setError("");
+    } catch {
+      setError("انتخاب فایل انجام نشد. دوباره تلاش کنید.");
+    }
   }
 
   async function send() {
@@ -65,6 +110,7 @@ export function AttachmentPicker({ engine, token, conversationId, disabled, butt
       if (!mounted.current) return;
       const code = failure instanceof Error ? failure.message : "";
       setError(code === "CHAT_REQUEST_503" ? "سرویس پیوست موقتاً در دسترس نیست. دوباره تلاش کنید."
+        : code === "CHAT_UPLOAD_CONNECTION_FAILED" ? "ارسال فایل به‌دلیل کندی اتصال کامل نشد. دوباره تلاش کنید."
         : code === "CHAT_REQUEST_413" ? sizeError
         : code === "CHAT_REQUEST_400" || code === "CHAT_REQUEST_415" ? formatError
         : code === "CHAT_REQUEST_401" || code === "CHAT_REQUEST_403" ? "دسترسی ارسال فایل در دسترس نیست."
@@ -75,26 +121,19 @@ export function AttachmentPicker({ engine, token, conversationId, disabled, butt
     }
   }
 
-  return <div className="relative shrink-0" onKeyDown={event => {
-    if (event.key === "Escape" && menu) { setMenu(false); paperclip.current?.focus(); }
-  }} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setMenu(false); }}>
-    <button ref={paperclip} type="button" aria-label="افزودن پیوست" title="افزودن پیوست" aria-expanded={menu && !disabled} disabled={disabled || busy} onClick={() => { setSent(false); setMenu(!menu); }} className={iconButton + " " + (buttonClassName ?? "text-muted-foreground hover:bg-muted")}>
+  return <div ref={root} className="relative shrink-0" onKeyDown={event => {
+    if (event.key === "Escape" && menuOpen) { event.stopPropagation(); closeMenu(); }
+  }}>
+    <button ref={paperclip} type="button" aria-label="افزودن پیوست" title="افزودن پیوست" aria-expanded={menuOpen} disabled={disabled || busy} onClick={() => { setSent(false); setMenu(!menu); }} className={iconButton + " " + (buttonClassName ?? "text-muted-foreground hover:bg-muted")}>
       <Paperclip size={20} aria-hidden="true" />
     </button>
-    <input ref={picker} type="file" hidden onChange={event => {
-      const file = event.currentTarget.files?.[0];
-      event.currentTarget.value = "";
-      if (!file) return;
-      setSent(false);
-      if (file.size > maxChatAttachment) { setError(sizeError); return; }
-      const ext = "." + file.name.split(".").at(-1)?.toLowerCase();
-      if (!file.size || ![...chatMediaExtensions.split(","), ...chatDocumentExtensions.split(",")].includes(ext)) { setError(formatError); return; }
-      setError("");
-      setDraft({ file, id: crypto.randomUUID() });
-    }} />
-    {menu && !disabled && <div className="absolute bottom-full left-0 z-20 mb-2 grid w-44 rounded-xl border border-border bg-background p-1 text-sm shadow-lg">
-      <button ref={firstChoice} type="button" onClick={() => choose(chatMediaExtensions)} className="min-h-11 rounded-lg px-3 text-start hover:bg-muted">عکس و ویدئو</button>
-      <button type="button" onClick={() => choose(chatDocumentExtensions)} className="min-h-11 rounded-lg px-3 text-start hover:bg-muted">سند</button>
+    {attachmentOptions.map(option => <input key={option.id} ref={option.id === "media" ? firstChoice : undefined}
+      id={pickerId + option.id} type="file" className="sr-only" aria-label={option.label} disabled={!menuOpen}
+      accept={option.mime + "," + option.extensions} onChange={selectFile} onFocus={() => setFocusedChoice(option.id)}
+      onBlur={() => setFocusedChoice(undefined)} />)}
+    {menuOpen && <div className="absolute bottom-full left-0 z-20 mb-2 grid w-44 rounded-xl border border-border bg-background p-1 text-sm shadow-lg">
+      {attachmentOptions.map(option => <label key={option.id} htmlFor={pickerId + option.id}
+        className={"flex min-h-11 cursor-pointer items-center rounded-lg px-3 text-start hover:bg-muted" + (focusedChoice === option.id ? " outline-2 outline-primary" : "")}>{option.label}</label>)}
     </div>}
     {(draft || error || sent) && <div className="absolute bottom-full left-0 z-10 mb-2 w-[min(75vw,21rem)] rounded-xl border border-border bg-background p-2 text-sm text-foreground shadow-lg">
       {draft && <div className="flex items-center gap-2">
@@ -114,7 +153,7 @@ export function AttachmentPicker({ engine, token, conversationId, disabled, butt
 export function ChatAttachmentCard({ engine, token, conversationId, message, imageCache }: ChatCredentials & { message: ChatMessage; imageCache?: Map<string, Blob> }) {
   const attachment = message.attachment!;
   const image = ["image/jpeg", "image/png"].includes(attachment.mime);
-  const video = attachment.mime === "video/mp4";
+  const video = attachment.mime === "video/mp4" || attachment.mime === "video/quicktime";
   const media = image || video;
   const [visible, setVisible] = useState(false);
   const [url, setUrl] = useState("");

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { chromium } from '@playwright/test';
+import { chromium, webkit } from '@playwright/test';
 
-const browser = await chromium.launch();
+const browser = await (process.env.CHAT_TEST_BROWSER === 'webkit' ? webkit : chromium).launch();
 const userId = '11111111-1111-4111-8111-111111111111';
 const appointmentId = '22222222-2222-4222-8222-222222222222';
 const conversationId = '33333333-3333-4333-8333-333333333333';
@@ -22,9 +22,11 @@ const pdfBytes = Buffer.from('%PDF-1.7 synthetic');
 const pdf = message(2, 'sample.pdf', 'application/pdf', pdfBytes);
 const video = mp4 && message(3, 'sample.mp4', 'video/mp4', mp4);
 const outgoing = message(5, 'test.pdf', 'application/pdf', pdfBytes);
+const unsupportedVideoBytes = Buffer.from('synthetic unsupported video');
+const unsupportedVideo = message(6, 'camera.mov', 'video/quicktime', unsupportedVideoBytes);
 const call = { id: 'demo-call', mode: 'AUDIO', status: 'MISSED' };
 const active = { id: 'active-call', mode: 'AUDIO', status: 'ACTIVE', connectedAt: createdAt };
-const items = [image, pdf, ...(video ? [video] : []), { id: 'marker', sequence: '4', senderKind: 'DOCTOR', createdAt, body: '', visibility: 'VISIBLE', callId: call.id }];
+const items = [image, pdf, ...(video ? [video] : []), { id: 'marker', sequence: '4', senderKind: 'DOCTOR', createdAt, body: '', visibility: 'VISIBLE', callId: call.id }, unsupportedVideo];
 
 try {
   for (const [role, base, embedded] of [
@@ -62,6 +64,8 @@ try {
       if (pathname === '/v1/auth/refresh') return send({ accessToken: 'synthetic', expiresIn: 3600, user: { id: userId, phone: "+989120001029", roles: [role] } });
       if (pathname === '/v1/patients/me/entry') return send({ required: false, firstName: 'آزمایشی' });
       if (pathname === '/v1/patients/me' || pathname === '/v1/me') return send({ firstName: 'آزمایشی', id: userId, roles: [role] });
+      if (pathname.startsWith('/v1/directory/doctors/')) return send({ id: userId, displayName: 'پزشک آزمایشی' });
+      if (pathname === '/v1/appointments/' + appointmentId) return send({ ...visit, doctorId: userId });
       if (pathname === '/v1/admin/appointments') return send({ items: [visit, { ...visit, id: secondAppointmentId, patientDisplayName: 'بیمار دوم' }], page: 1, pageSize: 20, total: 2 });
       if (pathname === '/v1/admin/appointments/' + appointmentId) return send(visit);
       if (pathname.endsWith('/previous-conversations')) {
@@ -88,7 +92,9 @@ try {
       if (pathname.endsWith('/conversation')) return send(pathname.includes(secondAppointmentId)
         ? { ...conversation, id: secondConversationId, appointmentId: secondAppointmentId }
         : conversation);
-      if (pathname.endsWith('/access')) return send({ conversation, senderKind: role, canSend: true, canClose: true });
+      const access = { conversation, senderKind: role, canSend: true, canClose: true };
+      if (pathname.endsWith('/access')) return send(access);
+      if (pathname.endsWith('/sync')) return send({ access });
       if (pathname.endsWith('/messages')) return send({ items: searchParams.get('direction') === 'latest' ? items : [], nextCursor: null, checkpointCursor: 'cursor' });
       if (pathname.endsWith('/video')) return send({ available: true });
       if (pathname.endsWith('/incoming') || pathname.endsWith('/current')) return send({ call: null });
@@ -101,7 +107,7 @@ try {
           attempts.push(pathname);
           return attempts.length === 1 ? send({ code: 'SERVICE_UNAVAILABLE' }, 503) : send(outgoing, 201);
         }
-        for (const [entry, bytes] of [[image, png], [pdf, pdfBytes], [video, mp4]]) {
+        for (const [entry, bytes] of [[image, png], [pdf, pdfBytes], [video, mp4], [unsupportedVideo, unsupportedVideoBytes]]) {
           if (entry && pathname.endsWith('/' + entry.id)) return route.fulfill({ status: 200, headers, body: bytes, contentType: entry.attachment.mime });
         }
       }
@@ -110,7 +116,7 @@ try {
 
     await page.goto(patient ? base + '/chat?appointmentId=' + appointmentId : embedded ? base + '/appointments/' + appointmentId : base + '/messages');
     if (!patient && !embedded) await page.getByRole('button', { name: /بیمار آزمایشی/ }).click();
-    const log = page.getByRole('log');
+    const log = patient ? page.getByRole('region', { name: 'پیام‌های گفتگو' }) : page.getByRole('log');
     await log.getByText('بی‌پاسخ').waitFor();
     const send = page.getByRole('button', { name: 'ارسال پیام', exact: true });
     const input = page.getByRole('textbox', { name: 'متن پیام' });
@@ -124,7 +130,7 @@ try {
       await page.getByRole('button', { name: 'تماس تصویری', exact: true }).waitFor();
     }
 
-    await log.getByText('sample.png', { exact: true }).scrollIntoViewIfNeeded();
+    await log.getByText('sample.pdf', { exact: true }).scrollIntoViewIfNeeded();
     await log.getByRole('button', { name: 'بازکردن تصویر' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByRole('img').waitFor();
@@ -138,9 +144,34 @@ try {
     await log.getByRole('button', { name: 'دانلود sample.pdf' }).click();
     assert.equal((await downloadPromise).suggestedFilename(), 'sample.pdf');
 
+    await log.getByText('camera.mov', { exact: true }).scrollIntoViewIfNeeded();
+    await log.getByText('پیش‌نمایش در دسترس نیست. می‌توانید فایل را دانلود کنید.').waitFor();
+    const fallbackDownload = page.waitForEvent('download');
+    await log.getByRole('button', { name: 'دانلود camera.mov' }).click();
+    assert.equal((await fallbackDownload).suggestedFilename(), 'camera.mov');
+
+    await attach.click();
+    await page.keyboard.press('Escape');
+    assert.equal(await attach.getAttribute('aria-expanded'), 'false');
+    assert.ok(await attach.evaluate(button => document.activeElement === button));
+    await attach.click();
+    await input.click();
+    assert.equal(await attach.getAttribute('aria-expanded'), 'false');
+
+    await attach.click();
+    const media = page.locator('input[type=file][aria-label="عکس و ویدئو"]');
+    await media.dispatchEvent('focusout', { relatedTarget: null });
+    const mediaChooser = page.waitForEvent('filechooser');
+    await page.locator('label').filter({ hasText: 'عکس و ویدئو' }).click();
+    await (await mediaChooser).setFiles({ name: 'empty.mov', mimeType: 'video/quicktime', buffer: Buffer.alloc(0) });
+    await page.getByRole('alert').filter({ hasText: 'فایل خالی است یا خوانده نشد.' }).waitFor();
+    await attach.click();
+    await media.dispatchEvent('cancel', { bubbles: true });
+    assert.equal(await attach.getAttribute('aria-expanded'), 'false');
+
     await attach.click();
     const chooserPromise = page.waitForEvent('filechooser');
-    await page.getByRole('button', { name: 'سند', exact: true }).click();
+    await page.locator('label').filter({ hasText: /^سند$/ }).click();
     await (await chooserPromise).setFiles({ name: 'test.pdf', mimeType: 'application/pdf', buffer: pdfBytes });
     await page.getByRole('button', { name: 'ارسال فایل' }).click();
     await page.getByRole('alert').filter({ hasText: 'سرویس پیوست موقتاً در دسترس نیست' }).waitFor();
