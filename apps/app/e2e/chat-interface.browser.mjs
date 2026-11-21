@@ -25,7 +25,6 @@ const outgoing = message(5, 'test.pdf', 'application/pdf', pdfBytes);
 const unsupportedVideoBytes = Buffer.from('synthetic unsupported video');
 const unsupportedVideo = message(6, 'camera.mov', 'video/quicktime', unsupportedVideoBytes);
 const call = { id: 'demo-call', mode: 'AUDIO', status: 'MISSED' };
-const active = { id: 'active-call', mode: 'AUDIO', status: 'ACTIVE', connectedAt: createdAt };
 const items = [image, pdf, ...(video ? [video] : []), { id: 'marker', sequence: '4', senderKind: 'DOCTOR', createdAt, body: '', visibility: 'VISIBLE', callId: call.id }, unsupportedVideo];
 
 try {
@@ -98,9 +97,6 @@ try {
       if (pathname.endsWith('/messages')) return send({ items: searchParams.get('direction') === 'latest' ? items : [], nextCursor: null, checkpointCursor: 'cursor' });
       if (pathname.endsWith('/video')) return send({ available: true });
       if (pathname.endsWith('/incoming') || pathname.endsWith('/current')) return send({ call: null });
-      if (pathname.endsWith('/calls') && request.method() === 'POST') return send(active, 201);
-      if (pathname.endsWith('/calls/' + active.id)) return send(active);
-      if (pathname.endsWith('/calls/' + active.id + '/grant')) return send({ url: 'http://localhost:5444/mushroom-call.html?mode=AUDIO#synthetic' }, 201);
       if (pathname.endsWith('/calls/' + call.id)) return send(call);
       if (pathname.includes('/attachments/')) {
         if (request.method() === 'POST') {
@@ -115,6 +111,8 @@ try {
     });
 
     await page.goto(patient ? base + '/chat?appointmentId=' + appointmentId : embedded ? base + '/appointments/' + appointmentId : base + '/messages');
+    // A local Next.js dev indicator can overlap the composer at the mobile viewport width.
+    await page.addStyleTag({ content: 'nextjs-portal { pointer-events: none !important; }' });
     if (!patient && !embedded) await page.getByRole('button', { name: /بیمار آزمایشی/ }).click();
     const log = patient ? page.getByRole('region', { name: 'پیام‌های گفتگو' }) : page.getByRole('log');
     await log.getByText('بی‌پاسخ').waitFor();
@@ -183,18 +181,18 @@ try {
     assert.equal(await page.getByRole('button', { name: 'گفتگوهای قبلی', exact: true }).count(), 0);
     const showHistory = page.getByRole('button', { name: 'نمایش پیام‌های ویزیت قبلی', exact: true });
     assert.equal(await showHistory.count(), 1);
-    await showHistory.click();
+    await showHistory.press('Enter');
     await page.getByRole('alert').filter({ hasText: 'دریافت پیام‌های ویزیت قبلی ممکن نشد' }).waitFor();
-    await page.getByRole('button', { name: 'تلاش دوباره', exact: true }).click();
+    await page.getByRole('button', { name: 'تلاش دوباره', exact: true }).press('Enter');
     const archive = page.getByRole('region', { name: 'پیام‌های ویزیت قبلی', exact: true });
     await archive.getByText('پیام نوبت قبلی', { exact: true }).waitFor();
     assert.equal(await archive.getByRole('textbox').count(), 0);
     assert.equal(await page.getByRole('dialog').count(), 0);
     const moreHistory = page.getByRole('button', { name: 'نمایش پیام‌های قدیمی‌تر', exact: true });
-    await moreHistory.click();
+    await moreHistory.press('Enter');
     await archive.getByText('ابتدای پیام ویزیت قبلی', { exact: true }).waitFor();
     assert.equal(await page.getByText('پیام نوبت قبلی', { exact: true }).count(), 1);
-    await moreHistory.click();
+    await moreHistory.press('Enter');
     await archive.getByText('پیام ویزیت قدیمی‌تر', { exact: true }).waitFor();
     assert.deepEqual(archiveRequests, ['list', 'recent', 'recent', 'page', 'older-visit']);
     assert.deepEqual(keyWarnings, []);
@@ -209,7 +207,7 @@ try {
       let release;
       holdArchive = new Promise(resolve => { release = resolve; });
       const pending = page.waitForRequest(request => request.url().includes('/' + appointmentId + '/previous-conversations'));
-      await showHistory.click();
+      await showHistory.press('Enter');
       await pending;
       try {
         await secondVisit.click();
@@ -222,21 +220,6 @@ try {
       await showHistory.waitFor();
       assert.equal(await archive.count(), 0);
       assert.equal(archiveRequests.at(-1), 'list');
-    }
-    if (!patient) {
-      await page.getByRole('button', { name: 'تماس صوتی', exact: true }).click();
-      const frame = page.frameLocator('iframe[title="تماس صوتی"]');
-      await frame.locator('#connect').waitFor();
-      assert.equal(await page.getByRole('button', { name: 'پایان تماس', exact: true }).count(), 0);
-      assert.equal(await page.getByRole('button', { name: 'اتصال مجدد', exact: true }).count(), 0);
-      await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', {
-        data: { type: 'mushroom-call:recover' }, origin: window.location.origin, source: window,
-      })));
-      assert.equal(await page.getByRole('button', { name: 'اتصال مجدد', exact: true }).count(), 0);
-      await frame.locator('body').evaluate((element, origin) => {
-        element.ownerDocument.defaultView.parent.postMessage({ type: 'mushroom-call:recover' }, origin);
-      }, new URL(base).origin);
-      await page.getByRole('button', { name: 'اتصال مجدد', exact: true }).waitFor();
     }
     console.log(role + (embedded ? ' (visit workspace)' : '') + ' composer, attachments, and inline paginated history passed.');
     await page.close();

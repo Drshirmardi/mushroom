@@ -1,5 +1,28 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createChatEngine, type LoadedChat } from '../src/chat-engine';
+import { createChatEngine, createChatId, type LoadedChat } from '../src/chat-engine';
+
+it('creates a UUID v4 when the browser only provides getRandomValues', () => {
+  vi.stubGlobal('crypto', { getRandomValues: crypto.getRandomValues.bind(crypto) });
+  try {
+    expect(createChatId()).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  } finally { vi.unstubAllGlobals(); }
+});
+
+it('reports a timed out upload and lets the same attachment ID be retried', async () => {
+  vi.useFakeTimers();
+  const pendingFetch = vi.fn<typeof fetch>().mockImplementationOnce((_, options) => new Promise((_, reject) => {
+    options?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
+  })).mockResolvedValueOnce(Response.json({ id: 'uploaded' }, { status: 201 }));
+  const engine = createChatEngine('https://api.invalid', pendingFetch);
+  const file = new File(['camera'], 'camera.mov', { type: 'video/quicktime' });
+  try {
+    const first = expect(engine.upload('token', 'conversation', file, 'attachment-id')).rejects.toThrow('CHAT_UPLOAD_CONNECTION_FAILED');
+    await vi.advanceTimersByTimeAsync(60_000);
+    await first;
+    await expect(engine.upload('token', 'conversation', file, 'attachment-id')).resolves.toMatchObject({ id: 'uploaded' });
+    expect(pendingFetch.mock.calls[0]?.[0]).toBe(pendingFetch.mock.calls[1]?.[0]);
+  } finally { vi.useRealTimers(); }
+});
 
 describe('chat event reconciliation', () => {
   it('ignores heartbeat bytes, combines fragmented events and pauses in a hidden tab', async () => {

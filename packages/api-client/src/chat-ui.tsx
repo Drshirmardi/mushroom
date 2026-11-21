@@ -21,7 +21,7 @@ const iconButton = "inline-flex size-11 shrink-0 items-center justify-center rou
 function FileInfo({ name, size }: { name: string; size: number }) {
   return <span className="min-w-0 flex-1 text-start">
     <bdi className="block break-all font-semibold">{name}</bdi>
-    <span className="block text-xs opacity-80"><bdi>{name.split(".").at(-1)?.toUpperCase()}</bdi> · {fileSize(size)}</span>
+    <span className="block text-xs opacity-80"><bdi>{name.slice(name.lastIndexOf(".") + 1).toUpperCase()}</bdi> · {fileSize(size)}</span>
   </span>;
 }
 
@@ -128,7 +128,7 @@ export function AttachmentPicker({ engine, token, conversationId, disabled, butt
       <Paperclip size={20} aria-hidden="true" />
     </button>
     {attachmentOptions.map(option => <input key={option.id} ref={option.id === "media" ? firstChoice : undefined}
-      id={pickerId + option.id} type="file" className="sr-only" aria-label={option.label} disabled={!menuOpen}
+      id={pickerId + option.id} type="file" className="sr-only" aria-label={option.label} aria-hidden={!menuOpen} disabled={!menuOpen}
       accept={option.mime + "," + option.extensions} onChange={selectFile} onFocus={() => setFocusedChoice(option.id)}
       onBlur={() => setFocusedChoice(undefined)} />)}
     {menuOpen && <div className="absolute bottom-full left-0 z-20 mb-2 grid w-44 rounded-xl border border-border bg-background p-1 text-sm shadow-lg">
