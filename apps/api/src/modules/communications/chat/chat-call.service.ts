@@ -297,12 +297,12 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
       const field = call.callerUserId === userId ? 'callerConnectedAt' : 'patientConnectedAt';
       const result = await this.database.client.$transaction(async tx => {
         await tx.chatCall.updateMany({ where: { id: call.id, status: 'ACTIVE', [field]: null }, data: { [field]: now } });
-        return tx.chatCall.updateMany({
+        return tx.chatCall.updateManyAndReturn({
           where: { id: call.id, status: 'ACTIVE', connectedAt: null, callerConnectedAt: { not: null }, patientConnectedAt: { not: null } },
           data: { connectedAt: now },
         });
       });
-      if (result.count) await this.callChanged(call);
+      if (result[0]) await this.callChanged(result[0]);
       return { connected: true };
     }
     const turn = process.env.CHAT_TURN_SECRET;

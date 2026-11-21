@@ -23,7 +23,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   const ringingAudio = useRef<HTMLAudioElement>(null);
   const flight = useRef(0);
   const ringtone = useRef<HTMLAudioElement>(null);
-  const { owner, transfer } = useCallTab(sessionKey);
+  const { owner, transfer } = useCallTab(sessionKey, call?.id);
   const [ending, setEnding] = useState("");
   const currentCallId = useRef<string | undefined>(undefined);
   useEffect(() => { if (call?.id) currentCallId.current = call.id; }, [call?.id]);
@@ -57,6 +57,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   }, [active, sessionKey]);
 
   function displayEnding(reason?: string | null) {
+    flight.current += 2;
     currentCallId.current = undefined;
     setCall(null);
     if (reason === "staff_ended" || reason === "switched") setEnding("تماس توسط پزشک پایان یافت");
@@ -119,27 +120,60 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
 
   const ringingId = call?.status === "RINGING" ? call.id : null;
   useEffect(() => {
-    if (!ringingId || busy || !owner) return;
-    navigator.vibrate?.([200, 100, 200]);
+    if (!ringingId || busy) return;
     const audio = ringingAudio.current ?? new Audio("/consultation-ring.wav");
-    ringtone.current = audio;
-    audio.muted = false;
-    audio.loop = true;
-    void audio.play().catch(() => {});
-    return () => { ringtone.current = null; audio.pause(); navigator.vibrate?.(0); };
-  }, [ringingId, busy, owner]);
+    let waiting: AbortController | undefined;
+    let release: (() => void) | undefined;
+    function stop() {
+      waiting?.abort();
+      waiting = undefined;
+      if (ringtone.current === audio) {
+        ringtone.current = null;
+        audio.pause();
+        navigator.vibrate?.(0);
+      }
+      release?.();
+      release = undefined;
+    }
+    function syncRingtone() {
+      if (document.visibilityState !== "visible") { stop(); return; }
+      if (waiting) return;
+      const controller = new AbortController();
+      waiting = controller;
+      const play = () => {
+        if (controller.signal.aborted) return;
+        navigator.vibrate?.([200, 100, 200]);
+        ringtone.current = audio;
+        audio.muted = false;
+        audio.loop = true;
+        void audio.play().catch(() => {});
+        return new Promise<void>(resolve => { release = resolve; });
+      };
+      if (navigator.locks) {
+        void navigator.locks.request("mushroom-ringing:" + sessionKey + ":" + ringingId, { signal: controller.signal }, play).catch(() => {});
+      } else void play();
+    }
+    document.addEventListener("visibilitychange", syncRingtone);
+    syncRingtone();
+    return () => {
+      document.removeEventListener("visibilitychange", syncRingtone);
+      stop();
+    };
+  }, [ringingId, busy, sessionKey]);
 
   async function action(command: "answer" | "decline" | "end") {
     if (!call || flight.current % 2 !== 0) return;
-    flight.current += 1;
+    const operation = ++flight.current;
     ringtone.current?.pause();
     navigator.vibrate?.(0);
     setBusy(true);
     setError("");
     try {
       const current = await chatEngine.callAction(token, call.id, command);
+      if (operation !== flight.current) return;
+      if (command === "answer" && current.status === "ACTIVE") transfer(current.id);
       setCall(callLive(current) ? current : null);
-    } catch { setError("درخواست تماس انجام نشد. دوباره تلاش کنید."); }
+    } catch { if (operation === flight.current) setError("درخواست تماس انجام نشد. دوباره تلاش کنید."); }
     finally { flight.current += 1; setBusy(false); }
   }
 
@@ -170,12 +204,12 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   }
 
   if (!call) return ending ? createPortal(<p role="status" dir="rtl" className="fixed inset-x-4 top-4 z-[1000] rounded-xl bg-card p-3 text-center shadow">{ending}</p>, document.body) : null;
-  if (!owner) return createPortal(<aside dir="rtl" className="fixed inset-x-4 top-4 z-[1000] rounded-xl bg-card p-3 shadow">
-    <p>تماس در تب دیگری فعال است.</p><button type="button" className="min-h-11 font-bold" onClick={transfer}>انتقال به این تب</button>
+  if (active && !owner) return createPortal(<aside dir="rtl" className="fixed inset-x-4 top-4 z-[1000] rounded-xl bg-card p-3 shadow">
+    <p>تماس در تب دیگری فعال است.</p><button type="button" className="min-h-11 font-bold" onClick={() => transfer()}>انتقال به این تب</button>
   </aside>, document.body);
   const endControl = <HangUpButton disabled={busy} onClick={() => void action("end")} />;
   const retryLabel = outside ? "ادامهٔ تماس" : "اتصال مجدد";
-  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={media => reconnect(media, true)} onMinimizedChange={onMinimizedChange} onEnded={displayEnding} controls={active ? <>
+  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error} frameError={frameError} endControl={endControl} joining={joining} recover={media => reconnect(media, true)} onMinimizedChange={onMinimizedChange} onEnded={displayEnding} controls={active ? <>
     <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(null); setOutside(false); setError(""); sessionStorage.removeItem("mushroom-outside:" + sessionKey); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
     {external && !isBaleSession()
       ? <a href={external.url} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" onClick={event => {

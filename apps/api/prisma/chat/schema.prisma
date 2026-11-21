@@ -25,6 +25,7 @@ model ChatCall {
   status            ChatCallStatus
   ringsUntil        DateTime
   endedAt           DateTime?
+  // Legacy call lease kept for migration history. New writes use the per-party leases.
   lastLeaseAt       DateTime?
   callerLeaseAt     DateTime?
   patientLeaseAt    DateTime?
@@ -33,6 +34,8 @@ model ChatCall {
 
   @@index([patientUserId, status, ringsUntil])
   @@index([appointmentId, status])
+  // Communications migration 20261122100000 also creates chat_calls_one_live_per_caller,
+  // a partial unique index on callerUserId for RINGING or ACTIVE. Preserve it in future migrations.
   @@index([status, lastLeaseAt])
   @@map("chat_calls")
 }

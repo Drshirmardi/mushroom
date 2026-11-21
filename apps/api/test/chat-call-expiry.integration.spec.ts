@@ -56,3 +56,39 @@ it('expires an abandoned call once across concurrent workers and preserves a ren
     await database.onModuleDestroy();
   }
 });
+
+it('publishes the new connection timestamp once after both participants connect', async () => {
+  const id = randomUUID();
+  const callerUserId = randomUUID();
+  const patientUserId = randomUUID();
+  const database = new ChatDatabaseService(new ConfigService());
+  const main = { user: { findFirst: async () => ({ id: callerUserId }) } } as unknown as PrismaService;
+  const chat = { callAccess: async () => ({ patientUserId, actor: { kind: 'DOCTOR' } }) } as unknown as ChatService;
+  const worker = new ChatCallService(database, main, chat, new ChatRealtimePublisher());
+  const published = vi.fn();
+  const subscription = worker.outgoingChanges.subscribe(published);
+  const secret = 'synthetic-test-key-for-connection-events-not-for-runtime';
+  vi.stubEnv('CHAT_VIDEO_ENABLED', 'true');
+  vi.stubEnv('CHAT_VIDEO_SECRET', secret);
+  vi.stubEnv('CHAT_VIDEO_ORIGIN', 'https://calls.invalid');
+  try {
+    await database.client.chatCall.create({ data: {
+      id, appointmentId: randomUUID(), callerUserId, callerSessionId: randomUUID(),
+      callerName: 'Synthetic', callerKind: 'DOCTOR', patientUserId,
+      status: 'ACTIVE', answeredAt: new Date(), ringsUntil: new Date(Date.now() + 45_000),
+    } });
+    const connect = (userId: string) => worker.bridge(secret, { callId: id, userId, action: 'connected' });
+    await connect(callerUserId);
+    expect(published).not.toHaveBeenCalled();
+    await connect(patientUserId);
+    await connect(patientUserId);
+    const current = await database.client.chatCall.findUniqueOrThrow({ where: { id } });
+    expect(current.connectedAt).toBeInstanceOf(Date);
+    expect(published).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ id, connectedAt: current.connectedAt }));
+  } finally {
+    vi.unstubAllEnvs();
+    subscription.unsubscribe();
+    await database.client.chatCall.deleteMany({ where: { id } });
+    await database.onModuleDestroy();
+  }
+});

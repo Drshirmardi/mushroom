@@ -295,8 +295,13 @@ function keepCallWindowVisible(left: number, top: number, width: number, height:
 }
 
 type CallMediaPreferences = { microphone: boolean; camera: boolean };
+type CallFrameError = "unavailable" | "retryable";
+const frameErrorText: Record<CallFrameError, string> = {
+  unavailable: "تماس دیگر در دسترس نیست.",
+  retryable: "ورود به تماس ممکن نشد. دوباره تلاش کنید.",
+};
 
-export function CallPanel({ call, name, frame, error, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded, expandRequest, returnLink }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: (reason?: string) => void; expandRequest?: number; returnLink?: ReactNode }) {
+export function CallPanel({ call, name, frame, error, frameError, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded, expandRequest, returnLink }: { call: ChatCall; name: string; frame: string; error: string; frameError?: CallFrameError; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: (reason?: string) => void; expandRequest?: number; returnLink?: ReactNode }) {
   const [minimized, setMinimized] = useState(false);
   useEffect(() => { setMinimized(false); }, [expandRequest]);
   const [recovering, setRecovering] = useState(false);
@@ -378,8 +383,8 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
   }
   useLayoutEffect(() => {
     retryNow.current = () => { if (recovery.current?.retry) scheduleRecovery(true); };
-    if (error === "تماس دیگر در دسترس نیست.") { clearRecovery(); return; }
-    if (!frame && error === "ورود به تماس ممکن نشد. دوباره تلاش کنید.") {
+    if (frameError === "unavailable") { clearRecovery(); return; }
+    if (!frame && frameError === "retryable") {
       if (recovery.current || callbacks.current.recover) {
         startRecovery();
         scheduleRecovery();
@@ -461,7 +466,7 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
     }
     window.addEventListener("message", receive);
     return () => { clearTimeout(connectTimeout); window.removeEventListener("message", receive); };
-  }, [frame, error]);
+  }, [frame, frameError]);
 
   function anchorAt(left: number, top: number, width: number, height: number) {
     const box = keepCallWindowVisible(left, top, width, height);
@@ -583,7 +588,7 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
         {!active && <>{!floating && <p className="text-2xl font-bold">{name}</p>}<p role="status" className="opacity-80">{label} · {callStatus(call)}</p></>}
       </div>}
       {(!playing || !ready) && <div className={"mushroom-call-host-actions absolute z-20 flex flex-col items-center gap-3 px-4 " + (playing ? "end-0 top-[max(12px,env(safe-area-inset-top))]" : "inset-x-0 bottom-0")}>
-        {!playing && !recovering && (error || playerError || failedFrame === frame && frame) && <p role="alert" className="max-w-sm text-center text-sm">{error || playerError || "اتصال برقرار نشد. مجوز میکروفون و شبکه را بررسی کنید."}</p>}
+        {!playing && !recovering && (error || frameError || playerError || failedFrame === frame && frame) && <p role="alert" className="max-w-sm text-center text-sm">{playerError || (frameError && frameErrorText[frameError]) || error || "اتصال برقرار نشد. مجوز میکروفون و شبکه را بررسی کنید."}</p>}
         <div className="flex flex-wrap justify-center gap-4" dir="ltr">{playing || joining || recovering ? endControl : controls}</div>
       </div>}
     </div>
@@ -594,52 +599,72 @@ export function HangUpButton({ onClick, disabled, label = "پایان تماس" 
   return <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className={callIconButton + " mushroom-call-end"}><PhoneOff size={22} aria-hidden="true" /></button>;
 }
 
-export function useCallTab(sessionKey: string) {
-  const [owner, setOwner] = useState(false);
-  const takeover = useRef<() => void>(() => {});
-  useEffect(() => {
-    setOwner(false);
-    if (!sessionKey) return;
-    if (!navigator.locks || typeof BroadcastChannel === "undefined") { setOwner(true); return; }
-    const key = "mushroom-media:" + sessionKey;
-    const channel = new BroadcastChannel(key);
-    let disposed = false;
-    let waiting = new AbortController();
-    let release: (() => void) | undefined;
-    function request(steal = false) {
-      waiting.abort();
-      waiting = new AbortController();
-      const options = steal ? { steal: true } : { signal: waiting.signal };
-      void navigator.locks.request(key, options, async () => {
-        if (disposed) return;
-        setOwner(true);
-        await new Promise<void>(resolve => { release = resolve; });
-        release = undefined;
-        if (!disposed) setOwner(false);
-      }).catch(() => {});
-    }
-    channel.onmessage = ({ data }) => {
-      if (data !== "transfer" || !release) return;
-      setOwner(false);
-      release();
-      request();
+export function useCallTab(sessionKey: string, callId: string | undefined) {
+  const [ownedCall, setOwnedCall] = useState<string>();
+  const [claim, setClaim] = useState<{ id: string }>();
+  const claimedHere = useRef<{ id: string; proof: string }>(undefined);
+  const handledClaim = useRef<typeof claim>(undefined);
+  useLayoutEffect(() => {
+    setOwnedCall(undefined);
+    if (!sessionKey || !callId) return;
+    const key = "mushroom-media:" + sessionKey + ":" + callId;
+    const savedKey = "mushroom-owner:" + sessionKey;
+    const manual = claim?.id === callId && claim !== handledClaim.current;
+    if (manual) handledClaim.current = claim;
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    const storedProof = (storage: "sessionStorage" | "localStorage", name: string) => {
+      try { return window[storage].getItem(name); } catch { return null; }
     };
-    takeover.current = () => { channel.postMessage("transfer"); request(true); };
-    request();
+    const remembered = claimedHere.current?.id === callId ? claimedHere.current.proof
+      : navigation?.type === "reload" ? storedProof("sessionStorage", savedKey) : null;
+    const proof = manual ? createChatId() : remembered;
+    if (!proof || !manual && storedProof("localStorage", savedKey) !== callId + ":" + proof) return;
+
+    let disposed = false;
+    let release: (() => void) | undefined;
+    let persisted = false;
+    const value = callId + ":" + proof;
+    function relinquish(event: StorageEvent) {
+      if (event.key !== savedKey || !persisted || storedProof("localStorage", savedKey) === value) return;
+      if (claimedHere.current?.proof === proof) claimedHere.current = undefined;
+      try {
+        if (sessionStorage.getItem(savedKey) === proof) sessionStorage.removeItem(savedKey);
+      } catch { /* The media lock still prevents shared ownership. */ }
+      setOwnedCall(undefined);
+      release?.();
+    }
+    const own = () => {
+      if (disposed || !manual && storedProof("localStorage", savedKey) !== value) return;
+      try {
+        if (manual) localStorage.setItem(savedKey, value);
+        persisted = true;
+        sessionStorage.setItem(savedKey, proof);
+      } catch { /* Browsers that block storage can still join explicitly. */ }
+      claimedHere.current = { id: callId, proof };
+      setOwnedCall(callId);
+      return new Promise<void>(resolve => { release = resolve; });
+    };
+    window.addEventListener("storage", relinquish);
+    if (navigator.locks) {
+      // A restored tab may acquire a released lock, but cannot displace a live holder.
+      const options = manual ? { steal: true } : { ifAvailable: true };
+      void navigator.locks.request(key, options, lock => lock ? own() : undefined).catch(() => {});
+    } else {
+      void own();
+    }
     return () => {
       disposed = true;
-      waiting.abort();
       release?.();
-      channel.close();
-      takeover.current = () => {};
+      window.removeEventListener("storage", relinquish);
     };
-  }, [sessionKey]);
-  return { owner, transfer: () => takeover.current() };
+  }, [callId, claim, sessionKey]);
+  const owner = Boolean(callId && ownedCall === callId);
+  return { owner, transfer: (id = callId) => { if (id && id !== ownedCall) setClaim({ id }); } };
 }
 
 export function useCallFrame(engine: Engine, token: string, id: string | undefined) {
   const [granted, setGranted] = useState<{ id: string; url: string; version: number } | null>(null);
-  const [frameError, setFrameError] = useState("");
+  const [failure, setFailure] = useState<{ id: string; version: number; code: CallFrameError }>();
   const [version, refresh] = useState(0);
   const allowPrompt = useRef(false);
   const preferences = useRef<{ id: string; media: CallMediaPreferences } | undefined>(undefined);
@@ -647,7 +672,6 @@ export function useCallFrame(engine: Engine, token: string, id: string | undefin
   useLayoutEffect(() => { currentToken.current = token; }, [token]);
   useEffect(() => {
     setGranted(null);
-    setFrameError("");
     if (!id) return;
     let active = true;
     void engine.call(currentToken.current, id).then(current => {
@@ -665,12 +689,14 @@ export function useCallFrame(engine: Engine, token: string, id: string | undefin
       }
       if (active) setGranted({ id, url: frameUrl.href, version });
     }).catch(error => {
-      if (active) setFrameError(["CHAT_CALL_ENDED", "CHAT_FORBIDDEN", "FORBIDDEN", "CONFLICT", "CHAT_REQUEST_403", "CHAT_REQUEST_409"].includes(error.message)
-        ? "تماس دیگر در دسترس نیست." : "ورود به تماس ممکن نشد. دوباره تلاش کنید.");
+      if (!active) return;
+      const terminal = ["CHAT_CALL_ENDED", "CHAT_FORBIDDEN", "FORBIDDEN", "CONFLICT", "CHAT_REQUEST_403", "CHAT_REQUEST_409"];
+      setFailure({ id, version, code: terminal.includes(error?.message) ? "unavailable" : "retryable" });
     });
     return () => { active = false; };
   }, [engine, id, version]);
   const frame = granted && granted.id === id && granted.version === version ? granted.url : "";
+  const frameError = failure?.id === id && failure?.version === version ? failure.code : undefined;
   return { frame, frameError, joining: Boolean(id && !frame && !frameError), reconnect: (media?: CallMediaPreferences, automatic = false) => { allowPrompt.current = !automatic; if (id && media) preferences.current = { id, media }; refresh(previous => previous + 1); } };
 }
 

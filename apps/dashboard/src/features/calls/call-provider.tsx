@@ -11,6 +11,7 @@ import { chatEngine } from "@/lib/chat-api";
 
 type Call = components["schemas"]["OutgoingCallDto"];
 type Target = { appointmentId: string; patientId?: string; participantName: string; mode: Call["mode"] };
+const videoRetryDelays = [1000, 2000, 5000, 10000, 20000, 30000];
 const Calls = createContext<{
   start: (target: Target) => void;
   beforeLogout: () => Promise<void>;
@@ -44,43 +45,112 @@ function SessionCalls({ children, token, session }: { children: ReactNode; token
   const dialog = useRef<HTMLDialogElement>(null);
   const currentToken = useRef(token);
   const action = useRef(false);
-  const channel = useRef<BroadcastChannel>(null);
+  const latest = useRef<{ call: Call | null }>(undefined);
+  const refreshId = useRef(0);
+  const endedCalls = useRef(new Set<string>());
   const stream = useRef<ReturnType<typeof chatEngine.watchOutgoing>>(null);
-  const { owner, transfer } = useCallTab(session);
+  const { owner, transfer } = useCallTab(session, call?.id);
   const active = call?.status === "ACTIVE";
   const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, active && owner ? call.id : undefined);
 
   useEffect(() => { currentToken.current = token; stream.current?.renew(); }, [token]);
   useEffect(() => {
     let mounted = true;
-    void chatEngine.video(currentToken.current).then(result => { if (mounted) setAvailable(result.available); }).catch(() => {});
-    return () => { mounted = false; };
-  }, []);
-  useEffect(() => {
-    if (typeof BroadcastChannel === "undefined") return;
-    const connection = new BroadcastChannel("mushroom-outgoing:" + session);
-    channel.current = connection;
-    connection.onmessage = event => {
-      if (event.data?.type === "snapshot" && !owner && !action.current) setCall(event.data.call);
+    let timer: ReturnType<typeof setTimeout>;
+    let failures = 0;
+    let inFlight = false;
+    async function check() {
+      clearTimeout(timer);
+      if (!mounted || inFlight) return;
+      inFlight = true;
+      try {
+        const result = await chatEngine.video(currentToken.current);
+        if (mounted) setAvailable(result.available);
+        failures = 0;
+      } catch {
+        if (mounted) timer = setTimeout(check, videoRetryDelays[Math.min(failures++, videoRetryDelays.length - 1)]);
+      } finally { inFlight = false; }
+    }
+    void check();
+    window.addEventListener("online", check);
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+      window.removeEventListener("online", check);
     };
-    return () => { channel.current = null; connection.close(); };
-  }, [owner, session]);
+  }, []);
+
+  function apply(next: Call | null) {
+    if (next && callLive(next) && endedCalls.current.has(next.id)) return;
+    setCall(previous => {
+      if (previous && next && previous.id !== next.id && callLive(previous) && !callLive(next)) return previous;
+      if (!previous || next?.id !== previous.id) return next;
+      if (previous.status === "ACTIVE" && next.status === "RINGING") return previous;
+      return previous.connectedAt && !next.connectedAt ? { ...next, connectedAt: previous.connectedAt } : next;
+    });
+  }
+
+  function recordEnd(id: string) {
+    endedCalls.current.add(id);
+    if (endedCalls.current.size > 128) endedCalls.current.delete(endedCalls.current.values().next().value!);
+  }
+
+  async function reconcile() {
+    const request = ++refreshId.current;
+    const before = latest.current;
+    try {
+      const { call: snapshot } = await chatEngine.outgoing(currentToken.current);
+      if (request === refreshId.current) {
+        apply(before !== latest.current && latest.current ? latest.current.call : snapshot);
+      }
+    } catch {
+      if (request === refreshId.current && latest.current?.call) apply(latest.current.call);
+    }
+  }
+
   useEffect(() => {
     if (!available) return;
-    if (!owner) {
-      let mounted = true;
-      void chatEngine.outgoing(currentToken.current).then(result => {
-        if (mounted && !action.current) setCall(result.call);
-      }).catch(() => {});
-      return () => { mounted = false; };
+    const stop = new AbortController();
+    const channel = navigator.locks && typeof BroadcastChannel !== "undefined"
+      ? new BroadcastChannel("mushroom-outgoing:" + session) : undefined;
+    function receive(next: Call | null) {
+      if (stop.signal.aborted) return;
+      if (next) {
+        if (callLive(next) && endedCalls.current.has(next.id)) return;
+        if (!callLive(next)) recordEnd(next.id);
+      }
+      latest.current = { call: next };
+      if (!action.current) apply(next);
     }
-    const source = chatEngine.watchOutgoing(() => currentToken.current, next => {
-      if (!action.current) setCall(next);
-      channel.current?.postMessage({ type: "snapshot", call: next });
-    });
-    stream.current = source;
-    return () => { stream.current = null; source.disconnect(); };
-  }, [available, owner]);
+    function watch() {
+      stream.current = chatEngine.watchOutgoing(() => currentToken.current, next => {
+        receive(next);
+        channel?.postMessage({ call: next });
+      });
+    }
+    if (channel) {
+      channel.onmessage = ({ data }) => receive(data.call);
+      let leading = false;
+      void navigator.locks.request("mushroom-outgoing:" + session, { signal: stop.signal }, async () => {
+        if (stop.signal.aborted) return;
+        leading = true;
+        watch();
+        await new Promise<void>(resolve => stop.signal.addEventListener("abort", () => resolve(), { once: true }));
+      }).catch(() => {});
+      // A background tab can load the active call even before the leader broadcasts an update.
+      const initial = setTimeout(() => {
+        if (!leading && !action.current && latest.current === undefined) void reconcile();
+      }, 250);
+      stop.signal.addEventListener("abort", () => clearTimeout(initial), { once: true });
+    } else watch();
+    return () => {
+      refreshId.current++;
+      stop.abort();
+      stream.current?.disconnect();
+      stream.current = null;
+      channel?.close();
+    };
+  }, [available, session]);
   useEffect(() => {
     if (!active || !owner) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -92,13 +162,11 @@ function SessionCalls({ children, token, session }: { children: ReactNode; token
     else dialog.current?.close();
   }, [target]);
 
-  function update(next: Call | null) {
-    setCall(next);
-    channel.current?.postMessage({ type: "snapshot", call: next });
-  }
   async function change(next?: Target, switching = false) {
     if (action.current) return;
     action.current = true;
+    refreshId.current++;
+    latest.current = undefined;
     setBusy(true);
     setError("");
     try {
@@ -108,23 +176,25 @@ function SessionCalls({ children, token, session }: { children: ReactNode; token
         if (ended.status !== "ENDED" && ended.status !== "CANCELLED" && ended.status !== "DECLINED" && ended.status !== "MISSED" && ended.status !== "FAILED") {
           throw new Error("CALL_END_UNCONFIRMED");
         }
-        update(null);
+        recordEnd(call.id);
+        apply(null);
       }
       if (next) {
         const started = await chatEngine.startCall(currentToken.current, next.appointmentId, next.mode);
-        update({ ...started, patientId: next.patientId ?? null, patientName: next.participantName, conversationId: null });
-        if (!owner) transfer();
-        setExpanded(value => value + 1);
+        if (callLive(started)) {
+          transfer(started.id);
+          apply({ ...started, patientId: next.patientId ?? null, patientName: next.participantName, conversationId: null });
+          setExpanded(value => value + 1);
+        }
       }
     } catch (failure) {
       const code = failure instanceof Error ? failure.message : "";
       setError(code === "CHAT_PATIENT_OFFLINE" ? "بیمار در برنامه آنلاین نیست."
         : code === "CALL_END_UNCONFIRMED" ? "پایان تماس فعلی تأیید نشد."
+          : code === "CHAT_CALL_ALREADY_ACTIVE" ? "در دستگاه یا تب دیگری در تماس هستید."
           : "درخواست تماس انجام نشد. دوباره تلاش کنید.");
-      if (code === "CHAT_CALL_ALREADY_ACTIVE") {
-        void chatEngine.outgoing(currentToken.current).then(result => update(result.call)).catch(() => {});
-      }
     } finally {
+      await reconcile();
       action.current = false;
       setBusy(false);
     }
@@ -155,13 +225,18 @@ function SessionCalls({ children, token, session }: { children: ReactNode; token
     {children}
     {call && callLive(call) && typeof document !== "undefined" && createPortal(owner
       ? <CallPanel key={call.id} floating expandRequest={expanded} call={call} name={name} frame={frame}
-          error={error || frameError} endControl={end} joining={joining} recover={media => reconnect(media, true)} controls={<>
+          error={error} frameError={frameError} endControl={end} joining={joining} recover={media => reconnect(media, true)}
+          onEnded={() => {
+            recordEnd(call.id);
+            setCall(previous => previous?.id === call.id ? null : previous);
+            if (!action.current) void reconcile();
+          }} controls={<>
             {active && <button type="button" aria-label="تلاش مجدد" title="تلاش مجدد" className={callIconButton} onClick={() => reconnect()}><RotateCw size={20} /></button>}
             {end}
           </>} returnLink={<Link href={"/appointments/" + call.appointmentId} className="self-center whitespace-nowrap px-1 text-xs">بازگشت به بیمار</Link>} />
       : <aside dir="rtl" className="fixed bottom-3 left-3 z-[1000] rounded-xl border bg-card p-3 shadow-lg">
           <p>تماس با {name} در تب دیگری فعال است.</p>
-          <button type="button" className="min-h-11 font-bold" onClick={transfer}>انتقال به این تب</button>
+          <button type="button" className="min-h-11 font-bold" onClick={() => transfer()}>انتقال به این تب</button>
         </aside>, document.body)}
     <dialog ref={dialog} onCancel={() => setTarget(undefined)} className="m-auto w-[min(90vw,420px)] rounded-2xl bg-card p-5 text-foreground shadow-xl backdrop:bg-black/40" dir="rtl">
       <h2 className="font-bold">{active ? `با ${name} در تماس هستید` : `تماس با ${name} هنوز در حال زنگ خوردن است`}</h2>
