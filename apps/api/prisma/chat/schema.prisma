@@ -25,10 +25,12 @@ model ChatCall {
   status            ChatCallStatus
   ringsUntil        DateTime
   endedAt           DateTime?
+  lastLeaseAt       DateTime?
   createdAt         DateTime @default(now())
 
   @@index([patientUserId, status, ringsUntil])
   @@index([appointmentId, status])
+  @@index([status, lastLeaseAt])
   @@map("chat_calls")
 }
 

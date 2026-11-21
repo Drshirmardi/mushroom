@@ -510,6 +510,7 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
           id={message.callId}
           time={timeLabel(message.createdAt)}
           incoming={false}
+          eventDriven
         />
       );
     const isOwn = message.senderKind !== 'PATIENT';
@@ -685,6 +686,7 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
                 key={openedId}
                 token={authentication.accessToken}
                 appointmentId={openedId}
+                conversationId={loadedForVisit === openedId ? chat?.conversation.id : undefined}
                 participantName={selectedVisit?.patientDisplayName || 'بیمار'}
                 canStart={canSend}
               />

@@ -11,7 +11,7 @@ import { getPatientAppointment } from "@/lib/appointment-api";
 import { chatEngine } from "@/lib/chat-api";
 import { getPatientDoctor } from "@/lib/directory-api";
 
-export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (minimized: boolean) => void }) {
+export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (minimized: boolean, height?: number) => void }) {
   const { authentication, sessionKey } = useAuthSession();
   const token = authentication.accessToken;
   const [call, setCall] = useState<ChatCall | null>(null);

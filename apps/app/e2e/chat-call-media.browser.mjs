@@ -108,6 +108,21 @@ try {
   })));
   assert.ok(connected >= 2);
 
+  await pages[0].evaluate(target => {
+    window.callControls = [];
+    const player = document.querySelector('iframe');
+    window.addEventListener('message', event => {
+      if (event.origin === target && event.source === player.contentWindow) window.callControls.push(event.data);
+    });
+    player.contentWindow.postMessage({ type: 'mushroom-call:control', control: 'microphone' }, target);
+  }, new URL(origin).origin);
+  await pages[0].waitForFunction(() => window.callControls.some(event => event.type === 'mushroom-call:media-state' && !event.microphone));
+  assert.equal(await frames[0].locator('#microphone').getAttribute('aria-pressed'), 'false');
+  await pages[0].evaluate(target => {
+    document.querySelector('iframe').contentWindow.postMessage({ type: 'mushroom-call:control', control: 'microphone' }, target);
+  }, new URL(origin).origin);
+  await frames[0].waitForFunction(() => document.querySelector('#microphone').getAttribute('aria-pressed') === 'true');
+
   const initialIce = await frames[0].evaluate(() => window.testPeer.localDescription.sdp.match(/^a=ice-ufrag:(.+)$/m)[1]);
   await frames[0].evaluate(() => {
     Object.defineProperty(window.testPeer, 'connectionState', { value: 'disconnected', configurable: true });

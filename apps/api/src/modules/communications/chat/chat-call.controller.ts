@@ -40,7 +40,7 @@ class BridgeRequest {
   @IsOptional() @IsString() @Length(43, 43) code?: string;
   @IsOptional() @IsString() @Length(36, 36) callId?: string;
   @IsOptional() @IsString() @Length(36, 36) userId?: string;
-  @IsOptional() @IsIn(['end', 'connected']) action?: 'end' | 'connected';
+  @IsOptional() @IsIn(['end', 'connected', 'lease']) action?: 'end' | 'connected' | 'lease';
 }
 
 @ApiTags('Chat consultation')

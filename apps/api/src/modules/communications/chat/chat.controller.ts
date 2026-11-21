@@ -124,7 +124,7 @@ export class ChatController {
       const subscription = this.publisher.changes.pipe(
         filter(changed => changed.id === id),
         concatMap(async changed => { await this.chat.engineAccess(request.auth, id); return changed; }),
-      ).subscribe({ next: changed => send({ changed: true, conversationId: id, kind: changed.kind }), error: close });
+      ).subscribe({ next: changed => send({ changed: true, conversationId: id, kind: changed.kind, callId: changed.callId }), error: close });
       return () => subscription.unsubscribe();
     });
   }

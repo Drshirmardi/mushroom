@@ -1,5 +1,5 @@
 import { chatVideoEnabled } from './chat-video-enabled';
-import { ConflictException, ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Injectable, Logger, OnModuleDestroy, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -19,7 +19,46 @@ type IncomingLease = {
 };
 
 @Injectable()
-export class ChatCallService {
+export class ChatCallService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(ChatCallService.name);
+  private expirationTimer?: ReturnType<typeof setInterval>;
+  private expiring = false;
+
+  onModuleInit() {
+    if (!this.database.configured) return;
+    this.expirationTimer = setInterval(() => void this.expireCalls(), 15_000);
+    this.expirationTimer.unref();
+  }
+
+  onModuleDestroy() { clearInterval(this.expirationTimer); }
+
+  private expiryRules(now: Date) {
+    return [
+      { where: { status: 'RINGING' as const, ringsUntil: { lte: now } }, status: 'MISSED' as const },
+      { where: { status: 'ACTIVE' as const, connectedAt: null, answeredAt: { lte: new Date(+now - 60_000) } }, status: 'FAILED' as const },
+      { where: { status: 'ACTIVE' as const, connectedAt: { not: null }, OR: [
+        { lastLeaseAt: { lte: new Date(+now - 90_000) } },
+        { lastLeaseAt: null, connectedAt: { lte: new Date(+now - 90_000) } },
+      ] }, status: 'ENDED' as const },
+    ];
+  }
+
+  async expireCalls() {
+    if (this.expiring) return;
+    this.expiring = true;
+    try {
+      const now = new Date();
+      for (const rule of this.expiryRules(now)) {
+        const changed = await this.database.client.chatCall.updateManyAndReturn({
+          where: rule.where, data: { status: rule.status, endedAt: now },
+        });
+        for (const call of changed) await this.callChanged(call);
+      }
+    } catch {
+      this.logger.warn('Unable to expire consultation calls');
+    } finally { this.expiring = false; }
+  }
+
   readonly incomingChanges = new Subject<string>();
   private readonly streams = new Map<string, IncomingLease>();
   private readonly online = new Map<string, number>();
@@ -64,7 +103,7 @@ export class ChatCallService {
       } });
       return created;
     });
-    this.publisher.conversationChanged(conversation.id, 'call');
+    this.publisher.conversationChanged(conversation.id, 'call', call.id);
     this.incomingChanges.next(patientUserId);
     return this.view(call);
   }
@@ -176,7 +215,7 @@ export class ChatCallService {
     return { url: url.href };
   }
 
-  async bridge(secret: string, body: { code?: string; callId?: string; userId?: string; action?: 'end' | 'connected' }) {
+  async bridge(secret: string, body: { code?: string; callId?: string; userId?: string; action?: 'end' | 'connected' | 'lease' }) {
     const expected = process.env.CHAT_VIDEO_SECRET;
     if (!this.available || !expected || !timingSafeEqual(Buffer.from(this.hash(secret)), Buffer.from(this.hash(expected)))) throw new ForbiddenException();
     let callId = body.callId;
@@ -195,6 +234,18 @@ export class ChatCallService {
     if (!record || ![record.callerUserId, record.patientUserId].includes(userId)) throw new ForbiddenException();
     const call = await this.current(record);
     if (call.status !== 'ACTIVE') throw new ForbiddenException();
+    if (body.action === 'lease') {
+      const now = new Date();
+      if (!call.lastLeaseAt || +now - +call.lastLeaseAt >= 25_000) {
+        await this.database.client.chatCall.updateMany({
+          where: { id: call.id, status: 'ACTIVE', OR: [
+            { lastLeaseAt: null }, { lastLeaseAt: { lte: new Date(+now - 25_000) } },
+          ] },
+          data: { lastLeaseAt: now },
+        });
+      }
+      return { callId };
+    }
     if (body.action === 'end') {
       const ended = await this.database.client.chatCall.updateMany({
         where: { id: call.id, status: 'ACTIVE' }, data: { status: 'ENDED', endedAt: new Date() },
@@ -230,7 +281,7 @@ export class ChatCallService {
     const conversation = await this.database.client.chatConversation.findFirst({
       where: { appointmentId: call.appointmentId }, select: { id: true },
     });
-    if (conversation) this.publisher.conversationChanged(conversation.id, 'call');
+    if (conversation) this.publisher.conversationChanged(conversation.id, 'call', call.id);
   }
 
   private hash(value: string) {
@@ -251,6 +302,15 @@ export class ChatCallService {
   }
 
   private async current(call: ChatCall): Promise<ChatCall> {
+    if (call.status === 'ACTIVE' && call.connectedAt && Date.now() - +(call.lastLeaseAt ?? call.connectedAt) >= 90_000) {
+      const now = new Date();
+      const [ended] = await this.database.client.chatCall.updateManyAndReturn({
+        where: { ...this.expiryRules(now)[2]!.where, id: call.id },
+        data: { status: 'ENDED', endedAt: now },
+      });
+      if (ended) { await this.callChanged(ended); return ended; }
+      return this.database.client.chatCall.findUniqueOrThrow({ where: { id: call.id } });
+    }
     const expired = call.status === 'RINGING' && call.ringsUntil.valueOf() <= Date.now();
     const failed = call.status === 'ACTIVE' && !call.connectedAt && call.answeredAt && Date.now() - call.answeredAt.valueOf() > 60_000;
     if (!['RINGING', 'ACTIVE'].includes(call.status)) return call;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ShellSlots } from './shell-slots';
 import { usePathname } from 'next/navigation';
 import { BottomTabBar } from '@/components/layout/bottom-tab-bar';
@@ -35,7 +35,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     !isAssessmentWizard &&
     !isEducationalAssessmentDetail &&
     !immersive;
-  const [callMinimized, setCallMinimized] = useState(false);
+  const [callBarHeight, setCallBarHeight] = useState(0);
+  const updateCallBar = useCallback((minimized: boolean, height = 56) => setCallBarHeight(minimized ? height : 0), []);
   const framed = session?.status === 'authenticated' || isStore;
   const showTabs = hasNavigation && framed;
   const [action, setAction] = useState<HTMLElement | null>(null);
@@ -76,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ref={frame}
           data-nav={String(hasNavigation)}
           className="patient-app-frame relative w-full max-w-[720px] flex flex-col shadow-2xl overflow-hidden"
-          style={callMinimized ? { paddingTop: 'calc(56px + env(safe-area-inset-top))' } : undefined}
+          style={callBarHeight ? { paddingTop: `calc(${callBarHeight}px + env(safe-area-inset-top))` } : undefined}
         >
           {/* Screen content */}
           <div
@@ -98,7 +99,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
       {session?.status === 'authenticated' && session.authentication.user.roles.includes('PATIENT') &&
-        <IncomingVisitCall onMinimizedChange={setCallMinimized} />}
+        <IncomingVisitCall onMinimizedChange={updateCallBar} />}
     </ShellSlots.Provider>
   );
 }

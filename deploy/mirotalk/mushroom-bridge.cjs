@@ -47,7 +47,7 @@ module.exports = function protectCalls(io) {
     let lastVerified = Date.now();
     async function renew() {
       try {
-        await verify({ callId, userId });
+        await verify({ callId, userId, ...(Object.hasOwn(socket.channels ?? {}, callId) ? { action: 'lease' } : {}) });
         lastVerified = Date.now();
         socket.emit('mushroom-lease', { callId });
       } catch (error) {

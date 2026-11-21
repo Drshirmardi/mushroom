@@ -34,6 +34,7 @@ let candidates = [];
 let videoSender;
 let mediaState;
 let cameraBusy = false;
+let cameraDenied = false;
 let connectedSince;
 let clock;
 let connectionEpoch = 0;
@@ -42,8 +43,20 @@ let audioTimer;
 
 function showCamera(kind, enabled) {
   document.body.dataset[kind + 'Video'] = String(enabled);
-  if (kind === 'remote') notifyParent('mushroom-call:remote-video', { visible: enabled });
+  if (kind === 'remote') notifyParent('mushroom-call:remote-video', {
+    visible: enabled, aspect: remote.videoHeight ? remote.videoWidth / remote.videoHeight : undefined,
+  });
 }
+
+function sendMediaState() {
+  notifyParent('mushroom-call:media-state', {
+    microphone: stream?.getAudioTracks()[0]?.enabled === true,
+    camera: Boolean(stream?.getVideoTracks().length),
+    denied: cameraDenied,
+  });
+}
+
+remote.addEventListener('resize', () => showCamera('remote', document.body.dataset.remoteVideo === 'true'));
 
 function shareCameraState() {
   if (mediaState?.readyState === 'open') mediaState.send(stream?.getVideoTracks().length ? 'camera:on' : 'camera:off');
@@ -171,7 +184,8 @@ async function connect() {
       const camera = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
       if (epoch !== connectionEpoch) { camera.getTracks().forEach(track => track.stop()); return; }
       stream.addTrack(camera.getVideoTracks()[0]);
-    } catch {
+    } catch (error) {
+      cameraDenied = error?.name === 'NotAllowedError';
       byId('media-note').textContent = 'دوربین در دسترس نیست. مجوز دوربین و برنامه‌های باز را بررسی کنید؛ تماس با صدا ادامه دارد.';
     }
   }
@@ -208,6 +222,7 @@ async function connect() {
     endButton.hidden = false;
     endButton.disabled = false;
     notifyParent('mushroom-call:ready');
+    sendMediaState();
     byId('microphone').disabled = !stream.getAudioTracks().length;
     byId('camera').disabled = !videoSender;
     if (!peer) status.textContent = 'در انتظار اتصال طرف مقابل…';
@@ -347,6 +362,7 @@ byId('microphone').addEventListener('click', event => {
   if (!track) return;
   track.enabled = !track.enabled;
   event.currentTarget.setAttribute('aria-pressed', String(track.enabled));
+  sendMediaState();
 });
 
 byId('camera').addEventListener('click', async () => {
@@ -371,17 +387,43 @@ byId('camera').addEventListener('click', async () => {
       acquired = undefined;
     }
     const enabled = Boolean(stream?.getVideoTracks().length);
+    if (enabled) cameraDenied = false;
+    sendMediaState();
     button.setAttribute('aria-pressed', String(enabled));
     showCamera('local', enabled);
     shareCameraState();
     byId('media-note').textContent = '';
-  } catch {
+  } catch (error) {
+    if (error?.name === 'NotAllowedError') {
+      cameraDenied = true;
+      sendMediaState();
+      notifyParent('mushroom-call:camera-denied');
+    }
     byId('media-note').textContent = 'تغییر وضعیت دوربین ممکن نشد؛ صدا همچنان برقرار است.';
   } finally {
     acquired?.stop();
     cameraBusy = false;
     button.disabled = !videoSender;
   }
+});
+window.addEventListener('message', async event => {
+  if (!embedded || event.source !== parent || event.origin !== embedOrigin || event.data?.type !== 'mushroom-call:control') return;
+  if (event.data.control === 'microphone') byId('microphone').click();
+  if (event.data.control !== 'camera') return;
+  if (!stream || !videoSender || cameraBusy) return;
+  if (!stream.getVideoTracks().length) {
+    let permission;
+    try { permission = (await navigator.permissions?.query({ name: 'camera' }))?.state; } catch { /* Unsupported permission query. */ }
+    if (permission === 'denied' || cameraDenied && permission !== 'granted') {
+      notifyParent('mushroom-call:camera-denied');
+      return;
+    }
+    if (permission !== 'granted') {
+      notifyParent('mushroom-call:camera-prompt');
+      return;
+    }
+  }
+  byId('camera').click();
 });
 window.addEventListener('pagehide', () => stop('تماس قطع شد.'));
 

@@ -124,9 +124,26 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     };
   }
 
+  type CallFeedListener = (healthy: boolean, changedId?: string) => void;
+  const callFeeds = new Map<string, { healthy: boolean; listeners: Set<CallFeedListener> }>();
+  function callFeed(id: string) {
+    let feed = callFeeds.get(id);
+    if (!feed) {
+      feed = { healthy: false, listeners: new Set() };
+      callFeeds.set(id, feed);
+    }
+    return feed;
+  }
+
   function connect(credential: string | (() => string), loaded: LoadedChat, onMessage: (message: ChatMessage) => void, onState: (state: ChatState, access?: ChatAccess) => void): ChatConnection {
     const getToken = typeof credential === 'string' ? () => credential : credential;
     const path = `/v1/chat/conversations/${loaded.conversation.id}`;
+    const feed = callFeed(loaded.conversation.id);
+    function publishFeed(next: boolean, changedId?: string) {
+      if (feed.healthy === next && !changedId) return;
+      feed.healthy = next;
+      feed.listeners.forEach(listener => listener(next, changedId));
+    }
     let checkpoint = loaded.checkpointCursor;
     let visibilityCursor: string | undefined;
     let acknowledged: string | undefined;
@@ -192,15 +209,19 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
       stream?.disconnect();
       stream = undefined;
       healthy = false;
+      publishFeed(false);
       clearTimeout(timer);
       if (!visible()) return;
       if (offline()) { onState('offline'); return; }
       schedule();
       stream = watchEvents(path + '/events', getToken, data => {
-        if ((data as { changed?: boolean } | null)?.changed === true) void refresh();
+        const event = data as { changed?: boolean; kind?: string; callId?: string } | null;
+        if (event?.changed === true) void refresh();
+        if (event?.kind === 'call' && typeof event.callId === 'string') publishFeed(true, event.callId);
       }, next => {
         if (healthy === next) return;
         healthy = next;
+        publishFeed(next);
         if (next) void refresh();
         else { onState(offline() ? 'offline' : 'reconnecting'); schedule(); }
       });
@@ -216,11 +237,13 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
       send: (body, clientMessageId) => request<ChatMessage>(getToken(), `${path}/messages`, 'POST', { body, clientMessageId }),
       renew() {
         healthy = false;
+      publishFeed(false);
         stream?.renew();
         schedule();
       },
       disconnect() {
         stopped = true;
+        publishFeed(false);
         stream?.disconnect();
         clearTimeout(timer);
         document.removeEventListener('visibilitychange', onVisibility);
@@ -431,35 +454,60 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     return pending;
   }
 
-  function watchCall(token: string, conversationId: string, id: string, listener: (call: ChatCall) => void) {
+  function watchCall(token: string, conversationId: string, id: string, listener: (call: ChatCall) => void, mode?: "panel" | "card") {
     const key = callKey(token, id);
     const subscribers = callListeners.get(key) ?? new Set();
+    const feed = mode === 'panel' ? callFeed(conversationId) : undefined;
     let listening = true;
+    let live = true;
+    let refreshing = false;
+    let queued = false;
     let timer: ReturnType<typeof setTimeout>;
+    function schedule() {
+      clearTimeout(timer);
+      if (!listening || !live || mode === 'card') return;
+      if (feed && (feed.healthy || document.visibilityState !== 'visible')) return;
+      timer = setTimeout(() => refresh(), feed ? 20_000 : 6000);
+    }
     function update(call: ChatCall) {
       if (!listening) return;
       listener(call);
-      clearTimeout(timer);
-      if (call.status === 'ACTIVE' || call.status === 'RINGING') timer = setTimeout(refresh, 6000);
+      live = call.status === 'ACTIVE' || call.status === 'RINGING';
+      schedule();
     }
-    function refresh() {
-      // Incoming SSE owns updates while a patient's call is in progress.
-      if (streamedCalls.get(token)?.id === id) {
-        timer = setTimeout(refresh, 6000);
-        return;
-      }
-      void readCall(token, id, `/v1/chat/conversations/${conversationId}/calls/${id}`).then(update).catch(error => {
-        if (listening && !['CHAT_FORBIDDEN', 'CHAT_REQUEST_403', 'CHAT_REQUEST_404'].includes(error.message)) timer = setTimeout(refresh, 6000);
+    function refresh(fresh = false) {
+      if (!listening || (feed && document.visibilityState !== 'visible')) return;
+      if (!mode && streamedCalls.get(token)?.id === id) { schedule(); return; }
+      if (refreshing) { queued ||= fresh; return; }
+      refreshing = true;
+      const path = mode === 'panel' ? `/v1/chat/calls/${id}` : `/v1/chat/conversations/${conversationId}/calls/${id}`;
+      void readCall(token, id, path, fresh).then(update).catch(error => {
+        if (!['CHAT_FORBIDDEN', 'CHAT_REQUEST_403', 'CHAT_REQUEST_404'].includes(error.message)) schedule();
+      }).finally(() => {
+        refreshing = false;
+        if (queued && live && listening) { queued = false; refresh(true); }
       });
+    }
+    function feedChanged(healthy: boolean, changedId?: string) {
+      if (!live) return;
+      if (healthy && (!changedId || changedId === id)) refresh(true);
+      schedule();
+    }
+    function visibilityChanged() {
+      schedule();
     }
     subscribers.add(update);
     callListeners.set(key, subscribers);
+    feed?.listeners.add(feedChanged);
+    if (feed) document.addEventListener('visibilitychange', visibilityChanged);
     const current = streamedCalls.get(token);
     if (current?.id === id) update(current);
     else refresh();
     return () => {
       listening = false;
       clearTimeout(timer);
+      feed?.listeners.delete(feedChanged);
+      if (feed) document.removeEventListener('visibilitychange', visibilityChanged);
       subscribers.delete(update);
       if (!subscribers.size) callListeners.delete(key);
     };
@@ -500,7 +548,7 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     watchIncoming,
     incoming: (token: string) => request<{ call: ChatCall | null }>(token, '/v1/chat/calls/incoming'),
     startCall: (token: string, appointmentId: string, mode: ChatCall['mode'] = 'VIDEO') =>
-      request<ChatCall>(token, `/v1/chat/appointments/${appointmentId}/calls`, 'POST', { mode }),
+      request<ChatCall>(token, `/v1/chat/appointments/${appointmentId}/calls`, 'POST', { mode }).then(call => publishCall(token, call)),
     currentCall: (token: string, appointmentId: string) =>
       request<{ call: ChatCall | null }>(token, `/v1/chat/appointments/${appointmentId}/calls/current`),
     watchCall,

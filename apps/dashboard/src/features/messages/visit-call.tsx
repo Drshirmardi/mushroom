@@ -7,7 +7,7 @@ import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
 import { CallPanel, HangUpButton, callIconButton, callLabel, callLive, callStatus, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
 import { chatEngine } from "@/lib/chat-api";
 
-export function VisitCall({ token, appointmentId, participantName, canStart }: { token: string; appointmentId: string; participantName: string; canStart: boolean }) {
+export function VisitCall({ token, appointmentId, conversationId, participantName, canStart }: { token: string; appointmentId: string; conversationId?: string; participantName: string; canStart: boolean }) {
   const [available, setAvailable] = useState(false);
   const [call, setCall] = useState<ChatCall | null>(null);
   const [error, setError] = useState("");
@@ -29,25 +29,11 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
   }, [token, appointmentId]);
 
   useEffect(() => {
-    if (!id || !live) return;
-    let mounted = true;
-    let timer: ReturnType<typeof setTimeout>;
-    async function poll(callId: string) {
-      try {
-        const next = await chatEngine.call(token, callId);
-        if (mounted && !actionLock.current) {
-          setCall(next);
-          setError("");
-        }
-      } catch {
-        if (mounted) setError("وضعیت تماس موقتاً در دسترس نیست.");
-      } finally {
-        if (mounted) timer = setTimeout(() => void poll(callId), 2500);
-      }
-    }
-    void poll(id);
-    return () => { mounted = false; clearTimeout(timer); };
-  }, [id, live, token]);
+    if (!id || !live || !conversationId) return;
+    return chatEngine.watchCall(token, conversationId, id, next => {
+      if (!actionLock.current) { setCall(next); setError(""); }
+    }, "panel");
+  }, [id, live, token, conversationId]);
 
   async function change(mode?: ChatCall["mode"]) {
     if (actionLock.current) return;
@@ -81,7 +67,7 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
         </button>;
       })}
     </div>}
-    {call && live && createPortal(<CallPanel floating key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={reconnect} onEnded={() => { if (id) void chatEngine.call(token, id).then(setCall).catch(() => {}); }} controls={<>
+    {call && live && createPortal(<CallPanel floating key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={reconnect} controls={<>
       {activeId && <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setError(""); setJoinId(activeId); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>}
       {endControl}
     </>} />, document.body)}
