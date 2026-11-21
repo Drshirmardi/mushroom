@@ -15,6 +15,8 @@ module.exports = function protectCalls(io) {
     if (!response.ok) {
       const error = new Error('Call unavailable');
       error.terminal = response.status >= 400 && response.status < 500 && response.status !== 429;
+      const payload = await response.json().catch(() => null);
+      error.endReason = payload?.details?.endReason;
       throw error;
     }
     return response.json();
@@ -45,23 +47,28 @@ module.exports = function protectCalls(io) {
     });
     let leaseTimer;
     let lastVerified = Date.now();
+    let renewing = false;
     async function renew() {
+      if (renewing) return;
+      renewing = true;
       try {
         await verify({ callId, userId, ...(Object.hasOwn(socket.channels ?? {}, callId) ? { action: 'lease' } : {}) });
         lastVerified = Date.now();
         socket.emit('mushroom-lease', { callId });
       } catch (error) {
         if (error.terminal) {
-          socket.emit('mushroom-ended');
+          socket.emit('mushroom-ended', { reason: error.endReason });
           socket.disconnect(true);
         } else if (Date.now() - lastVerified >= 30_000) {
           socket.disconnect(true);
         } else socket.emit('mushroom-lease-delayed');
       } finally {
+        renewing = false;
         if (socket.connected) leaseTimer = setTimeout(renew, 5000);
       }
     }
     leaseTimer = setTimeout(renew, 5000);
+    socket.mushroomRenewLease = () => { clearTimeout(leaseTimer); void renew(); };
     socket.on('disconnect', () => clearTimeout(leaseTimer));
     socket.on('mushroom-end', async reply => {
       if (typeof reply !== 'function') return;

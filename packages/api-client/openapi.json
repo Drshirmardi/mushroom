@@ -2270,6 +2270,93 @@
         ]
       }
     },
+    "/v1/chat/calls/outgoing": {
+      "get": {
+        "operationId": "ChatCallController_outgoing",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutgoingSnapshotDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/outgoing/events": {
+      "get": {
+        "operationId": "ChatCallController_outgoingEvents",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
     "/v1/chat/appointments/{appointmentId}/calls/current": {
       "get": {
         "operationId": "ChatCallController_current",
@@ -43998,6 +44085,8 @@
               "CHAT_FORBIDDEN",
               "CHAT_ENGINE_UNAVAILABLE",
               "CHAT_PATIENT_OFFLINE",
+              "CHAT_CALL_ALREADY_ACTIVE",
+              "CHAT_CALL_ENDED",
               "CHAT_APPOINTMENT_NOT_ELIGIBLE",
               "CHAT_WINDOW_CLOSED",
               "CHAT_BLOCKED",
@@ -44600,6 +44689,10 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "endReason": {
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -44649,6 +44742,108 @@
           "visible"
         ]
       },
+      "OutgoingCallDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appointmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "callerName": {
+            "type": "string"
+          },
+          "callerKind": {
+            "type": "string",
+            "enum": [
+              "DOCTOR",
+              "CLINIC_OPERATOR"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "RINGING",
+              "ACTIVE",
+              "DECLINED",
+              "MISSED",
+              "ENDED",
+              "CANCELLED",
+              "FAILED"
+            ]
+          },
+          "ringsUntil": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "AUDIO",
+              "VIDEO"
+            ]
+          },
+          "connectedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "conversationId": {
+            "type": "string",
+            "nullable": true
+          },
+          "patientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "patientName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "appointmentId",
+          "callerName",
+          "callerKind",
+          "status",
+          "ringsUntil",
+          "mode",
+          "connectedAt",
+          "endedAt",
+          "conversationId",
+          "patientId",
+          "patientName"
+        ]
+      },
+      "OutgoingSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "call": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OutgoingCallDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "call"
+        ]
+      },
       "ChatCallActionDto": {
         "type": "object",
         "properties": {
@@ -44658,6 +44853,12 @@
               "answer",
               "decline",
               "end"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "switched"
             ]
           }
         },

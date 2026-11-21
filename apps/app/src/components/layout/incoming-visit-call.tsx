@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ExternalLink, PhoneIncoming, RotateCw } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
-import { CallPanel, HangUpButton, callIconButton, callLive, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
+import { CallPanel, HangUpButton, callIconButton, callLive, useCallFrame, useCallTab } from "@sabz-zendegi/api-client/chat-ui";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { isBaleSession, openBaleBrowser } from "@/lib/bale-payment";
 import { getPatientAppointment } from "@/lib/appointment-api";
@@ -23,12 +23,15 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   const ringingAudio = useRef<HTMLAudioElement>(null);
   const flight = useRef(0);
   const ringtone = useRef<HTMLAudioElement>(null);
-  const [joinId, setJoinId] = useState("");
+  const { owner, transfer } = useCallTab(sessionKey);
+  const [ending, setEnding] = useState("");
+  const currentCallId = useRef<string | undefined>(undefined);
+  useEffect(() => { if (call?.id) currentCallId.current = call.id; }, [call?.id]);
   const active = call?.status === "ACTIVE" ? call.id : undefined;
   const activeRef = useRef(active);
   useEffect(() => { activeRef.current = active; return () => { activeRef.current = undefined; }; }, [active]);
   const openingBrowser = useRef(false);
-  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, active === joinId && !outside ? active : undefined);
+  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, owner && !outside && (!active || typeof window === "undefined" || sessionStorage.getItem("mushroom-outside:" + sessionKey) !== active) ? active : undefined);
 
   const tokenRef = useRef(token);
   const incoming = useRef<ReturnType<typeof chatEngine.watchIncoming>>(null);
@@ -39,13 +42,31 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
 
   useEffect(() => {
     const connection = chatEngine.watchIncoming(() => tokenRef.current, sessionKey, next => {
-      if (flight.current % 2 === 0) setCall(next);
+      if (flight.current % 2 === 0) { setCall(next); if (next) setEnding(""); }
+    }, ended => {
+      if (currentCallId.current !== ended.id) return;
+      displayEnding(ended.reason);
     });
     incoming.current = connection;
     return () => { connection.disconnect(); incoming.current = null; };
   }, [sessionKey]);
 
-  useEffect(() => { setExternal(null); setOutside(false); }, [active]);
+  useEffect(() => {
+    setExternal(null);
+    setOutside(Boolean(active && sessionStorage.getItem("mushroom-outside:" + sessionKey) === active));
+  }, [active, sessionKey]);
+
+  function displayEnding(reason?: string | null) {
+    currentCallId.current = undefined;
+    setCall(null);
+    if (reason === "staff_ended" || reason === "switched") setEnding("تماس توسط پزشک پایان یافت");
+    if (reason === "lease_expired") setEnding("تماس به‌دلیل قطع ارتباط پایان یافت");
+  }
+  useEffect(() => {
+    if (!ending) return;
+    const timer = setTimeout(() => setEnding(""), 4000);
+    return () => clearTimeout(timer);
+  }, [ending]);
 
   useEffect(() => {
     const audio = new Audio("/consultation-ring.wav");
@@ -62,7 +83,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   }, []);
 
   useEffect(() => {
-    if (!active || !navigator.wakeLock) return;
+    if (!active || !owner || !navigator.wakeLock) return;
     let disposed = false;
     let lock: WakeLockSentinel | undefined;
     async function acquire() {
@@ -80,7 +101,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
       document.removeEventListener("visibilitychange", acquire);
       void lock?.release().catch(() => {});
     };
-  }, [active]);
+  }, [active, owner]);
 
   useEffect(() => {
     const appointmentId = call?.appointmentId;
@@ -98,7 +119,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
 
   const ringingId = call?.status === "RINGING" ? call.id : null;
   useEffect(() => {
-    if (!ringingId || busy) return;
+    if (!ringingId || busy || !owner) return;
     navigator.vibrate?.([200, 100, 200]);
     const audio = ringingAudio.current ?? new Audio("/consultation-ring.wav");
     ringtone.current = audio;
@@ -106,7 +127,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
     audio.loop = true;
     void audio.play().catch(() => {});
     return () => { ringtone.current = null; audio.pause(); navigator.vibrate?.(0); };
-  }, [ringingId, busy]);
+  }, [ringingId, busy, owner]);
 
   async function action(command: "answer" | "decline" | "end") {
     if (!call || flight.current % 2 !== 0) return;
@@ -117,7 +138,6 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
     setError("");
     try {
       const current = await chatEngine.callAction(token, call.id, command);
-      if (command === "answer" && current.status === "ACTIVE") setJoinId(current.id);
       setCall(callLive(current) ? current : null);
     } catch { setError("درخواست تماس انجام نشد. دوباره تلاش کنید."); }
     finally { flight.current += 1; setBusy(false); }
@@ -126,6 +146,7 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
   async function prepareExternal() {
     if (!active || openingBrowser.current) return;
     if (external && external.expires > Date.now() && openBaleBrowser(external.url, false)) {
+      sessionStorage.setItem("mushroom-outside:" + sessionKey, active);
       setOutside(true);
       setExternal(null);
       return;
@@ -138,7 +159,8 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
       const { url } = await chatEngine.callGrant(tokenRef.current, active);
       if (activeRef.current !== active) { popup?.close(); return; }
       if (popup && !popup.closed) {
-        setOutside(true);
+        sessionStorage.setItem("mushroom-outside:" + sessionKey, active);
+      setOutside(true);
         popup.location.replace(url);
       } else setExternal({ url, expires });
     } catch {
@@ -147,11 +169,14 @@ export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (m
     } finally { openingBrowser.current = false; }
   }
 
-  if (!call) return null;
+  if (!call) return ending ? createPortal(<p role="status" dir="rtl" className="fixed inset-x-4 top-4 z-[1000] rounded-xl bg-card p-3 text-center shadow">{ending}</p>, document.body) : null;
+  if (!owner) return createPortal(<aside dir="rtl" className="fixed inset-x-4 top-4 z-[1000] rounded-xl bg-card p-3 shadow">
+    <p>تماس در تب دیگری فعال است.</p><button type="button" className="min-h-11 font-bold" onClick={transfer}>انتقال به این تب</button>
+  </aside>, document.body);
   const endControl = <HangUpButton disabled={busy} onClick={() => void action("end")} />;
-  const retryLabel = active === joinId ? "اتصال مجدد" : "ادامهٔ تماس";
-  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={reconnect} onMinimizedChange={onMinimizedChange} onEnded={() => setCall(null)} controls={active ? <>
-    <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(null); setOutside(false); setError(""); setJoinId(active); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
+  const retryLabel = outside ? "ادامهٔ تماس" : "اتصال مجدد";
+  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={media => reconnect(media, true)} onMinimizedChange={onMinimizedChange} onEnded={displayEnding} controls={active ? <>
+    <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(null); setOutside(false); setError(""); sessionStorage.removeItem("mushroom-outside:" + sessionKey); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
     {external && !isBaleSession()
       ? <a href={external.url} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" onClick={event => {
         if (external.expires <= Date.now()) { event.preventDefault(); void prepareExternal(); }

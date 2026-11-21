@@ -31,9 +31,12 @@ replace("        const channel = config.channel;", [
   "        const channel = socket.mushroom.callId;",
   "        if (config.channel !== channel) return socket.disconnect(true);",
   "        if (Object.hasOwn(socket.channels, channel)) return;",
-  "        if (Object.keys(channels[channel] ?? {}).length >= 2 || Object.values(channels[channel] ?? {}).some(peer => peer.mushroom.userId === socket.mushroom.userId)) return socket.disconnect(true);",
+  "        const previous = Object.values(channels[channel] ?? {}).find(peer => peer.mushroom.userId === socket.mushroom.userId);",
+  "        if (previous) { previous.emit('mushroom-replaced'); previous.disconnect(true); }",
+  "        if (Object.keys(channels[channel] ?? {}).length >= 2) return socket.disconnect(true);",
   "        config.peerInfo = {};",
 ].join('\n'));
+replace("        socket.channels[channel] = channel;", "        socket.channels[channel] = channel;\n        socket.mushroomRenewLease?.();");
 replace("iceServers: iceServers,\n                });\n                socket.emit", "iceServers: channels[channel][id].mushroom.iceServers,\n                });\n                socket.emit");
 replace("iceServers: iceServers,\n                });\n                log.debug", "iceServers: socket.mushroom.iceServers,\n                });\n                log.debug");
 fs.writeFileSync(file, source);

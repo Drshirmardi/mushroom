@@ -20,6 +20,7 @@ class ChatCallDto {
   @ApiProperty({ enum: ['AUDIO', 'VIDEO'] }) mode!: 'AUDIO' | 'VIDEO';
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) connectedAt!: Date | null;
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) endedAt!: Date | null;
+  @ApiPropertyOptional({ type: String, nullable: true }) endReason?: string | null;
 }
 class StartChatCallDto {
   @ApiPropertyOptional({ enum: ['AUDIO', 'VIDEO'], default: 'VIDEO' })
@@ -28,9 +29,16 @@ class StartChatCallDto {
 class ChatCallActionDto {
   @ApiProperty({ enum: ['answer', 'decline', 'end'] })
   @IsIn(['answer', 'decline', 'end']) action!: 'answer' | 'decline' | 'end';
+  @ApiPropertyOptional({ enum: ['switched'] }) @IsOptional() @IsIn(['switched']) reason?: 'switched';
 }
 class VideoGrantDto { @ApiProperty() url!: string }
 class IncomingCallDto { @ApiProperty({ type: ChatCallDto, nullable: true }) call!: ChatCallDto | null }
+class OutgoingCallDto extends ChatCallDto {
+  @ApiProperty({ type: String, nullable: true }) conversationId!: string | null;
+  @ApiProperty({ type: String, nullable: true }) patientId!: string | null;
+  @ApiProperty() patientName!: string;
+}
+class OutgoingSnapshotDto { @ApiProperty({ type: OutgoingCallDto, nullable: true }) call!: OutgoingCallDto | null }
 class IncomingPresenceDto {
   @ApiProperty() @IsString() @Length(32, 32) id!: string;
   @ApiProperty() @IsBoolean() visible!: boolean;
@@ -83,7 +91,10 @@ export class ChatCallController {
         startWith(request.auth.userId),
         concatMap(() => this.calls.incoming(request.auth, false)),
       ).subscribe({ next: call => send({ call }), error: close });
-      return () => { subscription.unsubscribe(); lease.release(); };
+      const endings = this.calls.patientEndings.pipe(
+        filter(call => call.patientUserId === request.auth.userId && call.patientSessionId === request.auth.sessionId),
+      ).subscribe(call => send({ ended: { id: call.id, reason: call.endReason } }));
+      return () => { endings.unsubscribe(); subscription.unsubscribe(); lease.release(); };
     }, () => {
       lease.renew();
       if (++heartbeatCount % 3 === 0) void lease.validate().catch(terminate);
@@ -100,6 +111,32 @@ export class ChatCallController {
   @ApiOkResponse({ type: ChatCallDto })
   history(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) conversationId: string, @Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
     return this.calls.history(request.auth, conversationId, id);
+  }
+
+  @Get('calls/outgoing')
+  @Header('Cache-Control', 'private, no-store')
+  @ApiOkResponse({ type: OutgoingSnapshotDto })
+  async outgoing(@Req() request: AuthenticatedRequest) {
+    return { call: await this.calls.outgoingSnapshot(request.auth) };
+  }
+
+  @Get('calls/outgoing/events')
+  @ApiProduces('text/event-stream')
+  async outgoingEvents(@Req() request: AuthenticatedRequest, @Res({ passthrough: true }) reply: FastifyReply) {
+    const principal = request.auth;
+    await this.calls.authorizeOutgoing(principal);
+    return chatEventStream(reply, principal.expiresAt, (send, close) => {
+      const subscription = this.calls.outgoingChanges.pipe(
+        filter(call => call.callerUserId === principal.userId && call.callerSessionId === principal.sessionId),
+        startWith(null),
+        concatMap(async call => {
+          if (!call) return this.calls.outgoingSnapshot(principal);
+          await this.calls.authorizeOutgoing(principal);
+          return this.calls.outgoingView(call);
+        }),
+      ).subscribe({ next: call => send({ call }), error: close });
+      return () => subscription.unsubscribe();
+    });
   }
 
   @Get('appointments/:appointmentId/calls/current')
@@ -120,7 +157,7 @@ export class ChatCallController {
   @Header('Cache-Control', 'private, no-store')
   @ApiCreatedResponse({ type: ChatCallDto })
   action(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string, @Body() body: ChatCallActionDto, @Req() request: AuthenticatedRequest) {
-    return this.calls.action(request.auth, id, body.action);
+    return this.calls.action(request.auth, id, body.action, body.reason);
   }
 
   @Post('calls/:id/grant')

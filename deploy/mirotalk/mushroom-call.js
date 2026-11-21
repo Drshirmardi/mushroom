@@ -3,6 +3,7 @@
 const byId = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const videoRequested = params.has('camera') ? params.get('camera') === 'true' : params.get('mode') !== 'AUDIO';
+const checkResumePermission = params.get('resume') === '1';
 const microphoneRequested = params.get('microphone') !== 'false';
 const relayOnly = params.get('relayOnly') === 'true';
 const embedOrigin = params.get('embedOrigin');
@@ -165,6 +166,11 @@ async function connect() {
   const epoch = ++connectionEpoch;
   let acquired;
   try {
+    if (checkResumePermission) {
+      const permission = await navigator.permissions?.query({ name: 'microphone' }).catch(() => undefined);
+      if (permission?.state === 'prompt') throw new DOMException('Waiting for user interaction', 'UserGestureRequired');
+      if (permission?.state === 'denied') throw new DOMException('Permission denied', 'NotAllowedError');
+    }
     acquired = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (error) {
     if (epoch !== connectionEpoch) return;
@@ -211,13 +217,17 @@ async function connect() {
     }
   });
   socket.on('connect_error', () => failed('signaling-connect'));
+  socket.on('mushroom-replaced', () => {
+    stop('تماس در تب یا دستگاه دیگری ادامه دارد.');
+    notifyParent('mushroom-call:replaced');
+  });
   socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed('signaling-disconnect'); });
   socket.on('mushroom-lease-delayed', () => {
     leaseDelayed = true;
     status.textContent = 'در حال اتصال مجدد…';
     notifyParent('mushroom-call:recovering');
   });
-  socket.on('mushroom-ended', () => { stop('تماس پایان یافته است.'); notifyParent('mushroom-call:ended'); });
+  socket.on('mushroom-ended', ({ reason } = {}) => { stop('تماس پایان یافته است.'); notifyParent('mushroom-call:ended', { reason }); });
   socket.on('serverInfo', () => {
     endButton.hidden = false;
     endButton.disabled = false;

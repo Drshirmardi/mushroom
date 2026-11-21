@@ -37,8 +37,10 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
       { where: { status: 'RINGING' as const, ringsUntil: { lte: now } }, status: 'MISSED' as const },
       { where: { status: 'ACTIVE' as const, connectedAt: null, answeredAt: { lte: new Date(+now - 60_000) } }, status: 'FAILED' as const },
       { where: { status: 'ACTIVE' as const, connectedAt: { not: null }, OR: [
-        { lastLeaseAt: { lte: new Date(+now - 90_000) } },
-        { lastLeaseAt: null, connectedAt: { lte: new Date(+now - 90_000) } },
+        ...(['callerLeaseAt', 'patientLeaseAt'] as const).flatMap(field => [
+          { [field]: { lte: new Date(+now - 90_000) } },
+          { [field]: null, connectedAt: { lte: new Date(+now - 90_000) } },
+        ]),
       ] }, status: 'ENDED' as const },
     ];
   }
@@ -50,7 +52,7 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
       const now = new Date();
       for (const rule of this.expiryRules(now)) {
         const changed = await this.database.client.chatCall.updateManyAndReturn({
-          where: rule.where, data: { status: rule.status, endedAt: now },
+          where: rule.where, data: { status: rule.status, endedAt: now, ...(rule.status === 'ENDED' ? { endReason: 'lease_expired' } : {}) },
         });
         for (const call of changed) await this.callChanged(call);
       }
@@ -59,6 +61,8 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     } finally { this.expiring = false; }
   }
 
+  readonly outgoingChanges = new Subject<ChatCall>();
+  readonly patientEndings = new Subject<ChatCall>();
   readonly incomingChanges = new Subject<string>();
   private readonly streams = new Map<string, IncomingLease>();
   private readonly online = new Map<string, number>();
@@ -76,12 +80,13 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     if (actor.kind === 'PATIENT' || patientUserId === actor.userId) throw new ForbiddenException();
     const name = await this.main.userProfile.findUnique({ where: { userId: actor.userId }, select: { firstName: true, lastName: true } });
     const database = this.database.client;
-    const stale = await database.chatCall.findFirst({ where: { appointmentId, status: 'ACTIVE' } });
-    if (stale) await this.current(stale);
+    const staleCalls = await database.chatCall.findMany({ where: { status: 'ACTIVE', OR: [{ appointmentId }, { callerUserId: actor.userId }] } });
+    for (const stale of staleCalls) await this.current(stale);
     const call = await database.$transaction(async tx => {
       await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))::text', 'chat:call:' + appointmentId);
       const now = new Date();
       await tx.chatCall.updateMany({ where: { appointmentId, status: 'RINGING', ringsUntil: { lte: now } }, data: { status: 'MISSED', endedAt: now } });
+      await tx.chatCall.updateMany({ where: { callerUserId: actor.userId, status: 'RINGING', ringsUntil: { lte: now } }, data: { status: 'MISSED', endedAt: now } });
       const existing = await tx.chatCall.findFirst({ where: { appointmentId, status: { in: ['ACTIVE', 'RINGING'] } } });
       if (existing?.callerUserId === actor.userId && existing.callerSessionId === principal.sessionId) return existing;
       if (existing) throw new ConflictException('Appointment already has a call');
@@ -102,9 +107,11 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
         requestPayloadHash: createHash('sha256').update('call:' + created.id).digest('hex'), body: '', createdAt: created.createdAt,
       } });
       return created;
+    }).catch(error => {
+      if (error?.code === 'P2002') throw new ConflictException({ code: 'CHAT_CALL_ALREADY_ACTIVE', message: 'Caller already has a live call' });
+      throw error;
     });
-    this.publisher.conversationChanged(conversation.id, 'call', call.id);
-    this.incomingChanges.next(patientUserId);
+    await this.callChanged(call);
     return this.view(call);
   }
 
@@ -160,6 +167,33 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     return this.view(await this.current(call));
   }
 
+  authorizeOutgoing(principal: AccessTokenPrincipal) {
+    if (!this.available) throw new ServiceUnavailableException();
+    if (principal.roles.includes('ADMIN')) return this.livePrincipal(principal.userId, principal.sessionId, 'CLINIC_OPERATOR');
+    if (principal.roles.includes('DOCTOR')) return this.livePrincipal(principal.userId, principal.sessionId, 'DOCTOR');
+    throw new ForbiddenException();
+  }
+
+  async outgoingSnapshot(principal: AccessTokenPrincipal) {
+    await this.authorizeOutgoing(principal);
+    const call = await this.database.client.chatCall.findFirst({
+      where: { callerUserId: principal.userId, callerSessionId: principal.sessionId, status: { in: ['ACTIVE', 'RINGING'] } },
+    });
+    const current = call && await this.current(call);
+    return current && ['ACTIVE', 'RINGING'].includes(current.status) ? this.outgoingView(current) : null;
+  }
+
+  async outgoingView(call: ChatCall) {
+    const [conversation, profile] = await Promise.all([
+      this.database.client.chatConversation.findFirst({ where: { appointmentId: call.appointmentId }, select: { id: true, patientId: true } }),
+      this.main.userProfile.findUnique({ where: { userId: call.patientUserId }, select: { firstName: true, lastName: true } }),
+    ]);
+    return {
+      ...this.view(call), conversationId: conversation?.id ?? null, patientId: conversation?.patientId ?? null,
+      patientName: [profile?.firstName, profile?.lastName].filter(Boolean).join(' '),
+    };
+  }
+
   async outgoing(principal: AccessTokenPrincipal, appointmentId: string) {
     const call = await this.database.client.chatCall.findFirst({
       where: { appointmentId, callerUserId: principal.userId, callerSessionId: principal.sessionId, status: { in: ['ACTIVE', 'RINGING'] } },
@@ -173,11 +207,13 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     return this.view(await this.current(await this.owned(principal, id)));
   }
 
-  async action(principal: AccessTokenPrincipal, id: string, action: 'answer' | 'decline' | 'end') {
+  async action(principal: AccessTokenPrincipal, id: string, action: 'answer' | 'decline' | 'end', reason?: 'switched') {
     const call = await this.current(await this.owned(principal, id));
     const patient = call.patientUserId === principal.userId;
     if (action !== 'end' && !patient) throw new ForbiddenException();
     if (patient && call.patientSessionId && call.patientSessionId !== principal.sessionId) throw new ForbiddenException();
+    if (reason && (patient || action !== 'end')) throw new ForbiddenException();
+    const endReason = reason ?? (patient ? 'patient_ended' : 'staff_ended');
     const now = new Date();
     if (action === 'answer' || action === 'decline') {
       await this.chat.callAccess(principal, call.appointmentId);
@@ -189,15 +225,16 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     } else {
       await this.database.client.$transaction(async tx => {
         await tx.chatCall.updateMany({
-          where: { id, status: 'RINGING' }, data: { status: patient ? 'DECLINED' : 'CANCELLED', endedAt: now },
+          where: { id, status: 'RINGING' }, data: { status: patient ? 'DECLINED' : 'CANCELLED', endedAt: now, endReason },
         });
         await tx.chatCall.updateMany({
-          where: { id, status: 'ACTIVE' }, data: { status: 'ENDED', endedAt: now },
+          where: { id, status: 'ACTIVE' }, data: { status: 'ENDED', endedAt: now, endReason },
         });
       });
     }
-    await this.callChanged(call);
-    return this.get(principal, id);
+    const updated = await this.database.client.chatCall.findUniqueOrThrow({ where: { id } });
+    await this.callChanged(updated);
+    return this.view(updated);
   }
 
   async grant(principal: AccessTokenPrincipal, id: string) {
@@ -233,24 +270,26 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     const record = await this.database.client.chatCall.findUnique({ where: { id: callId } });
     if (!record || ![record.callerUserId, record.patientUserId].includes(userId)) throw new ForbiddenException();
     const call = await this.current(record);
-    if (call.status !== 'ACTIVE') throw new ForbiddenException();
+    if (call.status !== 'ACTIVE') throw new ForbiddenException({ code: 'CHAT_CALL_ENDED', details: { endReason: call.endReason } });
     if (body.action === 'lease') {
       const now = new Date();
-      if (!call.lastLeaseAt || +now - +call.lastLeaseAt >= 25_000) {
+      const field = call.callerUserId === userId ? 'callerLeaseAt' : 'patientLeaseAt';
+      if (!call[field] || +now - +call[field] >= 25_000) {
         await this.database.client.chatCall.updateMany({
           where: { id: call.id, status: 'ACTIVE', OR: [
-            { lastLeaseAt: null }, { lastLeaseAt: { lte: new Date(+now - 25_000) } },
+            { [field]: null }, { [field]: { lte: new Date(+now - 25_000) } },
           ] },
-          data: { lastLeaseAt: now },
+          data: { [field]: now },
         });
       }
       return { callId };
     }
     if (body.action === 'end') {
-      const ended = await this.database.client.chatCall.updateMany({
-        where: { id: call.id, status: 'ACTIVE' }, data: { status: 'ENDED', endedAt: new Date() },
+      const [ended] = await this.database.client.chatCall.updateManyAndReturn({
+        where: { id: call.id, status: 'ACTIVE' },
+        data: { status: 'ENDED', endedAt: new Date(), endReason: call.callerUserId === userId ? 'staff_ended' : 'patient_ended' },
       });
-      if (ended.count) await this.callChanged(call);
+      if (ended) await this.callChanged(ended);
       return { ended: true };
     }
     if (body.action === 'connected') {
@@ -277,6 +316,8 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async callChanged(call: ChatCall) {
+    this.outgoingChanges.next(call);
+    if (call.endedAt) this.patientEndings.next(call);
     this.incomingChanges.next(call.patientUserId);
     const conversation = await this.database.client.chatConversation.findFirst({
       where: { appointmentId: call.appointmentId }, select: { id: true },
@@ -302,11 +343,11 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async current(call: ChatCall): Promise<ChatCall> {
-    if (call.status === 'ACTIVE' && call.connectedAt && Date.now() - +(call.lastLeaseAt ?? call.connectedAt) >= 90_000) {
+    if (call.status === 'ACTIVE' && call.connectedAt && Date.now() - Math.min(+(call.callerLeaseAt ?? call.connectedAt), +(call.patientLeaseAt ?? call.connectedAt)) >= 90_000) {
       const now = new Date();
       const [ended] = await this.database.client.chatCall.updateManyAndReturn({
         where: { ...this.expiryRules(now)[2]!.where, id: call.id },
-        data: { status: 'ENDED', endedAt: now },
+        data: { status: 'ENDED', endedAt: now, endReason: 'lease_expired' },
       });
       if (ended) { await this.callChanged(ended); return ended; }
       return this.database.client.chatCall.findUniqueOrThrow({ where: { id: call.id } });
@@ -331,8 +372,9 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
     const updated = await this.database.client.chatCall.updateMany({
       where: { id: call.id, status: call.status, ...(failed ? { connectedAt: null } : {}) }, data: { status: expired ? 'MISSED' : failed ? 'FAILED' : call.status === 'RINGING' ? 'CANCELLED' : 'ENDED', endedAt: new Date() },
     });
-    if (updated.count) await this.callChanged(call);
-    return this.database.client.chatCall.findUniqueOrThrow({ where: { id: call.id } });
+    const fresh = await this.database.client.chatCall.findUniqueOrThrow({ where: { id: call.id } });
+    if (updated.count) await this.callChanged(fresh);
+    return fresh;
   }
 
   private async livePrincipal(userId: string, sessionId: string, kind: ChatCall['callerKind']): Promise<AccessTokenPrincipal> {
@@ -346,7 +388,7 @@ export class ChatCallService implements OnModuleInit, OnModuleDestroy {
   }
 
   private view(call: ChatCall) {
-    const { id, appointmentId, callerName, callerKind, status, ringsUntil, mode, connectedAt, endedAt } = call;
-    return { id, appointmentId, callerName, callerKind, status, ringsUntil, mode, connectedAt, endedAt };
+    const { id, appointmentId, callerName, callerKind, status, ringsUntil, mode, connectedAt, endedAt, endReason } = call;
+    return { id, appointmentId, callerName, callerKind, status, ringsUntil, mode, connectedAt, endedAt, endReason };
   }
 }

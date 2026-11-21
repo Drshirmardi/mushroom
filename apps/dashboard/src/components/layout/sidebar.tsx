@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Activity, ChevronLeft, LogOut, PanelRightClose, PanelRightOpen, Settings, X } from "lucide-react";
 import { useDashboardSession } from "@/components/auth/dashboard-session-gate";
+import { useDashboardCall } from "@/features/calls/call-provider";
 import { NAV, NAV_GROUPS } from "@/lib/nav";
 
 export function Sidebar({ open, collapsed, onClose, onCollapse }: {
@@ -12,6 +13,7 @@ export function Sidebar({ open, collapsed, onClose, onCollapse }: {
 }) {
   const pathname = usePathname();
   const { authentication, logout } = useDashboardSession();
+  const { beforeLogout } = useDashboardCall();
   const [loggingOut, setLoggingOut] = useState(false);
   const [logoutError, setLogoutError] = useState(false);
   const drawer = useRef<HTMLDialogElement>(null);
@@ -31,6 +33,7 @@ export function Sidebar({ open, collapsed, onClose, onCollapse }: {
 
   const handleLogout = async () => {
     setLoggingOut(true); setLogoutError(false);
+    await beforeLogout();
     if (!(await logout())) { setLoggingOut(false); setLogoutError(true); }
   };
 

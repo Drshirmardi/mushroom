@@ -113,3 +113,35 @@ it('shares call updates with the card and polls only when the dashboard stream i
     vi.useRealTimers();
   }
 });
+
+it('keeps the outgoing dashboard call current without polling while SSE is healthy', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('document', Object.assign(new EventTarget(), { visibilityState: 'visible' }));
+  const encoder = new TextEncoder();
+  let writer!: ReadableStreamDefaultController<Uint8Array>;
+  const requests: string[] = [];
+  const engine = createChatEngine('https://api.invalid', async input => {
+    const path = new URL(String(input)).pathname;
+    requests.push(path);
+    if (path.endsWith('/events')) return new Response(new ReadableStream({ start(controller) { writer = controller; } }));
+    return Response.json({ call: null });
+  });
+  const listener = vi.fn();
+  const watch = engine.watchOutgoing(() => 'token', listener);
+  try {
+    writer.enqueue(encoder.encode(': ping\n\ndata: {"call":{"id":"call","status":"ACTIVE"}}\n\n'));
+    await vi.advanceTimersByTimeAsync(0);
+    for (let index = 0; index < 6; index++) {
+      await vi.advanceTimersByTimeAsync(10_000);
+      writer.enqueue(encoder.encode(': ping\n\n'));
+    }
+    writer.enqueue(encoder.encode('data: {"call":{"id":"call","status":"ENDED","endReason":"switched"}}\n\n'));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(listener).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'ENDED', endReason: 'switched' }));
+    expect(requests).toEqual(['/v1/chat/calls/outgoing/events', '/v1/chat/calls/outgoing']);
+  } finally {
+    watch.disconnect();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  }
+});

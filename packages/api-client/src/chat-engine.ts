@@ -255,9 +255,49 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     };
   }
 
+  type OutgoingCall = components['schemas']['OutgoingCallDto'];
+  async function outgoing(token: string) {
+    const snapshot = await request<{ call: OutgoingCall | null }>(token, '/v1/chat/calls/outgoing');
+    if (snapshot.call) publishCall(token, snapshot.call);
+    return snapshot;
+  }
+
+  function watchOutgoing(getToken: () => string, onCall: (call: OutgoingCall | null) => void) {
+    let live = true;
+    let healthy = false;
+    let timer: ReturnType<typeof setTimeout>;
+    let revision = 0;
+    const receive = (call: OutgoingCall | null) => {
+      revision++;
+      if (call) publishCall(getToken(), call);
+      onCall(call);
+    };
+    function schedule() {
+      clearTimeout(timer);
+      if (live && !healthy && document.visibilityState === 'visible') timer = setTimeout(() => void refresh(), 20_000);
+    }
+    async function refresh() {
+      const before = revision;
+      try {
+        const { call } = await outgoing(getToken());
+        if (live && !healthy && before === revision) receive(call);
+      } catch { /* Keep the current call while the connection recovers. */ }
+      finally { schedule(); }
+    }
+    const stream = watchEvents('/v1/chat/calls/outgoing/events', getToken, data => {
+      if (data && typeof data === 'object' && 'call' in data) receive(data.call as OutgoingCall | null);
+    }, next => { healthy = next; schedule(); });
+    document.addEventListener('visibilitychange', schedule);
+    void refresh();
+    return {
+      renew: stream.renew,
+      disconnect() { live = false; stream.disconnect(); clearTimeout(timer); document.removeEventListener('visibilitychange', schedule); },
+    };
+  }
+
   const streamedCalls = new Map<string, ChatCall>();
 
-  function watchIncoming(getToken: () => string, sessionKey: string, onCall: (call: ChatCall | null) => void) {
+  function watchIncoming(getToken: () => string, sessionKey: string, onCall: (call: ChatCall | null) => void, onEnded?: (ending: { id: string; reason?: string | null }) => void) {
     const path = '/v1/chat/calls/incoming';
     const stop = new AbortController();
     const channel = typeof BroadcastChannel === 'function' && navigator.locks
@@ -305,7 +345,13 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
           }).catch(() => {});
         }, Math.max(0, Date.parse(call.ringsUntil) - Date.now()) + 100);
       } else if (previous) {
-        void readCall(getToken(), previous.id, `/v1/chat/calls/${previous.id}`, true).catch(() => {});
+        void readCall(getToken(), previous.id, `/v1/chat/calls/${previous.id}`, true).then(final => {
+          if (!stop.signal.aborted && final.endedAt) {
+            const ending = { id: final.id, reason: final.endReason };
+            onEnded?.(ending);
+            channel?.postMessage({ type: 'ended', ending });
+          }
+        }).catch(() => {});
       }
       onCall(call);
       channel?.postMessage({ type: 'call', call, healthy });
@@ -337,7 +383,8 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
 
     function lead() {
       stream = watchEvents(path + '/events', getToken, data => {
-        const event = data as { presenceId?: string; call?: ChatCall | null };
+        const event = data as { presenceId?: string; call?: ChatCall | null; ended?: { id: string; reason?: string | null } };
+        if (event?.ended) { onEnded?.(event.ended); channel?.postMessage({ type: 'ended', ending: event.ended }); }
         if (event?.presenceId) {
           presenceId = event.presenceId;
           sentVisibility = undefined;
@@ -368,6 +415,7 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
           scheduleFallback();
         }
         if (data.type === 'snapshot-request' && stream && latest !== undefined) channel.postMessage({ type: 'call', call: latest, healthy });
+        if (data.type === 'ended' && !stream) onEnded?.(data.ending);
         if (data.type === 'unhealthy' && !stream) trackCall(null);
         if (data.type === 'call' && !stream) {
           trackCall(data.healthy ? data.call : null);
@@ -545,7 +593,7 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
       request<components['schemas']['PreviousChatPageDto']>(token, `/v1/chat/appointments/${encodeURIComponent(appointmentId)}/previous-conversations${before ? '?before=' + encodeURIComponent(before) : ''}`),
     archivedMessages: (token: string, conversationId: string) => history(token, conversationId, 'latest'),
     video: (token: string) => request<{ available: boolean }>(token, '/v1/chat/video'),
-    watchIncoming,
+    watchIncoming, outgoing, watchOutgoing,
     incoming: (token: string) => request<{ call: ChatCall | null }>(token, '/v1/chat/calls/incoming'),
     startCall: (token: string, appointmentId: string, mode: ChatCall['mode'] = 'VIDEO') =>
       request<ChatCall>(token, `/v1/chat/appointments/${appointmentId}/calls`, 'POST', { mode }).then(call => publishCall(token, call)),
@@ -555,7 +603,14 @@ export function createChatEngine(baseUrl: string, fetchImpl: typeof fetch) {
     historyCall: (token: string, conversationId: string, id: string) =>
       request<ChatCall>(token, `/v1/chat/conversations/${conversationId}/calls/${id}`),
     call: (token: string, id: string) => readCall(token, id, `/v1/chat/calls/${id}`, true),
-    callAction: (token: string, id: string, action: 'answer' | 'decline' | 'end') => request<ChatCall>(token, `/v1/chat/calls/${id}/action`, 'POST', { action }).then(call => publishCall(token, call)),
+    callAction: (token: string, id: string, action: 'answer' | 'decline' | 'end', reason?: 'switched') => request<ChatCall>(token, `/v1/chat/calls/${id}/action`, 'POST', { action, ...(reason ? { reason } : {}) }).then(call => publishCall(token, call)),
+    endBeforeLogout: async (token: string, id: string) => {
+      await fetchImpl(`${baseUrl}/v1/chat/calls/${id}/action`, {
+        method: 'POST', keepalive: true,
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'end' }),
+      });
+    },
     callGrant: (token: string, id: string) => request<{ url: string }>(token, `/v1/chat/calls/${id}/grant`, 'POST'),
     report: (token: string, id: string, reasonCategory: ChatReason) =>
       request(token, `/v1/chat/messages/${id}/reports`, 'POST', { reasonCategory }),

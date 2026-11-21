@@ -684,9 +684,8 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
             {openedId && (
               <VisitCall
                 key={openedId}
-                token={authentication.accessToken}
                 appointmentId={openedId}
-                conversationId={loadedForVisit === openedId ? chat?.conversation.id : undefined}
+                patientId={selectedVisit?.patientId}
                 participantName={selectedVisit?.patientDisplayName || 'بیمار'}
                 canStart={canSend}
               />

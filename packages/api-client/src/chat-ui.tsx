@@ -257,15 +257,31 @@ function keepCallWindowVisible(left: number, top: number, width: number, height:
 
 type CallMediaPreferences = { microphone: boolean; camera: boolean };
 
-export function CallPanel({ call, name, frame, error, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: () => void }) {
+export function CallPanel({ call, name, frame, error, controls, endControl, joining, floating = false, recover, onMinimizedChange, onEnded, expandRequest, returnLink }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean; recover?: (media?: CallMediaPreferences) => void; onMinimizedChange?: (minimized: boolean, height?: number) => void; onEnded?: (reason?: string) => void; expandRequest?: number; returnLink?: ReactNode }) {
   const [minimized, setMinimized] = useState(false);
+  useEffect(() => { setMinimized(false); }, [expandRequest]);
   const [recovering, setRecovering] = useState(false);
   const [abandonedFrame, setAbandonedFrame] = useState("");
   const [playerError, setPlayerError] = useState("");
-  const recovery = useRef<{ deadline: number; tried: boolean; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const recovery = useRef<{ deadline: number; attempts: number; timer: ReturnType<typeof setTimeout>; retry?: ReturnType<typeof setTimeout>; media?: CallMediaPreferences } | null>(null);
+  const retryNow = useRef<() => void>(() => {});
+  function clearRecovery() {
+    clearTimeout(recovery.current?.timer);
+    clearTimeout(recovery.current?.retry);
+    recovery.current = null;
+    setRecovering(false);
+  }
   const callbacks = useRef({ recover, onEnded });
   useLayoutEffect(() => { callbacks.current = { recover, onEnded }; }, [recover, onEnded]);
-  useEffect(() => () => clearTimeout(recovery.current?.timer), []);
+  useEffect(() => {
+    const online = () => retryNow.current();
+    window.addEventListener("online", online);
+    return () => {
+      window.removeEventListener("online", online);
+      clearTimeout(recovery.current?.timer);
+      clearTimeout(recovery.current?.retry);
+    };
+  }, []);
 
   const [anchor, setAnchor] = useState({ right: false, bottom: true, x: 12, y: 12 });
   const [manualSize, setManualSize] = useState<{ width: number; height: number }>();
@@ -292,45 +308,72 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
   const [failedFrame, setFailedFrame] = useState("");
   const [videoFrame, setVideoFrame] = useState("");
   const player = useRef<HTMLIFrameElement>(null);
+  function startRecovery() {
+    if (recovery.current) return;
+    setRecovering(true);
+    setPlayerError("");
+    recovery.current = {
+      deadline: Date.now() + 75_000,
+      attempts: 0,
+      timer: setTimeout(() => {
+        clearRecovery();
+        const expiredFrame = player.current?.getAttribute("src") ?? "";
+        setAbandonedFrame(expiredFrame);
+        setFailedFrame(expiredFrame);
+      }, 75_000),
+    };
+  }
+  function scheduleRecovery(immediate = false) {
+    const attempt = recovery.current;
+    if (!attempt || !callbacks.current.recover) return;
+    clearTimeout(attempt.retry);
+    const delays = [0, 2000, 5000, 10000, 20000];
+    const delay = delays[attempt.attempts];
+    if (delay === undefined || Date.now() + (immediate ? 0 : delay) >= attempt.deadline) { clearRecovery(); return; }
+    attempt.retry = setTimeout(() => {
+      if (recovery.current !== attempt || Date.now() >= attempt.deadline) return;
+      attempt.retry = undefined;
+      attempt.attempts++;
+      callbacks.current.recover?.(attempt.media);
+    }, immediate ? 0 : delay);
+  }
   useLayoutEffect(() => {
+    retryNow.current = () => { if (recovery.current?.retry) scheduleRecovery(true); };
+    if (error === "تماس دیگر در دسترس نیست.") { clearRecovery(); return; }
+    if (!frame && error === "ورود به تماس ممکن نشد. دوباره تلاش کنید.") {
+      if (recovery.current || callbacks.current.recover) {
+        startRecovery();
+        scheduleRecovery();
+      }
+      return;
+    }
     if (!frame) return;
-    if (recovery.current && recovery.current.deadline <= Date.now()) {
-      clearTimeout(recovery.current.timer);
-      recovery.current = null;
-    }
     const expectedOrigin = new URL(frame).origin;
-    function startRecovery() {
-      if (recovery.current) return;
-      setRecovering(true);
-      setPlayerError("");
-      recovery.current = {
-        deadline: Date.now() + 30_000,
-        tried: false,
-        timer: setTimeout(() => {
-          setRecovering(false);
-          const expiredFrame = player.current?.getAttribute("src") ?? "";
-          setAbandonedFrame(expiredFrame);
-          setFailedFrame(expiredFrame);
-        }, 30_000),
-      };
-    }
+    const waiting = recovery.current;
+    const connectTimeout = waiting?.attempts ? setTimeout(() => {
+      if (recovery.current !== waiting) return;
+      setFailedFrame(frame);
+      scheduleRecovery();
+    }, 10_000) : undefined;
     function receive(event: MessageEvent) {
       if (event.origin !== expectedOrigin || event.source !== player.current?.contentWindow) return;
       if (recovery.current && recovery.current.deadline <= Date.now() && event.data?.type !== "mushroom-call:ended") return;
       switch (event.data?.type) {
         case "mushroom-call:ended":
-          clearTimeout(recovery.current?.timer);
-          recovery.current = null;
-          setRecovering(false);
-          callbacks.current.onEnded?.();
+          clearRecovery();
+          callbacks.current.onEnded?.(typeof event.data.reason === "string" ? event.data.reason : undefined);
+          break;
+        case "mushroom-call:replaced":
+          clearRecovery();
+          setAbandonedFrame(frame);
+          setFailedFrame(frame);
+          setPlayerError("تماس در تب یا دستگاه دیگری ادامه دارد.");
           break;
         case "mushroom-call:recovering":
           startRecovery();
           break;
         case "mushroom-call:connected":
-          clearTimeout(recovery.current?.timer);
-          recovery.current = null;
-          setRecovering(false);
+          clearRecovery();
           break;
         case "mushroom-call:recover": {
           setFailedFrame(frame);
@@ -339,23 +382,21 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
           setMedia(undefined);
           const detail = event.data;
           const permissionErrors: Record<string, string> = {
+            UserGestureRequired: "برای فعال‌کردن میکروفون، تلاش مجدد را بزنید.",
             NotAllowedError: "دسترسی میکروفون را در تنظیمات مرورگر یا بله فعال کنید.",
             NotFoundError: "میکروفون پیدا نشد. دستگاه صدا را بررسی کنید.",
             NotReadableError: "میکروفون در دسترس نیست. برنامه‌های دیگری را که از آن استفاده می‌کنند ببندید.",
           };
           if (detail.permission === true) {
-            clearTimeout(recovery.current?.timer);
-            recovery.current = null;
-            setRecovering(false);
+            clearRecovery();
             setPlayerError(permissionErrors[detail.reason] ?? "دسترسی به میکروفون ممکن نشد.");
             break;
           }
           startRecovery();
           const attempt = recovery.current;
-          if (callbacks.current.recover && attempt && !attempt.tried && Date.now() < attempt.deadline) {
-            attempt.tried = true;
-            callbacks.current.recover({ microphone: detail.microphone !== false, camera: detail.camera === true });
-          }
+          clearTimeout(connectTimeout);
+          if (attempt) attempt.media = { microphone: detail.microphone !== false, camera: detail.camera === true };
+          scheduleRecovery();
           break;
         }
         case "mushroom-call:ready":
@@ -380,8 +421,8 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
       }
     }
     window.addEventListener("message", receive);
-    return () => window.removeEventListener("message", receive);
-  }, [frame]);
+    return () => { clearTimeout(connectTimeout); window.removeEventListener("message", receive); };
+  }, [frame, error]);
 
   function anchorAt(left: number, top: number, width: number, height: number) {
     const box = keepCallWindowVisible(left, top, width, height);
@@ -454,6 +495,7 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
         <GripVertical size={18} aria-hidden="true" className="shrink-0 opacity-60" />
         <span className="min-w-0"><span className="block truncate text-sm font-bold">{name}</span>{minimized && <span className="block truncate text-xs opacity-75">{summary}</span>}</span>
       </button>
+      {returnLink}
       {compactControls}
       {!minimized && manualSize && <button type="button" className={callIconButton + " m-1"} aria-label="اندازهٔ خودکار" title="اندازهٔ خودکار" onClick={() => setManualSize(undefined)}><Maximize2 size={18} /></button>}
       {!minimized && active && <button type="button" className={callIconButton + " m-1"}
@@ -513,10 +555,54 @@ export function HangUpButton({ onClick, disabled, label = "پایان تماس" 
   return <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className={callIconButton + " mushroom-call-end"}><PhoneOff size={22} aria-hidden="true" /></button>;
 }
 
+export function useCallTab(sessionKey: string) {
+  const [owner, setOwner] = useState(false);
+  const takeover = useRef<() => void>(() => {});
+  useEffect(() => {
+    setOwner(false);
+    if (!sessionKey) return;
+    if (!navigator.locks || typeof BroadcastChannel === "undefined") { setOwner(true); return; }
+    const key = "mushroom-media:" + sessionKey;
+    const channel = new BroadcastChannel(key);
+    let disposed = false;
+    let waiting = new AbortController();
+    let release: (() => void) | undefined;
+    function request(steal = false) {
+      waiting.abort();
+      waiting = new AbortController();
+      const options = steal ? { steal: true } : { signal: waiting.signal };
+      void navigator.locks.request(key, options, async () => {
+        if (disposed) return;
+        setOwner(true);
+        await new Promise<void>(resolve => { release = resolve; });
+        release = undefined;
+        if (!disposed) setOwner(false);
+      }).catch(() => {});
+    }
+    channel.onmessage = ({ data }) => {
+      if (data !== "transfer" || !release) return;
+      setOwner(false);
+      release();
+      request();
+    };
+    takeover.current = () => { channel.postMessage("transfer"); request(true); };
+    request();
+    return () => {
+      disposed = true;
+      waiting.abort();
+      release?.();
+      channel.close();
+      takeover.current = () => {};
+    };
+  }, [sessionKey]);
+  return { owner, transfer: () => takeover.current() };
+}
+
 export function useCallFrame(engine: Engine, token: string, id: string | undefined) {
   const [granted, setGranted] = useState<{ id: string; url: string; version: number } | null>(null);
   const [frameError, setFrameError] = useState("");
   const [version, refresh] = useState(0);
+  const allowPrompt = useRef(false);
   const preferences = useRef<{ id: string; media: CallMediaPreferences } | undefined>(undefined);
   const currentToken = useRef(token);
   useLayoutEffect(() => { currentToken.current = token; }, [token]);
@@ -525,22 +611,28 @@ export function useCallFrame(engine: Engine, token: string, id: string | undefin
     setFrameError("");
     if (!id) return;
     let active = true;
-    void engine.callGrant(currentToken.current, id).then(({ url }) => {
+    void engine.call(currentToken.current, id).then(current => {
+      if (current.status !== "ACTIVE" || !active) throw new Error("CHAT_CALL_ENDED");
+      return engine.callGrant(currentToken.current, id).then(grant => ({ ...grant, resumed: !!current.connectedAt }));
+    }).then(({ url, resumed }) => {
       const frameUrl = new URL(url);
       frameUrl.searchParams.set("embedOrigin", window.location.origin);
       frameUrl.searchParams.set("autoJoin", "1");
+      if (resumed && !allowPrompt.current) frameUrl.searchParams.set("resume", "1");
+      allowPrompt.current = false;
       if (preferences.current?.id === id) {
         frameUrl.searchParams.set("microphone", String(preferences.current.media.microphone));
         frameUrl.searchParams.set("camera", String(preferences.current.media.camera));
       }
       if (active) setGranted({ id, url: frameUrl.href, version });
-    }).catch(() => {
-      if (active) setFrameError("ورود به تماس ممکن نشد. دوباره تلاش کنید.");
+    }).catch(error => {
+      if (active) setFrameError(["CHAT_CALL_ENDED", "CHAT_FORBIDDEN", "FORBIDDEN", "CONFLICT", "CHAT_REQUEST_403", "CHAT_REQUEST_409"].includes(error.message)
+        ? "تماس دیگر در دسترس نیست." : "ورود به تماس ممکن نشد. دوباره تلاش کنید.");
     });
     return () => { active = false; };
   }, [engine, id, version]);
   const frame = granted && granted.id === id && granted.version === version ? granted.url : "";
-  return { frame, frameError, joining: Boolean(id && !frame && !frameError), reconnect: (media?: CallMediaPreferences) => { if (id && media) preferences.current = { id, media }; refresh(previous => previous + 1); } };
+  return { frame, frameError, joining: Boolean(id && !frame && !frameError), reconnect: (media?: CallMediaPreferences, automatic = false) => { allowPrompt.current = !automatic; if (id && media) preferences.current = { id, media }; refresh(previous => previous + 1); } };
 }
 
 const previousDate = new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tehran" });

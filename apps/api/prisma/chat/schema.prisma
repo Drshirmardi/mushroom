@@ -26,6 +26,9 @@ model ChatCall {
   ringsUntil        DateTime
   endedAt           DateTime?
   lastLeaseAt       DateTime?
+  callerLeaseAt     DateTime?
+  patientLeaseAt    DateTime?
+  endReason         String?
   createdAt         DateTime @default(now())
 
   @@index([patientUserId, status, ringsUntil])
