@@ -12,7 +12,9 @@ fail() {
 }
 
 dev_root="$scratch/mushroom/dev"
-workspace="$dev_root/workspace"
+source_sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+candidate_id="$source_sha-11111111-1111-4111-8111-111111111111"
+workspace="$dev_root/candidates/$candidate_id"
 fake_bin="$scratch/bin"
 docker_log="$scratch/docker.log"
 mkdir -p "$workspace/config" "$workspace/deploy/vps" "$workspace/apps/api/src" "$workspace/apps/api/prisma" \
@@ -27,12 +29,15 @@ cp "$repo_root/deploy/vps/compose.dev.yaml" "$workspace/deploy/vps/compose.dev.y
 cp "$repo_root/deploy/vps/deploy-dev.sh" "$workspace/deploy/vps/deploy-dev.sh"
 cp "$repo_root/deploy/vps/dev-service.sh" "$workspace/deploy/vps/dev-service.sh"
 cp "$repo_root/deploy/mirotalk/compose.yaml" "$dev_root/communications.compose.yaml"
+mkdir -p "$workspace/deploy/mirotalk"
+cp "$repo_root/deploy/mirotalk/Dockerfile" "$workspace/deploy/mirotalk/"
 cp "$repo_root/config/next-dev-origins.ts" "$workspace/config/next-dev-origins.ts"
 mkdir -p "$workspace/apps/api/scripts" "$workspace/raw-data/markdown"
 cp "$repo_root/apps/api/scripts/build-program-catalog.mjs" "$workspace/apps/api/scripts/"
 printf '{}\n' >"$workspace/raw-data/services.catalog.json"
 printf 'Synthetic source\n' >"$workspace/raw-data/markdown/service.md"
 cp "$repo_root/package.json" "$repo_root/pnpm-lock.yaml" "$repo_root/pnpm-workspace.yaml" "$workspace/"
+cp "$repo_root/apps/api/prisma.chat.config.ts" "$workspace/apps/api/"
 cp "$repo_root/apps/api/package.json" "$repo_root/apps/api/tsconfig.json" \
   "$repo_root/apps/api/tsconfig.build.json" "$repo_root/apps/api/prisma.config.ts" "$repo_root/apps/api/prisma.chat.config.ts" "$workspace/apps/api/"
 cp "$repo_root/packages/api-client/package.json" "$repo_root/packages/api-client/tsconfig.json" \
@@ -50,10 +55,13 @@ cat >"$dev_root/runtime.env" <<EOF
 MUSHROOM_ENVIRONMENT=development
 COMPOSE_PROJECT_NAME=mushroom-dev
 MUSHROOM_ENV_ROOT=$dev_root
-DEV_WORKSPACE_PATH=$workspace
+DEV_WORKSPACE_PATH=$dev_root/workspace
 DEV_CACHE_PATH=$dev_root/cache
 DEV_UID=$uid
 DEV_GID=$gid
+CHAT_VIDEO_IMAGE_MODE=build
+CHAT_COMMUNICATIONS_SCHEMA=2
+CHAT_VIDEO_IMAGE=mushroom-dev-mirotalk:pending
 POSTGRES_DB=mushroom_dev
 POSTGRES_USER=mushroom_dev
 PUBLIC_API_URL=https://dev-api.example.test
@@ -115,10 +123,14 @@ printf '%s|install=%s|seed=%s|client=%s|prisma=%s|migrate=%s|compile=%s|config=%
   "${DEV_RUN_MIGRATIONS:-unset}" "${DEV_COMPILE_API:-unset}" \
   "${DEV_WRITE_RUNTIME_CONFIG:-unset}" >>"$FAKE_DOCKER_LOG"
 if [[ ${1:-} == compose && ${2:-} == version ]]; then exit 0; fi
-if [[ ${1:-} == image && ${2:-} == inspect ]]; then
-  [[ -f $FAKE_IMAGE_MARKER ]]
-  exit
+if [[ ${1:-} == image && ${2:-} == inspect ]]; then printf 'sha256:%064d\n' 1; exit 0; fi
+if [[ ${1:-} == inspect ]]; then
+  if [[ $* == *'{{.Image}}'* ]]; then printf 'sha256:%064d\n' 2
+  else printf '%s\n' "${FAKE_ACTIVE_WORKSPACE:-}"; fi
+  exit 0
 fi
+if [[ $* == *bootstrap-prepare* && ${FAKE_BOOTSTRAP_FAIL:-false} == true ]]; then exit 1; fi
+if [[ $* == *bootstrap-activate* && ${FAKE_MIGRATION_FAIL:-false} == true ]]; then exit 1; fi
 if [[ " $* " == *' build bootstrap '* ]]; then : >"$FAKE_IMAGE_MARKER"; fi
 if [[ " $* " == *' run --rm --no-deps bootstrap '* && ${DEV_INSTALL_DEPENDENCIES:-false} == true ]]; then
   mkdir -p "$FAKE_WORKSPACE/node_modules/.pnpm"
@@ -168,245 +180,55 @@ exit 0
 EOF
 chmod +x "$fake_bin/curl"
 
+
 run_deploy() {
-  PATH="$fake_bin:$PATH" \
-    MUSHROOM_ROOT="$scratch/mushroom" \
-    FAKE_DOCKER_LOG="$docker_log" \
-    FAKE_IMAGE_MARKER="$scratch/image-built" \
-    FAKE_WORKSPACE="$workspace" \
-    FAKE_CURL_STATE="$scratch/curl-state" \
-    DEV_PROBE_RETRY_DELAY_SECONDS=0 \
-    bash "$repo_root/deploy/vps/deploy-dev.sh" "${1:-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}"
+  PATH="$fake_bin:$PATH" MUSHROOM_ROOT="$scratch/mushroom" FAKE_DOCKER_LOG="$docker_log" \
+    FAKE_IMAGE_MARKER="$scratch/image-built" FAKE_WORKSPACE="$workspace" \
+    FAKE_CURL_STATE="$scratch/curl-state" DEV_PROBE_RETRY_DELAY_SECONDS=0 \
+    bash "$repo_root/deploy/vps/deploy-dev.sh" "$source_sha" "$candidate_id"
 }
 
+before=$(sha256sum "$dev_root/runtime.env")
+FAKE_BOOTSTRAP_FAIL=true run_deploy && fail 'failed bootstrap accepted'
+[[ $(sha256sum "$dev_root/runtime.env") == "$before" ]] || fail 'failed bootstrap changed runtime'
+! grep -q 'up -d --force-recreate' "$docker_log" || fail 'failed bootstrap activated candidate'
+[[ ! -f $dev_root/state/source.sha ]] || fail 'failed bootstrap recorded success'
+: >"$docker_log"
 run_deploy
-grep -q 'build bootstrap' "$docker_log" || fail 'first sync did not build the dev runtime'
-grep -Fq -- "--file $dev_root/communications.compose.yaml" "$docker_log" \
-  || fail 'dev deployment did not include the required communications compose overlay'
-grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=true' "$docker_log" \
-  || fail 'first sync did not install dependencies and seed once'
-grep -q 'run --rm --no-deps bootstrap.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \
-  || fail 'first sync did not run every required bootstrap stage'
-grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'first sync did not recreate watcher services'
-[[ $(<"$dev_root/state/source.sha") == aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ]] \
-  || fail 'accepted source SHA was not recorded'
+[[ $(<"$dev_root/state/source.sha") == "$source_sha" ]] || fail 'success source missing'
+grep -q "^DEV_WORKSPACE_PATH=$workspace$" "$dev_root/runtime.env" || fail 'candidate not promoted'
+grep -q 'bootstrap-prepare.*install=true.*client=true.*prisma=true.*migrate=false.*compile=true' "$docker_log" || fail 'prepare did not rebuild'
+grep -q 'bootstrap-activate.*install=false.*migrate=true.*compile=false' "$docker_log" || fail 'migration not separated'
+grep -q 'build --tag mushroom-dev-mirotalk:' "$docker_log" || fail 'candidate MiroTalk image not built'
+[[ $(<"$dev_root/state/$candidate_id.phase") == healthy ]] || fail 'healthy receipt missing'
+! grep -q -- '--remove-orphans' "$docker_log" || fail 'legacy engine removed'
 
+previous_workspace="$workspace"
+candidate_id="$source_sha-22222222-2222-4222-8222-222222222222"
+workspace="$dev_root/candidates/$candidate_id"
+cp -a "$previous_workspace" "$workspace"
+before=$(sha256sum "$dev_root/runtime.env")
 : >"$docker_log"
-run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-! grep -q 'build bootstrap' "$docker_log" || fail 'unchanged runtime was rebuilt'
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'unchanged inputs unnecessarily ran bootstrap'
-! grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'unchanged API inputs unnecessarily recreated the API runtime'
-! grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'unchanged inputs unnecessarily recreated watcher services'
+export FAKE_ACTIVE_WORKSPACE="$previous_workspace"
+export FAKE_CURL_FAIL_MATCH=3301 FAKE_CURL_FAIL_COUNT=99
+run_deploy && fail 'unhealthy candidate accepted'
+unset FAKE_CURL_FAIL_MATCH FAKE_CURL_FAIL_COUNT
+[[ $(sha256sum "$dev_root/runtime.env") == "$before" ]] || fail 'rollback did not restore runtime'
+grep -q -- "--file $previous_workspace/deploy/vps/compose.dev.yaml" "$docker_log" || fail 'rollback source incorrect'
+[[ $(<"$dev_root/state/current-workspace") == "$previous_workspace" ]] || fail 'failure changed success pointer'
+[[ -d $previous_workspace ]] || fail 'previous source deleted'
 
-sed -i 's/^SMS_TRANSPORT_MODE=.*/SMS_TRANSPORT_MODE=live/' "$dev_root/runtime.env"
+mkdir -p "$workspace/apps/api/prisma/migrations/new"
+printf 'ALTER TABLE fixture ADD COLUMN changed integer;\n' >"$workspace/apps/api/prisma/migrations/new/migration.sql"
 : >"$docker_log"
-run_deploy 7777777777777777777777777777777777777777
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'SMS runtime-only change unnecessarily ran bootstrap'
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'SMS runtime-only change did not recreate the API runtime'
-
-# Explicit selection, profile changes and key rotation must reach the running API.
-cat >>"$dev_root/runtime.env" <<EOF
-PRODUCT_MEDIA_STORAGE_MODE=arvancloud
-ARVAN_ENDPOINT=https://s3.ir-thr-at1.arvanstorage.ir
-ARVAN_BUCKET=synthetic-arvan
-ARVAN_REGION=default
-ARVAN_REQUEST_TIMEOUT_MS=5000
-EOF
-printf 'synthetic-arvan-key' >"$dev_root/secrets/arvan_access_key_id"
-printf 'synthetic-arvan-secret' >"$dev_root/secrets/arvan_secret_access_key"
+FAKE_MIGRATION_FAIL=true run_deploy && fail 'migration failure accepted'
+[[ -f $dev_root/state/database-maintenance ]] || fail 'migration recovery marker missing'
+[[ $(<"$dev_root/state/$candidate_id.phase") == failed-schema-review-required ]] || fail 'migration failure receipt missing'
+grep -q 'stop api' "$docker_log" || fail 'unsafe previous API running'
+[[ $(sha256sum "$dev_root/runtime.env") == "$before" ]] || fail 'migration failure changed runtime'
+rm -f "$dev_root/state/database-maintenance" "$dev_root/communications.compose.yaml"
 : >"$docker_log"
-run_deploy 5555555555555555555555555555555555555555
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Arvan provider selection did not recreate the API runtime'
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'provider-only change unnecessarily ran bootstrap'
-
-sed -i 's/^ARVAN_BUCKET=.*/ARVAN_BUCKET=synthetic-arvan-other/' "$dev_root/runtime.env"
-: >"$docker_log"
-run_deploy 6666666666666666666666666666666666666666
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Arvan profile change did not recreate the API runtime'
-
-printf 'synthetic-arvan-rotated-secret' >"$dev_root/secrets/arvan_secret_access_key"
-: >"$docker_log"
-run_deploy 9999999999999999999999999999999999999999
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Arvan key rotation did not recreate the API runtime'
-! grep -q 'synthetic-arvan-rotated-secret' "$docker_log" \
-  || fail 'Arvan secret leaked into deployment arguments'
-
-printf '\nPUBLIC_GA4_MEASUREMENT_ID=G-TEST123\nPUBLIC_ANALYTICS_CONSENT=granted\nPUBLIC_ANALYTICS_DEBUG=true\nANALYTICS_SERVER_ENABLED=true\n' >>"$dev_root/runtime.env"
-printf 'synthetic-ga-secret' >"$dev_root/secrets/ga4_api_secret"
-: >"$docker_log"
-run_deploy aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Analytics configuration did not recreate the API runtime'
-printf 'synthetic-ga-rotated-secret' >"$dev_root/secrets/ga4_api_secret"
-: >"$docker_log"
-run_deploy bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Analytics secret rotation did not recreate the API runtime'
-! grep -q 'synthetic-ga-' "$docker_log" || fail 'Analytics secret leaked into deployment arguments'
-
-# Bale enablement, bot-token replacement and webhook-secret rotation must recreate the API
-# without rebuilding artifacts or exposing credentials in docker commands.
-cat >>"$dev_root/runtime.env" <<EOF
-BALE_AUTH_ENABLED=true
-BALE_BOT_USERNAME=health_test_bot
-EOF
-printf '123456789:syntheticBaleTestToken123' >"$dev_root/secrets/bale_bot_token"
-printf '%s' 'initial-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
-: >"$docker_log"
-run_deploy dddddddddddddddddddddddddddddddddddddddd
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Bale activation did not recreate the API runtime'
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'Bale activation unnecessarily ran bootstrap'
-! grep -q 'syntheticBaleTestToken' "$docker_log" || fail 'Bale bot token leaked into deployment args'
-
-printf '123456789:rotatedSyntheticBaleToken123' >"$dev_root/secrets/bale_bot_token"
-: >"$docker_log"
-run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Bale token rotation did not recreate the API runtime'
-
-printf '%s' 'rotated-bale-webhook-secret-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' >"$dev_root/secrets/bale_webhook_secret"
-: >"$docker_log"
-run_deploy ffffffffffffffffffffffffffffffffffffffff
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Bale webhook-secret rotation did not recreate the API runtime'
-! grep -q 'rotated-bale-webhook-secret' "$docker_log" || fail 'Bale webhook secret leaked into deployment args'
-
-sed -i 's/^BALE_AUTH_ENABLED=.*/BALE_AUTH_ENABLED=false/' "$dev_root/runtime.env"
-: >"$docker_log"
-run_deploy 1111111111111111111111111111111111111111
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'Disabling Bale did not recreate the API runtime'
-
-printf '\n' >>"$workspace/deploy/vps/deploy-dev.sh"
-: >"$docker_log"
-run_deploy 8888888888888888888888888888888888888888
-grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=true.*prisma=true.*migrate=true.*compile=true.*config=true' "$docker_log" \
-  || fail 'bootstrap contract change did not reconcile generated artifacts and migrations'
-grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'bootstrap contract change did not recreate the shared dev services'
-
-printf 'stale-artifact\n' >"$workspace/apps/api/dist/.source.sha256"
-: >"$docker_log"
-run_deploy 9999999999999999999999999999999999999999
-grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
-  || fail 'stale API artifact fingerprint did not force a clean recompile'
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'recompiled stale API artifact did not recreate the API runtime'
-
-printf '\n' >>"$workspace/apps/api/package.json"
-: >"$docker_log"
-run_deploy cccccccccccccccccccccccccccccccccccccccc
-grep -q 'run --rm --no-deps bootstrap.*install=true.*seed=false' "$docker_log" \
-  || fail 'dependency change did not reinstall without reseeding'
-grep -q 'up -d --remove-orphans --force-recreate' "$docker_log" \
-  || fail 'dependency change did not recreate watcher services'
-
-printf '\n' >>"$workspace/apps/api/src/main.ts"
-: >"$docker_log"
-run_deploy dddddddddddddddddddddddddddddddddddddddd
-grep -q 'run --rm --no-deps bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
-  || fail 'API-only change did not run only the API compiler stage'
-
-for catalog_input in raw-data/markdown/service.md raw-data/services.catalog.json apps/api/scripts/build-program-catalog.mjs; do
-  printf '\n' >>"$workspace/$catalog_input"
-  : >"$docker_log"
-  run_deploy dddddddddddddddddddddddddddddddddddddddd
-  grep -q 'bootstrap.*install=false.*seed=false.*client=false.*prisma=false.*migrate=false.*compile=true.*config=false' "$docker_log" \
-    || fail "catalog input change did not rebuild private bundle: $catalog_input"
-done
-rm -- "$workspace/apps/api/dist/resources/program-catalog.json"
-: >"$docker_log"
-run_deploy dddddddddddddddddddddddddddddddddddddddd
-grep -q 'bootstrap.*compile=true' "$docker_log" || fail 'missing catalog bundle did not force rebuild'
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'API-only change did not recreate the API runtime'
-
-printf '\n' >>"$workspace/apps/web/src/synthetic.ts"
-: >"$docker_log"
-run_deploy eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'frontend-only change unnecessarily ran bootstrap'
-grep -q 'up -d --no-deps --force-recreate web' "$docker_log" \
-  || fail 'web-only change did not recreate only the web watcher'
-! grep -q 'up -d --no-deps --force-recreate.* app' "$docker_log" \
-  || fail 'web-only change recreated the app watcher'
-! grep -q 'up -d --no-deps --force-recreate.* dashboard' "$docker_log" \
-  || fail 'web-only change recreated the dashboard watcher'
-
-printf '\n' >>"$workspace/apps/app/src/synthetic.ts"
-: >"$docker_log"
-run_deploy 2222222222222222222222222222222222222222
-grep -q 'up -d --no-deps --force-recreate app' "$docker_log" \
-  || fail 'app-only change did not recreate only the app watcher'
-! grep -q 'up -d --no-deps --force-recreate.* web' "$docker_log" \
-  || fail 'app-only change recreated the web watcher'
-
-printf '\n' >>"$workspace/apps/dashboard/src/synthetic.ts"
-: >"$docker_log"
-run_deploy 3333333333333333333333333333333333333333
-grep -q 'up -d --no-deps --force-recreate dashboard' "$docker_log" \
-  || fail 'dashboard-only change did not recreate only the dashboard watcher'
-! grep -q 'up -d --no-deps --force-recreate.* web' "$docker_log" \
-  || fail 'dashboard-only change recreated the web watcher'
-
-mkdir -p "$workspace/apps/app/.next"
-printf 'stale\n' >"$workspace/apps/app/.next/stale"
-: >"$docker_log"
-rm -f -- "$scratch/curl-state"
-FAKE_CURL_FAIL_MATCH='127.0.0.1:3301/' FAKE_CURL_FAIL_COUNT=6 \
-  run_deploy 4444444444444444444444444444444444444444
-[[ ! -e $workspace/apps/app/.next ]] \
-  || fail 'stalled app recovery did not clear the derived Next cache'
-grep -q 'up -d --no-deps --force-recreate app' "$docker_log" \
-  || fail 'stalled app recovery did not recreate the app watcher'
-! grep -q 'up -d --no-deps --force-recreate web' "$docker_log" \
-  || fail 'stalled app recovery recreated the web watcher'
-
-(
-  exec 8>"$dev_root/state/deploy.lock"
-  flock 8
-  : >"$scratch/lock-held"
-  sleep 1
-) &
-lock_holder=$!
-while [[ ! -f $scratch/lock-held ]]; do sleep 0.01; done
-: >"$docker_log"
-run_deploy 1111111111111111111111111111111111111111
-wait "$lock_holder"
-! grep -q 'run --rm --no-deps bootstrap' "$docker_log" \
-  || fail 'serialized unchanged sync unnecessarily ran bootstrap'
-
-# A callback-only runtime change must refresh the public dashboard config too.
-printf '\nSADAD_RETURN_URL=https://merchant.example.test/v1/payments/providers/sadad/callback\n' >>"$dev_root/runtime.env"
-: >"$docker_log"
-run_deploy a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1
-grep -q 'run --rm --no-deps bootstrap.*config=true' "$docker_log" \
-  || fail 'callback-only change did not regenerate dashboard runtime configuration'
-grep -q 'up -d --no-deps --force-recreate api' "$docker_log" \
-  || fail 'callback-only change did not recreate API runtime'
-
-cp "$scratch/mushroom/staging/runtime.env" "$scratch/staging.original"
-sed 's/API_PORT=127.0.0.1:3103/API_PORT=127.0.0.1:3303/' "$scratch/staging.original" \
-  >"$scratch/mushroom/staging/runtime.env"
-if run_deploy ffffffffffffffffffffffffffffffffffffffff >/dev/null 2>&1; then
-  fail 'dev deployment accepted a staging port collision'
-fi
-
-for forbidden in 'docker compose down' 'migrate reset' 'migrate down' 'mushroom-production-sim' 'mushroom-staging'; do
-  ! grep -q "$forbidden" "$repo_root/deploy/vps/deploy-dev.sh" \
-    || fail "dev deployment contains forbidden production operation: $forbidden"
-done
-
-printf 'Dev VPS sync contract checks passed.\n'
+run_deploy && fail 'missing setup accepted'
+! grep -q 'build bootstrap' "$docker_log" || fail 'missing setup reached build'
+[[ $(sha256sum "$dev_root/runtime.env") == "$before" ]] || fail 'preflight failure changed runtime'
+printf 'PASS candidate isolation, bootstrap, promotion, rollback and migration recovery\n'

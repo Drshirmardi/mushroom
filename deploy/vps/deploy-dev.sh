@@ -6,8 +6,10 @@ die() {
   exit 1
 }
 
-[[ $# -eq 1 ]] || die 'usage: deploy-dev.sh <40-character-source-sha>'
+[[ $# -eq 2 ]] || die 'usage: deploy-dev.sh <source-sha> <candidate-id>'
 source_sha=$1
+candidate_id=$2
+[[ $candidate_id =~ ^${source_sha}-[a-f0-9-]{36}$ ]] || die 'invalid candidate identity'
 [[ $source_sha =~ ^[0-9a-f]{40}$ ]] || die 'source SHA must be 40 lowercase hexadecimal characters'
 [[ $(id -u) -ne 0 ]] || die 'dev deployment must run as a non-root user'
 
@@ -18,14 +20,17 @@ docker compose version >/dev/null 2>&1 || die 'Docker Compose v2 is required'
 
 base_root=${MUSHROOM_ROOT:-"$HOME/mushroom"}
 environment_root="$base_root/dev"
-workspace="$environment_root/workspace"
+workspace="$environment_root/candidates/$candidate_id"
 cache_root="$environment_root/cache"
 state_root="$environment_root/state"
-runtime_env="$environment_root/runtime.env"
+live_runtime_env="$environment_root/runtime.env"
+runtime_env="$state_root/$candidate_id.env"
+receipt="$state_root/$candidate_id.phase"
 compose_file="$workspace/deploy/vps/compose.dev.yaml"
 lock_file="$state_root/deploy.lock"
 
-mkdir -p -- "$workspace" "$cache_root" "$state_root"
+[[ -d $workspace && ! -L $workspace && $(realpath "$workspace") == "$workspace" ]] || die 'candidate path boundary mismatch'
+mkdir -p -- "$cache_root" "$state_root"
 exec 9>"$lock_file"
 if ! flock -n 9; then
   printf 'another dev sync is active; waiting for it to finish\n'
@@ -34,9 +39,20 @@ fi
 [[ ! -f $state_root/database-maintenance ]] || die 'resume the interrupted database recovery before dev synchronization'
 touch "$state_root/recovery-lock-compatible"
 
-[[ -f $runtime_env ]] || die "$runtime_env is missing"
+[[ -f $live_runtime_env && ! -L $live_runtime_env ]] || die 'runtime.env missing or symlinked'
+umask 077
+active_workspace=$(sed -n 's/^DEV_WORKSPACE_PATH=//p' "$live_runtime_env" | tail -n 1)
+[[ $active_workspace != "$workspace" ]] || die 'candidate already live; start a new sync'
+cp -- "$live_runtime_env" "$runtime_env"
+sed -i "s|^DEV_WORKSPACE_PATH=.*|DEV_WORKSPACE_PATH=$workspace|" "$runtime_env"
+phase() { printf '%s\n' "$1" >"$receipt.next"; mv -- "$receipt.next" "$receipt"; }
+publish_runtime() { cp -- "$1" "$live_runtime_env.next"; mv -- "$live_runtime_env.next" "$live_runtime_env"; }
+phase preflight
+runtime_image="mushroom-dev-runtime:$candidate_id"
+sed -i '/^DEV_RUNTIME_IMAGE=/d' "$runtime_env"
+printf 'DEV_RUNTIME_IMAGE=%s\n' "$runtime_image" >>"$runtime_env"
 [[ -f $compose_file ]] || die 'versioned dev Compose file is missing from the synced workspace'
-[[ -f $environment_root/communications.compose.yaml ]] || die 'communications.compose.yaml is required; see deploy/mirotalk/README.md'
+[[ -f $environment_root/communications.compose.yaml ]] || die 'communications setup missing; open mushroom panel > Communications > Setup for dev'
 
 env_value() {
   local key=$1
@@ -89,6 +105,27 @@ for other_environment in staging production-sim production; do
     [[ -z $other_value || $current_value != "$other_value" ]] || die "$key crosses into $other_environment"
   done
 done
+
+if [[ -f $state_root/migration-in-progress ]]; then
+  die 'an interrupted migration requires review; inspect state/migration-in-progress and its phase receipt'
+fi
+
+available_kib=$(df -Pk "$environment_root" | awk 'END {print $4}')
+[[ $available_kib =~ ^[0-9]+$ && $available_kib -ge 3145728 ]] || die 'at least 3 GiB free disk required for candidate'
+managed_turn=$(env_value_or_default CHAT_TURN_MANAGED false)
+[[ $managed_turn == true || $managed_turn == false ]] || die 'invalid managed TURN setting'
+sed -i '/^COMPOSE_PROFILES=/d' "$runtime_env"
+if [[ $managed_turn == true ]]; then printf 'COMPOSE_PROFILES=managed-turn\n' >>"$runtime_env"; fi
+image_mode=$(env_value_or_default CHAT_VIDEO_IMAGE_MODE registry)
+[[ $image_mode == build || $image_mode == registry ]] || die 'unknown image mode; open Communications > Setup'
+if [[ $image_mode == build ]]; then
+  [[ $(env_value CHAT_COMMUNICATIONS_SCHEMA) == 2 ]] || die 'update installer and run Communications > Setup'
+  video_image="mushroom-dev-mirotalk:$candidate_id"
+  sed -i "s|^CHAT_VIDEO_IMAGE=.*|CHAT_VIDEO_IMAGE=$video_image|" "$runtime_env"
+else
+  video_image=$(env_value CHAT_VIDEO_IMAGE)
+  [[ $video_image =~ @sha256:[a-f0-9]{64}$ ]] || die 'registry mode requires an immutable digest'
+fi
 
 generate_dev_secret() {
   local secret=$1
@@ -276,125 +313,107 @@ api_runtime_hash=$(
   done
   } | sha256sum | cut -d' ' -f1
 )
-previous_dependency_hash=''
-previous_runtime_hash=''
-previous_api_client_hash=''
-previous_prisma_hash=''
-previous_api_hash=''
-previous_web_hash=''
-previous_app_hash=''
-previous_dashboard_hash=''
-previous_public_config_hash=''
-previous_api_runtime_hash=''
-[[ ! -f $state_root/dependencies.sha256 ]] || previous_dependency_hash=$(<"$state_root/dependencies.sha256")
-[[ ! -f $state_root/runtime.sha256 ]] || previous_runtime_hash=$(<"$state_root/runtime.sha256")
-[[ ! -f $state_root/api-client.sha256 ]] || previous_api_client_hash=$(<"$state_root/api-client.sha256")
-[[ ! -f $state_root/prisma.sha256 ]] || previous_prisma_hash=$(<"$state_root/prisma.sha256")
-[[ ! -f $state_root/api.sha256 ]] || previous_api_hash=$(<"$state_root/api.sha256")
-[[ ! -f $state_root/web.sha256 ]] || previous_web_hash=$(<"$state_root/web.sha256")
-[[ ! -f $state_root/app.sha256 ]] || previous_app_hash=$(<"$state_root/app.sha256")
-[[ ! -f $state_root/dashboard.sha256 ]] || previous_dashboard_hash=$(<"$state_root/dashboard.sha256")
-[[ ! -f $state_root/public-config.sha256 ]] || previous_public_config_hash=$(<"$state_root/public-config.sha256")
-[[ ! -f $state_root/api-runtime.sha256 ]] || previous_api_runtime_hash=$(<"$state_root/api-runtime.sha256")
 
-runtime_changed=false
-if [[ $runtime_hash != "$previous_runtime_hash" ]] || ! docker image inspect mushroom-dev-runtime:local >/dev/null 2>&1; then
-  compose --profile tools build bootstrap
-  runtime_changed=true
-fi
-
-compose up -d --wait postgres communications-postgres
-
-install_dependencies=false
-if [[ $dependency_hash != "$previous_dependency_hash" || ! -d "$workspace/node_modules/.pnpm" ]]; then
-  install_dependencies=true
-fi
-
-run_seed=false
-if [[ ! -f $state_root/seeded ]]; then
-  run_seed=true
-fi
-
-build_api_client=false
-generate_prisma=false
-run_migrations=false
-compile_api=false
-restart_web=false
-restart_app=false
-restart_dashboard=false
-restart_api=false
-write_runtime_config=false
-if [[ $runtime_changed == true ]]; then
-  build_api_client=true
-  generate_prisma=true
-  run_migrations=true
-  compile_api=true
-  write_runtime_config=true
-fi
-if [[ $install_dependencies == true || $api_client_hash != "$previous_api_client_hash" \
-  || ! -f $workspace/packages/api-client/dist/index.js ]]; then
-  build_api_client=true
-fi
-if [[ $install_dependencies == true || $prisma_hash != "$previous_prisma_hash" \
-  || ! -d $workspace/apps/api/src/generated/chat-prisma || ! -d $workspace/apps/api/src/generated/prisma ]]; then
-  generate_prisma=true
-fi
-if [[ $prisma_hash != "$previous_prisma_hash" ]]; then
-  run_migrations=true
-fi
-if [[ $install_dependencies == true || $runtime_changed == true \
-  || $api_hash != "$previous_api_hash" || $api_client_hash != "$previous_api_client_hash" \
-  || $prisma_hash != "$previous_prisma_hash" || $api_hash != "$api_artifact_hash" \
-  || ! -f $workspace/apps/api/dist/main.js \
-  || ! -s $workspace/apps/api/dist/resources/program-catalog.json ]]; then
-  compile_api=true
-fi
-if [[ $web_hash != "$previous_web_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
-  restart_web=true
-fi
-if [[ $app_hash != "$previous_app_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
-  restart_app=true
-fi
-if [[ $dashboard_hash != "$previous_dashboard_hash" || $api_client_hash != "$previous_api_client_hash" ]]; then
-  restart_dashboard=true
-fi
-if [[ $public_config_hash != "$previous_public_config_hash" \
-  || ! -f $workspace/apps/web/public/runtime-config.js \
-  || ! -f $workspace/apps/app/public/runtime-config.js \
-  || ! -f $workspace/apps/dashboard/public/runtime-config.js ]]; then
-  write_runtime_config=true
-fi
-if [[ $api_runtime_hash != "$previous_api_runtime_hash" ]]; then
-  restart_api=true
-fi
-
-if [[ $install_dependencies == true || $run_seed == true || $build_api_client == true \
-  || $generate_prisma == true || $run_migrations == true || $compile_api == true \
-  || $write_runtime_config == true ]]; then
-  DEV_INSTALL_DEPENDENCIES=$install_dependencies \
-    DEV_RUN_SEED=$run_seed \
-    DEV_BUILD_API_CLIENT=$build_api_client \
-    DEV_GENERATE_PRISMA=$generate_prisma \
-    DEV_RUN_MIGRATIONS=$run_migrations \
-    DEV_COMPILE_API=$compile_api \
-    DEV_API_SOURCE_HASH=$api_hash \
-    DEV_WRITE_RUNTIME_CONFIG=$write_runtime_config \
-    compose --profile tools run --rm --no-deps bootstrap
-fi
-
-if [[ $runtime_changed == true || $install_dependencies == true ]]; then
-  compose up -d --remove-orphans --force-recreate
+# Snapshot actual mounted source and immutable runtime IDs for legacy recovery.
+rollback_dir="$state_root/rollback-$candidate_id"
+mkdir -p -m 700 "$rollback_dir"
+cp -- "$live_runtime_env" "$rollback_dir/desired.env"
+if [[ -f $state_root/current-runtime.env ]]; then
+  cp -- "$state_root/current-runtime.env" "$rollback_dir/runtime.env"
 else
-  services=()
-  [[ $compile_api != true && $restart_api != true ]] || services+=(api)
-  [[ $restart_web != true ]] || services+=(web)
-  [[ $restart_app != true ]] || services+=(app)
-  [[ $restart_dashboard != true ]] || services+=(dashboard)
-  if (( ${#services[@]} > 0 )); then
-    compose up -d --no-deps --force-recreate "${services[@]}"
-  fi
-  compose up -d --remove-orphans
+  cp -- "$live_runtime_env" "$rollback_dir/runtime.env"
 fi
+previous_workspace=$(docker inspect mushroom-dev-dashboard-1 --format '{{range .Mounts}}{{if eq .Destination "/workspace"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || true)
+previous_valid=false
+if [[ -n $previous_workspace && -d $previous_workspace && $previous_workspace == "$environment_root/"* ]]; then
+  printf '%s\n' "$previous_workspace" >"$rollback_dir/workspace"
+  sed -i "s|^DEV_WORKSPACE_PATH=.*|DEV_WORKSPACE_PATH=$previous_workspace|" "$rollback_dir/runtime.env"
+  previous_valid=true
+  printf 'services:\n' >"$rollback_dir/images.compose.yaml"
+  for service in api web app dashboard; do
+    image=$(docker inspect "mushroom-dev-$service-1" --format '{{.Image}}' 2>/dev/null || true)
+    if [[ ! $image =~ ^sha256:[a-f0-9]{64}$ ]]; then previous_valid=false; break; fi
+    printf '  %s:\n    image: "%s"\n' "$service" "$image" >>"$rollback_dir/images.compose.yaml"
+  done
+fi
+schema_hash() {
+  (cd "$1" && find apps/api/prisma -type f -name migration.sql -print0 | sort -z | xargs -0 -r sha256sum) | sha256sum | cut -d' ' -f1
+}
+candidate_schema=$(schema_hash "$workspace")
+schema_rollback_safe=false
+if [[ -f $state_root/migrations.sha256 && -f $state_root/current-workspace \
+  && $(<"$state_root/current-workspace") == "$previous_workspace" \
+  && $(<"$state_root/migrations.sha256") == "$candidate_schema" ]]; then schema_rollback_safe=true; fi
+activation_started=false
+migration_started=false
+succeeded=false
+rollback() {
+  local result=$?
+  trap - EXIT
+  if [[ $succeeded == true ]]; then return; fi
+  if [[ $migration_started == true && $schema_rollback_safe != true ]]; then
+    printf '%s\n' "$candidate_id" >"$state_root/database-maintenance"
+    phase failed-schema-review-required
+    printf 'Migration may have changed schema; API stopped. Review migration receipt before recovery.\n' >&2
+    compose stop api >/dev/null 2>&1 || true
+  elif [[ $activation_started == true && $previous_valid == true ]]; then
+    phase rollback-started
+    publish_runtime "$rollback_dir/runtime.env"
+    previous_compose="$previous_workspace/deploy/vps/compose.dev.yaml"
+    previous_overlay="$environment_root/communications.compose.yaml"
+    if ! grep -q CHAT_DATABASE_URL "$previous_compose"; then previous_overlay="$environment_root/chat.compose.yaml"; fi
+    previous_args=(--file "$previous_compose" --file "$previous_overlay" --file "$rollback_dir/images.compose.yaml")
+    [[ ! -f $environment_root/network.yaml ]] || previous_args+=(--file "$environment_root/network.yaml")
+    if [[ $previous_overlay == */chat.compose.yaml && -f $environment_root/chat.database.yaml ]]; then previous_args+=(--file "$environment_root/chat.database.yaml"); fi
+    if docker compose --project-name mushroom-dev --env-file "$live_runtime_env" "${previous_args[@]}" up -d --no-deps --force-recreate api web app dashboard; then
+      restored_healthy=true
+      for key in API_PORT WEB_PORT APP_PORT DASHBOARD_PORT; do
+        path='/'
+        [[ $key != API_PORT ]] || path='/v1/health/ready'
+        if ! curl --fail --silent --max-time 10 "http://$(env_value "$key")$path" >/dev/null; then restored_healthy=false; fi
+      done
+      if [[ $restored_healthy == true ]]; then phase rollback-healthy
+      else phase rollback-unhealthy; printf 'Previous workspace restored but readiness failed; inspect logs.\n' >&2; fi
+    else phase rollback-failed; fi
+  else phase failed-before-activation; fi
+  if [[ $migration_started == true && $schema_rollback_safe == true ]]; then
+    rm -f -- "$state_root/migration-in-progress"
+  fi
+  exit "$result"
+}
+trap rollback EXIT
+compose config --quiet
+infrastructure=(postgres communications-postgres chat-scanner)
+[[ $managed_turn != true ]] || infrastructure+=(coturn)
+compose pull "${infrastructure[@]}"
+if [[ $image_mode == build ]]; then
+  phase building-mirotalk
+  docker build --tag "$video_image" "$workspace/deploy/mirotalk"
+else docker pull "$video_image"; fi
+docker image inspect "$video_image" --format '{{.Id}}' >"$state_root/$candidate_id.mirotalk-image"
+compose --profile tools build bootstrap
+phase preparing
+DEV_INSTALL_DEPENDENCIES=true DEV_RUN_SEED=false DEV_BUILD_API_CLIENT=true \
+  DEV_GENERATE_PRISMA=true DEV_RUN_MIGRATIONS=false DEV_COMPILE_API=true \
+  DEV_API_SOURCE_HASH=$api_hash DEV_WRITE_RUNTIME_CONFIG=true \
+  compose --profile tools run --rm --no-deps bootstrap bash deploy/vps/dev-service.sh bootstrap-prepare
+phase prepared
+compose up -d --wait postgres communications-postgres
+if [[ $schema_rollback_safe != true && $previous_valid == true ]]; then compose stop api; fi
+migration_started=true
+printf '%s\n' "$candidate_id" >"$state_root/migration-in-progress"
+phase migration-started
+run_seed=false
+[[ -f $state_root/seeded ]] || run_seed=true
+DEV_INSTALL_DEPENDENCIES=false DEV_RUN_SEED=$run_seed DEV_BUILD_API_CLIENT=false \
+  DEV_GENERATE_PRISMA=false DEV_RUN_MIGRATIONS=true DEV_COMPILE_API=false \
+  DEV_WRITE_RUNTIME_CONFIG=false \
+  compose --profile tools run --rm --no-deps bootstrap bash deploy/vps/dev-service.sh bootstrap-activate
+phase migration-complete
+activation_started=true
+phase activating
+publish_runtime "$runtime_env"
+compose up -d --force-recreate
 
 probe_attempts() {
   local url=$1
@@ -489,6 +508,8 @@ probe api "http://$(env_value API_PORT)/v1/health/ready"
 probe_frontend web "http://$(env_value WEB_PORT)/"
 probe_frontend app "http://$(env_value APP_PORT)/"
 probe_frontend dashboard "http://$(env_value DASHBOARD_PORT)/"
+probe_frontend dashboard "http://$(env_value DASHBOARD_PORT)/messages"
+probe api "http://$(env_value API_PORT)/v1/health/chat"
 probe_hmr web "$(env_value PUBLIC_WEB_URL)"
 probe_hmr app "$(env_value PUBLIC_APP_URL)"
 probe_hmr dashboard "$(env_value PUBLIC_DASHBOARD_URL)"
@@ -503,9 +524,27 @@ printf '%s\n' "$app_hash" >"$state_root/app.sha256"
 printf '%s\n' "$dashboard_hash" >"$state_root/dashboard.sha256"
 printf '%s\n' "$public_config_hash" >"$state_root/public-config.sha256"
 printf '%s\n' "$api_runtime_hash" >"$state_root/api-runtime.sha256"
-if [[ $run_seed == true ]]; then
-  : >"$state_root/seeded"
-fi
 
+if [[ -f $state_root/current-workspace ]]; then cp -- "$state_root/current-workspace" "$state_root/previous-workspace"; fi
+printf '%s\n' "$workspace" >"$state_root/current-workspace"
 printf '%s\n' "$source_sha" >"$state_root/source.sha"
+printf '%s\n' "$candidate_schema" >"$state_root/migrations.sha256"
+cp -- "$runtime_env" "$state_root/current-runtime.env.next"
+mv -- "$state_root/current-runtime.env.next" "$state_root/current-runtime.env"
+phase healthy
+[[ $run_seed != true ]] || touch "$state_root/seeded"
+rm -f -- "$state_root/migration-in-progress"
+succeeded=true
+previous_kept=''
+[[ ! -f $state_root/previous-workspace ]] || previous_kept=$(<"$state_root/previous-workspace")
+for old_receipt in "$state_root"/*.phase; do
+  [[ -f $old_receipt && $(<"$old_receipt") == healthy ]] || continue
+  old_id=${old_receipt##*/}
+  old_id=${old_id%.phase}
+  [[ $old_id =~ ^[a-f0-9]{40}-[a-f0-9-]{36}$ ]] || continue
+  old_workspace="$environment_root/candidates/$old_id"
+  [[ $old_workspace != "$workspace" && $old_workspace != "$previous_kept" ]] || continue
+  [[ -d $old_workspace && ! -L $old_workspace && $(realpath "$old_workspace") == "$old_workspace" ]] || continue
+  rm -rf -- "$old_workspace"
+done
 printf 'dev environment is ready at source %s\n' "$source_sha"

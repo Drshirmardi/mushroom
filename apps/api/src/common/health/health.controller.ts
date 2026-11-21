@@ -1,3 +1,4 @@
+import { chatVideoEnabled } from '../../modules/communications/chat/chat-video-enabled';
 import { Controller, Get, Optional, ServiceUnavailableException } from '@nestjs/common';
 
 import { PrismaService } from '../../database/prisma/prisma.service';
@@ -38,7 +39,7 @@ export class HealthController {
 
   @Get('video')
   async videoReady(): Promise<{ status: 'ok' | 'disabled' }> {
-    if (process.env.CHAT_VIDEO_ENABLED !== 'true') return { status: 'disabled' };
+    if (!chatVideoEnabled()) return { status: 'disabled' };
     try {
       const origin = process.env.CHAT_VIDEO_HEALTH_URL || process.env.CHAT_VIDEO_ORIGIN;
       const response = await fetch(new URL('/mushroom-call.html', origin), { method: 'HEAD', signal: AbortSignal.timeout(3000) });

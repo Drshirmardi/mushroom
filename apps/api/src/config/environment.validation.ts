@@ -108,6 +108,7 @@ const sadadResultUrlSchema = Joi.string()
 export const environmentValidationSchema = Joi.object({
   CHAT_DATABASE_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }),
   CHAT_VIDEO_ENABLED: Joi.boolean().default(false),
+  CHAT_VIDEO_TEST_UNTIL: Joi.string().isoDate().allow(''),
   CHAT_VIDEO_ORIGIN: Joi.string().uri({ scheme: ['https', 'http'] }),
   CHAT_VIDEO_SECRET: Joi.string().min(43),
   CHAT_TURN_SECRET: Joi.string().min(43),

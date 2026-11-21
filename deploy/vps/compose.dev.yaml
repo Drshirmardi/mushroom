@@ -1,7 +1,7 @@
 name: ${COMPOSE_PROJECT_NAME:?set the isolated dev Compose project name}
 
 x-node-service: &node-service
-  image: mushroom-dev-runtime:local
+  image: "${DEV_RUNTIME_IMAGE:-mushroom-dev-runtime:local}"
   user: "${DEV_UID:?set the deployment user UID}:${DEV_GID:?set the deployment user GID}"
   working_dir: /workspace
   init: true
@@ -38,7 +38,7 @@ services:
       retries: 20
 
   bootstrap:
-    image: mushroom-dev-runtime:local
+    image: "${DEV_RUNTIME_IMAGE:-mushroom-dev-runtime:local}"
     build:
       context: "${DEV_WORKSPACE_PATH:?set the absolute dev workspace path}"
       dockerfile: deploy/vps/Dockerfile.dev

@@ -3,6 +3,7 @@
 const byId = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const videoRequested = params.get('mode') !== 'AUDIO';
+const relayOnly = params.get('relayOnly') === 'true';
 const embedOrigin = params.get('embedOrigin');
 function notifyParent(type) {
   if (!embedOrigin || parent === window) return;
@@ -154,7 +155,7 @@ async function connect() {
     try {
       if (peer) closePeer();
       peerId = id;
-      const connection = new RTCPeerConnection({ iceServers });
+      const connection = new RTCPeerConnection({ iceServers, iceTransportPolicy: relayOnly ? 'relay' : 'all' });
       peer = connection;
       const [audioTrack] = stream.getAudioTracks();
       connection.addTrack(audioTrack, stream);

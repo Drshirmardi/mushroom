@@ -1,3 +1,4 @@
+import { chatVideoEnabled } from './chat-video-enabled';
 import { ConflictException, ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
@@ -15,7 +16,7 @@ export class ChatCallService {
   constructor(private readonly database: ChatDatabaseService, private readonly main: PrismaService, private readonly chat: ChatService, private readonly publisher: ChatRealtimePublisher) {}
 
   get available() {
-    return process.env.CHAT_VIDEO_ENABLED === 'true' && !!process.env.CHAT_VIDEO_ORIGIN && (process.env.CHAT_VIDEO_SECRET?.length ?? 0) >= 43;
+    return chatVideoEnabled() && !!process.env.CHAT_VIDEO_ORIGIN && (process.env.CHAT_VIDEO_SECRET?.length ?? 0) >= 43;
   }
 
   async start(principal: AccessTokenPrincipal, appointmentId: string, mode: 'AUDIO' | 'VIDEO' = 'VIDEO') {
@@ -126,6 +127,7 @@ export class ChatCallService {
     this.grants.set(this.hash(code), { id, userId: principal.userId, expires });
     const url = new URL('/mushroom-call.html', process.env.CHAT_VIDEO_ORIGIN);
     url.searchParams.set('mode', call.mode);
+    if (process.env.CHAT_VIDEO_ENABLED !== 'true' && chatVideoEnabled()) url.searchParams.set('relayOnly', 'true');
     url.hash = code;
     return { url: url.href };
   }
