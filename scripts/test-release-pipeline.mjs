@@ -151,8 +151,8 @@ for (const required of [
   '--exclude=/.git/',
   '--exclude=/apps/api/src/generated/',
   '--exclude=/apps/web/public/runtime-config.js',
-  'flock -w 600 "$HOME/mushroom/dev/state/deploy.lock" true',
-  'mushroom/dev/workspace',
+  'randomUUID()',
+  'mushroom/dev/candidates/',
 ]) assert(devSyncScript.includes(required), `dev source sync is missing: ${required}`);
 for (const forbidden of ['migrate reset', 'migrate down', 'docker compose down']) {
   assert(!devDeployScript.includes(forbidden), `dev deployment contains forbidden operation: ${forbidden}`);
@@ -195,9 +195,6 @@ for (const required of [
   'DEV_WRITE_RUNTIME_CONFIG',
   '$workspace/deploy/vps/deploy-dev.sh',
   'hash_frontend_inputs',
-  'services+=(web)',
-  'services+=(app)',
-  'services+=(dashboard)',
   'probe api "http://$(env_value API_PORT)/v1/health/ready"',
   'probe_frontend web "http://$(env_value WEB_PORT)/"',
   'probe_frontend app "http://$(env_value APP_PORT)/"',
@@ -249,9 +246,11 @@ assert(
   'shared dev API container must not retain the TypeScript compiler watcher',
 );
 assert(
-  devDeployScript.includes('services+=(api)')
-    && devDeployScript.includes('compose up -d --no-deps --force-recreate "${services[@]}"'),
-  'an API source change must restart the compiled API runtime exactly once',
+  devDeployScript.includes('bootstrap-prepare')
+    && devDeployScript.includes('bootstrap-activate')
+    && devDeployScript.includes('schema_rollback_safe')
+    && devDeployScript.includes('compose up -d --force-recreate'),
+  'preparation and schema-aware recovery must precede activation',
 );
 assert(
   devServiceScript.includes('local path="/run/secrets/${name,,}"'),

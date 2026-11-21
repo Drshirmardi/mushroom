@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Download, FileText, Maximize2, Minimize2, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, X } from "lucide-react";
-import { chatDocumentExtensions, chatMediaExtensions, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine";
+import { chatDocumentExtensions, chatMediaExtensions, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine.js";
 
 type Engine = ReturnType<typeof createChatEngine>;
 type ChatCredentials = { engine: Engine; token: string; conversationId: string };

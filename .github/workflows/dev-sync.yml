@@ -23,7 +23,7 @@ jobs:
   sync:
     if: vars.VPS_DEV_CD_ENABLED == 'true' && github.ref == 'refs/heads/dev'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - name: Validate repository-scoped VPS inputs
         env:

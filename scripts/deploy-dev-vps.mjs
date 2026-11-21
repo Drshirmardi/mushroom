@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -61,9 +62,10 @@ function run(stage, command, args) {
   console.log(`[dev deploy] ${stage}: complete`);
 }
 
-run('Prepare server directories', 'ssh', [...sshOptions, target, 'install -d -m 700 "$HOME/mushroom/dev" "$HOME/mushroom/dev/workspace" "$HOME/mushroom/dev/cache" "$HOME/mushroom/dev/state"']);
-run('Wait for deployment lock', 'ssh', [...sshOptions, target,
-  'flock -w 600 "$HOME/mushroom/dev/state/deploy.lock" true || { printf "timed out waiting to upload dev source\\n" >&2; exit 1; }',
+const candidate = `${sourceSha}-${randomUUID()}`;
+const candidateRelative = `mushroom/dev/candidates/${candidate}`;
+run('Prepare isolated source directory', 'ssh', [...sshOptions, target,
+  `install -d -m 700 "$HOME/mushroom/dev/state" "$HOME/mushroom/dev/cache" "$HOME/${candidateRelative}"`,
 ]);
 
 const rsyncShell = [
@@ -95,8 +97,8 @@ run('Upload source', 'rsync', [
   '--exclude=**/*.log',
   '-e', rsyncShell,
   `${root}/`,
-  `${target}:mushroom/dev/workspace/`,
+  `${target}:${candidateRelative}/`,
 ]);
 
-const remoteCommand = `bash "$HOME/mushroom/dev/workspace/deploy/vps/deploy-dev.sh" '${sourceSha}'`;
+const remoteCommand = `bash "$HOME/${candidateRelative}/deploy/vps/deploy-dev.sh" '${sourceSha}' '${candidate}'`;
 run('Build and verify shared dev', 'ssh', [...sshOptions, target, remoteCommand]);

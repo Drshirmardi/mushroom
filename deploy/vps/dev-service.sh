@@ -42,7 +42,7 @@ NODE
 }
 
 case "$command_name" in
-  bootstrap)
+  bootstrap|bootstrap-prepare|bootstrap-activate)
     read_secret DATABASE_URL
     export NODE_ENV=development
     if [[ ${DEV_INSTALL_DEPENDENCIES:-false} == true ]]; then
@@ -54,11 +54,12 @@ case "$command_name" in
     fi
     if [[ ${DEV_BUILD_API_CLIENT:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api-client build
+      node scripts/verify-api-client-exports.mjs
     fi
     if [[ ${DEV_GENERATE_PRISMA:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:generate
     fi
-    if [[ ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
+    if [[ $command_name != bootstrap-prepare && ${DEV_RUN_MIGRATIONS:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:migrate:deploy
       pnpm --filter @sabz-zendegi/api prisma:chat:migrate:deploy
     fi
@@ -74,12 +75,12 @@ case "$command_name" in
       pnpm --filter @sabz-zendegi/api catalog:build
       printf '%s\n' "$DEV_API_SOURCE_HASH" >apps/api/dist/.source.sha256
     fi
-    if [[ -f /run/mushroom-installation/first-run.json ]]; then
+    if [[ $command_name != bootstrap-prepare && -f /run/mushroom-installation/first-run.json ]]; then
       MUSHROOM_ENVIRONMENT=development node apps/api/prisma/bootstrap-installation.mjs
       : >/run/mushroom-installation/complete
       rm -- /run/mushroom-installation/first-run.json
     fi
-    if [[ ${DEV_RUN_SEED:-false} == true ]]; then
+    if [[ $command_name != bootstrap-prepare && ${DEV_RUN_SEED:-false} == true ]]; then
       pnpm --filter @sabz-zendegi/api prisma:seed
     fi
     ;;
