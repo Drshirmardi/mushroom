@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ExternalLink, PhoneIncoming, RotateCw } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
 import { CallPanel, HangUpButton, callIconButton, callLive, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
@@ -101,7 +102,7 @@ export function IncomingVisitCall() {
   if (!call) return null;
   const endControl = <HangUpButton disabled={busy} onClick={() => void action("end")} />;
   const retryLabel = active === joinId ? "اتصال مجدد" : "ادامهٔ تماس";
-  return <CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={active ? <>
+  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={active ? <>
     <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(""); setError(""); setJoinId(active); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
     {external ? <a href={external} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" title="باز کردن مرورگر"><ExternalLink size={22} aria-hidden="true" /></a>
       : <button type="button" className={callIconButton} aria-label="ادامه در مرورگر" title="ادامه در مرورگر" onClick={() => void prepareExternal()}><ExternalLink size={22} aria-hidden="true" /></button>}
@@ -109,5 +110,5 @@ export function IncomingVisitCall() {
   </> : <>
     <HangUpButton label="رد تماس" disabled={busy} onClick={() => void action("decline")} />
     <button type="button" className={callIconButton + " mushroom-call-answer"} aria-label="پاسخ" title="پاسخ" disabled={busy} onClick={() => void action("answer")}><PhoneIncoming size={22} aria-hidden="true" /></button>
-  </>} />;
+  </>} />, document.body);
 }

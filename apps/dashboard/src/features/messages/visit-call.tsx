@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Phone, RotateCw, Video } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
 import { CallPanel, HangUpButton, callIconButton, callLabel, callLive, callStatus, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
@@ -80,10 +81,10 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
         </button>;
       })}
     </div>}
-    {call && live && <CallPanel key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={<>
+    {call && live && createPortal(<CallPanel floating key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={<>
       {activeId && <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setError(""); setJoinId(activeId); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>}
       {endControl}
-    </>} />}
+    </>} />, document.body)}
     {!live && (error || call) && <div role={error ? "alert" : "status"} className="fixed inset-x-3 bottom-4 z-[100] mx-auto flex max-w-lg items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3 text-sm shadow-lg">
       <span>{error || (call && callStatus(call))}</span>
       <button type="button" className="min-h-11 px-2" onClick={() => { setError(""); setCall(null); }}>بستن</button>

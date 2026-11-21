@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { Download, FileText, Maximize2, Minimize2, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, X } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
+import { Download, FileText, GripVertical, Maximize2, Minimize2, Paperclip, Phone, PhoneIncoming, PhoneMissed, PhoneOff, PhoneOutgoing, Video, X } from "lucide-react";
 import { chatDocumentExtensions, chatMediaExtensions, maxChatAttachment, type ChatCall, type ChatMessage, type PreviousChat, reconcileChatMessages, type createChatEngine } from "./chat-engine.js";
 
 type Engine = ReturnType<typeof createChatEngine>;
@@ -246,8 +246,23 @@ export function ChatCallCard({ engine, token, conversationId, id, time, incoming
 
 export const callIconButton = "mushroom-call-button inline-grid shrink-0 place-items-center disabled:opacity-50";
 
-export function CallPanel({ call, name, frame, error, controls, endControl, joining }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean }) {
+const callWindowMargin = 12;
+const keyboardMove: Record<string, readonly [number, number]> = {
+  ArrowUp: [0, -24], ArrowDown: [0, 24], ArrowLeft: [-24, 0], ArrowRight: [24, 0],
+};
+
+function keepCallWindowVisible(left: number, top: number, width: number, height: number) {
+  return {
+    left: Math.max(callWindowMargin, Math.min(left, document.documentElement.clientWidth - width - callWindowMargin)),
+    top: Math.max(callWindowMargin, Math.min(top, document.documentElement.clientHeight - height - callWindowMargin)),
+  };
+}
+
+export function CallPanel({ call, name, frame, error, controls, endControl, joining, floating = false }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean; floating?: boolean }) {
   const [minimized, setMinimized] = useState(false);
+  const [position, setPosition] = useState<{ left: number; top: number }>();
+  const windowRef = useRef<HTMLElement>(null);
+  const drag = useRef<{ pointerId: number; x: number; y: number } | null>(null);
   const [readyFrame, setReadyFrame] = useState("");
   const [failedFrame, setFailedFrame] = useState("");
   const [videoFrame, setVideoFrame] = useState("");
@@ -276,25 +291,74 @@ export function CallPanel({ call, name, frame, error, controls, endControl, join
     return () => window.removeEventListener("message", receive);
   }, [frame]);
 
+  useLayoutEffect(() => {
+    if (!floating) return;
+    function fitWindow() {
+      const rect = windowRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setPosition(current => current && keepCallWindowVisible(current.left, current.top, rect.width, rect.height));
+    }
+    fitWindow();
+    window.addEventListener("resize", fitWindow);
+    return () => window.removeEventListener("resize", fitWindow);
+  }, [floating, minimized]);
+
+  function startDrag(event: PointerEvent<HTMLButtonElement>) {
+    const rect = windowRef.current?.getBoundingClientRect();
+    if (!rect || event.button !== 0 || !event.isPrimary) return;
+    drag.current = { pointerId: event.pointerId, x: event.clientX - rect.left, y: event.clientY - rect.top };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function moveWindow(event: PointerEvent<HTMLButtonElement>) {
+    const offset = drag.current;
+    const rect = windowRef.current?.getBoundingClientRect();
+    if (!rect || offset?.pointerId !== event.pointerId) return;
+    setPosition(keepCallWindowVisible(event.clientX - offset.x, event.clientY - offset.y, rect.width, rect.height));
+  }
+
+  function moveWithKeyboard(event: KeyboardEvent<HTMLButtonElement>) {
+    const step = keyboardMove[event.key];
+    const rect = windowRef.current?.getBoundingClientRect();
+    if (!step || !rect) return;
+    event.preventDefault();
+    setPosition(keepCallWindowVisible(rect.left + step[0], rect.top + step[1], rect.width, rect.height));
+  }
+
   const active = call.status === "ACTIVE";
   const playing = Boolean(frame && failedFrame !== frame);
   const ready = playing && readyFrame === frame;
   const label = callLabel(call.mode);
-  return <section dir="rtl" aria-label={label} className={minimized
-    ? "mushroom-call-surface fixed inset-x-3 top-[max(8px,env(safe-area-inset-top))] z-[100] mx-auto max-w-sm rounded-full shadow-xl"
-    : "mushroom-call-surface fixed inset-0 z-[100] isolate overflow-hidden"}>
-    {active && <button type="button" aria-label={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} title={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} onClick={() => setMinimized(!minimized)} className={minimized
+  const panelClass = floating
+    ? "w-[min(24rem,calc(100%_-_1.5rem))] overflow-hidden rounded-2xl border border-white/20 shadow-2xl " +
+      (minimized ? "h-14" : "h-[min(26rem,calc(100dvh_-_1.5rem))]") + (position ? "" : " bottom-3 left-3")
+    : minimized ? "inset-x-3 top-[max(8px,env(safe-area-inset-top))] mx-auto max-w-sm rounded-full shadow-xl" : "inset-0 overflow-hidden";
+  return <section ref={windowRef} dir="rtl" aria-label={label} style={floating ? position : undefined} className={"mushroom-call-surface fixed isolate z-[1000] " + panelClass}>
+    {floating && <header className="absolute inset-x-0 top-0 z-30 flex h-14 border-b border-white/15">
+      <button type="button" aria-label={"جابجایی پنجره تماس با " + name} title="برای جابجایی بکشید یا از کلیدهای جهت‌نما استفاده کنید"
+        className="flex min-w-0 flex-1 touch-none cursor-grab select-none items-center gap-2 px-4 text-start active:cursor-grabbing"
+        onPointerDown={startDrag} onPointerMove={moveWindow}
+        onLostPointerCapture={() => { drag.current = null; }} onKeyDown={moveWithKeyboard}>
+        <GripVertical size={18} aria-hidden="true" className="shrink-0 opacity-60" />
+        <span className="truncate text-sm font-bold">{name}</span>
+      </button>
+      {active && <button type="button" className={callIconButton + " m-1"}
+        aria-label={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} onClick={() => setMinimized(!minimized)}>
+        {minimized ? <Maximize2 size={18} aria-hidden="true" /> : <Minimize2 size={18} aria-hidden="true" />}
+      </button>}
+    </header>}
+    {!floating && active && <button type="button" aria-label={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} title={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} onClick={() => setMinimized(!minimized)} className={minimized
       ? "flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4"
       : callIconButton + " absolute start-3 top-[max(12px,env(safe-area-inset-top))] z-30"}>
       {minimized ? <><Maximize2 size={18} aria-hidden="true" />تماس جاری</> : <Minimize2 size={18} aria-hidden="true" />}
     </button>}
-    <div inert={minimized} aria-hidden={minimized} className={minimized ? "pointer-events-none fixed inset-0 invisible" : "absolute inset-0"}>
+    <div inert={minimized} aria-hidden={minimized} className={minimized ? "pointer-events-none fixed inset-0 invisible" : floating ? "absolute inset-x-0 bottom-0 top-14" : "absolute inset-0"}>
       {frame && <iframe key={frame} ref={player} title={label} className={"mushroom-call-frame absolute inset-0 size-full border-0 " + (playing ? "" : "invisible")} src={frame} sandbox="allow-scripts allow-same-origin" allow="camera; microphone; autoplay" referrerPolicy="no-referrer" />}
-      {active && <p className="mushroom-call-name pointer-events-none absolute inset-x-16 top-[max(20px,env(safe-area-inset-top))] z-10 truncate text-center text-lg font-bold">{name}</p>}
+      {!floating && active && <p className="mushroom-call-name pointer-events-none absolute inset-x-16 top-[max(20px,env(safe-area-inset-top))] z-10 truncate text-center text-lg font-bold">{name}</p>}
       {(!playing || videoFrame !== frame) && <div className="pointer-events-none absolute inset-0 z-10 grid place-content-center justify-items-center gap-3 px-5 pb-16 text-center">
         <div className="mushroom-call-avatar grid size-28 place-items-center rounded-full text-4xl font-bold" aria-hidden="true">{name.trim().slice(0, 1) || "م"}</div>
         {joining && !playing && <p role="status">در حال اتصال…</p>}
-        {!active && <><p className="text-2xl font-bold">{name}</p><p role="status" className="opacity-80">{label} · {callStatus(call)}</p></>}
+        {!active && <>{!floating && <p className="text-2xl font-bold">{name}</p>}<p role="status" className="opacity-80">{label} · {callStatus(call)}</p></>}
       </div>}
       {(!playing || !ready) && <div className={"mushroom-call-host-actions absolute z-20 flex flex-col items-center gap-3 px-4 " + (playing ? "end-0 top-[max(12px,env(safe-area-inset-top))]" : "inset-x-0 bottom-0")}>
         {!playing && (error || failedFrame === frame && frame) && <p role="alert" className="max-w-sm text-center text-sm">{error || "اتصال برقرار نشد. مجوز میکروفون و شبکه را بررسی کنید."}</p>}
