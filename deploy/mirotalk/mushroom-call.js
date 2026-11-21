@@ -5,18 +5,25 @@ const params = new URLSearchParams(location.search);
 const videoRequested = params.get('mode') !== 'AUDIO';
 const relayOnly = params.get('relayOnly') === 'true';
 const embedOrigin = params.get('embedOrigin');
-function notifyParent(type) {
-  if (!embedOrigin || parent === window) return;
+const embedded = Boolean(embedOrigin && parent !== window);
+const autoJoin = embedded && params.get('autoJoin') === '1';
+function notifyParent(type, details) {
+  if (!embedded) return;
   try {
     const origin = new URL(embedOrigin);
-    if (['http:', 'https:'].includes(origin.protocol) && origin.origin === embedOrigin) parent.postMessage({ type }, origin.origin);
+    if (['http:', 'https:'].includes(origin.protocol) && origin.origin === embedOrigin) parent.postMessage({ type, ...details }, origin.origin);
   } catch { /* A standalone call has no host to notify. */ }
 }
 const signal = location.hash.slice(1);
 history.replaceState(null, '', location.pathname);
 const status = byId('status');
 const remote = byId('remote');
+const remoteAudio = byId('remote-audio');
+const playAudioButton = byId('audio');
 const local = byId('local');
+const connectButton = byId('connect');
+const endButton = byId('end');
+if (embedded) document.body.dataset.embedded = 'true';
 let socket;
 let stream;
 let peer;
@@ -30,9 +37,11 @@ let connectedSince;
 let clock;
 let connectionEpoch = 0;
 let peerTimer;
+let audioTimer;
 
 function showCamera(kind, enabled) {
   document.body.dataset[kind + 'Video'] = String(enabled);
+  if (kind === 'remote') notifyParent('mushroom-call:remote-video', { visible: enabled });
 }
 
 function shareCameraState() {
@@ -65,6 +74,20 @@ function confirmConnection(connection) {
   });
 }
 
+function playRemoteAudio() {
+  const source = remoteAudio.srcObject;
+  if (!source) return;
+  clearTimeout(audioTimer);
+  audioTimer = setTimeout(() => {
+    if (remoteAudio.srcObject === source) playAudioButton.hidden = false;
+  }, 1000);
+  remoteAudio.play().catch(() => {
+    if (remoteAudio.srcObject !== source) return;
+    clearTimeout(audioTimer);
+    playAudioButton.hidden = false;
+  });
+}
+
 function closePeer() {
   clearTimeout(peerTimer);
   const previous = peer;
@@ -77,6 +100,9 @@ function closePeer() {
   peerId = undefined;
   candidates = [];
   remote.srcObject = null;
+  remoteAudio.srcObject = null;
+  clearTimeout(audioTimer);
+  playAudioButton.hidden = true;
 }
 
 function stop(message) {
@@ -113,15 +139,23 @@ function failed(stage, error) {
 }
 
 async function connect() {
-  byId('connect').disabled = true;
+  if (!signal || typeof io !== 'function') {
+    failed('signaling-unavailable');
+    return;
+  }
+  connectButton.disabled = true;
+  connectButton.hidden = true;
+  status.textContent = 'در حال اتصال به ویزیت…';
   const epoch = ++connectionEpoch;
   let acquired;
   try {
     acquired = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch (error) {
+    if (epoch !== connectionEpoch) return;
     reportCallFailure('microphone', error);
     status.textContent = 'دسترسی به دوربین یا میکروفون ممکن نیست. مجوز مرورگر را بررسی کنید.';
-    byId('connect').disabled = false;
+    connectButton.disabled = false;
+    connectButton.hidden = embedded;
     notifyParent('mushroom-call:recover');
     return;
   }
@@ -137,12 +171,9 @@ async function connect() {
     }
   }
   if (epoch !== connectionEpoch) return;
-  notifyParent('mushroom-call:ready');
   local.srcObject = stream;
   showCamera('local', stream.getVideoTracks().length > 0);
   byId('camera').setAttribute('aria-pressed', String(stream.getVideoTracks().length > 0));
-  byId('connect').hidden = true;
-  status.textContent = 'در حال اتصال به ویزیت…';
   socket = io({ transports: ['websocket'], auth: { code: signal }, reconnection: false });
   let joined = false;
   lease = setTimeout(() => failed('signaling-lease-timeout'), 12_000);
@@ -158,7 +189,9 @@ async function connect() {
   socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed('signaling-disconnect'); });
   socket.on('mushroom-ended', () => stop('تماس پایان یافته است.'));
   socket.on('serverInfo', () => {
-    byId('end').disabled = false;
+    endButton.hidden = false;
+    endButton.disabled = false;
+    notifyParent('mushroom-call:ready');
     byId('microphone').disabled = !stream.getAudioTracks().length;
     byId('camera').disabled = !videoSender;
     if (!peer) status.textContent = 'در انتظار اتصال طرف مقابل…';
@@ -181,12 +214,14 @@ async function connect() {
           else channel.close();
         };
       }
-      const remoteStream = new MediaStream();
       connection.ontrack = ({ track }) => {
         if (peer !== connection) return;
-        remoteStream.addTrack(track);
-        remote.srcObject = remoteStream;
-        remote.play().catch(() => { byId('audio').hidden = false; });
+        if (track.kind === 'audio') {
+          remoteAudio.srcObject = new MediaStream([track]);
+          playRemoteAudio();
+        } else if (track.kind === 'video') {
+          remote.srcObject = new MediaStream([track]);
+        }
       };
       connection.onicecandidate = ({ candidate }) => {
         if (candidate) socket.emit('relayICE', { peerId: id, iceCandidate: candidate.toJSON() });
@@ -205,7 +240,8 @@ async function connect() {
         }
         if (connection.connectionState === 'failed') failed('peer-connection-failed');
         if (connection.connectionState === 'disconnected') {
-          status.textContent = 'در حال بازیابی اتصال…';
+          status.textContent = 'در حال اتصال مجدد…';
+          clearTimeout(peerTimer);
           peerTimer = setTimeout(() => { if (peer === connection && connection.connectionState === 'disconnected') failed('peer-disconnect-timeout'); }, 15_000);
         }
       };
@@ -249,7 +285,7 @@ async function connect() {
   });
 }
 
-byId('connect').addEventListener('click', connect);
+connectButton.addEventListener('click', connect);
 byId('end').addEventListener('click', () => {
   byId('end').disabled = true;
   socket.timeout(5000).emit('mushroom-end', (error, closed) => {
@@ -262,7 +298,11 @@ byId('end').addEventListener('click', () => {
     stop('تماس پایان یافت.');
   });
 });
-byId('audio').addEventListener('click', () => remote.play().then(() => { byId('audio').hidden = true; }).catch(() => {}));
+playAudioButton.addEventListener('click', playRemoteAudio);
+remoteAudio.addEventListener('playing', () => {
+  clearTimeout(audioTimer);
+  playAudioButton.hidden = true;
+});
 byId('microphone').addEventListener('click', event => {
   const track = stream?.getAudioTracks()[0];
   if (!track) return;
@@ -305,3 +345,6 @@ byId('camera').addEventListener('click', async () => {
   }
 });
 window.addEventListener('pagehide', () => stop('تماس قطع شد.'));
+
+if (autoJoin) void connect();
+else connectButton.hidden = false;

@@ -244,68 +244,94 @@ export function ChatCallCard({ engine, token, conversationId, id, time, incoming
   </div>;
 }
 
-export function CallPanel({ call, name, frame, error, controls }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode }) {
+export const callIconButton = "mushroom-call-button inline-grid shrink-0 place-items-center disabled:opacity-50";
+
+export function CallPanel({ call, name, frame, error, controls, endControl, joining }: { call: ChatCall; name: string; frame: string; error: string; controls: ReactNode; endControl?: ReactNode; joining: boolean }) {
   const [minimized, setMinimized] = useState(false);
+  const [readyFrame, setReadyFrame] = useState("");
   const [failedFrame, setFailedFrame] = useState("");
+  const [videoFrame, setVideoFrame] = useState("");
   const player = useRef<HTMLIFrameElement>(null);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!frame) return;
     const expectedOrigin = new URL(frame).origin;
     function receive(event: MessageEvent) {
       if (event.origin !== expectedOrigin || event.source !== player.current?.contentWindow) return;
-      if (event.data?.type === "mushroom-call:recover") setFailedFrame(frame);
-      if (event.data?.type === "mushroom-call:ready") setFailedFrame("");
+      switch (event.data?.type) {
+        case "mushroom-call:recover":
+          setFailedFrame(frame);
+          setReadyFrame("");
+          setVideoFrame("");
+          break;
+        case "mushroom-call:ready":
+          setReadyFrame(frame);
+          setFailedFrame("");
+          break;
+        case "mushroom-call:remote-video":
+          setVideoFrame(event.data.visible === true ? frame : "");
+          break;
+      }
     }
     window.addEventListener("message", receive);
     return () => window.removeEventListener("message", receive);
   }, [frame]);
-  const recover = !frame || failedFrame === frame;
+
+  const active = call.status === "ACTIVE";
+  const playing = Boolean(frame && failedFrame !== frame);
+  const ready = playing && readyFrame === frame;
   const label = callLabel(call.mode);
-  const Icon = call.mode === "AUDIO" ? Phone : Video;
   return <section dir="rtl" aria-label={label} className={minimized
-    ? "fixed inset-x-3 top-2 z-[100] mx-auto max-w-lg rounded-2xl border border-border bg-background px-3 shadow-xl"
-    : "fixed inset-0 z-[100] flex min-h-0 flex-col bg-background p-3 pt-[max(12px,env(safe-area-inset-top))] text-foreground shadow-xl sm:inset-x-4 sm:inset-y-6 sm:mx-auto sm:max-w-2xl sm:rounded-3xl sm:border sm:border-border"}>
-    <header className="flex items-center gap-2">
-      <span className="grid size-11 shrink-0 place-items-center rounded-full bg-muted text-primary"><Icon size={20} aria-hidden="true" /></span>
-      <div className="min-w-0 flex-1"><p className="truncate font-bold">{name}</p><p role="status" className="text-xs text-muted-foreground">{label} · {callStatus(call)}</p></div>
-      {call.status === "ACTIVE" && <button type="button" aria-label={minimized ? "باز کردن پنل تماس" : "کوچک‌کردن تماس"} onClick={() => setMinimized(!minimized)} className={iconButton}>
-        {minimized ? <Maximize2 size={18} aria-hidden="true" /> : <Minimize2 size={18} aria-hidden="true" />}
-      </button>}
-    </header>
-    <div inert={minimized} aria-hidden={minimized} className={minimized ? "absolute size-px overflow-hidden opacity-0" : "flex min-h-0 flex-1 flex-col gap-2 pb-[env(safe-area-inset-bottom)]"}>
-      {frame ? <iframe ref={player} title={label} className="mt-2 min-h-0 w-full flex-1 rounded-2xl border-0 bg-muted" src={frame} sandbox="allow-scripts allow-same-origin" allow="camera; microphone; autoplay" referrerPolicy="no-referrer" />
-        : <div className="grid flex-1 place-items-center"><div className="grid size-24 place-items-center rounded-full bg-muted text-3xl font-bold text-primary" aria-hidden="true">{name.trim().slice(0, 1) || "م"}</div></div>}
-      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
-      {(call.status !== "ACTIVE" || recover) && <div className="flex shrink-0 flex-wrap justify-center gap-2">{controls}</div>}
+    ? "mushroom-call-surface fixed inset-x-3 top-[max(8px,env(safe-area-inset-top))] z-[100] mx-auto max-w-sm rounded-full shadow-xl"
+    : "mushroom-call-surface fixed inset-0 z-[100] isolate overflow-hidden"}>
+    {active && <button type="button" aria-label={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} title={minimized ? "باز کردن تماس جاری" : "کوچک‌کردن تماس"} onClick={() => setMinimized(!minimized)} className={minimized
+      ? "flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4"
+      : callIconButton + " absolute start-3 top-[max(12px,env(safe-area-inset-top))] z-30"}>
+      {minimized ? <><Maximize2 size={18} aria-hidden="true" />تماس جاری</> : <Minimize2 size={18} aria-hidden="true" />}
+    </button>}
+    <div inert={minimized} aria-hidden={minimized} className={minimized ? "pointer-events-none fixed inset-0 invisible" : "absolute inset-0"}>
+      {frame && <iframe key={frame} ref={player} title={label} className={"mushroom-call-frame absolute inset-0 size-full border-0 " + (playing ? "" : "invisible")} src={frame} sandbox="allow-scripts allow-same-origin" allow="camera; microphone; autoplay" referrerPolicy="no-referrer" />}
+      {active && <p className="mushroom-call-name pointer-events-none absolute inset-x-16 top-[max(20px,env(safe-area-inset-top))] z-10 truncate text-center text-lg font-bold">{name}</p>}
+      {(!playing || videoFrame !== frame) && <div className="pointer-events-none absolute inset-0 z-10 grid place-content-center justify-items-center gap-3 px-5 pb-16 text-center">
+        <div className="mushroom-call-avatar grid size-28 place-items-center rounded-full text-4xl font-bold" aria-hidden="true">{name.trim().slice(0, 1) || "م"}</div>
+        {joining && !playing && <p role="status">در حال اتصال…</p>}
+        {!active && <><p className="text-2xl font-bold">{name}</p><p role="status" className="opacity-80">{label} · {callStatus(call)}</p></>}
+      </div>}
+      {(!playing || !ready) && <div className={"mushroom-call-host-actions absolute z-20 flex flex-col items-center gap-3 px-4 " + (playing ? "end-0 top-[max(12px,env(safe-area-inset-top))]" : "inset-x-0 bottom-0")}>
+        {!playing && (error || failedFrame === frame && frame) && <p role="alert" className="max-w-sm text-center text-sm">{error || "اتصال برقرار نشد. مجوز میکروفون و شبکه را بررسی کنید."}</p>}
+        <div className="flex flex-wrap justify-center gap-4" dir="ltr">{playing || joining ? endControl : controls}</div>
+      </div>}
     </div>
   </section>;
 }
 
 export function HangUpButton({ onClick, disabled, label = "پایان تماس" }: { onClick: () => void; disabled: boolean; label?: string }) {
-  return <button type="button" onClick={onClick} disabled={disabled} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-red-700 px-4 font-semibold text-white disabled:opacity-50"><PhoneOff size={18} aria-hidden="true" />{label}</button>;
+  return <button type="button" aria-label={label} title={label} onClick={onClick} disabled={disabled} className={callIconButton + " mushroom-call-end"}><PhoneOff size={22} aria-hidden="true" /></button>;
 }
 
 export function useCallFrame(engine: Engine, token: string, id: string | undefined) {
   const [granted, setGranted] = useState<{ id: string; url: string; version: number } | null>(null);
   const [frameError, setFrameError] = useState("");
   const [version, refresh] = useState(0);
+  const currentToken = useRef(token);
+  useLayoutEffect(() => { currentToken.current = token; }, [token]);
   useEffect(() => {
     setGranted(null);
     setFrameError("");
     if (!id) return;
     let active = true;
-    void engine.callGrant(token, id).then(({ url }) => {
+    void engine.callGrant(currentToken.current, id).then(({ url }) => {
       const frameUrl = new URL(url);
       frameUrl.searchParams.set("embedOrigin", window.location.origin);
+      frameUrl.searchParams.set("autoJoin", "1");
       if (active) setGranted({ id, url: frameUrl.href, version });
     }).catch(() => {
       if (active) setFrameError("ورود به تماس ممکن نشد. دوباره تلاش کنید.");
     });
     return () => { active = false; };
-  }, [engine, token, id, version]);
-  return { frame: granted && granted.id === id && granted.version === version ? granted.url : "", frameError, reconnect: () => refresh(previous => previous + 1) };
+  }, [engine, id, version]);
+  const frame = granted && granted.id === id && granted.version === version ? granted.url : "";
+  return { frame, frameError, joining: Boolean(id && !frame && !frameError), reconnect: () => refresh(previous => previous + 1) };
 }
-
 
 const previousDate = new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Tehran" });
 

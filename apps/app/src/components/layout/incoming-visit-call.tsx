@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PhoneIncoming } from "lucide-react";
+import { ExternalLink, PhoneIncoming, RotateCw } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
-import { CallPanel, HangUpButton, callLive, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
+import { CallPanel, HangUpButton, callIconButton, callLive, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
 import { useAuthSession } from "@/components/auth/session-gate";
 import { getPatientAppointment } from "@/lib/appointment-api";
 import { chatEngine } from "@/lib/chat-api";
@@ -18,8 +18,10 @@ export function IncomingVisitCall() {
   const [error, setError] = useState("");
   const [external, setExternal] = useState("");
   const flight = useRef(0);
+  const ringtone = useRef<HTMLAudioElement>(null);
+  const [joinId, setJoinId] = useState("");
   const active = call?.status === "ACTIVE" ? call.id : undefined;
-  const { frame, frameError, reconnect } = useCallFrame(chatEngine, token, active);
+  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, active === joinId && !external ? active : undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -66,21 +68,25 @@ export function IncomingVisitCall() {
 
   const ringingId = call?.status === "RINGING" ? call.id : null;
   useEffect(() => {
-    if (!ringingId) return;
+    if (!ringingId || busy) return;
     navigator.vibrate?.([200, 100, 200]);
-    const ringtone = new Audio("/consultation-ring.wav");
-    ringtone.loop = true;
-    void ringtone.play().catch(() => {});
-    return () => { ringtone.pause(); navigator.vibrate?.(0); };
-  }, [ringingId]);
+    const audio = new Audio("/consultation-ring.wav");
+    ringtone.current = audio;
+    audio.loop = true;
+    void audio.play().catch(() => {});
+    return () => { ringtone.current = null; audio.pause(); navigator.vibrate?.(0); };
+  }, [ringingId, busy]);
 
   async function action(command: "answer" | "decline" | "end") {
     if (!call || flight.current % 2 !== 0) return;
     flight.current += 1;
+    ringtone.current?.pause();
+    navigator.vibrate?.(0);
     setBusy(true);
     setError("");
     try {
       const current = await chatEngine.callAction(token, call.id, command);
+      if (command === "answer" && current.status === "ACTIVE") setJoinId(current.id);
       setCall(callLive(current) ? current : null);
     } catch { setError("درخواست تماس انجام نشد. دوباره تلاش کنید."); }
     finally { flight.current += 1; setBusy(false); }
@@ -93,13 +99,15 @@ export function IncomingVisitCall() {
   }
 
   if (!call) return null;
-  return <CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={external ? "" : frame} error={error || frameError} controls={active ? <>
-    <button type="button" className="min-h-11 rounded-full border border-border px-3" onClick={() => { setExternal(""); setError(""); reconnect(); }}>اتصال مجدد</button>
-    {external ? <a href={external} target="_blank" rel="noreferrer" className="flex min-h-11 items-center rounded-full border border-border px-3">باز کردن مرورگر</a>
-      : <button type="button" className="min-h-11 rounded-full border border-border px-3" onClick={() => void prepareExternal()}>ادامه در مرورگر</button>}
-    <HangUpButton disabled={busy} onClick={() => void action("end")} />
+  const endControl = <HangUpButton disabled={busy} onClick={() => void action("end")} />;
+  const retryLabel = active === joinId ? "اتصال مجدد" : "ادامهٔ تماس";
+  return <CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={active ? <>
+    <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(""); setError(""); setJoinId(active); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
+    {external ? <a href={external} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" title="باز کردن مرورگر"><ExternalLink size={22} aria-hidden="true" /></a>
+      : <button type="button" className={callIconButton} aria-label="ادامه در مرورگر" title="ادامه در مرورگر" onClick={() => void prepareExternal()}><ExternalLink size={22} aria-hidden="true" /></button>}
+    {endControl}
   </> : <>
-    <button type="button" className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-50" disabled={busy} onClick={() => void action("answer")}><PhoneIncoming size={18} aria-hidden="true" />پاسخ</button>
     <HangUpButton label="رد تماس" disabled={busy} onClick={() => void action("decline")} />
+    <button type="button" className={callIconButton + " mushroom-call-answer"} aria-label="پاسخ" title="پاسخ" disabled={busy} onClick={() => void action("answer")}><PhoneIncoming size={22} aria-hidden="true" /></button>
   </>} />;
 }

@@ -4,7 +4,8 @@ WORKDIR /c2c
 RUN git init && git fetch --depth=1 https://github.com/miroslavpejic85/mirotalkc2c.git 157628fae7aa69c56b76544c52f9c443b6df7aa5 && git checkout --detach FETCH_HEAD && rm -rf .git
 RUN SCARF_ANALYTICS=false npm ci --omit=dev
 COPY patch-server.cjs mushroom-bridge.cjs ./
-COPY mushroom-call.html mushroom-call.js mushroom-call.css frontend/
+COPY mushroom-call.html mushroom-call.js mushroom-call.css mushroom-call-theme.css mushroom-call-vazirmatn.woff2 frontend/
+COPY Vazirmatn-OFL.txt ./
 RUN node patch-server.cjs
 
 FROM node:24-bookworm-slim

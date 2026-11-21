@@ -17,7 +17,7 @@ replace("app.use(express.static(frontendDir, { index: false }));", [
   "    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== value || value === mushroomOrigin.origin) throw new Error('Invalid Mushroom embed origin');",
   "    return parsed.origin;",
   "});",
-  "const mushroomCsp = [\"default-src 'none'\", \"script-src 'self'\", \"style-src 'self'\", \"media-src 'self' blob:\", \"connect-src 'self' \" + mushroomWsOrigin, \"base-uri 'none'\", \"form-action 'none'\", 'frame-ancestors ' + (mushroomAncestors.join(' ') || \"'none'\")].join('; ');",
+  "const mushroomCsp = [\"default-src 'none'\", \"script-src 'self'\", \"style-src 'self'\", \"font-src data:\", \"media-src 'self' blob:\", \"connect-src 'self' \" + mushroomWsOrigin, \"base-uri 'none'\", \"form-action 'none'\", 'frame-ancestors ' + (mushroomAncestors.join(' ') || \"'none'\")].join('; ');",
   "app.use((req, res, next) => {",
   "    if (!mushroomAssets.has(req.path)) return res.sendStatus(404);",
   "    res.set('Cache-Control', 'private, no-store');",
@@ -37,3 +37,12 @@ replace("        const channel = config.channel;", [
 replace("iceServers: iceServers,\n                });\n                socket.emit", "iceServers: channels[channel][id].mushroom.iceServers,\n                });\n                socket.emit");
 replace("iceServers: iceServers,\n                });\n                log.debug", "iceServers: socket.mushroom.iceServers,\n                });\n                log.debug");
 fs.writeFileSync(file, source);
+
+// Keep the published stylesheet URL compatible with existing call proxies.
+const stylesheet = 'frontend/mushroom-call.css';
+const theme = fs.readFileSync('frontend/mushroom-call-theme.css', 'utf8');
+const font = fs.readFileSync('frontend/mushroom-call-vazirmatn.woff2').toString('base64');
+const playerStyles = fs.readFileSync(stylesheet, 'utf8')
+  .replace("@import url('/mushroom-call-theme.css');", '')
+  .replace('/mushroom-call-vazirmatn.woff2', 'data:font/woff2;base64,' + font);
+fs.writeFileSync(stylesheet, theme + '\n' + playerStyles);

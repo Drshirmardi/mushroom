@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Phone, Video } from "lucide-react";
+import { Phone, RotateCw, Video } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
-import { CallPanel, HangUpButton, callLabel, callLive, callStatus, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
+import { CallPanel, HangUpButton, callIconButton, callLabel, callLive, callStatus, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
 import { chatEngine } from "@/lib/chat-api";
 
 export function VisitCall({ token, appointmentId, participantName, canStart }: { token: string; appointmentId: string; participantName: string; canStart: boolean }) {
@@ -11,9 +11,10 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
   const [call, setCall] = useState<ChatCall | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [joinId, setJoinId] = useState("");
   const actionLock = useRef(false);
   const activeId = call?.status === "ACTIVE" ? call.id : undefined;
-  const { frame, frameError, reconnect } = useCallFrame(chatEngine, token, activeId);
+  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, activeId === joinId ? activeId : undefined);
   const id = call?.id;
   const live = callLive(call);
 
@@ -53,8 +54,11 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
     setBusy(true);
     setError("");
     try {
-      if (mode) setCall(await chatEngine.startCall(token, appointmentId, mode));
-      else if (id) setCall(await chatEngine.callAction(token, id, "end"));
+      if (mode) {
+        const started = await chatEngine.startCall(token, appointmentId, mode);
+        setJoinId(started.id);
+        setCall(started);
+      } else if (id) setCall(await chatEngine.callAction(token, id, "end"));
     } catch (failure) {
       setError(failure instanceof Error && failure.message === "CHAT_PATIENT_OFFLINE" ? "بیمار در برنامه آنلاین نیست."
         : mode ? "تماس آغاز نشد. دسترسی و وضعیت نوبت را بررسی کنید." : "پایان تماس ثبت نشد. دوباره تلاش کنید.");
@@ -65,6 +69,8 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
   }
 
   if (!available) return null;
+  const endControl = <HangUpButton disabled={busy} onClick={() => void change()} label={call?.status === "RINGING" ? "لغو تماس" : "پایان تماس"} />;
+  const retryLabel = activeId === joinId ? "اتصال مجدد" : "ادامهٔ تماس";
   return <>
     {!live && <div className="flex gap-1">
       {(["AUDIO", "VIDEO"] as const).map(mode => {
@@ -74,9 +80,9 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
         </button>;
       })}
     </div>}
-    {call && live && <CallPanel key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} controls={<>
-      {activeId && <button type="button" className="min-h-11 rounded-full border border-border px-4" onClick={reconnect}>اتصال مجدد</button>}
-      <HangUpButton disabled={busy} onClick={() => void change()} label={call.status === "RINGING" ? "لغو تماس" : "پایان تماس"} />
+    {call && live && <CallPanel key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={<>
+      {activeId && <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setError(""); setJoinId(activeId); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>}
+      {endControl}
     </>} />}
     {!live && (error || call) && <div role={error ? "alert" : "status"} className="fixed inset-x-3 bottom-4 z-[100] mx-auto flex max-w-lg items-center justify-between gap-2 rounded-2xl border border-border bg-background px-3 text-sm shadow-lg">
       <span>{error || (call && callStatus(call))}</span>

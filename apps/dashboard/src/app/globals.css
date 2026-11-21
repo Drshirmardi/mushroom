@@ -3,6 +3,7 @@
 @source '../../../../packages/api-client/src/chat-ui.tsx';
 
 @import 'tw-animate-css';
+@import '../../../../deploy/mirotalk/mushroom-call-theme.css';
 
 @custom-variant dark (&:is(.dark *));
 

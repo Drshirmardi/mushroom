@@ -1,0 +1,37 @@
+.mushroom-call-surface {
+  --call-background: #101b32;
+  --call-surface: #243552;
+  --call-foreground: #f6f8ff;
+  --call-accent: #1159fc;
+  --call-danger: #c32745;
+  --call-focus: #9dbbff;
+  --call-round: 999px;
+  --call-preview-radius: 16px;
+  background: var(--call-background);
+  color: var(--call-foreground);
+  font-family: Vazirmatn, system-ui, sans-serif;
+}
+
+.mushroom-call-button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--call-round);
+  color: inherit;
+  background: var(--call-surface);
+  cursor: pointer;
+}
+
+.mushroom-call-button:focus-visible {
+  outline: 2px solid var(--call-focus);
+  outline-offset: 3px;
+}
+
+.mushroom-call-button:disabled { cursor: default; }
+.mushroom-call-answer { background: var(--call-accent); }
+.mushroom-call-end { background: var(--call-danger); }
+.mushroom-call-avatar { background: var(--call-surface); }
+.mushroom-call-name { text-shadow: 0 2px 8px #000; }
+.mushroom-call-host-actions { padding-bottom: max(24px, env(safe-area-inset-bottom)); }
+.mushroom-call-frame { padding-bottom: env(safe-area-inset-bottom); }
