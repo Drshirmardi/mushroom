@@ -81,7 +81,7 @@ export class ChatService {
 
   /** Shared policy for the engine bridge; room membership is never an authority. */
   async closeConversation(principal: AccessTokenPrincipal, conversationId: string) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       await this.lock(tx, `chat:conversation:${conversationId}`);
       const conversation = await this.conversation(conversationId, tx);
       const actor = await this.actorFor(principal, conversation.appointment);
@@ -91,13 +91,31 @@ export class ChatService {
         await tx.chatConversation.update({ where: { id: conversationId }, data: { closedAt: now } });
         await this.audit(tx, conversation, principal.userId, ChatAuditAction.MESSAGE_CREATED, 'CONVERSATION', conversationId, 'CONVERSATION_CLOSED');
       }
-      return this.conversationResponse(await this.conversation(conversationId, tx));
+      return { closed: !conversation.closedAt, response: this.conversationResponse(await this.conversation(conversationId, tx)) };
     });
+    if (result.closed) this.publisher.conversationChanged(conversationId, 'closure');
+    return result.response;
   }
 
   async engineAccess(principal: AccessTokenPrincipal, conversationId: string) {
     const conversation = await this.conversation(conversationId);
     const actor = await this.actorFor(principal, conversation.appointment);
+    return this.accessFor(conversation, actor);
+  }
+
+  async engineSync(principal: AccessTokenPrincipal, id: string, messages: string | undefined, visibility: string | undefined, skip: string | undefined) {
+    const conversation = await this.conversation(id);
+    const actor = await this.actorFor(principal, conversation.appointment);
+    const [access, messagePage, visibilityPage] = await Promise.all([
+      this.accessFor(conversation, actor),
+      skip === 'messages' ? null : this.historyFor(conversation, messages, 50, 'after'),
+      skip === 'visibility' ? null : this.visibilityFor(conversation, visibility, 100),
+    ]);
+    const { canSend, readOnlyReason, opensAt, closedAt, canClose } = access;
+    return { access: { canSend, readOnlyReason, opensAt, closedAt, canClose }, messages: messagePage, visibility: visibilityPage };
+  }
+
+  private async accessFor(conversation: Awaited<ReturnType<ChatService['conversation']>>, actor: ChatActor) {
     let canSend = true;
     let readOnlyReason: string | null = null;
     try {
@@ -206,7 +224,11 @@ export class ChatService {
 
   async history(principal: AccessTokenPrincipal, conversationId: string, cursorRaw?: string, limit = 50, direction: 'after' | 'before' | 'latest' = 'after') {
     const conversation = await this.conversation(conversationId);
-    const actor = await this.actorFor(principal, conversation.appointment);
+    await this.actorFor(principal, conversation.appointment);
+    return this.historyFor(conversation, cursorRaw, limit, direction);
+  }
+
+  private async historyFor(conversation: Conversation, cursorRaw: string | undefined, limit: number, direction: 'after' | 'before' | 'latest') {
     const cursor = cursorRaw ? this.parseCursor(cursorRaw, conversation.id) : 0n;
     const descending = direction !== 'after';
     const records = await this.prisma.chatMessage.findMany({
@@ -274,6 +296,11 @@ export class ChatService {
   async visibilityReconciliation(principal: AccessTokenPrincipal, conversationId: string, cursorRaw?: string, limit = 50) {
     const conversation = await this.conversation(conversationId);
     await this.actorFor(principal, conversation.appointment);
+    return this.visibilityFor(conversation, cursorRaw, limit);
+  }
+
+  private async visibilityFor(conversation: Conversation, cursorRaw: string | undefined, limit: number) {
+    const conversationId = conversation.id;
     const cursor = cursorRaw ? this.parseVisibilityCursor(cursorRaw, conversation.id) : null;
     const transitionWhere = { conversationId: conversation.id, action: { in: [ChatMessageModerationActionType.RESTRICT_MESSAGE, ChatMessageModerationActionType.RESTORE_MESSAGE] } };
     const highWater = await this.prisma.chatMessageModerationAction.findFirst({ where: transitionWhere, orderBy: [{ createdAt: 'desc' }, { id: 'desc' }], select: { id: true, createdAt: true } });

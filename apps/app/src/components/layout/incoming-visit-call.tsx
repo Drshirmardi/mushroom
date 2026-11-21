@@ -6,52 +6,81 @@ import { ExternalLink, PhoneIncoming, RotateCw } from "lucide-react";
 import type { ChatCall } from "@sabz-zendegi/api-client/chat-engine";
 import { CallPanel, HangUpButton, callIconButton, callLive, useCallFrame } from "@sabz-zendegi/api-client/chat-ui";
 import { useAuthSession } from "@/components/auth/session-gate";
+import { isBaleSession, openBaleBrowser } from "@/lib/bale-payment";
 import { getPatientAppointment } from "@/lib/appointment-api";
 import { chatEngine } from "@/lib/chat-api";
 import { getPatientDoctor } from "@/lib/directory-api";
 
-export function IncomingVisitCall() {
-  const { authentication } = useAuthSession();
+export function IncomingVisitCall({ onMinimizedChange }: { onMinimizedChange: (minimized: boolean) => void }) {
+  const { authentication, sessionKey } = useAuthSession();
   const token = authentication.accessToken;
   const [call, setCall] = useState<ChatCall | null>(null);
   const [doctorName, setDoctorName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [external, setExternal] = useState("");
+  const [external, setExternal] = useState<{ url: string; expires: number } | null>(null);
+  const [outside, setOutside] = useState(false);
+  const ringingAudio = useRef<HTMLAudioElement>(null);
   const flight = useRef(0);
   const ringtone = useRef<HTMLAudioElement>(null);
   const [joinId, setJoinId] = useState("");
   const active = call?.status === "ACTIVE" ? call.id : undefined;
-  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, active === joinId && !external ? active : undefined);
+  const activeRef = useRef(active);
+  useEffect(() => { activeRef.current = active; return () => { activeRef.current = undefined; }; }, [active]);
+  const openingBrowser = useRef(false);
+  const { frame, frameError, joining, reconnect } = useCallFrame(chatEngine, token, active === joinId && !outside ? active : undefined);
+
+  const tokenRef = useRef(token);
+  const incoming = useRef<ReturnType<typeof chatEngine.watchIncoming>>(null);
+  useEffect(() => {
+    tokenRef.current = token;
+    incoming.current?.renew();
+  }, [token]);
 
   useEffect(() => {
-    let mounted = true;
-    let timer: ReturnType<typeof setTimeout>;
-    async function poll() {
-      const before = flight.current;
-      try {
-        if (before % 2 !== 0) return;
-        if (active) {
-          const current = await chatEngine.call(token, active);
-          if (mounted && before === flight.current) {
-            setCall(callLive(current) ? current : null);
-            setError("");
-          }
-        } else if (document.visibilityState === "visible") {
-          const { call: next } = await chatEngine.incoming(token);
-          if (mounted && before === flight.current) setCall(next);
-        }
-      } catch {
-        if (mounted && active && before === flight.current) setError("وضعیت تماس موقتاً در دسترس نیست.");
-      } finally {
-        if (mounted) timer = setTimeout(() => void poll(), 2500);
-      }
-    }
-    void poll();
-    return () => { mounted = false; clearTimeout(timer); };
-  }, [active, token]);
+    const connection = chatEngine.watchIncoming(() => tokenRef.current, sessionKey, next => {
+      if (flight.current % 2 === 0) setCall(next);
+    });
+    incoming.current = connection;
+    return () => { connection.disconnect(); incoming.current = null; };
+  }, [sessionKey]);
 
-  useEffect(() => { setExternal(""); }, [active]);
+  useEffect(() => { setExternal(null); setOutside(false); }, [active]);
+
+  useEffect(() => {
+    const audio = new Audio("/consultation-ring.wav");
+    ringingAudio.current = audio;
+    const prime = () => {
+      if (ringtone.current) return;
+      audio.muted = true;
+      void audio.play().then(() => {
+        if (ringtone.current !== audio) { audio.pause(); audio.currentTime = 0; }
+      }).catch(() => {}).finally(() => { audio.muted = false; });
+    };
+    window.addEventListener("pointerdown", prime, { once: true });
+    return () => { window.removeEventListener("pointerdown", prime); audio.pause(); };
+  }, []);
+
+  useEffect(() => {
+    if (!active || !navigator.wakeLock) return;
+    let disposed = false;
+    let lock: WakeLockSentinel | undefined;
+    async function acquire() {
+      if (document.visibilityState !== "visible" || lock && !lock.released) return;
+      try {
+        const next = await navigator.wakeLock.request("screen");
+        if (disposed || document.visibilityState !== "visible") await next.release();
+        else lock = next;
+      } catch { /* The call continues when the platform denies wake lock. */ }
+    }
+    void acquire();
+    document.addEventListener("visibilitychange", acquire);
+    return () => {
+      disposed = true;
+      document.removeEventListener("visibilitychange", acquire);
+      void lock?.release().catch(() => {});
+    };
+  }, [active]);
 
   useEffect(() => {
     const appointmentId = call?.appointmentId;
@@ -71,8 +100,9 @@ export function IncomingVisitCall() {
   useEffect(() => {
     if (!ringingId || busy) return;
     navigator.vibrate?.([200, 100, 200]);
-    const audio = new Audio("/consultation-ring.wav");
+    const audio = ringingAudio.current ?? new Audio("/consultation-ring.wav");
     ringtone.current = audio;
+    audio.muted = false;
     audio.loop = true;
     void audio.play().catch(() => {});
     return () => { ringtone.current = null; audio.pause(); navigator.vibrate?.(0); };
@@ -94,18 +124,40 @@ export function IncomingVisitCall() {
   }
 
   async function prepareExternal() {
-    if (!active) return;
-    try { setExternal((await chatEngine.callGrant(token, active)).url); }
-    catch { setError("باز کردن تماس در مرورگر ممکن نشد."); }
+    if (!active || openingBrowser.current) return;
+    if (external && external.expires > Date.now() && openBaleBrowser(external.url, false)) {
+      setOutside(true);
+      setExternal(null);
+      return;
+    }
+    openingBrowser.current = true;
+    const popup = isBaleSession() ? null : window.open("about:blank", "_blank");
+    if (popup) popup.opener = null;
+    const expires = Date.now() + 40_000;
+    try {
+      const { url } = await chatEngine.callGrant(tokenRef.current, active);
+      if (activeRef.current !== active) { popup?.close(); return; }
+      if (popup && !popup.closed) {
+        setOutside(true);
+        popup.location.replace(url);
+      } else setExternal({ url, expires });
+    } catch {
+      popup?.close();
+      if (activeRef.current === active) setError("باز کردن تماس در مرورگر ممکن نشد.");
+    } finally { openingBrowser.current = false; }
   }
 
   if (!call) return null;
   const endControl = <HangUpButton disabled={busy} onClick={() => void action("end")} />;
   const retryLabel = active === joinId ? "اتصال مجدد" : "ادامهٔ تماس";
-  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={active ? <>
-    <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(""); setError(""); setJoinId(active); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
-    {external ? <a href={external} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" title="باز کردن مرورگر"><ExternalLink size={22} aria-hidden="true" /></a>
-      : <button type="button" className={callIconButton} aria-label="ادامه در مرورگر" title="ادامه در مرورگر" onClick={() => void prepareExternal()}><ExternalLink size={22} aria-hidden="true" /></button>}
+  return createPortal(<CallPanel key={call.id} call={call} name={doctorName || (call.callerKind === "DOCTOR" ? call.callerName || "پزشک" : "پزشک")} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={reconnect} onMinimizedChange={onMinimizedChange} onEnded={() => setCall(null)} controls={active ? <>
+    <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setExternal(null); setOutside(false); setError(""); setJoinId(active); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>
+    {external && !isBaleSession()
+      ? <a href={external.url} target="_blank" rel="noreferrer" className={callIconButton} aria-label="باز کردن مرورگر" onClick={event => {
+        if (external.expires <= Date.now()) { event.preventDefault(); void prepareExternal(); }
+        else setOutside(true);
+      }}><ExternalLink size={22} aria-hidden="true" /></a>
+      : <button type="button" className={callIconButton} aria-label={external ? "باز کردن مرورگر" : "ادامه در مرورگر"} title={external ? "باز کردن مرورگر" : "ادامه در مرورگر"} onClick={() => void prepareExternal()}><ExternalLink size={22} aria-hidden="true" /></button>}
     {endControl}
   </> : <>
     <HangUpButton label="رد تماس" disabled={busy} onClick={() => void action("decline")} />

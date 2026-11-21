@@ -1,5 +1,6 @@
 import { chatVideoEnabled } from './chat-video-enabled';
 import { ConflictException, ForbiddenException, Injectable, ServiceUnavailableException } from '@nestjs/common';
+import { Subject } from 'rxjs';
 import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { AccessTokenPrincipal } from '../../../common/auth/access-token.service';
@@ -8,8 +9,19 @@ import type { ChatCall } from '../../../generated/chat-prisma/client';
 import { ChatDatabaseService } from './chat-database.service';
 import { ChatService } from './chat.service';
 
+type IncomingLease = {
+  id: string;
+  sessionId: string;
+  visible: boolean;
+  visibleUntil: number;
+  expires: number;
+  close?: () => void;
+};
+
 @Injectable()
 export class ChatCallService {
+  readonly incomingChanges = new Subject<string>();
+  private readonly streams = new Map<string, IncomingLease>();
   private readonly online = new Map<string, number>();
   private readonly grants = new Map<string, { id: string; userId: string; expires: number }>();
 
@@ -34,7 +46,9 @@ export class ChatCallService {
       const existing = await tx.chatCall.findFirst({ where: { appointmentId, status: { in: ['ACTIVE', 'RINGING'] } } });
       if (existing?.callerUserId === actor.userId && existing.callerSessionId === principal.sessionId) return existing;
       if (existing) throw new ConflictException('Appointment already has a call');
-      if ((this.online.get(patientUserId) ?? 0) <= now.valueOf()) throw new ConflictException({ code: 'CHAT_PATIENT_OFFLINE', message: 'Patient is offline' });
+      const stream = this.streams.get(patientUserId);
+      const reachableUntil = Math.max(this.online.get(patientUserId) ?? 0, stream?.visibleUntil ?? 0, stream?.expires ?? 0);
+      if (reachableUntil <= now.valueOf()) throw new ConflictException({ code: 'CHAT_PATIENT_OFFLINE', message: 'Patient is offline' });
       const created = await tx.chatCall.create({ data: {
         appointmentId, callerUserId: actor.userId, callerSessionId: principal.sessionId, patientUserId,
         callerKind: actor.kind, callerName: [name?.firstName, name?.lastName].filter(Boolean).join(' '),
@@ -50,14 +64,43 @@ export class ChatCallService {
       } });
       return created;
     });
-    this.publisher.conversationChanged(conversation.id);
+    this.publisher.conversationChanged(conversation.id, 'call');
+    this.incomingChanges.next(patientUserId);
     return this.view(call);
   }
 
-  async incoming(principal: AccessTokenPrincipal) {
+  async openIncoming(principal: AccessTokenPrincipal) {
+    if (!this.available) throw new ServiceUnavailableException();
+    if (!principal.roles.includes('PATIENT')) throw new ForbiddenException();
+    await this.livePrincipal(principal.userId, principal.sessionId, 'PATIENT');
+    if ((this.streams.get(principal.userId)?.expires ?? 0) > Date.now()) throw new ConflictException('Incoming stream already open');
+    const entry: IncomingLease = { id: randomBytes(16).toString('hex'), sessionId: principal.sessionId, visible: false, visibleUntil: 0, expires: Date.now() + 30_000 };
+    this.streams.set(principal.userId, entry);
+    this.online.delete(principal.userId);
+    return {
+      id: entry.id,
+      bindClose: (close: () => void) => { entry.close = close; },
+      validate: () => this.livePrincipal(principal.userId, principal.sessionId, 'PATIENT'),
+      renew: () => {
+        entry.expires = Date.now() + 30_000;
+        if (entry.visible) entry.visibleUntil = entry.expires;
+      },
+      release: () => { if (this.streams.get(principal.userId) === entry) this.streams.delete(principal.userId); },
+    };
+  }
+
+  setIncomingVisibility(principal: AccessTokenPrincipal, id: string | undefined, visible: boolean, closed = false) {
+    const entry = this.streams.get(principal.userId);
+    if (!entry || entry.id !== id || entry.sessionId !== principal.sessionId) throw new ForbiddenException();
+    if (closed) { entry.close?.(); return; }
+    entry.visible = visible;
+    entry.visibleUntil = visible ? Date.now() + 30_000 : 0;
+  }
+
+  async incoming(principal: AccessTokenPrincipal, registerPresence = true) {
     if (!this.available || !principal.roles.includes('PATIENT')) return null;
     await this.livePrincipal(principal.userId, principal.sessionId, 'PATIENT');
-    this.online.set(principal.userId, Date.now() + 12_000);
+    if (registerPresence) this.online.set(principal.userId, Date.now() + 30_000);
     if (this.online.size > 128) for (const [id, until] of this.online) if (until < Date.now()) this.online.delete(id);
     const call = await this.database.client.chatCall.findFirst({
       where: { patientUserId: principal.userId, OR: [
@@ -114,6 +157,7 @@ export class ChatCallService {
         });
       });
     }
+    await this.callChanged(call);
     return this.get(principal, id);
   }
 
@@ -152,21 +196,23 @@ export class ChatCallService {
     const call = await this.current(record);
     if (call.status !== 'ACTIVE') throw new ForbiddenException();
     if (body.action === 'end') {
-      await this.database.client.chatCall.updateMany({
+      const ended = await this.database.client.chatCall.updateMany({
         where: { id: call.id, status: 'ACTIVE' }, data: { status: 'ENDED', endedAt: new Date() },
       });
+      if (ended.count) await this.callChanged(call);
       return { ended: true };
     }
     if (body.action === 'connected') {
       const now = new Date();
       const field = call.callerUserId === userId ? 'callerConnectedAt' : 'patientConnectedAt';
-      await this.database.client.$transaction(async tx => {
+      const result = await this.database.client.$transaction(async tx => {
         await tx.chatCall.updateMany({ where: { id: call.id, status: 'ACTIVE', [field]: null }, data: { [field]: now } });
-        await tx.chatCall.updateMany({
+        return tx.chatCall.updateMany({
           where: { id: call.id, status: 'ACTIVE', connectedAt: null, callerConnectedAt: { not: null }, patientConnectedAt: { not: null } },
           data: { connectedAt: now },
         });
       });
+      if (result.count) await this.callChanged(call);
       return { connected: true };
     }
     const turn = process.env.CHAT_TURN_SECRET;
@@ -177,6 +223,14 @@ export class ChatCallService {
       iceServers.push({ urls: process.env.CHAT_TURN_URLS.split(',').map(url => url.trim()), username, credential: createHmac('sha1', turn).update(username).digest('base64') });
     }
     return { callId, userId, mode: call.mode, iceServers };
+  }
+
+  private async callChanged(call: ChatCall) {
+    this.incomingChanges.next(call.patientUserId);
+    const conversation = await this.database.client.chatConversation.findFirst({
+      where: { appointmentId: call.appointmentId }, select: { id: true },
+    });
+    if (conversation) this.publisher.conversationChanged(conversation.id, 'call');
   }
 
   private hash(value: string) {
@@ -214,9 +268,10 @@ export class ChatCallService {
         if (!(error instanceof ForbiddenException)) throw error;
       }
     }
-    await this.database.client.chatCall.updateMany({
+    const updated = await this.database.client.chatCall.updateMany({
       where: { id: call.id, status: call.status, ...(failed ? { connectedAt: null } : {}) }, data: { status: expired ? 'MISSED' : failed ? 'FAILED' : call.status === 'RINGING' ? 'CANCELLED' : 'ENDED', endedAt: new Date() },
     });
+    if (updated.count) await this.callChanged(call);
     return this.database.client.chatCall.findUniqueOrThrow({ where: { id: call.id } });
   }
 

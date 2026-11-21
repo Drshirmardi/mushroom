@@ -101,8 +101,8 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [connectionState, setConnection] = useState<Connection>('idle');
-  const [loadedForToken, setLoadedForToken] = useState<string | null>(null);
-  const connection = loadedForToken === authentication.accessToken ? connectionState : 'idle';
+  const [loadedForVisit, setLoadedForVisit] = useState<string | null>(null);
+  const connection = loadedForVisit === openedId ? connectionState : 'idle';
   const [access, setAccess] = useState<ChatAccess | null>(null);
   const [confirmingCloseId, setConfirmingCloseId] = useState<string | null>(null);
   const [closing, setClosing] = useState<string | null>(null);
@@ -196,21 +196,27 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
     visitId,
   ]);
 
+  const chatToken = useRef(authentication.accessToken);
+  useEffect(() => {
+    chatToken.current = authentication.accessToken;
+    transport.current?.renew();
+  }, [authentication.accessToken]);
+
   useEffect(() => {
     if (!openedId || !canAccessChat) return;
     let active = true;
     let handle: ChatConnection | undefined;
     conversationEpoch.current += 1;
-    void loadChat(authentication.accessToken, openedId).then(
+    void loadChat(chatToken.current, openedId).then(
       (loaded) => {
         if (!active) return;
         setChat(loaded);
-        setLoadedForToken(authentication.accessToken);
+        setLoadedForVisit(openedId);
         follow.current = true;
         setAtBottom(true);
         activeConversation.current = loaded.conversation.id;
         handle = connectChat(
-          authentication.accessToken,
+          () => chatToken.current,
           loaded,
           (message) => {
             if (active)
@@ -231,7 +237,7 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
       },
       () => {
         if (active) {
-          setLoadedForToken(authentication.accessToken);
+          setLoadedForVisit(openedId);
           setError('دریافت این گفتگو ممکن نشد. دسترسی و اتصال را بررسی کنید.');
           setConnection('recovery-failed');
         }
@@ -243,7 +249,7 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
       if (transport.current === handle) transport.current = null;
       activeConversation.current = null;
     };
-  }, [authentication.accessToken, openedId, attempt, canAccessChat]);
+  }, [authentication.user.id, openedId, attempt, canAccessChat]);
   useEffect(() => {
     if (follow.current && scroll.current) scroll.current.scrollTop = scroll.current.scrollHeight;
   }, [chat?.messages]);
@@ -752,7 +758,7 @@ function MessagesWorkspace({ visitId, embedded }: { visitId?: string; embedded: 
                 {chat &&
                   openedId &&
                   chat.conversation.appointmentId === openedId &&
-                  loadedForToken === authentication.accessToken && (
+                  loadedForVisit === openedId && (
                     <PreviousVisitMessages
                       key={openedId}
                       engine={chatEngine}

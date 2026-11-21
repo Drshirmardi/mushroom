@@ -171,3 +171,9 @@ export class ChatAccessResponseDto {
   @ApiProperty({ type: String, format: 'date-time', nullable: true }) closedAt!: string | null;
   @ApiProperty() canClose!: boolean;
 }
+
+export class ChatSyncResponseDto {
+  @ApiProperty({ type: ChatAccessResponseDto }) access!: ChatAccessResponseDto;
+  @ApiProperty({ type: ChatHistoryResponseDto, nullable: true }) messages!: ChatHistoryResponseDto | null;
+  @ApiProperty({ type: ChatVisibilityReconciliationResponseDto, nullable: true }) visibility!: ChatVisibilityReconciliationResponseDto | null;
+}

@@ -70,6 +70,7 @@ try {
         setTimeout(() => window.dispatchCallEvent('mushroom-lease', { callId: 'test-room' }), 0);
         return {
           on(name, handler) { handlers.set(name, handler); },
+          off(name) { handlers.delete(name); },
           emit(name, payload) { void window.callSignal(name, payload); },
           timeout() { return { emit(name, callback) { void window.callSignal(name).then(ok => callback(null, ok)); } }; },
           disconnect() {},
@@ -107,11 +108,16 @@ try {
   })));
   assert.ok(connected >= 2);
 
+  const initialIce = await frames[0].evaluate(() => window.testPeer.localDescription.sdp.match(/^a=ice-ufrag:(.+)$/m)[1]);
   await frames[0].evaluate(() => {
     Object.defineProperty(window.testPeer, 'connectionState', { value: 'disconnected', configurable: true });
     window.testPeer.dispatchEvent(new Event('connectionstatechange'));
   });
   assert.equal(await frames[0].locator('#status').textContent(), 'در حال اتصال مجدد…');
+  await frames[0].waitForFunction(previous => {
+    const current = window.testPeer.localDescription.sdp.match(/^a=ice-ufrag:(.+)$/m)?.[1];
+    return current && current !== previous;
+  }, initialIce);
   await frames[0].waitForFunction(() => document.querySelector('#duration').textContent !== '00:00');
   await frames[0].evaluate(() => {
     delete window.testPeer.connectionState;

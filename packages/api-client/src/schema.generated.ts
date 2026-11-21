@@ -406,6 +406,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/chat/calls/incoming/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ChatCallController_incomingEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/calls/incoming/presence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ChatCallController_incomingPresence"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/chat/conversations/{conversationId}/calls/{id}": {
         parameters: {
             query?: never;
@@ -610,6 +642,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ChatController_events"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/chat/conversations/{conversationId}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["chatConversationSync"];
         put?: never;
         post?: never;
         delete?: never;
@@ -7331,6 +7379,11 @@ export interface components {
         IncomingCallDto: {
             call: components["schemas"]["ChatCallDto"] | null;
         };
+        IncomingPresenceDto: {
+            id: string;
+            visible: boolean;
+            closed?: boolean;
+        };
         ChatCallActionDto: {
             /** @enum {string} */
             action: "answer" | "decline" | "end";
@@ -7430,6 +7483,11 @@ export interface components {
             checkpointCursor?: string | null;
             /** @description Opaque high-water revision identity. */
             highWaterRevision?: string | null;
+        };
+        ChatSyncResponseDto: {
+            access: components["schemas"]["ChatAccessResponseDto"];
+            messages: components["schemas"]["ChatHistoryResponseDto"] | null;
+            visibility: components["schemas"]["ChatVisibilityReconciliationResponseDto"] | null;
         };
         CreateChatReportDto: {
             /** @enum {string} */
@@ -13881,7 +13939,9 @@ export interface operations {
     };
     ChatCallController_incoming: {
         parameters: {
-            query?: never;
+            query: {
+                presence: string;
+            };
             header?: {
                 /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
                 "X-Analytics-Context"?: string;
@@ -13900,6 +13960,54 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["IncomingCallDto"];
                 };
+            };
+        };
+    };
+    ChatCallController_incomingEvents: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ChatCallController_incomingPresence: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncomingPresenceDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -14296,6 +14404,36 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    chatConversationSync: {
+        parameters: {
+            query?: {
+                messages?: string;
+                skip?: "messages" | "visibility";
+                visibility?: string;
+            };
+            header?: {
+                /** @description Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation. */
+                "X-Analytics-Context"?: string;
+                /** @description Invitation context locator; grants no access without server identity and resource checks. */
+                "X-Marriage-Request-Id"?: string;
+            };
+            path: {
+                conversationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatSyncResponseDto"];
+                };
             };
         };
     };

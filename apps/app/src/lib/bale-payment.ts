@@ -83,11 +83,11 @@ export function openSadadOutsideMiniApp(redirectUrl: string): void {
   window.location.assign(redirectUrl);
 }
 
-export function openBaleBrowser(url: string): boolean {
+export function openBaleBrowser(url: string, tryInstantView = true): boolean {
   const app = webApp();
   if (!isBaleSession() || typeof app?.openLink !== 'function') return false;
   try {
-    app.openLink(url, { try_instant_view: true });
+    app.openLink(url, { try_instant_view: tryInstantView });
     return true;
   } catch {
     return false;

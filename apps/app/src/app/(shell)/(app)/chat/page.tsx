@@ -28,7 +28,6 @@ import {
   Check,
   ChevronDown,
   MoreVertical,
-  Phone,
   Send,
   CheckCircle2,
 } from 'lucide-react';
@@ -81,7 +80,7 @@ const timeLabel = (value: string) =>
   );
 
 function ChatAppointments() {
-  const { authentication } = useAuthSession();
+  const { authentication, sessionKey } = useAuthSession();
   const resource = usePatientResource(
     useCallback(
       () => listPatientAppointments(authentication.accessToken),
@@ -147,7 +146,8 @@ function ChatAppointments() {
 
 function ChatRoute() {
   const id = useSearchParams().get('appointmentId');
-  return id ? <ChatRoom key={id} appointmentId={id} /> : <ChatAppointments />;
+  const { sessionKey } = useAuthSession();
+  return id ? <ChatRoom key={sessionKey + ':' + id} appointmentId={id} /> : <ChatAppointments />;
 }
 
 export default function ChatPage() {
@@ -160,7 +160,7 @@ export default function ChatPage() {
 
 function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const router = useRouter();
-  const { authentication } = useAuthSession();
+  const { authentication, sessionKey } = useAuthSession();
   const [chat, setChat] = useState<LoadedChat | null>(null);
   const [doctorName, setDoctorName] = useState('');
   const [doctorImageUrl, setDoctorImageUrl] = useState<string | null>(null);
@@ -171,6 +171,13 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
   const [sending, setSending] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [atBottom, setAtBottom] = useState(true);
+  const [newMessages, setNewMessages] = useState(0);
+  const [announcement, setAnnouncement] = useState('');
+  const previews = useRef(new Map<string, Blob>());
+  useEffect(() => {
+    const cache = previews.current;
+    return () => cache.clear();
+  }, []);
   const [attempt, setAttempt] = useState(0);
   const transport = useRef<ChatConnection | null>(null);
   const sendLock = useRef(false);
@@ -207,7 +214,14 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     ) {
       outgoingMessageOrigins.current.set(message.id, pendingMessage.composerRect);
     }
+    if (!message.attachment) {
+      for (const key of previews.current.keys()) if (key.endsWith(':' + message.id)) previews.current.delete(key);
+    }
     if (knownMessageIds.current.has(message.id)) return;
+    if (message.senderKind !== 'PATIENT') {
+      setAnnouncement(message.body || 'پیوست تازه در گفتگو');
+      if (!follow.current) setNewMessages(count => count + 1);
+    }
     knownMessageIds.current.add(message.id);
     if (reduceMotion) return;
     setEnteringMessageIds((current) => new Set(current).add(message.id));
@@ -262,41 +276,11 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     return () => useUiStore.getState().setImmersive(false);
   }, []);
 
-  // Keep the room inside the visual viewport while the user's keyboard is open.
+  const chatToken = useRef(authentication.accessToken);
   useEffect(() => {
-    const element = room.current;
-    if (!element) return;
-    const viewport = window.visualViewport;
-    let frame = 0;
-    const apply = () => {
-      frame = 0;
-      if (!element.isConnected) return;
-      const height = viewport?.height ?? window.innerHeight;
-      const top = Math.max(0, viewport?.offsetTop ?? 0);
-      const nextHeight = `${height}px`;
-      const nextTransform = top === 0 ? '' : `translateY(${top}px)`;
-      if (element.style.height !== nextHeight) element.style.height = nextHeight;
-      if (element.style.transform !== nextTransform) element.style.transform = nextTransform;
-      const keyboard = height < window.innerHeight - 120 ? 'open' : 'closed';
-      if (element.dataset.keyboard !== keyboard) element.dataset.keyboard = keyboard;
-    };
-    const update = () => {
-      if (frame === 0) frame = window.requestAnimationFrame(apply);
-    };
-    apply();
-    viewport?.addEventListener('resize', update);
-    viewport?.addEventListener('scroll', update);
-    window.addEventListener('resize', update);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      viewport?.removeEventListener('resize', update);
-      viewport?.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-      element.style.removeProperty('height');
-      element.style.removeProperty('transform');
-      element.removeAttribute('data-keyboard');
-    };
-  }, []);
+    chatToken.current = authentication.accessToken;
+    transport.current?.renew();
+  }, [authentication.accessToken]);
 
   useEffect(() => {
     let active = true;
@@ -312,14 +296,14 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     setEnteringMessageIds(new Set());
     outgoingMessageOrigins.current.clear();
     startedOutgoingAnimations.current.clear();
-    void loadChat(authentication.accessToken, appointmentId).then(
+    void loadChat(chatToken.current, appointmentId).then(
       (loaded) => {
         if (!active) return;
         follow.current = true;
         knownMessageIds.current = new Set(loaded.messages.map((message) => message.id));
         setChat(loaded);
         handle = connectChat(
-          authentication.accessToken,
+          () => chatToken.current,
           loaded,
           (message) => {
             if (active) {
@@ -352,7 +336,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
       handle?.disconnect();
       if (transport.current === handle) transport.current = null;
     };
-  }, [appointmentId, authentication.accessToken, attempt]);
+  }, [appointmentId, sessionKey, attempt]);
 
   useEffect(() => {
     const doctorId = chat?.conversation.doctorId;
@@ -465,6 +449,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
   };
 
   const jumpToLatest = () => {
+    setNewMessages(0);
     follow.current = true;
     const el = scroll.current;
     if (!el) return;
@@ -489,6 +474,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
   };
   const onComposerKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (window.matchMedia('(pointer: coarse)').matches) return;
     if (
       event.key === 'Enter' &&
       !event.shiftKey &&
@@ -510,6 +496,8 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
     }
     return result;
   }, [chat?.messages]);
+
+  useEffect(() => { if (atBottom) setNewMessages(0); }, [atBottom]);
 
   const length = Array.from(text).length;
   const canSend = Boolean(chat) && connection === 'connected' && access?.canSend !== false;
@@ -611,13 +599,14 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
         <div
           className={`chat-message-bubble relative max-w-[85%] rounded-2xl ${joinedCorner} ${tailCorner} px-3.5 py-2.5 text-base leading-[1.5] shadow-sm sm:max-w-[78%] sm:px-4 sm:py-3 ${isOwn ? 'bg-primary text-primary-foreground' : 'border border-[#292b2d] bg-[#090a0b] text-white'}`}
         >
-          <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.body}</p>
+          <p dir="auto" className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.body}</p>
           {message.attachment && (
             <ChatAttachmentCard
               engine={chatEngine}
               token={authentication.accessToken}
               conversationId={conversationId}
               message={message}
+              imageCache={previews.current}
             />
           )}
           <div
@@ -634,14 +623,13 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
 
   return (
     <div
-      ref={room}
       className="patient-chat-room group relative z-30 mx-auto flex h-full max-w-[720px] flex-col overflow-hidden bg-transparent"
     >
       <header dir="ltr" className="absolute inset-x-0 top-0 z-40 flex items-center gap-2 bg-transparent px-3 py-2.5">
         <button
           type="button"
           aria-label="بازگشت"
-          onClick={() => router.back()}
+          onClick={() => router.push('/chat')}
           className="grid size-12 flex-shrink-0 place-items-center rounded-full border border-white/10 bg-[#090a0b]/75 text-white shadow-sm backdrop-blur-lg transition-colors hover:bg-[#202224]/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           <ArrowLeft size={21} aria-hidden="true" />
@@ -674,15 +662,6 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-white/10 bg-[#090a0b]/75 p-1 text-white shadow-sm backdrop-blur-lg">
-          <button
-            type="button"
-            disabled
-            aria-label="تماس را پزشک آغاز می‌کند"
-            title="تماس را پزشک آغاز می‌کند"
-            className="grid size-11 place-items-center rounded-full text-primary opacity-55"
-          >
-            <Phone size={20} aria-hidden="true" />
-          </button>
           <details className="relative">
             <summary
               aria-label="گزینه‌های گفتگو"
@@ -721,11 +700,12 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
           {readOnlyNote}
         </p>
       )}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</p>
       <div className="relative flex min-h-0 flex-1 flex-col">
         <main
           ref={scroll}
           onScroll={onMessagesScroll}
-          className="chat-scroll-rail patient-chat-wallpaper min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-3 pb-[calc(5rem+env(safe-area-inset-bottom))] [overflow-anchor:none]"
+          className="chat-scroll-rail patient-chat-wallpaper min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-3 pb-12 [overflow-anchor:none]"
         >
           <div dir="rtl" className="min-h-full space-y-2">
             {chat && (
@@ -772,7 +752,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
                 هنوز پیامی ثبت نشده است. اولین پیام را بفرستید.
               </p>
             )}
-            <div role="log" aria-label="پیام‌های گفتگو" aria-live="polite" className="space-y-2">
+            <div role="region" aria-label="پیام‌های گفتگو" className="space-y-2">
               {groups.map((group) => (
                 <div key={group.key}>
                   <div className="my-3 text-center">
@@ -802,7 +782,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
             onClick={jumpToLatest}
             className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-primary shadow-md ring-1 ring-border"
           >
-            رفتن به آخر گفتگو
+            {newMessages ? `${newMessages.toLocaleString('fa-IR')} پیام جدید` : 'رفتن به آخر گفتگو'}
             <ChevronDown size={14} aria-hidden="true" />
           </button>
         )}
@@ -812,7 +792,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className="max-h-[60%] min-h-0 flex-shrink-0 overflow-y-auto overscroll-contain border-t border-border bg-white px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] group-data-[keyboard=open]:pb-3"
+          className="max-h-[60%] min-h-0 flex-shrink-0 overflow-y-auto overscroll-contain border-t border-border bg-white px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"
         >
           <div className="mx-auto w-full max-w-md rounded-2xl border border-border bg-[var(--dp-surface-back)] p-3.5">
             <div className="flex items-start gap-3">
@@ -853,7 +833,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
             event.preventDefault();
             void send();
           }}
-          className="absolute inset-x-0 bottom-0 z-50 flex bg-transparent px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))] group-data-[keyboard=open]:pb-2.5"
+          className="z-50 flex shrink-0 bg-transparent px-2 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]"
         >
           <div className="flex w-full min-w-0 items-end gap-1.5 rounded-full border border-white/10 bg-[#090a0b]/75 px-1.5 py-1.5 shadow-sm backdrop-blur-lg">
             <button
@@ -870,6 +850,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
                 ref={composer}
                 rows={1}
                 aria-label="متن پیام"
+                dir="auto"
                 value={text}
                 onChange={(event) => {
                   setText(event.target.value);
@@ -882,9 +863,9 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
                 onCompositionEnd={() => {
                   composing.current = false;
                 }}
-                disabled={!canSend}
+                disabled={access?.canSend === false}
                 maxLength={4000}
-                placeholder={canSend ? 'نوشتن پیام …' : 'ارسال پیام در دسترس نیست'}
+                placeholder={access?.canSend === false ? 'ارسال پیام در دسترس نیست' : 'نوشتن پیام …'}
                 className="block max-h-32 min-h-11 w-full resize-none rounded-full bg-transparent px-3.5 py-2.5 text-base leading-6 text-white outline-none placeholder:text-white/65 disabled:opacity-60"
               />
             </div>
@@ -894,7 +875,7 @@ function ChatRoom({ appointmentId }: { appointmentId: string }) {
                 engine={chatEngine}
                 token={authentication.accessToken}
                 conversationId={chat.conversation.id}
-                disabled={!canSend}
+                disabled={access?.canSend === false}
                 buttonClassName="text-white/80 hover:bg-white/10 focus-visible:outline-white"
                 onSent={(message) => {
                   const id = chat.conversation.id;

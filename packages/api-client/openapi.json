@@ -2085,6 +2085,14 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "presence",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2097,6 +2105,96 @@
                 }
               }
             }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/incoming/events": {
+      "get": {
+        "operationId": "ChatCallController_incomingEvents",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/calls/incoming/presence": {
+      "post": {
+        "operationId": "ChatCallController_incomingPresence",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncomingPresenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
           }
         },
         "security": [
@@ -2995,6 +3093,90 @@
             "bearerAuth": []
           }
         ],
+        "tags": [
+          "Chat consultation"
+        ]
+      }
+    },
+    "/v1/chat/conversations/{conversationId}/sync": {
+      "get": {
+        "operationId": "chatConversationSync",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analytics-Context",
+            "required": false,
+            "description": "Optional consented, property-scoped anonymous analytics context (JSON, <=1024 characters). Invalid or absent context is ignored; never authorizes a business operation.",
+            "schema": {
+              "type": "string",
+              "maxLength": 1024
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Marriage-Request-Id",
+            "required": false,
+            "description": "Invitation context locator; grants no access without server identity and resource checks.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "conversationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "messages",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "messages",
+                "visibility"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "visibility",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSyncResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "",
         "tags": [
           "Chat consultation"
         ]
@@ -44449,6 +44631,24 @@
           "call"
         ]
       },
+      "IncomingPresenceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "closed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "visible"
+        ]
+      },
       "ChatCallActionDto": {
         "type": "object",
         "properties": {
@@ -44771,6 +44971,37 @@
         },
         "required": [
           "items"
+        ]
+      },
+      "ChatSyncResponseDto": {
+        "type": "object",
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/ChatAccessResponseDto"
+          },
+          "messages": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatHistoryResponseDto"
+              }
+            ]
+          },
+          "visibility": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChatVisibilityReconciliationResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "access",
+          "messages",
+          "visibility"
         ]
       },
       "CreateChatReportDto": {

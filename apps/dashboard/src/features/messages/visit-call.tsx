@@ -81,7 +81,7 @@ export function VisitCall({ token, appointmentId, participantName, canStart }: {
         </button>;
       })}
     </div>}
-    {call && live && createPortal(<CallPanel floating key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} controls={<>
+    {call && live && createPortal(<CallPanel floating key={call.id} call={call} name={participantName} frame={frame} error={error || frameError} endControl={endControl} joining={joining} recover={reconnect} onEnded={() => { if (id) void chatEngine.call(token, id).then(setCall).catch(() => {}); }} controls={<>
       {activeId && <button type="button" className={callIconButton} aria-label={retryLabel} title={retryLabel} onClick={() => { setError(""); setJoinId(activeId); reconnect(); }}><RotateCw size={22} aria-hidden="true" /></button>}
       {endControl}
     </>} />, document.body)}

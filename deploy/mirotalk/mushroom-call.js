@@ -2,7 +2,8 @@
 
 const byId = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
-const videoRequested = params.get('mode') !== 'AUDIO';
+const videoRequested = params.has('camera') ? params.get('camera') === 'true' : params.get('mode') !== 'AUDIO';
+const microphoneRequested = params.get('microphone') !== 'false';
 const relayOnly = params.get('relayOnly') === 'true';
 const embedOrigin = params.get('embedOrigin');
 const embedded = Boolean(embedOrigin && parent !== window);
@@ -134,8 +135,10 @@ function reportCallFailure(stage, error) {
 
 function failed(stage, error) {
   reportCallFailure(stage, error);
-  stop('اتصال قطع شد. برای اتصال مجدد از پنل ویزیت استفاده کنید.');
-  notifyParent('mushroom-call:recover');
+  const microphone = stream?.getAudioTracks()[0]?.enabled ?? microphoneRequested;
+  const camera = Boolean(stream?.getVideoTracks().length);
+  stop('در حال اتصال مجدد…');
+  notifyParent('mushroom-call:recover', { microphone, camera });
 }
 
 async function connect() {
@@ -156,18 +159,20 @@ async function connect() {
     status.textContent = 'دسترسی به دوربین یا میکروفون ممکن نیست. مجوز مرورگر را بررسی کنید.';
     connectButton.disabled = false;
     connectButton.hidden = embedded;
-    notifyParent('mushroom-call:recover');
+    notifyParent('mushroom-call:recover', { permission: true, reason: error?.name });
     return;
   }
   if (epoch !== connectionEpoch) { acquired.getTracks().forEach(track => track.stop()); return; }
   stream = acquired;
+  stream.getAudioTracks()[0].enabled = microphoneRequested;
+  byId('microphone').setAttribute('aria-pressed', String(microphoneRequested));
   if (videoRequested) {
     try {
       const camera = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
       if (epoch !== connectionEpoch) { camera.getTracks().forEach(track => track.stop()); return; }
       stream.addTrack(camera.getVideoTracks()[0]);
     } catch {
-      byId('media-note').textContent = 'دوربین در دسترس نیست؛ تماس با صدا ادامه دارد.';
+      byId('media-note').textContent = 'دوربین در دسترس نیست. مجوز دوربین و برنامه‌های باز را بررسی کنید؛ تماس با صدا ادامه دارد.';
     }
   }
   if (epoch !== connectionEpoch) return;
@@ -176,10 +181,16 @@ async function connect() {
   byId('camera').setAttribute('aria-pressed', String(stream.getVideoTracks().length > 0));
   socket = io({ transports: ['websocket'], auth: { code: signal }, reconnection: false });
   let joined = false;
-  lease = setTimeout(() => failed('signaling-lease-timeout'), 12_000);
+  let leaseDelayed = false;
+  lease = setTimeout(() => failed('signaling-lease-timeout'), 30_000);
   socket.on('mushroom-lease', ({ callId }) => {
+    if (leaseDelayed && peer?.connectionState === 'connected') {
+      status.textContent = 'تماس برقرار است.';
+      notifyParent('mushroom-call:connected');
+    }
+    leaseDelayed = false;
     clearTimeout(lease);
-    lease = setTimeout(() => failed('signaling-lease-timeout'), 12_000);
+    lease = setTimeout(() => failed('signaling-lease-timeout'), 30_000);
     if (!joined) {
       joined = true;
       socket.emit('join', { channel: callId, peerInfo: {} });
@@ -187,7 +198,12 @@ async function connect() {
   });
   socket.on('connect_error', () => failed('signaling-connect'));
   socket.on('disconnect', reason => { if (reason !== 'io client disconnect') failed('signaling-disconnect'); });
-  socket.on('mushroom-ended', () => stop('تماس پایان یافته است.'));
+  socket.on('mushroom-lease-delayed', () => {
+    leaseDelayed = true;
+    status.textContent = 'در حال اتصال مجدد…';
+    notifyParent('mushroom-call:recovering');
+  });
+  socket.on('mushroom-ended', () => { stop('تماس پایان یافته است.'); notifyParent('mushroom-call:ended'); });
   socket.on('serverInfo', () => {
     endButton.hidden = false;
     endButton.disabled = false;
@@ -229,21 +245,42 @@ async function connect() {
       connection.onicecandidateerror = ({ errorCode }) => {
         if (peer === connection) console.warn('[Mushroom call]', { stage: 'ice-gathering', errorCode });
       };
+      let restarting = false;
+      async function restartMedia() {
+        if (peer !== connection || restarting) return;
+        restarting = true;
+        status.textContent = 'در حال اتصال مجدد…';
+        notifyParent('mushroom-call:recovering');
+        peerTimer = setTimeout(() => {
+          if (peer !== connection) return;
+          if (connection.connectionState !== 'connected') failed('peer-restart-timeout');
+          else { restarting = false; status.textContent = 'تماس برقرار است.'; notifyParent('mushroom-call:connected'); }
+        }, 10_000);
+        if (!shouldCreateOffer) {
+          socket.emit('mushroom-restart-ice', id);
+          return;
+        }
+        try {
+          await connection.setLocalDescription(await connection.createOffer({ iceRestart: true }));
+          if (peer === connection) socket.emit('relaySDP', { peerId: id, sessionDescription: connection.localDescription });
+        } catch (error) { if (peer === connection) failed('peer-restart', error); }
+      }
+      socket.off('mushroom-restart-ice');
+      socket.on('mushroom-restart-ice', ({ peerId: source }) => {
+        if (source === id && shouldCreateOffer) void restartMedia();
+      });
       connection.onconnectionstatechange = () => {
         if (peer !== connection) return;
-        clearTimeout(peerTimer);
         if (connection.connectionState === 'connected') {
+          clearTimeout(peerTimer);
+          restarting = false;
           status.textContent = 'تماس برقرار است.';
           byId('camera').disabled = false;
           startClock();
           confirmConnection(connection);
+          notifyParent('mushroom-call:connected');
         }
-        if (connection.connectionState === 'failed') failed('peer-connection-failed');
-        if (connection.connectionState === 'disconnected') {
-          status.textContent = 'در حال اتصال مجدد…';
-          clearTimeout(peerTimer);
-          peerTimer = setTimeout(() => { if (peer === connection && connection.connectionState === 'disconnected') failed('peer-disconnect-timeout'); }, 15_000);
-        }
+        if (['failed', 'disconnected'].includes(connection.connectionState)) void restartMedia();
       };
       if (shouldCreateOffer) {
         await connection.setLocalDescription(await connection.createOffer());
@@ -281,7 +318,8 @@ async function connect() {
     if (id !== peerId) return;
     closePeer();
     byId('camera').disabled = true;
-    status.textContent = 'در انتظار اتصال مجدد طرف مقابل…';
+    status.textContent = 'در حال اتصال مجدد…';
+    notifyParent('mushroom-call:recovering');
   });
 }
 
@@ -296,6 +334,7 @@ byId('end').addEventListener('click', () => {
       return;
     }
     stop('تماس پایان یافت.');
+    notifyParent('mushroom-call:ended');
   });
 });
 playAudioButton.addEventListener('click', playRemoteAudio);

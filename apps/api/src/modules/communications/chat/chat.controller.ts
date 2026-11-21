@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, PayloadTooLargeException, Post, Query, Req, Res, Sse, StreamableFile } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Header, HttpCode, HttpStatus, Param, ParseUUIDPipe, PayloadTooLargeException, Post, Query, Req, Res, StreamableFile } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 import { ChatAttachmentsService, MAX_CHAT_ATTACHMENT } from './chat-attachments.service';
-import { exhaustMap, filter, map, merge, takeUntil, timer } from 'rxjs';
+import { concatMap, filter } from 'rxjs';
+import { chatEventStream } from './realtime/chat-event-stream';
 import { ChatRealtimePublisher } from './realtime/chat-realtime.publisher';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags } from '@nestjs/swagger';
 
@@ -16,6 +17,7 @@ import {
   ChatAccessResponseDto,
   ChatHistoryQueryDto,
   ChatHistoryResponseDto,
+  ChatSyncResponseDto,
   ChatMessageResponseDto,
   ChatVisibilityReconciliationQueryDto,
   ChatVisibilityReconciliationResponseDto,
@@ -113,15 +115,30 @@ export class ChatController {
     });
   }
 
-  @Sse('conversations/:conversationId/events')
+  @Get('conversations/:conversationId/events')
   @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
-  async events(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest) {
+  @ApiProduces('text/event-stream')
+  async events(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Req() request: AuthenticatedRequest, @Res({ passthrough: true }) reply: FastifyReply) {
     await this.chat.engineAccess(request.auth, id);
-    return merge(timer(0, 10_000), this.publisher.changes.pipe(filter(changed => changed === id))).pipe(
-      exhaustMap(() => this.chat.engineAccess(request.auth, id)),
-      map(() => ({ data: { changed: true } })),
-      takeUntil(timer(Math.max(0, request.auth.expiresAt * 1000 - Date.now()))),
-    );
+    return chatEventStream(reply, request.auth.expiresAt, (send, close) => {
+      const subscription = this.publisher.changes.pipe(
+        filter(changed => changed.id === id),
+        concatMap(async changed => { await this.chat.engineAccess(request.auth, id); return changed; }),
+      ).subscribe({ next: changed => send({ changed: true, conversationId: id, kind: changed.kind }), error: close });
+      return () => subscription.unsubscribe();
+    });
+  }
+
+  @Get('conversations/:conversationId/sync')
+  @Header('Cache-Control', 'private, no-store')
+  @RequirePermissions(PERMISSIONS.CHAT_CONVERSATION_READ)
+  @ApiOperation({ operationId: 'chatConversationSync' })
+  @ApiQuery({ name: 'messages', required: false, type: String })
+  @ApiQuery({ name: 'visibility', required: false, type: String })
+  @ApiQuery({ name: 'skip', required: false, enum: ['messages', 'visibility'] })
+  @ApiOkResponse({ type: ChatSyncResponseDto })
+  sync(@Param('conversationId', new ParseUUIDPipe({ version: '4' })) id: string, @Query('messages') messages: string | undefined, @Query('visibility') visibility: string | undefined, @Query('skip') skip: string | undefined, @Req() request: AuthenticatedRequest) {
+    return this.chat.engineSync(request.auth, id, messages, visibility, skip);
   }
 
   @Post('conversations/:conversationId/receipts/:messageId')
